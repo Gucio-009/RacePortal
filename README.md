@@ -79,6 +79,41 @@ React (Frontend) → Spring Boot REST API → PostgreSQL
 
 ---
 
+## 🧵 Workflow i zasady pracy z repozytorium
+Aby zapewnić porządek, czytelność i pełną kontrolę nad rozwojem projektu, obowiązują poniższe zasady pracy z repozytorium:
+
+### 🌿 Struktura branchy
+- **main** – stabilna, produkcyjna wersja projektu; tylko zatwierdzone PR.
+- **develop** – główny branch rozwojowy; tu trafiają wszystkie PR z funkcjonalności po code review.
+- **feature/**
+  - Każda funkcjonalność rozwijana jest w osobnym branchu.
+  - Nazewnictwo: `feature/nazwa-funkcji` (np. `feature/kalendarz-wydarzen`).
+- **fix/**
+  - Branch do poprawek błędów.
+  - Nazewnictwo: `fix/poprawka-opisu`, `fix/błąd-api`.
+- **hotfix/**
+  - Nagłe poprawki krytyczne w `main`.
+  - Po wdrożeniu merge do `main` i **obowiązkowo** do `develop`.
+
+### 🔀 Pull Requesty
+- PR **zawsze** z branchy `feature/*` → do `develop`.
+- PR do `main` wyłącznie przy oficjalnych release’ach lub hotfixach.
+- Każdy PR wymaga:
+  - opisu zmian,
+  - listy tasków JIRA (jeśli dotyczy),
+  - minimalnie 1 akceptacji code review.
+
+### 🧪 Testowanie i jakość
+- Frontend i backend muszą przechodzić testy lokalne przed PR.
+- Zakaz pushowania bezpośrednio na `main` i `develop`.
+- Każdy PR musi posiadać checklistę wykonania (lint, build, testy).
+
+### 📦 Release’y
+- Release tworzony jest z brancha `develop` → merge do `main`.
+- Tagowanie: `vX.Y.Z` (SemVer).
+
+---
+
 ## 📄 Dokumentacja
 Pełen *Dokument Założeń Wstępnych* znajduje się w repozytorium:
-`02_DZW-GrA(Kasprowicz, Gutowski, Otrombke, Parkitny, Wronisz)_v1.1.pdf
+`02_DZW-GrA(Kasprowicz, Gutowski, Otrombke, Parkitny, Wronisz)_v1.1.pdf`
