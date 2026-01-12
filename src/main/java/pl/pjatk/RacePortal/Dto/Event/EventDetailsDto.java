@@ -21,7 +21,7 @@ public class EventDetailsDto {
     private LocationDto location;
 
     // organizer później jako osobne DTO
-    private Long organizerId;
+    //private Long organizerId;
 
     // getters & setters
 }

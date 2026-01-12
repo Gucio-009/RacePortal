@@ -1,0 +1,9 @@
+INSERT INTO regions (name) VALUES ('Dolnośląskie'), ('Kujawsko-Pomorskie'), ('Lubelskie'), ('Lubuskie'), ('Łódzkie'), ('Małopolskie'), ('Mazowieckie'), ('Opolskie'), ('Podkarpackie'), ('Podlaskie'), ('Pomorskie'), ('Śląskie'), ('Świętokrzyskie'), ('Warmińsko-Mazurskie'), ('Wielkopolskie'), ('Zachodniopomorskie');
+
+INSERT INTO categories (name, description) VALUES ('Rally','Rajdy samochodowe'), ('Track Day','Jazdy torowe i treningi'), ('Drift','Zawody driftingowe'), ('Race','Wyścigi torowe'), ('Karting','Zawody kartingowe'), ('Moto','Motocykle sportowe');
+
+
+INSERT INTO locations (name, address, latitude, longitude, region_id) VALUES ('Tor Poznań','Wyścigowa 3, Poznań',52.3770,16.8070,15), ('Autodrom Jastrząb','Jastrząb 47, Radom',51.4023,21.1968,7), ('Tor Kielce','Miedziana Góra, Kielce',50.9372,20.5503,13), ('Tor Silesia Ring','Kamień Śląski',50.4429,18.0195,12), ('Tor Łódź','Łódź',51.7592,19.4550,5), ('OS Rajdowy Barbórka','Warszawa – Karowa',52.2370,21.0175,7), ('Tor Modlin','Nowy Dwór Mazowiecki',52.4484,20.6512,7), ('Tor Pszczółki','Pszczółki',54.1721,18.6973,11);
+
+
+INSERT INTO events (title, description, date_start, date_end, image_url, category_id, location_id, created_at, updated_at) VALUES ('Rajd Barbórka', 'Legendarny rajd ulicami Warszawy',  '2025-12-06', '2025-12-07', 'https://example.com/barborka.jpg', 1, 6, NOW(), NOW()), ('Track Day Tor Poznań', 'Trening jazdy sportowej na torze', '2025-05-10', '2025-05-10', 'https://example.com/poznan.jpg', 2, 1, NOW(), NOW()), ('Drift Open Silesia Ring', 'Runda drift open', '2025-06-15', '2025-06-16', 'https://example.com/drift.jpg', 3, 4, NOW(), NOW()), ('Wyścigowy Puchar Polski', 'Wyścigi torowe', '2025-07-20', '2025-07-21', 'https://example.com/race.jpg', 4, 3, NOW(), NOW()), ('Karting Cup Pszczółki', 'Zawody kartingowe', '2025-08-03', '2025-08-03', 'https://example.com/karting.jpg', 5, 8, NOW(), NOW());

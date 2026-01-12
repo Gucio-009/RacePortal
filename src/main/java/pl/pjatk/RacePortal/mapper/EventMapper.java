@@ -15,7 +15,7 @@ import org.mapstruct.Mapping;
 )
 public interface EventMapper {
 
-    /* ========= LISTA / KALENDARZ ========= */
+    /* ========= LISTA ========= */
 
     @Mapping(source = "category.name", target = "categoryName")
     @Mapping(source = "location.name", target = "locationName")
@@ -35,3 +35,4 @@ public interface EventMapper {
     @Mapping(target = "updatedAt", ignore = true)
     Event toEntity(EventCreateUpdateDto dto);
 }
+
