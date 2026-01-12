@@ -1,0 +1,241 @@
+<html>
+<head>
+  <style>
+    html {
+      color-scheme: dark;
+
+      body {
+        margin: 0;
+      }
+
+      header {
+        width: 100%;
+        height: 50px;
+
+        display: flex;
+        place-items: center;
+        justify-content: space-evenly;
+
+        .logo {
+          width: 5vh;
+          aspect-ratio: 1;
+          background-color: red;
+        }
+
+        .calendar, .login, .account {
+          display: flex;
+          gap: 1em;
+        }
+
+        .search {
+          background-color: lightgray;
+          position: relative;
+
+          .anchor {
+            anchor-name: --filters-anchor;
+          }
+
+          .filters {
+            background-color: red;
+
+            position-anchor: --filters-anchor;
+            position-area: bottom center;
+            width: 100%;
+
+            box-sizing: border-box;
+          }
+        }
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+
+    <div class="logo"></div>
+
+    <section class="calendar">
+      <button>Calendar</button>
+      <span>Icon</span>
+    </section>
+
+    <section class="search">
+      <section class="anchor">
+        <span>Icon</span>
+        <input type="text">
+        <button popovertarget="filters">Filter</button>
+      </section>
+      <section class="filters" popover id="filters">
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+        1<br>
+      </section>
+    </section>
+
+    <section class="login">
+      <button>Login</button>
+      <span>Icon</span>
+    </section>
+
+    <section class="account">
+      <button>Account</button>
+      <span>Icon</span>
+    </section>
+
+  </header>
+
+  <main>
+    <h2>Some text</h2>
+  </main>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<html>
+<section class="search-group">
+  <img  class="magnifying-glass" src="img/img_1.png">
+  <form>
+    <input class="input-in-header"  type="text" placeholder="Nazwa, Tor, Organizator...">
+  </form>
+  <button class="button-filter" popovertarget="my-popover">Filter</button>
+
+  <section popover id="my-popover" class="popover">
+    <h3 class="filter-text">Filtrowanie</h3>
+    <article class="filter-group">
+      <h4>Kategoria Zawodów</h4>
+      <article class="toggle-switch-group">
+        <input type="checkbox" id="drifty-toggle" class="toggle-checkbox" value="drifty" checked>
+        <label for="drifty-toggle" class="toggle-label">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text">Drifty</span>
+        </label>
+      </article>
+      <article class="toggle-switch-group">
+        <input type="checkbox" id="timeattack-toggle" class="toggle-checkbox" value="time_attack">
+        <label for="timeattack-toggle" class="toggle-label">
+          <span class="toggle-slider"></span>
+          <span class="toggle-text">Time Attack</span>
+        </label>
+      </article>
+      <hr class="separator">
+      <article class="filter-group">
+        <h4>Lokalizacja (Tor)</h4>
+        <input class="input-in-filtr" type="text" placeholder="Nazwa toru...">
+      </article>
+
+      <article class="filter-group">
+        <h4>Województwo</h4>
+        <article class="all-voivodeship">
+          <label>
+            <input type="checkbox" value="Dolnośląskie">
+            <span class="custom-checkbox"></span>
+            Dolnośląskie
+          </label>
+          <label>
+            <input type="checkbox" value="Kujawsko-pomorskie">
+            <span class="custom-checkbox"></span>
+            Kujawsko-pomorskie
+          </label>
+          <label>
+            <input type="checkbox" value="Lubelskie">
+            <span class="custom-checkbox"></span>
+            Lubelskie
+          </label>
+          <label>
+            <input type="checkbox" value="Lubuskie">
+            <span class="custom-checkbox"></span>
+            Lubelskie
+          </label>
+          <label>
+            <input type="checkbox" value="Łódzkie">
+            <span class="custom-checkbox"></span>
+            Łódzkie
+          </label>
+          <label>
+            <input type="checkbox" value="Małopolskie">
+            <span class="custom-checkbox"></span>
+            Małopolskie
+          </label>
+          <label>
+            <input type="checkbox" value="Mazowieckie">
+            <span class="custom-checkbox"></span>
+            Mazowieckie
+          </label>
+          <label>
+            <input type="checkbox" value="Opolskie">
+            <span class="custom-checkbox"></span>
+            Opolskie
+          </label>
+          <label>
+            <input type="checkbox" value="Podkarpackie">
+            <span class="custom-checkbox"></span>
+            Podkarpackie
+          </label>
+          <label>
+            <input type="checkbox" value="Podlaskie">
+            <span class="custom-checkbox"></span>
+            Podlaskie
+          </label>
+          <label>
+            <input type="checkbox" value="Pomorskie">
+            <span class="custom-checkbox"></span>
+            Pomorskie
+          </label>
+          <label>
+            <input type="checkbox" value="Śląskie">
+            <span class="custom-checkbox"></span>
+            Śląskie
+          </label>
+          <label>
+            <input type="checkbox" value="Świętokrzyskie">
+            <span class="custom-checkbox"></span>
+            Świętokrzyskie
+          </label>
+          <label>
+            <input type="checkbox" value="Warmińsko-mazurskie">
+            <span class="custom-checkbox"></span>
+            Warmińsko-mazurskie
+          </label>
+          <label>
+            <input type="checkbox" value="Wielkopolskie">
+            <span class="custom-checkbox"></span>
+            Wielkopolskie
+          </label>
+          <label>
+            <input type="checkbox" value="Zachodniopomorskie">
+            <span class="custom-checkbox"></span>
+            Zachodniopomorskie
+          </label>
+        </article>
+      </article>
+      <article class="filters-group-buttons">
+        <button class="remove-filters-buttons">Usuń filtry</button>
+        <button class="apply-filters-buttons">Zastosuj filtry</button>
+      </article>
+    </article>
+        </section>
+</section>
+
+</html>
