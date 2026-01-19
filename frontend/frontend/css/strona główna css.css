@@ -380,7 +380,6 @@ footer{
 
 
 
-/* Hero Section */
 .hero-section {
   height: 400px;
   background-size: cover;
@@ -536,6 +535,160 @@ footer{
 .page-btn.active {
   background: #ea7327;
   border-color: #ea7327;
+}
+
+/* ===== WSPÓLNY MODAL LOGOWANIA ===== */
+
+.login-group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.login-modal {
+  display: none;
+  position: absolute;
+  top: 120%;
+  right: 0;
+  z-index: 9999;
+}
+
+#userLoginToggle:checked ~ .login-modal,
+#orgLoginToggle:checked ~ .login-modal {
+  display: block;
+}
+
+.login-box {
+  background-color: #22252a;
+  border: 2px solid #ea7327;
+  border-radius: 10px;
+  padding: 20px;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.login-box h2 {
+  color: white;
+  text-align: center;
+  margin: 0 0 10px;
+}
+
+.login-box input {
+  padding: 10px;
+  background-color: #1a1c20;
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: white;
+}
+
+.login-box input:invalid {
+  border-color: #ff4d4d;
+}
+
+.login-box input:valid {
+  border-color: #32cd32;
+}
+
+.btn-submit {
+  background-color: #ea7327;
+  border: none;
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-cancel {
+  text-align: center;
+  color: #ccc;
+  cursor: pointer;
+}
+
+
+
+.calendar-group {
+  position: relative;
+}
+
+.calendar-modal {
+  display: none;
+  position: absolute;
+  top: 120%;
+  left: 0;
+  background-color: #22252a;
+  border: 2px solid #ea7327;
+  border-radius: 10px;
+  padding: 20px;
+  min-width: 260px;
+  color: white;
+  z-index: 9999;
+}
+
+#calendarToggle:checked ~ .calendar-modal {
+  display: block;
+}
+
+.calendar-modal h3 {
+  margin-top: 0;
+  color: #ea7327;
+}
+
+.calendar-close {
+  display: inline-block;
+  margin-top: 15px;
+  cursor: pointer;
+  color: #ea7327;
+  font-weight: bold;
+}
+
+.calendar-title {
+  color: #ea7327;
+  text-align: center;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+}
+
+.calendar-events {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.calendar-event {
+  display: flex;
+  gap: 15px;
+  padding: 10px;
+  background-color: #22252a;
+  border-radius: 6px;
+  border-left: 4px solid #ea7327;
+}
+
+.calendar-date {
+  min-width: 85px;
+  font-weight: bold;
+  color: #ea7327;
+}
+
+.calendar-event strong {
+  font-size: 14px;
+  display: block;
+}
+
+.calendar-event p {
+  margin: 0;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.calendar-close {
+  display: block;
+  text-align: center;
+  margin-top: 15px;
+  cursor: pointer;
+  color: #ea7327;
 }
 
 

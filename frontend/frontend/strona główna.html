@@ -16,10 +16,66 @@
 <header>
   <section class="container">
      <img class="logo" src="img/nowy.png">
-     <article class="calendar-icon-button">
-       <a class="button-calendar" href="KOD">Kalendarz</a>
-       <img class="icon-calendar" src="img/img_3.png">
-     </article>
+     <article class="calendar-icon-button calendar-group">
+
+  <input type="checkbox" id="calendarToggle" hidden>
+
+  <label for="calendarToggle" class="button-calendar">Kalendarz</label>
+  <img class="icon-calendar" src="img/img_3.png">
+
+  <section class="calendar-modal">
+    <h3 class="calendar-title">Kalendarz wydarzeń 2026</h3>
+
+<section class="calendar-events">
+
+  <article class="calendar-event">
+    <span class="calendar-date">15.05.2026</span>
+    <div>
+      <strong>Hot Lap Tor Poznań</strong>
+      <p>Time Attack • Tor Poznań</p>
+    </div>
+  </article>
+
+  <article class="calendar-event">
+    <span class="calendar-date">02.06.2026</span>
+    <div>
+      <strong>Drift Silesia Open</strong>
+      <p>Drift • Silesia Ring</p>
+    </div>
+  </article>
+
+  <article class="calendar-event">
+    <span class="calendar-date">18.06.2026</span>
+    <div>
+      <strong>Track Day Tor Poznań</strong>
+      <p>Track Day • Tor Poznań</p>
+    </div>
+  </article>
+
+  <article class="calendar-event">
+    <span class="calendar-date">10.07.2026</span>
+    <div>
+      <strong>Time Attack Tor Jastrząb</strong>
+      <p>Time Attack • Tor Jastrząb</p>
+    </div>
+  </article>
+
+  <article class="calendar-event">
+    <span class="calendar-date">25.07.2026</span>
+    <div>
+      <strong>Letni Zlot Motoryzacyjny</strong>
+      <p>Zlot • Poznań</p>
+    </div>
+  </article>
+
+</section>
+    <label for="calendarToggle" class="calendar-close">
+      Zamknij
+    </label>
+  </section>
+
+</article>
+
     <form class="search-group anchor" method="post">
         <input class="input-in-header" type="text" placeholder="Nazwa, Tor, Organizator..." name="search">
       <button class="button-filter" popovertarget="popover" type="button">Filter</button>
@@ -142,16 +198,81 @@
     </section>
     </form>
     <section class="user-actions">
-      <article class="login-group login">
-        <a class="button-login" href="KOD">Logowanie</a>
-        <img class="icon-button-login" src="img/img.png">
-      </article>
-      <article class="login-group organizer">
-        <a class="button-organizer-account" href="KOD">Konto organizatora</a>
-        <img class="icon-button-organizer-account" src="img/img_2.png">
-      </article>
+
+  <!-- ===== LOGOWANIE USER ===== -->
+  <article class="login-group">
+
+    <input type="checkbox" id="userLoginToggle" hidden>
+
+    <label for="userLoginToggle" class="button-login">Logowanie</label>
+    <img class="icon-button-login" src="img/img.png">
+
+    <section class="login-modal">
+      <form class="login-box">
+        <h2>Logowanie</h2>
+
+        <input
+          type="text"
+          placeholder="Login"
+          required
+          pattern="pjatk"
+          title="Login: pjatk">
+
+        <input
+          type="password"
+          placeholder="Hasło"
+          required
+          pattern="1234"
+          title="Hasło: 1234">
+
+        <button type="submit" class="btn-submit">Zaloguj</button>
+
+        <label for="userLoginToggle" class="btn-cancel">Anuluj</label>
+      </form>
     </section>
-  </section>
+
+  </article>
+
+  <!-- ===== LOGOWANIE ORGANIZATOR ===== -->
+  <article class="login-group">
+
+    <input type="checkbox" id="orgLoginToggle" hidden>
+
+    <label for="orgLoginToggle" class="button-organizer-account">
+      Konto organizatora
+    </label>
+    <img class="icon-button-organizer-account" src="img/img_2.png">
+
+    <section class="login-modal">
+      <form class="login-box" action="panel-organizatora.html">
+
+        <h2>Organizator</h2>
+
+        <input
+          type="text"
+          placeholder="Login"
+          required
+          pattern="organizator"
+          title="Login: organizator">
+
+        <input
+          type="password"
+          placeholder="Hasło"
+          required
+          pattern="1234"
+          title="Hasło: 1234">
+
+        <button type="submit" class="btn-submit">
+          Zaloguj
+        </button>
+
+        <label for="orgLoginToggle" class="btn-cancel">Anuluj</label>
+      </form>
+    </section>
+
+  </article>
+</section>
+
 </header>
 
 <main>
@@ -197,6 +318,7 @@
           <p class="event-organizer"><strong>Organizator:</strong> Automobilklub Wielkopolski</p>
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
+        
       </article>
 
       <article class="event-card">
@@ -212,6 +334,59 @@
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
       </article>
+      <article class="event-card">
+  <article class="event-image">
+    <img src="img/drift.jpg" alt="Drift Silesia Ring">
+    <span class="category-tag">Drift</span>
+  </article>
+  <article class="event-info">
+    <span class="event-date">02.06.2026</span>
+    <h3>Drift Silesia Open</h3>
+    <p class="event-location"><strong>Lokalizacja:</strong> Silesia Ring, Opolskie</p>
+    <p class="event-organizer"><strong>Organizator:</strong> Drift Silesia</p>
+    <button class="details-button">Wyświetl szczegóły</button>
+  </article>
+</article>
+<article class="event-card">
+  <article class="event-image">
+    <img src="img/track.jpg" alt="Track Day Poznań">
+    <span class="category-tag">Track Day</span>
+  </article>
+  <article class="event-info">
+    <span class="event-date">18.06.2026</span>
+    <h3>Track Day Tor Poznań</h3>
+    <p class="event-location"><strong>Lokalizacja:</strong> Tor Poznań, Wielkopolskie</p>
+    <p class="event-organizer"><strong>Organizator:</strong> RacePortal</p>
+    <button class="details-button">Wyświetl szczegóły</button>
+  </article>
+</article>
+<article class="event-card">
+  <article class="event-image">
+    <img src="img/time.jpg" alt="Time Attack Jastrząb">
+    <span class="category-tag">Time Attack</span>
+  </article>
+  <article class="event-info">
+    <span class="event-date">10.07.2026</span>
+    <h3>Time Attack Tor Jastrząb</h3>
+    <p class="event-location"><strong>Lokalizacja:</strong> Tor Jastrząb, Mazowieckie</p>
+    <p class="event-organizer"><strong>Organizator:</strong> Time Attack Polska</p>
+    <button class="details-button">Wyświetl szczegóły</button>
+  </article>
+</article>
+<article class="event-card">
+  <article class="event-image">
+    <img src="img/zlot.jpg" alt="Zlot Motoryzacyjny">
+    <span class="category-tag">Zlot</span>
+  </article>
+  <article class="event-info">
+    <span class="event-date">25.07.2026</span>
+    <h3>Letni Zlot Motoryzacyjny</h3>
+    <p class="event-location"><strong>Lokalizacja:</strong> Poznań</p>
+    <p class="event-organizer"><strong>Organizator:</strong> RacePortal</p>
+    <button class="details-button">Wyświetl szczegóły</button>
+  </article>
+</article>
+
     </section>
 
     <article class="pagination">
@@ -254,7 +429,9 @@
     </section>
     <article class="contact-footer">
       <h3 class="contact-link">Kontakt</h3>
-      <a class="our-mail-link" href="KOD"> NASZ GMAIL </a>
+      <a class="our-mail-link" href="mailto:raceportal@gmail.com">
+     raceportal@gmail.com
+     </a>
       <h3 class="newsletter-text" href="KOD">Newsletter</h3>
       <input class="input-footer" type="text" placeholder="Twój adres email">
     </article>
