@@ -226,7 +226,10 @@
           title="Hasło: 1234">
 
         <button type="submit" class="btn-submit">Zaloguj</button>
-
+<div class="login-links">
+  <a href="#" class="login-link">Załóż konto</a>
+  <a href="#" class="login-link">Zapomniałem(-am) hasła</a>
+</div>
         <label for="userLoginToggle" class="btn-cancel">Anuluj</label>
       </form>
     </section>
@@ -240,6 +243,7 @@
 
     <label for="orgLoginToggle" class="button-organizer-account">
       Konto organizatora
+      
     </label>
     <img class="icon-button-organizer-account" src="img/img_2.png">
 
@@ -265,7 +269,10 @@
         <button type="submit" class="btn-submit">
           Zaloguj
         </button>
-
+<div class="login-links">
+  <a href="#" class="login-link">Załóż konto</a>
+  <a href="#" class="login-link">Zapomniałem(-am) hasła</a>
+</div>
         <label for="orgLoginToggle" class="btn-cancel">Anuluj</label>
       </form>
     </section>
@@ -438,6 +445,57 @@
   </section>
 
 </footer>
+<script>
+  document.addEventListener("click", function (e) {
+    const calendar = document.querySelector(".calendar-group");
+    const userLogin = document.getElementById("userLoginToggle");
+    const orgLogin = document.getElementById("orgLoginToggle");
+    const calendarToggle = document.getElementById("calendarToggle");
+
+    // KALENDARZ
+    if (calendarToggle.checked && !calendar.contains(e.target)) {
+      calendarToggle.checked = false;
+    }
+
+    // LOGOWANIE USER
+    const userBox = document.querySelectorAll(".login-group")[0];
+    if (userLogin.checked && !userBox.contains(e.target)) {
+      userLogin.checked = false;
+    }
+
+    // LOGOWANIE ORGANIZATOR
+    const orgBox = document.querySelectorAll(".login-group")[1];
+    if (orgLogin.checked && !orgBox.contains(e.target)) {
+      orgLogin.checked = false;
+    }
+  });
+</script>
+<script>
+  const userLoginToggle = document.getElementById("userLoginToggle");
+  const orgLoginToggle = document.getElementById("orgLoginToggle");
+  const calendarToggle = document.getElementById("calendarToggle");
+
+  userLoginToggle.addEventListener("change", () => {
+    if (userLoginToggle.checked) {
+      orgLoginToggle.checked = false;
+      calendarToggle.checked = false;
+    }
+  });
+
+  orgLoginToggle.addEventListener("change", () => {
+    if (orgLoginToggle.checked) {
+      userLoginToggle.checked = false;
+      calendarToggle.checked = false;
+    }
+  });
+
+  calendarToggle.addEventListener("change", () => {
+    if (calendarToggle.checked) {
+      userLoginToggle.checked = false;
+      orgLoginToggle.checked = false;
+    }
+  });
+</script>
 
 </body>
 </html>

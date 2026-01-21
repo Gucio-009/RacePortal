@@ -1,5 +1,4 @@
 header {
-  /*margin: 10px;*/
   position: sticky;
   top: 0;
   z-index: 1;
@@ -689,6 +688,33 @@ footer{
   margin-top: 15px;
   cursor: pointer;
   color: #ea7327;
+}
+.button-calendar,
+.button-login,
+.button-organizer-account,
+.calendar-close,
+.btn-cancel {
+  cursor: pointer;
+}
+
+.icon-calendar,
+.icon-button-login,
+.icon-button-organizer-account {
+  cursor: pointer;
+}
+.login-links {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.login-link {
+  color: #ea7327;
+  text-decoration: none;
+}
+
+.login-link:hover {
+  text-decoration: underline;
 }
 
 
