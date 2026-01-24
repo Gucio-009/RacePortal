@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>RacePortal</title>
-  <link rel="stylesheet" href="css/strona%20główna%20css.css">
+  <title>ZalogowanyUżytkownik</title>
+  <link rel="stylesheet" href="css/ZalogowanyUżytkownik.css">
   <meta name="description" content="">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,66 +16,10 @@
 <header>
   <section class="container">
     <img class="logo" src="img/nowy.png">
-    <article class="calendar-icon-button calendar-group">
-
-      <input type="checkbox" id="calendarToggle" hidden>
-
-      <label for="calendarToggle" class="button-calendar">Kalendarz</label>
+    <article class="calendar-icon-button">
+      <a class="button-calendar" href="KOD">Kalendarz</a>
       <img class="icon-calendar" src="img/img_3.png">
-
-      <section class="calendar-modal">
-        <h3 class="calendar-title">Kalendarz wydarzeń 2026</h3>
-
-        <section class="calendar-events">
-
-          <article class="calendar-event">
-            <span class="calendar-date">15.05.2026</span>
-            <div>
-              <strong>Hot Lap Tor Poznań</strong>
-              <p>Time Attack • Tor Poznań</p>
-            </div>
-          </article>
-
-          <article class="calendar-event">
-            <span class="calendar-date">02.06.2026</span>
-            <div>
-              <strong>Drift Silesia Open</strong>
-              <p>Drift • Silesia Ring</p>
-            </div>
-          </article>
-
-          <article class="calendar-event">
-            <span class="calendar-date">18.06.2026</span>
-            <div>
-              <strong>Track Day Tor Poznań</strong>
-              <p>Track Day • Tor Poznań</p>
-            </div>
-          </article>
-
-          <article class="calendar-event">
-            <span class="calendar-date">10.07.2026</span>
-            <div>
-              <strong>Time Attack Tor Jastrząb</strong>
-              <p>Time Attack • Tor Jastrząb</p>
-            </div>
-          </article>
-
-          <article class="calendar-event">
-            <span class="calendar-date">25.07.2026</span>
-            <div>
-              <strong>Letni Zlot Motoryzacyjny</strong>
-              <p>Zlot • Poznań</p>
-            </div>
-          </article>
-
-        </section>
-        <label for="calendarToggle" class="calendar-close">
-          Zamknij
-        </label>
-      </section>
-
     </article>
-
     <form class="search-group anchor" method="post">
       <input class="input-in-header" type="text" placeholder="Nazwa, Tor, Organizator..." name="search">
       <button class="button-filter" popovertarget="popover" type="button">Filter</button>
@@ -84,7 +28,7 @@
         <article class="filter-group">
           <h4>Kategoria Zawodów</h4>
           <article class="toggle-switch-group">
-            <input type="checkbox" id="drifty-toggle" class="toggle-checkbox" value="drifty">
+            <input type="checkbox" id="drifty-toggle" class="toggle-checkbox" value="drifty" >
             <label for="drifty-toggle" class="toggle-label">
               <span class="toggle-slider"></span>
               <span class="toggle-text">Drifty</span>
@@ -197,88 +141,18 @@
         </article>
       </section>
     </form>
+
     <section class="user-actions">
-
-      <!-- ===== LOGOWANIE USER ===== -->
-      <article class="login-group">
-
-        <input type="checkbox" id="userLoginToggle" hidden>
-
-        <label for="userLoginToggle" class="button-login">Logowanie</label>
-        <img class="icon-button-login" src="img/img.png">
-
-        <section class="login-modal">
-          <form class="login-box">
-            <h2>Logowanie</h2>
-
-            <input
-              type="text"
-              placeholder="Login"
-              required
-              pattern="pjatk"
-              title="Login: pjatk">
-
-            <input
-              type="password"
-              placeholder="Hasło"
-              required
-              pattern="1234"
-              title="Hasło: 1234">
-
-            <a type="submit" class="btn-submit" href="zalogowany%20użytkownik.html">Zaloguj</a>
-            <div class="login-links">
-              <a href="#" class="login-link">Załóż konto</a>
-              <a href="#" class="login-link">Zapomniałem(-am) hasła</a>
-            </div>
-            <label for="userLoginToggle" class="btn-cancel">Anuluj</label>
-          </form>
-        </section>
-
+      <article class="login-group login">
+        <img class="icon-button-login" src="img/moderator-512.png">
+        <span class="user-name-text">Cześć pjatk</span>
       </article>
 
-      <!-- ===== LOGOWANIE ORGANIZATOR ===== -->
-      <article class="login-group">
-
-        <input type="checkbox" id="orgLoginToggle" hidden>
-
-        <label for="orgLoginToggle" class="button-organizer-account">
-          Konto organizatora
-
-        </label>
-        <img class="icon-button-organizer-account" src="img/img_2.png">
-
-        <section class="login-modal">
-          <form class="login-box" action="panel-organizatora.html">
-
-            <h2>Organizator</h2>
-
-            <input
-              type="text"
-              placeholder="Login"
-              required
-              pattern="organizator"
-              title="Login: organizator">
-
-            <input
-              type="password"
-              placeholder="Hasło"
-              required
-              pattern="1234"
-              title="Hasło: 1234">
-
-            <button type="submit" class="btn-submit">
-              Zaloguj
-            </button>
-            <div class="login-links">
-              <a href="#" class="login-link">Załóż konto</a>
-              <a href="#" class="login-link">Zapomniałem(-am) hasła</a>
-            </div>
-            <label for="orgLoginToggle" class="btn-cancel">Anuluj</label>
-          </form>
-        </section>
-
+      <article class="login-group organizer">
+        <a class="button-organizer-account" href="raceportal-moj-profil.html" target="_blank">Mój profil</a>
       </article>
     </section>
+
   </section>
 </header>
 
@@ -312,9 +186,10 @@
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
       </article>
+
       <article class="event-card">
         <article class="event-image">
-          <img src="img/drift.jpg" alt="Drift Silesia Ring">
+          <img src="img/drift.jpg" alt="Tor Poznań">
           <span class="category-tag">Drift</span>
         </article>
         <article class="event-info">
@@ -325,9 +200,10 @@
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
       </article>
+
       <article class="event-card">
         <article class="event-image">
-          <img src="img/track.jpg" alt="Track Day Poznań">
+          <img src="img/track.jpg" alt="Tor Poznań">
           <span class="category-tag">Track Day</span>
         </article>
         <article class="event-info">
@@ -338,9 +214,10 @@
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
       </article>
+
       <article class="event-card">
         <article class="event-image">
-          <img src="img/time.jpg" alt="Time Attack Jastrząb">
+          <img src="img/time.jpg" alt="Tor Poznań">
           <span class="category-tag">Time Attack</span>
         </article>
         <article class="event-info">
@@ -351,9 +228,10 @@
           <button class="details-button">Wyświetl szczegóły</button>
         </article>
       </article>
+
       <article class="event-card">
         <article class="event-image">
-          <img src="img/zlot.jpg" alt="Zlot Motoryzacyjny">
+          <img src="img/zlot.jpg" alt="Tor Poznań">
           <span class="category-tag">Zlot</span>
         </article>
         <article class="event-info">
@@ -407,66 +285,13 @@
     </section>
     <article class="contact-footer">
       <h3 class="contact-link">Kontakt</h3>
-      <a class="our-mail-link" href="mailto:raceportal@gmail.com">
-        raceportal@gmail.com
-      </a>
+      <a class="our-mail-link" href="KOD"> NASZ GMAIL </a>
       <h3 class="newsletter-text" href="KOD">Newsletter</h3>
       <input class="input-footer" type="text" placeholder="Twój adres email">
     </article>
   </section>
 
 </footer>
-<script>
-  document.addEventListener("click", function (e) {
-    const calendar = document.querySelector(".calendar-group");
-    const userLogin = document.getElementById("userLoginToggle");
-    const orgLogin = document.getElementById("orgLoginToggle");
-    const calendarToggle = document.getElementById("calendarToggle");
-
-    // KALENDARZ
-    if (calendarToggle.checked && !calendar.contains(e.target)) {
-      calendarToggle.checked = false;
-    }
-
-    // LOGOWANIE USER
-    const userBox = document.querySelectorAll(".login-group")[0];
-    if (userLogin.checked && !userBox.contains(e.target)) {
-      userLogin.checked = false;
-    }
-
-    // LOGOWANIE ORGANIZATOR
-    const orgBox = document.querySelectorAll(".login-group")[1];
-    if (orgLogin.checked && !orgBox.contains(e.target)) {
-      orgLogin.checked = false;
-    }
-  });
-</script>
-<script>
-  const userLoginToggle = document.getElementById("userLoginToggle");
-  const orgLoginToggle = document.getElementById("orgLoginToggle");
-  const calendarToggle = document.getElementById("calendarToggle");
-
-  userLoginToggle.addEventListener("change", () => {
-    if (userLoginToggle.checked) {
-      orgLoginToggle.checked = false;
-      calendarToggle.checked = false;
-    }
-  });
-
-  orgLoginToggle.addEventListener("change", () => {
-    if (orgLoginToggle.checked) {
-      userLoginToggle.checked = false;
-      calendarToggle.checked = false;
-    }
-  });
-
-  calendarToggle.addEventListener("change", () => {
-    if (calendarToggle.checked) {
-      userLoginToggle.checked = false;
-      orgLoginToggle.checked = false;
-    }
-  });
-</script>
 
 </body>
 </html>

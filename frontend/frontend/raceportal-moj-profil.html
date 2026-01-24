@@ -1,0 +1,195 @@
+<!doctype html>
+<html class="no-js" lang="pl">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RacePortal - Nawigacja i Stopka</title>
+  <link rel="stylesheet" href="css/mójProfil.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<header>
+  <section class="container">
+    <img class="logo" src="img/nowy.png">
+
+    <article class="calendar-icon-button">
+      <a class="button-calendar" href="KOD">Kalendarz</a>
+      <img class="icon-calendar" src="img/img_3.png">
+    </article>
+
+    <form class="search-group anchor" method="post">
+      <input class="input-in-header" type="text" placeholder="Nazwa, Tor, Organizator..." name="search">
+      <button class="button-filter" popovertarget="popover" type="button">Filter</button>
+
+      <section popover id="popover" class="popover">
+        <h3 class="filter-text">Filtrowanie</h3>
+        <article class="filter-group">
+          <h4>Kategoria Zawodów</h4>
+          <article class="toggle-switch-group">
+            <input type="checkbox" id="drifty-toggle" class="toggle-checkbox" value="drifty">
+            <label for="drifty-toggle" class="toggle-label">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Drifty</span>
+            </label>
+          </article>
+          <article class="toggle-switch-group">
+            <input type="checkbox" id="timeattack-toggle" class="toggle-checkbox" value="time_attack">
+            <label for="timeattack-toggle" class="toggle-label">
+              <span class="toggle-slider"></span>
+              <span class="toggle-text">Time Attack</span>
+            </label>
+          </article>
+          <hr class="separator">
+          <article class="filter-group">
+            <h4>Lokalizacja (Tor)</h4>
+            <label>
+              <input class="input-in-filtr" type="text" placeholder="Nazwa toru...">
+            </label>
+          </article>
+
+          <article class="filter-group">
+            <h4>Województwo</h4>
+            <article class="all-voivodeship">
+              <label><input type="checkbox" value="Mazowieckie" name="Mazowieckie"><span class="custom-checkbox"></span>Mazowieckie</label>
+              <label><input type="checkbox" value="Wielkopolskie" name="Wielkopolskie"><span class="custom-checkbox"></span>Wielkopolskie</label>
+            </article>
+          </article>
+
+          <article class="filters-group-buttons">
+            <button class="remove-filters-buttons" type="reset">Usuń filtry</button>
+            <button class="apply-filters-buttons" type="submit">Zastosuj filtry</button>
+          </article>
+        </article>
+      </section>
+    </form>
+
+    <section class="user-actions">
+      <article class="login-group login">
+        <img class="icon-button-login" src="img/moderator-512.png">
+        <span class="user-name-text">Cześć pjatk</span>
+      </article>
+
+      <article class="login-group organizer">
+        <a class="button-organizer-account" href="raceportal-moj-profil.html" target="_blank">Mój profil</a>
+      </article>
+    </section>
+  </section>
+</header>
+
+
+
+
+<main class="profile-main">
+  <section class="profile-container">
+
+    <article class="profile-card">
+      <h3>MOJE DANE</h3>
+      <div class="user-info">
+        <p><strong>Imię:</strong> pjatk</p>
+        <p><strong>Nazwisko:</strong> gdańsk</p>
+        <p><strong>Email:</strong> pjatkgdańsk@gmail.com</p>
+<!--        <p><strong>Organizator:</strong> Brak</p>-->
+        <p><strong>Data rejestracji:</strong> 15.01.2025</p>
+      </div>
+      <div class="card-buttons">
+        <button class="btn-outline">Edytuj dane</button>
+        <button class="btn-outline">Zmień hasło</button>
+      </div>
+    </article>
+
+    <article class="profile-card">
+      <h3>ZAPISANE WYDARZENIA</h3>
+      <div class="events-list">
+
+        <div class="event-item">
+          <img src="img/time.jpg" alt="Event">
+          <div class="event-details">
+            <span class="event-date">20.02.2026</span>
+            <strong>Time Attack Tor Kielce</strong>
+            <p>Tor Kielce</p>
+          </div>
+          <button class="btn-delete">Usuń</button>
+        </div>
+
+        <div class="event-item">
+          <img src="img/drift.jpg" alt="Event">
+          <div class="event-details">
+            <span class="event-date">20.03.2026</span>
+            <strong>Drift Silesia Open</strong>
+            <p>Silesia Ring</p>
+          </div>
+          <button class="btn-delete">Usuń</button>
+        </div>
+
+      </div>
+    </article>
+
+    <article class="profile-card">
+      <h3>HISTORIA PŁATNOŚCI</h3>
+      <table class="payments-table">
+        <thead>
+        <tr>
+          <th>Data</th>
+          <th>Wydarzenie</th>
+          <th>Status</th>
+          <th>Kwota</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+          <td>16.01.2026</td>
+          <td>Hot Lap Poznań</td>
+          <td class="status-paid">Opłacone</td>
+          <td>120 PLN</td>
+        </tr>
+        </tbody>
+      </table>
+    </article>
+
+  </section>
+</main>
+
+
+
+
+
+<footer>
+  <section class="footer-content-wrapper">
+    <article class="raceportal-footer">
+      <img class="logo-in-footer" src="img/nowy.png">
+      <p class="text-in-footer">RacePortal to centralizacja, aktualizacja i udostępnienie w jednym, łatwo dostępnym miejscu kompleksowej wiedzy o polskim motor sporcie.</p>
+      <a href="KOD"><img class="facebook-icon" src="img/facebook-512.png"></a>
+      <a href="KOD"><img class="instagram-icon" src="img/instagram-6-512.png"></a>
+      <a href="KOD"><img class="twetter-icon" src="img/twitter-x-512.png"></a>
+    </article>
+
+    <article class="quick-links-footer">
+      <h3 class="quick-links-link">Szybkie linki</h3>
+      <a class="home-page-link" href="KOD">Strona główna</a>
+      <a class="event-catalog-link" href="KOD">Katalog wydarzeń</a>
+      <a class="organizer-panel-link" href="KOD">Panel organizatora</a>
+    </article>
+
+    <section class="information-footer">
+      <article class="info-link">Informacje</article>
+      <a class="about-us-link" href="KOD">O nas</a>
+      <a class="rules-link" href="KOD">Regulamin</a>
+      <a class="privacy-policy-link" href="KOD">Polityka prywatności</a>
+    </section>
+
+    <article class="contact-footer">
+      <h3 class="contact-link">Kontakt</h3>
+      <a class="our-mail-link" href="KOD"> NASZ GMAIL </a>
+      <h3 class="newsletter-text">Newsletter</h3>
+      <input class="input-footer" type="text" placeholder="Twój adres email">
+    </article>
+  </section>
+</footer>
+
+</body>
+</html>

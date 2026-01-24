@@ -1,4 +1,4 @@
-header{
+header {
   position: sticky;
   top: 0;
   z-index: 1;
@@ -12,7 +12,7 @@ header{
     justify-content: space-between;
     padding: 10px;
     align-items: center;
-}
+  }
 
   .logo{
     height: 80px;
@@ -20,7 +20,7 @@ header{
     margin-left: 15px;
   }
 
- .button-calendar{
+  .button-calendar{
     text-decoration: none;
     color: white;
     border: 2px solid #ea7327;
@@ -255,17 +255,99 @@ header{
   border-radius: 6px;
 }
 
-.user-actions{
+
+
+/* Znajdź to w swoim pliku i podmień */
+.login {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 8px; /* Odstęp między ikoną a tekstem */
+  padding: 7px;
 }
+
+.user-name-text {
+  color: #ffffff !important;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0; /* Usuwamy domyślne marginesy */
+  white-space: nowrap; /* Żeby tekst nie uciekł do nowej linii */
+  line-height: normal;
+}
+
+/* Wewnątrz bloku header { ... } lub jako osobna reguła */
+header .button-organizer-account {
+  background-color: transparent;
+  text-decoration: none;
+  color: white;
+  border: 2px solid #ea7327;
+  padding: 7px 15px; /* Dodałem nieco więcej paddingu po bokach dla lepszego wyglądu */
+  border-radius: 6px;
+  font-weight: 600;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+header .button-organizer-account:hover {
+  background-color: #ea7327;
+  color: white;
+}
+
+
+/* Styl dla tekstu - wymuszamy standardowy kursor */
+.user-name-text {
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  margin-left: 5px;
+  cursor: default; /* Kursor pozostaje strzałką */
+}
+
+/* Styl dla ikony - wymuszamy standardowy kursor */
+.icon-button-login {
+  height: 27px;
+  width: 27px;
+  cursor: default; /* Kursor pozostaje strzałką */
+}
+
+/* Oryginalny układ grup i odstępy */
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Odstęp między grupami z Twojego oryginału */
+}
+
 .login-group {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 7px;
+  gap: 5px; /* Odstęp między ikoną a tekstem */
 }
+
+/* Przycisk profilu - tutaj kursor pozostanie łapką (wygoda użytkownika) */
+.button-organizer-account {
+  background-color: transparent;
+  text-decoration: none;
+  color: white;
+  border: 2px solid #ea7327;
+  margin-right: 25px;
+  margin-left: 25px;
+  border-radius: 6px;
+  font-family: "Montserrat", sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.button-organizer-account:hover {
+  background-color: #ea7327;
+}
+
+
+
+
+
+
+
+
+
 
 /*do tąd jest css od header*/
 
@@ -536,14 +618,7 @@ footer{
   border-color: #ea7327;
 }
 
-/* ===== WSPÓLNY MODAL LOGOWANIA ===== */
 
-.login-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
 
 .login-modal {
   display: none;
@@ -719,3 +794,142 @@ footer{
 
 
 
+.profile-main {
+  padding: 50px 20px;
+  min-height: 70vh;
+  background-color: #1a1c20; /* Ciemne tło główne */
+}
+
+.profile-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 25px;
+  max-width: 1200px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+}
+
+.profile-card {
+  background-color: #2d3035;
+  border-bottom: 4px solid #ea7327; /* Pomarańczowa linia na dole */
+  border-radius: 10px;
+  padding: 25px;
+  flex: 1;
+  min-width: 320px;
+  color: white;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.profile-card h3 {
+  color: #ea7327;
+  font-size: 18px;
+  margin-bottom: 20px;
+  font-weight: 700;
+}
+
+/* Style dla danych użytkownika */
+.user-info p {
+  margin: 10px 0;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.user-info strong {
+  color: white;
+  margin-right: 5px;
+}
+
+.card-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #ea7327;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.btn-outline:hover {
+  background: #ea7327;
+}
+
+/* Style dla listy wydarzeń */
+.event-item {
+  display: flex;
+  align-items: center;
+  background: #22252a;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  gap: 10px;
+}
+
+.event-item img {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.event-details {
+  flex: 1;
+}
+
+.event-date {
+  font-size: 11px;
+  color: #ea7327;
+  display: block;
+}
+
+.event-details strong {
+  font-size: 13px;
+  display: block;
+}
+
+.event-details p {
+  font-size: 11px;
+  color: #888;
+  margin: 0;
+}
+
+.btn-delete {
+  background: #ea7327;
+  border: none;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Style dla tabeli płatności */
+.payments-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.payments-table th {
+  text-align: left;
+  color: #888;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #444;
+}
+
+.payments-table td {
+  padding: 12px 0;
+  border-bottom: 1px solid #3a3e44;
+}
+
+.status-paid {
+  color: #4caf50; /* Zielony dla opłaconych */
+  font-weight: bold;
+}
