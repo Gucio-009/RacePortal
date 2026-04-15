@@ -18,23 +18,22 @@ RacePortal to aplikacja webowa, której celem jest zebranie w jednym miejscu akt
 - Integracja z Google Maps (pełna wizualizacja lokalizacji).
 - System zgłoszeń zawodników do organizatorów.
 - Profile zawodników i ich pojazdów.
-- Automatyczne scrapowanie danych z zewnętrznych źródeł.
 - Powiadomienia mailowe i webhooki.
 
 ---
 
 ## 🧱 Architektura systemu
 ```
-React (Frontend) → Spring Boot REST API → PostgreSQL
+React (Frontend) → Spring Boot REST API → MySQL
 ```
 
 ### Technologie
-- **Frontend:** React.js, TailwindCSS / SCSS
+- **Frontend:** React.js
 - **Backend:** Spring Boot (REST, Security, JWT)
-- **Baza danych:** PostgreSQL
+- **Baza danych:** MySQL
 - **Konteneryzacja:** Docker
 - **Integracje:** Google Maps, zewnętrzne linki do wydarzeń
-- **Narzędzia:** Maven, GitHub, Jira
+- **Narzędzia:**  GitHub, Discord, DyskGoogle
 
 ---
 
@@ -54,7 +53,6 @@ React (Frontend) → Spring Boot REST API → PostgreSQL
 ---
 
 ## 📦 Wymagania niefunkcjonalne
-- Codzienne backupy bazy.
 - Monitoring i alertowanie.
 - Pełna przenośność środowiska dzięki Dockerowi.
 - Responsywne UI (mobile-first).
@@ -63,6 +61,7 @@ React (Frontend) → Spring Boot REST API → PostgreSQL
 
 ## 🧩 Kategorie użytkowników
 - **Anonimowi** – przeglądanie wydarzeń.
+- **Kieerowcy** – Profil kierowcy i dodawanie do polubionych wydarzeń
 - **Organizatorzy** – dodawanie i edycja własnych eventów (po weryfikacji).
 - **Administratorzy** – zarządzanie całą treścią.
 
@@ -70,12 +69,12 @@ React (Frontend) → Spring Boot REST API → PostgreSQL
 
 ## 👥 Zespół projektowy
 **Kierownik projektu:**
-- Wojciech Wronisz
+- Michał Gutowski
 
 **Frontend:** Natalia Otrombke, Oliwier Kasprowicz
 **Backend:** Michał Gutowski, Miłosz Parkitny
-**Fullstack + Marketing:** Wojciech Wronisz
-**Opiekun projektu:** Marta Łabuda
+**Testing&Security:** Wojciech Wronisz
+**Opiekun projektu:** Marek Bednarczyk
 
 ---
 
@@ -87,7 +86,7 @@ Aby zapewnić porządek, czytelność i pełną kontrolę nad rozwojem projektu,
 - **develop** – główny branch rozwojowy; tu trafiają wszystkie PR z funkcjonalności po code review.
 - **feature/**
   - Każda funkcjonalność rozwijana jest w osobnym branchu.
-  - Nazewnictwo: `feature/nazwa-funkcji` (np. `feature/kalendarz-wydarzen`).
+  - Nazewnictwo: `feature/nazwa-funkcji-back/front` (np. `feature/landing-page-front`).
 - **fix/**
   - Branch do poprawek błędów.
   - Nazewnictwo: `fix/poprawka-opisu`, `fix/błąd-api`.
@@ -99,14 +98,13 @@ Aby zapewnić porządek, czytelność i pełną kontrolę nad rozwojem projektu,
 - PR **zawsze** z branchy `feature/*` → do `develop`.
 - PR do `main` wyłącznie przy oficjalnych release’ach lub hotfixach.
 - Każdy PR wymaga:
-  - opisu zmian,
-  - listy tasków JIRA (jeśli dotyczy),
-  - minimalnie 1 akceptacji code review.
+  - opisu zmian
+  
 
 ### 🧪 Testowanie i jakość
 - Frontend i backend muszą przechodzić testy lokalne przed PR.
 - Zakaz pushowania bezpośrednio na `main` i `develop`.
-- Każdy PR musi posiadać checklistę wykonania (lint, build, testy).
+- Każdy PR musi posiadać checklistę wykonania (testy).
 
 ### 📦 Release’y
 - Release tworzony jest z brancha `develop` → merge do `main`.
