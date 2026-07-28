@@ -11,14 +11,22 @@ RacePortal to aplikacja webowa, której celem jest zebranie w jednym miejscu akt
 - **Filtrowanie** po: kategorii, torze, województwie, słowach kluczowych.
 - **Szczegóły wydarzenia**: data, opis, lokalizacja, organizator, linki zewnętrzne.
 - **Panel administratora**: pełne CRUD dla eventów i moderacja treści.
-- **Konta organizatorów** z możliwością dodawania i edycji własnych wydarzeń.
+- **Konta organizatorów**: z możliwością dodawania i edycji własnych wydarzeń.
+- **Konta kierowców**: z możliwością zapisów na zawody i dodawanie auta do garażu
+- **Garaż aut**: możliwość posiadania skonfigurowane swoje pojazdy
+- **Powiadomienia mailowe**: potwierdzenia i informacje
+- **Archiwum wydarzeń**: dostęp do wydarzeń, które już się odbyły.
+- **System Zgłoszeń**: wysyłanie formularzy zgłoszeniowych przez kierowców na dane wydarzenie.
 - Ręczny/semi-automatyczny **import danych** przez formularze.
+- **Aplikacja mobilna**: wersja MVP będzie w pełni responsywna PWA/Mobile-first
+- **Integracja z Google Maps API - geokodowanie oraz wytyczanie trasy z lokalizacji użytkownika do miejsca wydarzenia.
 
 ### Funkcje planowane (poza MVP)
-- Integracja z Google Maps (pełna wizualizacja lokalizacji).
-- System zgłoszeń zawodników do organizatorów.
-- Profile zawodników i ich pojazdów.
-- Powiadomienia mailowe i webhooki.
+- Integracja z kalendarzami zewnętrznymi (Google Calendar, Apple Calendar).
+- Zaawansowany system powiadomień push w aplikacji.
+- Integracja z social media (automatyczny post na FB/Instagram po dodaniu eventu).
+- System pomiaru czasów live (Live Timing).
+
 
 ---
 
@@ -61,7 +69,7 @@ React (Frontend) → Spring Boot REST API → MySQL
 
 ## 🧩 Kategorie użytkowników
 - **Anonimowi** – przeglądanie wydarzeń.
-- **Kieerowcy** – Profil kierowcy i dodawanie do polubionych wydarzeń
+- **Kierowcy** – Profil kierowcy i dodawanie do polubionych wydarzeń
 - **Organizatorzy** – dodawanie i edycja własnych eventów (po weryfikacji).
 - **Administratorzy** – zarządzanie całą treścią.
 
