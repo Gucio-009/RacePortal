@@ -65,4 +65,20 @@ Szczegóły: [`mobile/README.md`](./mobile/README.md)
 
 ---
 
+## Testy automatyczne (praca dyplomowa)
+
+Dokumentacja: [`docs/TESTY.md`](./docs/TESTY.md)  
+Ostatnie wyniki: [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md)
+
+```bash
+docker compose up -d
+cd mobile && npx expo start --web --port 8082   # terminal 2 — pod E2E mobile
+
+npm --prefix backend test      # 20 testów API
+npm --prefix mobile test       # 2 testy unit mobile
+npx playwright test            # 29 testów E2E (web + mobile)
+```
+
+---
+
 Więcej o zakresie MVP: [`MVP.md`](./MVP.md)

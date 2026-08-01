@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-01
+**Ostatnia synchronizacja:** 2026-08-01 (testy automatyczne API/Web/Mobile)
 
 ---
 
@@ -148,6 +148,7 @@ Logowanie: http://127.0.0.1:8081/login
 | Średni | Alerty | Brak automatycznego alertowania przy błędach krytycznych |
 | Średni | Backup restore | Skrypt dump jest; restore nie jest udokumentowany / przetestowany formalnie |
 | Niski (odbiór formalnie 12–15) | #15 Aplikacja mobilna | Expo uproszczone OK; brak: PWA, publikacja w store, garaż/mapa/admin w mobile |
+| Niski | Perf / load | Brak formalnego testu 10k/50 RPS (osobny etap) |
 | Niski | Social OAuth | Przyciski Google/Facebook to UI demo, nie produkcyjny OAuth (i social jest **poza** MVP) |
 
 ---
@@ -169,6 +170,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Galeria z API (upcoming + archive) | Uzupełnienie UX poza ścisłą listą MPC |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
 | Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
+| Automatyczne testy (Vitest + Playwright) | Dokumentacja dyplomowa: `docs/TESTY.md` + wyniki |
 
 ---
 

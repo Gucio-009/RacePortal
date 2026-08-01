@@ -8,3 +8,6 @@ backend/node_modules
 backend/dist
 mobile/node_modules
 mobile/.expo
+test-results
+playwright-report
+blob-report
