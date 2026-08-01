@@ -1,0 +1,165 @@
+import { useEffect, useMemo, useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { Badge } from "../components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { api } from "../lib/api";
+import type { ApiEvent } from "../lib/types";
+import { DEFAULT_EVENT_IMAGE, eventImage } from "../lib/types";
+import { gallery as fallbackGallery } from "../data/events";
+
+interface GalleryItem {
+  id: string;
+  image: string;
+  title: string;
+  event: string;
+  date: string;
+  category: string;
+}
+
+export function GalleryPage() {
+  const [category, setCategory] = useState("all");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [items, setItems] = useState<GalleryItem[]>([]);
+
+  useEffect(() => {
+    const toItems = (events: ApiEvent[]): GalleryItem[] =>
+      events
+        .filter((e) => e.imageUrl)
+        .map((e) => ({
+          id: e.id,
+          image: eventImage(e),
+          title: e.track,
+          event: e.name,
+          date: new Date(e.date).getFullYear().toString(),
+          category: e.category,
+        }));
+
+    Promise.all([
+      api.get<{ items: ApiEvent[] }>("/api/events?limit=50"),
+      api.get<{ items: ApiEvent[] }>("/api/events?archive=1&limit=50"),
+    ])
+      .then(([upcoming, archived]) => {
+        const fromApi = [...toItems(upcoming.items), ...toItems(archived.items)];
+        const unique = Array.from(new Map(fromApi.map((i) => [i.id, i])).values());
+        if (unique.length > 0) {
+          setItems(unique);
+        } else {
+          setItems(
+            fallbackGallery.map((g) => ({
+              id: String(g.id),
+              image: g.image,
+              title: g.title,
+              event: g.event,
+              date: g.date,
+              category: g.category,
+            })),
+          );
+        }
+      })
+      .catch(() =>
+        setItems(
+          fallbackGallery.map((g) => ({
+            id: String(g.id),
+            image: g.image,
+            title: g.title,
+            event: g.event,
+            date: g.date,
+            category: g.category,
+          })),
+        ),
+      );
+  }, []);
+
+  const categories = useMemo(
+    () => ["all", ...Array.from(new Set(items.map((item) => item.category)))],
+    [items],
+  );
+
+  const filtered = items.filter((item) => category === "all" || item.category === category);
+  const selected = items.find((item) => item.id === selectedId) ?? null;
+
+  return (
+    <div className="min-h-screen">
+      <section
+        className="relative py-20 bg-cover bg-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('${DEFAULT_EVENT_IMAGE}')`,
+        }}
+      >
+        <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+          <div>
+            <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
+              GALERIA <span className="text-[#FFD700]">WYŚCIGÓW</span>
+            </h1>
+            <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
+              Najlepsze ujęcia z torów w całej Polsce.
+            </p>
+          </div>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger className="w-full md:w-56 bg-[#1a1a1a] border-[#2a2a2a] text-white h-12">
+              <SelectValue placeholder="Kategoria" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              {categories.map((cat) => (
+                <SelectItem key={cat} value={cat}>
+                  {cat === "all" ? "Wszystkie" : cat}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {filtered.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setSelectedId(item.id)}
+              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#2a2a2a] hover:border-[#FFD700] transition-all text-left"
+            >
+              <ImageWithFallback
+                src={item.image}
+                alt={item.title}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
+              <div className="absolute bottom-0 left-0 right-0 p-4">
+                <Badge className="bg-[#FFD700] text-[#121212] mb-2" style={{ fontWeight: 700 }}>
+                  {item.category}
+                </Badge>
+                <p className="text-white" style={{ fontWeight: 700 }}>
+                  {item.title}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <Dialog open={!!selected} onOpenChange={(open) => !open && setSelectedId(null)}>
+        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-3xl p-0 overflow-hidden">
+          {selected && (
+            <>
+              <div className="aspect-video w-full">
+                <ImageWithFallback src={selected.image} alt={selected.title} className="w-full h-full object-cover" />
+              </div>
+              <div className="p-6">
+                <DialogHeader>
+                  <DialogTitle className="font-['Orbitron'] text-white" style={{ fontSize: "24px", fontWeight: 800 }}>
+                    {selected.title}
+                  </DialogTitle>
+                </DialogHeader>
+                <p className="text-[#9ca3af] mt-2">
+                  {selected.event} · {selected.date}
+                </p>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

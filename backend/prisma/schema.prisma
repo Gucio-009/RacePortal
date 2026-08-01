@@ -1,0 +1,128 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ORGANIZER
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+  ARCHIVED
+}
+
+enum RegistrationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String
+  passwordHash String
+  role         Role     @default(USER)
+  avatar       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  cars           Car[]
+  events         Event[]         @relation("OrganizerEvents")
+  registrations  Registration[]
+  applications   OrganizerApplication[]
+
+  @@index([role])
+  @@index([email])
+}
+
+model Car {
+  id        String   @id @default(cuid())
+  userId    String
+  make      String
+  model     String
+  year      Int?
+  className String?
+  plate     String?
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@index([userId])
+}
+
+model Event {
+  id           String      @id @default(cuid())
+  name         String
+  description  String
+  category     String
+  date         DateTime
+  time         String
+  track        String
+  city         String
+  voivodeship  String
+  imageUrl     String?
+  lat          Float?
+  lng          Float?
+  status       EventStatus @default(PENDING)
+  organizerId  String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  organizer     User?           @relation("OrganizerEvents", fields: [organizerId], references: [id], onDelete: SetNull)
+  registrations Registration[]
+
+  @@index([status, date])
+  @@index([category])
+  @@index([city])
+  @@index([name])
+  @@index([organizerId])
+}
+
+model Registration {
+  id        String             @id @default(cuid())
+  userId    String
+  eventId   String
+  carId     String?
+  status    RegistrationStatus @default(PENDING)
+  note      String?
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  car   Car?  @relation(fields: [carId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, eventId])
+  @@index([eventId, status])
+  @@index([userId])
+}
+
+model OrganizerApplication {
+  id        String             @id @default(cuid())
+  userId    String
+  company   String
+  message   String
+  status    RegistrationStatus @default(PENDING)
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId])
+}
