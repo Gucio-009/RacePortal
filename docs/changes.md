@@ -250,4 +250,16 @@ Docker: serwis `web` buduje z `./web`. Root `package.json` trzyma tylko orkiestr
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-01 — reorganizacja katalogów monorepo + docs.*
+## 12. Menu konta: Moje konto / Ustawienia / Wyloguj (2026-08-01)
+
+W headerze po kliknięciu avatara / nazwy użytkownika:
+
+- **Moje konto** → `/dashboard` (profil, starty, garaż)  
+- **Ustawienia** → `/ustawienia` (powiadomienia, akcent Gold/Redline/Ice, tryb pit-stop, flair zespołu, confetti)  
+- **Wyloguj** → czyści JWT + toast + confetti  
+
+Preferencje ustawień w `localStorage` (`raceportal_settings`).
+
+---
+
+*Ostatnia aktualizacja: 2026-08-01 — menu konta + strona ustawień.*
