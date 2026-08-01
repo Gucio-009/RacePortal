@@ -60,12 +60,12 @@ Poza MVP mobile (później): garaż, mapa, panel admina/organizatora, push.
 | Zestaw | Narzędzie | Plik | Ostatni wynik |
 |--------|-----------|------|----------------|
 | Unit | Vitest | `mobile/tests/unit.client.test.ts` | **2 / 2 PASS** |
-| E2E (Expo web) | Playwright | `e2e/mobile.spec.ts` (root) | **5 / 5 PASS** (projekt `mobile-expo`) |
+| E2E (Expo web) | Playwright | `tests/e2e/mobile.spec.ts` | **5 / 5 PASS** (projekt `mobile-expo`) |
 
 ```bash
 # z katalogu głównego repo (API + Expo web muszą działać)
 npm --prefix mobile test
-npx playwright test e2e/mobile.spec.ts
+npx playwright test tests/e2e/mobile.spec.ts
 ```
 
-Pełna dokumentacja: [`docs/TESTY.md`](../docs/TESTY.md) · wyniki: [`docs/wyniki-testow/podsumowanie.md`](../docs/wyniki-testow/podsumowanie.md)
+Pełna dokumentacja: [`docs/testy/TESTY.md`](../docs/testy/TESTY.md) · wyniki: [`docs/testy/wyniki/podsumowanie.md`](../docs/testy/wyniki/podsumowanie.md)

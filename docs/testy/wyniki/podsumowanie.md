@@ -29,7 +29,7 @@
 | RBAC admin/organizer | TC-API-17 … 19 | PASS |
 | Maps route | TC-API-20 | PASS |
 
-Log: `docs/wyniki-testow/api-vitest.log`
+Log: `docs/testy/wyniki/api-vitest.log`
 
 ---
 
@@ -42,7 +42,7 @@ Log: `docs/wyniki-testow/api-vitest.log`
 | TC-MOB-U01 | Token w localStorage (web) | PASS |
 | TC-MOB-U02 | API_URL zawiera port 4000 | PASS |
 
-Log: `docs/wyniki-testow/mobile-unit.log`
+Log: `docs/testy/wyniki/mobile-unit.log`
 
 ---
 
@@ -70,10 +70,10 @@ Login screen, login+lista, złe hasło, szczegóły+ZAPISZ SIĘ, wylogowanie —
 
 Artefakty:
 
-- HTML: `docs/wyniki-testow/playwright-report/`
-- JSON: `docs/wyniki-testow/playwright-results.json`
-- JUnit: `docs/wyniki-testow/playwright-junit.xml`
-- Log: `docs/wyniki-testow/playwright.log`
+- HTML: `docs/testy/wyniki/playwright-report/`
+- JSON: `docs/testy/wyniki/playwright-results.json`
+- JUnit: `docs/testy/wyniki/playwright-junit.xml`
+- Log: `docs/testy/wyniki/playwright.log`
 
 ---
 
@@ -100,7 +100,7 @@ npm --prefix mobile test
 npx playwright test
 ```
 
-Pełna dokumentacja metodyki: [`docs/TESTY.md`](../TESTY.md)
+Pełna dokumentacja metodyki: [`docs/testy/TESTY.md`](../TESTY.md)
 
 Historia wprowadzenia testów: [`changes.md`](../../changes.md) §10 · status MVP: [`MVP.md`](../../MVP.md)
 

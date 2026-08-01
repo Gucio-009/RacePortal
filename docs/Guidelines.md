@@ -4,9 +4,10 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 
 ## Stack
 
-- Frontend: Vite + React + Tailwind + shadcn/ui, font Orbitron, accent `#FFD700`, dark UI
+- Frontend: `web/` — Vite + React + Tailwind + shadcn/ui, font Orbitron, accent `#FFD700`, dark UI
 - Backend: `backend/` — Express + Prisma + PostgreSQL + JWT + Zod
 - Mobile: `mobile/` — Expo 57 (login, events, rejestracja)
+- Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Docker Compose: `web`, `api`, `db`, `mailhog` (Mailpit), `backup`
 - Testy: Vitest (API + mobile unit), Playwright E2E (web + Expo web)
 - App lokalnie: http://127.0.0.1:8081/ (nie 8080)
@@ -15,14 +16,14 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 
 Przy każdej istotnej zmianie aktualizuj:
 
-1. **`MVP.md`** — format porównania (poniżej)
-2. **`changes.md`** — chronologia / co doszło
+1. **`docs/MVP.md`** — format porównania (poniżej)
+2. **`docs/changes.md`** — chronologia / co doszło
 3. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
-4. **`docs/TESTY.md`** + **`docs/wyniki-testow/podsumowanie.md`** — gdy zmienia się zestaw lub wynik testów
+4. **`docs/testy/TESTY.md`** + **`docs/testy/wyniki/podsumowanie.md`** — gdy zmienia się zestaw lub wynik testów
 
 ### MVP.md — obowiązkowy format porównania
 
-Przy każdej istotnej zmianie **aktualizuj `MVP.md`** w układzie:
+Przy każdej istotnej zmianie **aktualizuj `docs/MVP.md`** w układzie:
 
 1. **Co miało być** — zakres MPC (nie usuwać)
 2. **Co jest** — tabela funkcja → stan → werdykt (OK / Częściowo / Brak)
@@ -34,13 +35,13 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 
 ## Zasady
 
-- Zmiany funkcjonalne dokumentuj w `changes.md` i synchronizuj `MVP.md` jak wyżej
+- Zmiany funkcjonalne dokumentuj w `docs/changes.md` i synchronizuj `docs/MVP.md` jak wyżej
 - Auth idzie wyłącznie przez API (`raceportal_token`); bez działającego `api` logowanie nie działa
 - Nie commitować sekretów; JWT / DB hasła w compose to wartości deweloperskie
 - Nie dodawać mocków localStorage auth z powrotem, o ile użytkownik tego nie zażąda
 - Design: trzymaj się istniejącego dark/gold looku; nie wprowadzaj domyślnych „AI purple” motywów
 - Social login (Google/Facebook) to UI demo — nie produkcyjny OAuth
-- Po dodaniu / zmianie ścieżek krytycznych uzupełnij testy (API Vitest lub Playwright) i odśwież wyniki w `docs/wyniki-testow/`
+- Po dodaniu / zmianie ścieżek krytycznych uzupełnij testy (API Vitest lub Playwright) i odśwież wyniki w `docs/testy/wyniki/`
 
 ## Konta deweloperskie (seed)
 
@@ -70,4 +71,4 @@ npx playwright test
 | Maile | http://127.0.0.1:8025/ |
 | Expo web | http://127.0.0.1:8082/ |
 
-Dokumentacja testów: [`docs/TESTY.md`](../docs/TESTY.md)
+Dokumentacja testów: [`docs/testy/TESTY.md`](./testy/TESTY.md)

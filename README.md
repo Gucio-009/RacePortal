@@ -4,12 +4,25 @@ Centralny katalog wydarzeń motorsportowych w Polsce.
 
 Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/Gucio-009/RacePortal)
 
+## Struktura repozytorium
+
+| Katalog | Opis |
+|---------|------|
+| [`web/`](./web/) | Aplikacja webowa (Vite + React) |
+| [`backend/`](./backend/) | API (Express + Prisma + PostgreSQL) |
+| [`mobile/`](./mobile/) | Aplikacja mobilna (Expo) |
+| [`docs/`](./docs/) | Dokumentacja projektu i dyplomu |
+| [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
+| [`scripts/`](./scripts/) | Backup DB + uruchamianie testów |
+
+Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)
+
 ## Jak odpalić lokalnie (Docker)
 
 ### 1. Wymagania
 
 - zainstalowany [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Docker Desktop włączony (ikona wieloryba działa)
+- Docker Desktop włączony
 
 ### 2. Pobierz projekt
 
@@ -23,8 +36,6 @@ cd RacePortal
 ```bash
 docker compose up --build -d
 ```
-
-Pierwszy build może potrwać kilka minut.
 
 ### 4. Otwórz w przeglądarce
 
@@ -51,42 +62,29 @@ docker compose down
 
 ---
 
-## Aplikacja mobilna (uproszczona)
-
-Expo — logowanie, lista wydarzeń, szczegóły, zapis.
+## Aplikacja mobilna
 
 ```bash
-# najpierw Docker (API na :4000)
 docker compose up -d
-
-cd mobile
-npm install
-npm start
+cd mobile && npm install && npm start
 ```
 
-Podgląd web (potrzebny też do E2E): `npx expo start --web --port 8082`  
+Expo web (także pod E2E): `npx expo start --web --port 8082`  
 Szczegóły: [`mobile/README.md`](./mobile/README.md)
 
 ---
 
-## Testy automatyczne (praca dyplomowa)
+## Testy automatyczne
 
-Ostatni przebieg (**2026-08-01**): **51 / 51 PASS** (API 20 + mobile unit 2 + Playwright E2E 29).
-
-| Dokument | Opis |
-|----------|------|
-| [`docs/TESTY.md`](./docs/TESTY.md) | Metodyka, przypadki testowe, uruchomienie |
-| [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) | Werdykt i tabele wyników |
-| [`changes.md`](./changes.md) | Historia zmian (sekcja 10 — testy) |
-| [`MVP.md`](./MVP.md) | Plan vs stan MVP |
+Ostatni przebieg: **51 / 51 PASS** — szczegóły w [`docs/testy/`](./docs/testy/TESTY.md).
 
 ```bash
 docker compose up -d
-cd mobile && npx expo start --web --port 8082   # terminal 2 — pod E2E mobile
+cd mobile && npx expo start --web --port 8082   # terminal 2
 
-npm --prefix backend test      # 20 testów API
-npm --prefix mobile test       # 2 testy unit mobile
-npx playwright test            # 29 testów E2E (web + mobile)
+npm --prefix backend test
+npm --prefix mobile test
+npx playwright test
 # albo: npm run test:report
 ```
 
@@ -96,8 +94,8 @@ npx playwright test            # 29 testów E2E (web + mobile)
 
 | Plik | Zawartość |
 |------|-----------|
-| [`MVP.md`](./MVP.md) | Zakres MPC: miało być / jest / zrobione / luki / ponad MVP |
-| [`changes.md`](./changes.md) | Chronologia prac |
-| [`docs/TESTY.md`](./docs/TESTY.md) | Testy automatyczne |
-| [`guidelines/Guidelines.md`](./guidelines/Guidelines.md) | Wytyczne dla agentów / deweloperów |
-| [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje / atrybucje |
+| [`docs/MVP.md`](./docs/MVP.md) | Zakres MPC: miało być / jest / zrobione / luki |
+| [`docs/changes.md`](./docs/changes.md) | Chronologia prac |
+| [`docs/testy/TESTY.md`](./docs/testy/TESTY.md) | Testy automatyczne |
+| [`docs/Guidelines.md`](./docs/Guidelines.md) | Wytyczne |
+| [`docs/ATTRIBUTIONS.md`](./docs/ATTRIBUTIONS.md) | Licencje / atrybucje |

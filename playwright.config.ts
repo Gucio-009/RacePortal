@@ -4,7 +4,7 @@ const WEB = process.env.WEB_BASE_URL || "http://127.0.0.1:8081";
 const MOBILE = process.env.MOBILE_BASE_URL || "http://127.0.0.1:8082";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./tests/e2e",
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -13,9 +13,9 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: [
     ["list"],
-    ["html", { open: "never", outputFolder: "docs/wyniki-testow/playwright-report" }],
-    ["json", { outputFile: "docs/wyniki-testow/playwright-results.json" }],
-    ["junit", { outputFile: "docs/wyniki-testow/playwright-junit.xml" }],
+    ["html", { open: "never", outputFolder: "docs/testy/wyniki/playwright-report" }],
+    ["json", { outputFile: "docs/testy/wyniki/playwright-results.json" }],
+    ["junit", { outputFile: "docs/testy/wyniki/playwright-junit.xml" }],
   ],
   use: {
     trace: "on-first-retry",

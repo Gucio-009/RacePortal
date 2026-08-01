@@ -52,7 +52,7 @@ services:
     restart: unless-stopped
 
   web:
-    build: .
+    build: ./web
     container_name: raceportal-web
     ports:
       - "8081:80"

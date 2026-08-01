@@ -175,7 +175,7 @@ Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wr
 |---------|-----------|--------|
 | API (integracja) | Vitest + Supertest | `backend/tests/api.integration.test.ts` |
 | Mobile (unit) | Vitest | `mobile/tests/unit.client.test.ts` |
-| Web + Mobile E2E | Playwright (Chromium) | `e2e/web.spec.ts`, `e2e/mobile.spec.ts` |
+| Web + Mobile E2E | Playwright (Chromium) | `tests/e2e/web.spec.ts`, `tests/e2e/mobile.spec.ts` |
 | Orkiestracja | skrypt + npm scripts | `scripts/run-tests.sh`, root `package.json` (`test:*`) |
 
 ### Wynik ostatniego przebiegu
@@ -193,12 +193,12 @@ Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wr
 
 | Plik | Zawartość |
 |------|-----------|
-| [`docs/TESTY.md`](./docs/TESTY.md) | Metodyka, piramida, przypadki TC-*, uruchomienie, mapowanie do rozdziału dyplomu |
-| [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) | Werdykt + tabele wyników |
-| `docs/wyniki-testow/*.log` | Logi Vitest / Playwright |
-| `docs/wyniki-testow/playwright-junit.xml` | JUnit (CI / załącznik) |
-| `docs/wyniki-testow/playwright-results.json` | Surowy raport JSON |
-| `docs/wyniki-testow/playwright-report/` | Raport HTML Playwright |
+| [`docs/testy/TESTY.md`](./testy/TESTY.md) | Metodyka, piramida, przypadki TC-*, uruchomienie, mapowanie do rozdziału dyplomu |
+| [`docs/testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Werdykt + tabele wyników |
+| `docs/testy/wyniki/*.log` | Logi Vitest / Playwright |
+| `docs/testy/wyniki/playwright-junit.xml` | JUnit (CI / załącznik) |
+| `docs/testy/wyniki/playwright-results.json` | Surowy raport JSON |
+| `docs/testy/wyniki/playwright-report/` | Raport HTML Playwright |
 
 ### Uruchomienie
 
@@ -209,7 +209,7 @@ cd mobile && npx expo start --web --port 8082   # osobny terminal — E2E mobile
 npm --prefix backend test      # API
 npm --prefix mobile test       # unit mobile
 npx playwright test            # E2E web + mobile
-# albo: npm run test:report    # skrypt zbierający logi do docs/wyniki-testow/
+# albo: npm run test:report    # skrypt zbierający logi do docs/testy/wyniki/
 ```
 
 ### Pokrycie względem MVP
@@ -224,13 +224,30 @@ npx playwright test            # E2E web + mobile
 
 ## Powiązane dokumenty
 
-- [`MVP.md`](./MVP.md) — **zawsze** porównanie: miało być / jest / zrobione / do zrobienia / ponad MVP  
-- [`docs/TESTY.md`](./docs/TESTY.md) — testy automatyczne (dyplom)  
-- [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) — ostatnie wyniki PASS  
+- [`MVP.md`](./MVP.md) — porównanie: miało być / jest / zrobione / do zrobienia / ponad MVP  
+- [`testy/TESTY.md`](./testy/TESTY.md) — testy automatyczne (dyplom)  
+- [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) — ostatnie wyniki PASS  
 - [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) — shadcn/ui, Unsplash, mapa, OSRM  
-- [`guidelines/Guidelines.md`](./guidelines/Guidelines.md) — wytyczne + obowiązek aktualizacji MVP.md / changes.md  
-- [`mobile/README.md`](./mobile/README.md) — Expo mobile  
+- [`Guidelines.md`](./Guidelines.md) — wytyczne + obowiązek aktualizacji docs  
+- [`README.md`](./README.md) — indeks dokumentacji  
+- [`../mobile/README.md`](../mobile/README.md) — Expo mobile  
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-01 — testy automatyczne 51/51 PASS, docs zsynchronizowane.*
+## 11. Porządek katalogów w repo (2026-08-01)
+
+Root był przeładowany plikami `.md`, frontendem i testami. Uporządkowano monorepo:
+
+| Było (root) | Jest |
+|-------------|------|
+| `src/`, Vite, Dockerfile web | `web/` |
+| `MVP.md`, `changes.md`, `ATTRIBUTIONS.md`, `guidelines/` | `docs/` |
+| `docs/TESTY.md`, `docs/wyniki-testow/` | `docs/testy/` (+ `wyniki/`) |
+| `e2e/` | `tests/e2e/` |
+| `pnpm-workspace.yaml` (nieużywane) | usunięte |
+
+Docker: serwis `web` buduje z `./web`. Root `package.json` trzyma tylko orkiestrację testów (Playwright); zależności Vite są w `web/package.json`.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-01 — reorganizacja katalogów monorepo + docs.*

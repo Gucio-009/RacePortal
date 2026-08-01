@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-01 (testy automatyczne API/Web/Mobile)
+**Ostatnia synchronizacja:** 2026-08-01 (reorganizacja monorepo + testy)
 
 ---
 
@@ -56,7 +56,7 @@ Legenda statusu: **OK** · **Częściowo** · **Brak** · **Ponad**
 
 ### 2.3. Warunki odbioru (miało być)
 
-1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e) — **e2e automatyczne: PASS (51)**; patrz [`docs/TESTY.md`](./docs/TESTY.md)  
+1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e) — **e2e automatyczne: PASS (51)**; patrz [`docs/testy/TESTY.md`](./testy/TESTY.md)  
 2. UX mobile-first — web responsive + Expo `mobile/`  
 3. Spójność z pitch / prezentacją  
 
@@ -134,7 +134,7 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] Walidacja Zod, rate limiting, helmet / nagłówki CSP + X-Frame-Options (nginx)  
 - [x] Polityka prywatności + nota RODO przy tworzeniu wydarzenia  
 - [x] Smoke / testy manualne ścieżek ról  
-- [x] Testy automatyczne: Vitest API (20) + Playwright E2E web/mobile (29) + unit mobile (2) — `docs/TESTY.md`  
+- [x] Testy automatyczne: Vitest API (20) + Playwright E2E web/mobile (29) + unit mobile (2) — `docs/testy/TESTY.md`  
 
 ---
 
@@ -170,7 +170,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Galeria z API (upcoming + archive) | Uzupełnienie UX poza ścisłą listą MPC |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
 | Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
-| Automatyczne testy (Vitest + Playwright) | Dokumentacja dyplomowa: `docs/TESTY.md` + wyniki |
+| Automatyczne testy (Vitest + Playwright) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
 
 ---
 
@@ -203,11 +203,12 @@ npm --prefix backend test && npm --prefix mobile test && npx playwright test
 
 | Plik | Rola |
 |------|------|
-| [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy) |
-| [`docs/TESTY.md`](./docs/TESTY.md) | Metodyka i przypadki testowe |
-| [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) | Ostatni werdykt **51/51 PASS** |
-| [`README.md`](./README.md) | Szybki start + testy |
-| [`mobile/README.md`](./mobile/README.md) | Expo + testy mobile |
+| [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy, §11 = struktura repo) |
+| [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testowe |
+| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt **51/51 PASS** |
+| [`../README.md`](../README.md) | Szybki start + testy |
+| [`../mobile/README.md`](../mobile/README.md) | Expo + testy mobile |
+| [`README.md`](./README.md) | Indeks dokumentacji |
 
 ---
 
@@ -220,7 +221,7 @@ Przy każdej istotnej zmianie w projekcie **zawsze** zaktualizuj w tym pliku:
 3. **Sekcja 5** — usuń zamknięte braki; dodaj nowe luki  
 4. **Sekcja 6** — dopisz rzeczy zrobione poza zakresem MVP  
 5. Datę **Ostatnia synchronizacja** na górze  
-6. Przy zmianie testów — też `docs/TESTY.md`, `docs/wyniki-testow/podsumowanie.md` i wpis w `changes.md`
+6. Przy zmianie testów — też `docs/testy/TESTY.md`, `docs/testy/wyniki/podsumowanie.md` i wpis w `changes.md`
 
 Nie kasuj sekcji „Co miało być” — to baza porównania.
 

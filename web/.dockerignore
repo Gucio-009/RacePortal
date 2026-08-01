@@ -5,7 +5,3 @@ dist
 *.local
 .env
 .env.*
-backend
-scripts
-changes.md
-MVP.md

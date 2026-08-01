@@ -52,7 +52,7 @@ Testy automatyczne mają:
 |--------|-----------|-------------|-------------|
 | Unit | Vitest | `mobile/tests/` | storage tokenu, URL API |
 | Integration | Vitest | `backend/tests/` | kontrakty REST, auth, RBAC, events, garage, maps |
-| E2E | Playwright | `e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
+| E2E | Playwright | `tests/e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
 
 **Środowisko testowe:** lokalny Docker Compose (Postgres + API + nginx web + Mailpit) oraz opcjonalnie Expo web preview.
 
@@ -119,7 +119,7 @@ npx playwright install chromium
 | TC-API-19 | Pending events | 200 (admin) |
 | TC-API-20 | Maps route | provider + polyline |
 
-### 4.2. Web E2E (`e2e/web.spec.ts`)
+### 4.2. Web E2E (`tests/e2e/web.spec.ts`)
 
 | ID | Opis |
 |----|------|
@@ -138,7 +138,7 @@ npx playwright install chromium
 
 Projekty Playwright: **chromium-desktop** oraz **chromium-mobile** (Pixel 7) — te same scenariusze na dwóch viewportach.
 
-### 4.3. Mobile E2E (`e2e/mobile.spec.ts`) — Expo web preview
+### 4.3. Mobile E2E (`tests/e2e/mobile.spec.ts`) — Expo web preview
 
 | ID | Opis |
 |----|------|
@@ -170,13 +170,13 @@ Skrypt zapisuje:
 
 | Plik | Zawartość |
 |------|-----------|
-| `docs/wyniki-testow/podsumowanie.md` | werdykt + skrót logów |
-| `docs/wyniki-testow/api-vitest.log` | log API |
-| `docs/wyniki-testow/mobile-unit.log` | log unit mobile |
-| `docs/wyniki-testow/playwright.log` | log E2E |
-| `docs/wyniki-testow/playwright-report/` | raport HTML Playwright |
-| `docs/wyniki-testow/playwright-results.json` | wyniki JSON |
-| `docs/wyniki-testow/playwright-junit.xml` | JUnit (CI / załącznik) |
+| `docs/testy/wyniki/podsumowanie.md` | werdykt + skrót logów |
+| `docs/testy/wyniki/api-vitest.log` | log API |
+| `docs/testy/wyniki/mobile-unit.log` | log unit mobile |
+| `docs/testy/wyniki/playwright.log` | log E2E |
+| `docs/testy/wyniki/playwright-report/` | raport HTML Playwright |
+| `docs/testy/wyniki/playwright-results.json` | wyniki JSON |
+| `docs/testy/wyniki/playwright-junit.xml` | JUnit (CI / załącznik) |
 
 ### Osobne komendy
 
@@ -188,13 +188,13 @@ npm --prefix backend test
 npm --prefix mobile test
 
 # E2E web
-npx playwright test e2e/web.spec.ts
+npx playwright test tests/e2e/web.spec.ts
 
 # E2E mobile preview
-npx playwright test e2e/mobile.spec.ts
+npx playwright test tests/e2e/mobile.spec.ts
 
 # Raport HTML
-npx playwright show-report docs/wyniki-testow/playwright-report
+npx playwright show-report docs/testy/wyniki/playwright-report
 ```
 
 ### Zmienne środowiskowe
@@ -244,12 +244,12 @@ Niepowodzenie pojedynczego TC należy opisać w pracy dyplomowej jako defect / o
 
 | Plik | Zawartość |
 |------|-----------|
-| [`docs/wyniki-testow/podsumowanie.md`](./wyniki-testow/podsumowanie.md) | Ostatni przebieg — **51/51 PASS** |
+| [`docs/testy/wyniki/podsumowanie.md`](./wyniki/podsumowanie.md) | Ostatni przebieg — **51/51 PASS** |
 | [`MVP.md`](../MVP.md) | Status odbioru e2e vs luki (perf 10k/50 RPS) |
 | [`changes.md`](../changes.md) | Sekcja 10 — wprowadzenie zestawu testów |
 | [`README.md`](../README.md) | Szybkie komendy uruchomienia testów |
 | [`mobile/README.md`](../mobile/README.md) | Testy warstwy mobile |
-| [`guidelines/Guidelines.md`](../guidelines/Guidelines.md) | Obowiązek aktualizacji docs po zmianach |
+| [`docs/Guidelines.md`](../Guidelines.md) | Obowiązek aktualizacji docs po zmianach |
 
 ---
 

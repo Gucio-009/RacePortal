@@ -4,6 +4,8 @@ dist
 *.local
 .env
 .env.*
+web/node_modules
+web/dist
 backend/node_modules
 backend/dist
 mobile/node_modules

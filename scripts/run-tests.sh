@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Uruchamia pełny zestaw testów RacePortal i zapisuje wyniki pod docs/wyniki-testow/
+# Uruchamia pełny zestaw testów RacePortal i zapisuje wyniki pod docs/testy/wyniki/
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-OUT="$ROOT/docs/wyniki-testow"
+OUT="$ROOT/docs/testy/wyniki"
 mkdir -p "$OUT"
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 SUMMARY="$OUT/podsumowanie.md"
