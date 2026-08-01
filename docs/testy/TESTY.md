@@ -42,7 +42,7 @@ Testy automatyczne mają:
         /\
        /E2E\      Playwright — web (:8081) + mobile preview (:8082)
       /------\
-     / Integr.\   Vitest — HTTP API (:4000) przeciw działającemu stackowi Docker
+     / Integr.\   Spring MockMvc + Testcontainers MySQL
     /----------\
    /   Unit     \ Vitest — logika klienta mobile (token / API_URL)
   /--------------\
@@ -51,10 +51,11 @@ Testy automatyczne mają:
 | Poziom | Narzędzie | Lokalizacja | Co sprawdza |
 |--------|-----------|-------------|-------------|
 | Unit | Vitest | `mobile/tests/` | storage tokenu, URL API |
-| Integration | Vitest | `backend/tests/` | kontrakty REST, auth, RBAC, events, garage, maps |
+| Integration | JUnit 5 + MockMvc + Testcontainers | `backend/src/test/` | health, login seed, walidacja błędów, lista events |
 | E2E | Playwright | `tests/e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
 
-**Środowisko testowe:** lokalny Docker Compose (Postgres + API + nginx web + Mailpit) oraz opcjonalnie Expo web preview.
+**Środowisko testowe:** lokalny Docker Compose (MySQL + Spring API + nginx web + Mailpit) oraz opcjonalnie Expo web preview.  
+**API testy bez pełnego compose:** `npm run test:api` (Maven w kontenerze + Docker sock dla Testcontainers).
 
 ---
 
@@ -73,14 +74,15 @@ docker compose up --build -d
 cd mobile && npx expo start --web --port 8082
 ```
 
-4. Node.js 20+ oraz zależności:
+4. Zależności front/testów UI:
 
 ```bash
 npm install
-npm --prefix backend install
 npm --prefix mobile install
 npx playwright install chromium
 ```
+
+Backend testuje się przez Maven Wrapper (`backend/./mvnw`) — Java 21 lokalnie **lub** automatyczny fallback w `scripts/test-api.sh` (kontener Maven + Compose MySQL).
 
 ### Konta seed używane w testach
 
@@ -94,30 +96,25 @@ npx playwright install chromium
 
 ## 4. Katalog przypadków testowych
 
-### 4.1. API (`backend/tests/api.integration.test.ts`)
+### 4.1. API (`backend/src/test/java/pl/raceportal/`)
 
-| ID | Opis | Oczekiwany rezultat |
-|----|------|---------------------|
-| TC-API-01 | Health check | `status=ok`, `db=up` |
-| TC-API-02 | Login USER | JWT + `role=USER` |
-| TC-API-03 | Login ADMIN | `role=ADMIN` |
-| TC-API-04 | Login ORGANIZER | `role=ORGANIZER` |
-| TC-API-05 | Złe hasło | HTTP 401 |
-| TC-API-06 | `/me` bez tokena | HTTP 401 |
-| TC-API-07 | `/me` z tokenem | profil użytkownika |
-| TC-API-08 | Rejestracja | HTTP 201 + JWT |
-| TC-API-09 | Lista wydarzeń | paginacja, `total≥1` |
-| TC-API-10 | Wyszukiwanie `q` | dopasowane rekordy |
-| TC-API-11 | Szczegóły po id | pełny obiekt eventu |
-| TC-API-12 | Archiwum | rekordy historyczne |
-| TC-API-13 | Kategorie | niepusta tablica |
-| TC-API-14 | Garaż | lista aut seed |
-| TC-API-15 | Zgłoszenie | 200/201 |
-| TC-API-16 | Moje zgłoszenia | tablica |
-| TC-API-17 | Admin stats RBAC | USER→403, ADMIN→200 |
-| TC-API-18 | Organizer events | 200 |
-| TC-API-19 | Pending events | 200 (admin) |
-| TC-API-20 | Maps route | provider + polyline |
+| ID | Klasa / metoda | Opis | Oczekiwany rezultat |
+|----|----------------|------|---------------------|
+| TC-API-01 | `healthOk` | Health + DB | `ok=true`, `db=up` |
+| TC-API-02–04 | `loginThreeRoles` | Login 3 ról seed | JWT + właściwa `role` |
+| TC-API-05 | `loginBadPassword401` | Złe hasło | HTTP 401 + `{error}` |
+| TC-API-06 | `registerAndConflict409` | Rejestracja + duplikat | 200 JWT, potem 409 |
+| TC-API-07 | `meRequiresAuthAndWorks` | `/me` | 401 bez tokena; 200 z tokenem |
+| TC-API-08 | `patchProfileAndChangePassword` | Profil + hasło | PATCH OK; złe obecne hasło 400; zmiana OK |
+| TC-API-09–12 | `eventsListFilterArchiveDetail` | Lista / q / archiwum / detal | paginacja, filtry, detal |
+| TC-API-13 | `organizerCreatesPendingEventAdminApproves` | Org POST → admin APPROVED | status PENDING → APPROVED |
+| TC-API-14 | `garageCrudAndForbiddenDelete` | Garage CRUD + RBAC | create/list/delete; cudze auto 403 |
+| TC-API-15–16 | `registrationCreateAndOrgStatus` | Zgłoszenie + status org | PENDING → APPROVED |
+| TC-API-17 | `adminStatsRolesAndOrgApplication` | Admin stats / wniosek org / role | 200 + przepływy |
+| TC-API-18 | `mapsRouteOrGracefulFallback` | Trasa OSRM | 200 provider/polyline lub 4xx/502 `{error}` |
+| TC-API-19 | `validationBadEmail400WithDetails` | Walidacja | 400 + `details` |
+| TC-API-20 | `userCannotAccessAdmin403` | RBAC | USER → `/api/admin` = 403 |
+| TC-API-U* | `JwtServiceTest`, `GlobalExceptionHandlerTest` | Unit JWT + błędy | PASS |
 
 ### 4.2. Web E2E (`tests/e2e/web.spec.ts`)
 
@@ -162,7 +159,7 @@ Projekty Playwright: **chromium-desktop** oraz **chromium-mobile** (Pixel 7) —
 ### Pełny przebieg (zalecany do dokumentacji)
 
 ```bash
-chmod +x scripts/run-tests.sh
+chmod +x scripts/run-tests.sh scripts/test-api.sh
 ./scripts/run-tests.sh
 ```
 
@@ -171,7 +168,7 @@ Skrypt zapisuje:
 | Plik | Zawartość |
 |------|-----------|
 | `docs/testy/wyniki/podsumowanie.md` | werdykt + skrót logów |
-| `docs/testy/wyniki/api-vitest.log` | log API |
+| `docs/testy/wyniki/api-surefire.log` | log Maven Surefire (API) |
 | `docs/testy/wyniki/mobile-unit.log` | log unit mobile |
 | `docs/testy/wyniki/playwright.log` | log E2E |
 | `docs/testy/wyniki/playwright-report/` | raport HTML Playwright |
@@ -181,11 +178,12 @@ Skrypt zapisuje:
 ### Osobne komendy
 
 ```bash
-# API
-npm --prefix backend test
+# API (JUnit + MockMvc; Testcontainers lub Compose MySQL)
+npm run test:api
+# równoważnie: cd backend && ./mvnw test   # wymaga Java 21 + Docker
 
 # Unit mobile
-npm --prefix mobile test
+npm run test:mobile-unit
 
 # E2E web
 npx playwright test tests/e2e/web.spec.ts
@@ -201,9 +199,11 @@ npx playwright show-report docs/testy/wyniki/playwright-report
 
 | Zmienna | Domyślnie | Opis |
 |---------|-----------|------|
-| `API_BASE_URL` | `http://127.0.0.1:4000` | baza API |
+| `API_BASE_URL` | `http://127.0.0.1:4000` | baza API (Playwright) |
 | `WEB_BASE_URL` | `http://127.0.0.1:8081` | aplikacja web |
 | `MOBILE_BASE_URL` | `http://127.0.0.1:8082` | Expo web |
+| `TEST_DB_URL` | (puste = Testcontainers) | JDBC MySQL dla testów w kontenerze Maven |
+| `TEST_DB_USER` / `TEST_DB_PASSWORD` | `raceportal` | credentials przy `TEST_DB_URL` |
 
 ---
 

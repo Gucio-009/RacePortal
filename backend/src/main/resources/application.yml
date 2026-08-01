@@ -1,41 +1,66 @@
 server:
   port: ${PORT:4000}
+  error:
+    include-message: always
+    include-binding-errors: never
+    include-stacktrace: never
 
 spring:
   application:
-    name: raceportal-api
+    name: raceportal-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:default}
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3307/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
-    username: ${SPRING_DATASOURCE_USERNAME:raceportal}
-    password: ${SPRING_DATASOURCE_PASSWORD:raceportal}
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:raceportal}
+    password: ${DATABASE_PASSWORD:raceportal}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}
     open-in-view: false
     properties:
       hibernate:
+        format_sql: false
         jdbc:
           time_zone: UTC
+    show-sql: false
   mail:
-    host: ${SMTP_HOST:127.0.0.1}
+    host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
     properties:
       mail:
         smtp:
-          auth: false
+          auth: ${SMTP_AUTH:false}
           starttls:
-            enable: false
+            enable: ${SMTP_STARTTLS:false}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  cache:
+    type: caffeine
+    cache-names: events
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=20s
 
-raceportal:
+app:
+  cors:
+    origin: ${CORS_ORIGIN:*}
   jwt:
-    secret: ${JWT_SECRET:raceportal-dev-secret-change-me-must-be-long-enough-256bits}
-    expiration-ms: 604800000
-  cors-origins: ${CORS_ORIGIN:http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082}
-  mail-from: ${SMTP_FROM:RacePortal <noreply@raceportal.local>}
-  google-maps-api-key: ${GOOGLE_MAPS_API_KEY:}
-  seed-on-startup: ${SEED_ON_STARTUP:true}
+    secret: ${JWT_SECRET:raceportal-dev-secret-change-me}
+    expiration-days: ${JWT_EXPIRATION_DAYS:7}
+  mail:
+    from: ${SMTP_FROM:RACEPORTAL <noreply@raceportal.local>}
+  maps:
+    google-api-key: ${GOOGLE_MAPS_API_KEY:}
+  seed:
+    enabled: ${SEED_ENABLED:true}
 
 logging:
   level:
-    org.springframework.security: WARN
+    root: INFO
     pl.raceportal: INFO

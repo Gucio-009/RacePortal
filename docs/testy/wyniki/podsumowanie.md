@@ -1,107 +1,37 @@
 # Wyniki testów automatycznych — RacePortal
 
-**Data uruchomienia (UTC):** 2026-08-01T11:15:00Z  
+**Data uruchomienia (UTC):** 2026-08-01T14:35:22Z  
 **Branch:** `wojtek`  
-**Środowisko:** Docker (API `:4000`, Web `:8081`), Expo web (`:8082`), Playwright Chromium
+**Backend:** Spring Boot 3.3 + MySQL 8 + JUnit 5 / MockMvc
 
----
+## Preflight środowiska
 
-## Preflight
+- API: `{"db":"up","ok":true}` (Compose)
+- MySQL: `:3307` (kontener `raceportal-mysql`)
+- Web: `:8081` (proxy `/api`)
 
-| Usługa | Status |
-|--------|--------|
-| API `/api/health` | OK (`db=up`) |
-| Web `http://127.0.0.1:8081/` | HTTP 200 |
-| Mobile Expo `http://127.0.0.1:8082/` | HTTP 200 |
+## 1. Testy API (JUnit / MockMvc)
 
----
+**Status: PASS**
 
-## 1. Testy API (Vitest / integration)
+```
+Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+```
 
-**Status: PASS** — **20 / 20**
+| Klasa | Liczba TC | Zakres |
+|-------|-----------|--------|
+| `ApiIntegrationTest` | 14 | health, login 3 ról, 401, register/409, me, PATCH/hasło, events, org→admin approve, garage+403, registrations, admin/apps, maps, walidacja 400, RBAC 403 |
+| `JwtServiceTest` | 2 | generowanie/parsowanie JWT, invalid token |
+| `GlobalExceptionHandlerTest` | 4 | ApiException, 403, 401, 500 |
 
-| Zakres | ID | Wynik |
-|--------|-----|-------|
-| Health | TC-API-01 | PASS |
-| Auth (login 3 ról, 401, me, register) | TC-API-02 … 08 | PASS |
-| Events (lista, filtr, detal, archiwum, kategorie) | TC-API-09 … 13 | PASS |
-| Garage + registrations | TC-API-14 … 16 | PASS |
-| RBAC admin/organizer | TC-API-17 … 19 | PASS |
-| Maps route | TC-API-20 | PASS |
+Log: `docs/testy/wyniki/api-surefire.log`  
+Uruchomienie: `npm run test:api` → `scripts/test-api.sh` (lokalny `./mvnw` lub Maven w Dockerze + Compose MySQL)
 
-Log: `docs/testy/wyniki/api-vitest.log`
+## 2. E2E / mobile
 
----
-
-## 2. Testy jednostkowe mobile (Vitest)
-
-**Status: PASS** — **2 / 2**
-
-| ID | Opis | Wynik |
-|----|------|-------|
-| TC-MOB-U01 | Token w localStorage (web) | PASS |
-| TC-MOB-U02 | API_URL zawiera port 4000 | PASS |
-
-Log: `docs/testy/wyniki/mobile-unit.log`
-
----
-
-## 3. E2E Playwright (Web + Mobile Expo)
-
-**Status: PASS** — **29 / 29** (czas ~26 s)
-
-### Projekty
-
-| Projekt | Viewport / target | Wynik |
-|---------|-------------------|--------|
-| `web-desktop` | Desktop Chrome → `:8081` | 12/12 PASS |
-| `web-mobile-viewport` | Pixel 7 → `:8081` | 12/12 PASS |
-| `mobile-expo` | Pixel 7 → Expo `:8082` | 5/5 PASS |
-
-### Web (TC-WEB-01 … 12)
-
-Publiczne: home, kalendarz, filtr, szczegóły, mapa, archiwum — PASS  
-Auth: login, błędne hasło, garaż — PASS  
-RBAC: admin, organizator, blokada `/admin` dla USER — PASS  
-
-### Mobile Expo (TC-MOB-01 … 05)
-
-Login screen, login+lista, złe hasło, szczegóły+ZAPISZ SIĘ, wylogowanie — PASS  
-
-Artefakty:
-
-- HTML: `docs/testy/wyniki/playwright-report/`
-- JSON: `docs/testy/wyniki/playwright-results.json`
-- JUnit: `docs/testy/wyniki/playwright-junit.xml`
-- Log: `docs/testy/wyniki/playwright.log`
-
----
+Playwright i Vitest mobile — bez zmian ścieżek; po migracji zalecany smoke: `npx playwright test tests/e2e/web.spec.ts` przy healthy stacku.
 
 ## Werdykt
 
-**Wszystkie zestawy: PASS**
-
-| Zestaw | Passed | Failed |
-|--------|--------|--------|
-| API integration | 20 | 0 |
-| Mobile unit | 2 | 0 |
-| Playwright E2E | 29 | 0 |
-| **Razem** | **51** | **0** |
-
----
-
-## Jak powtórzyć
-
-```bash
-docker compose up -d
-cd mobile && npx expo start --web --port 8082   # osobny terminal
-npm --prefix backend test
-npm --prefix mobile test
-npx playwright test
-```
-
-Pełna dokumentacja metodyki: [`docs/testy/TESTY.md`](../TESTY.md)
-
-Historia wprowadzenia testów: [`changes.md`](../../changes.md) §10 · status MVP: [`MVP.md`](../../MVP.md)
-
-*Synchronizacja dokumentacji projektu: 2026-08-01.*
+**Testy API Spring (20/20): PASS**

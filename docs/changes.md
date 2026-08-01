@@ -53,37 +53,38 @@ Początkowo dane i auth były lokalne (mock / localStorage) — **zastąpione ba
 
 ## 6. Backend + pełny stack Docker (aktualny stan)
 
-Stack działa end-to-end (stan na **2026-08-01**): `web` + `api` + `db` + Mailpit + `backup` + testy automatyczne (patrz sekcja 10).
+Stack zgodny z dokumentacją dyplomową (React + Spring Boot + MySQL + Docker + Maven), stan na **2026-08-01**: `web` + `api` + `mysql` + Mailpit + `backup`.
 
 ### Usługi (`docker-compose.yml`)
 
 | Serwis | Port | Rola |
 |--------|------|------|
 | `web` | **8081→80** | Frontend (nginx) + proxy `/api` → api |
-| `api` | **4000** | Express + Prisma + JWT |
-| `db` | **5433→5432** | PostgreSQL 16 |
+| `api` | **4000** | Spring Boot 3 (Java 21) + JWT |
+| `mysql` | **3307→3306** | MySQL 8 |
 | `mailhog` | **8025** UI / **1025** SMTP | Mailpit (maile systemowe) |
-| `backup` | — | codzienny dump (`scripts/backup.sh`) |
+| `backup` | — | codzienny `mysqldump` (`scripts/backup.sh`) |
 
 ### Backend (`backend/`)
 
-- Express 5, Prisma, Zod, bcrypt, helmet, rate limiting, nodemailer  
-- Modele: User (role USER / ORGANIZER / ADMIN), Car, Event, Registration, OrganizerApplication  
+- Spring Boot 3.3, Spring Security JWT, JPA/Hibernate, Bean Validation, JavaMail  
+- Encje MVP: User (role USER / ORGANIZER / ADMIN), Car, Event, Registration, OrganizerApplication  
+- Błędy API: `{ "error": "...", "details"?: ... }`  
 - Auto-archiwizacja minionych wydarzeń `APPROVED` → `ARCHIVED`  
-- Seed odświeża wydarzenia z datami przyszłymi (sezon VIII–XI 2026) + 1 pending + 1 archived  
+- Seed: 3 konta + wydarzenia demo (approved / pending / archived)  
 
 ### API (skrót)
 
 | Prefiks | Zakres |
 |---------|--------|
 | `/api/health` | health + DB |
-| `/api/auth` | register, login, me, forgot-password |
-| `/api/events` | lista (filtry, paginacja, cache), szczegóły, CRUD |
-| `/api/garage` | CRUD aut kierowcy |
+| `/api/auth` | register, login, me, patch me, password, forgot-password |
+| `/api/events` | lista (filtry, paginacja), szczegóły, create/patch |
+| `/api/garage` | lista / create / delete aut kierowcy |
 | `/api/registrations` | zgłoszenia + statusy + maile |
 | `/api/admin` | stats, users/roles, pending events, wnioski org. |
 | `/api/organizer` | wniosek o rolę, lista wydarzeń org. |
-| `/api/maps` | trasa: Google Directions lub **OSRM** fallback |
+| `/api/maps` | trasa: OSRM (Google key opcjonalnie) |
 
 ### Frontend pod API
 
@@ -99,6 +100,11 @@ Wejdź na http://127.0.0.1:8081/login
 | Admin | `admin@raceportal.pl` | `admin123` |
 | Organizator | `org@raceportal.pl` | `org123` |
 | Kierowca | `test@wp.pl` | `test123` |
+
+### Zgodność z Dokumentacją (Downloads)
+
+- DZW/SWS: stack **React.js + Spring Boot (REST) + MySQL + Docker + Maven**, JWT, role ADMIN / ORGANIZER / USER (kierowca)  
+- ERD w docs jest bardziej znormalizowany (roles, organizers, categories, locations, regions) — w MVP zachowano prostszy model JPA + **ten sam kontrakt JSON `/api/*`**, żeby web/Expo działały bez zmian  
 
 ### Trasy aplikacji
 
@@ -120,9 +126,15 @@ Wejdź na http://127.0.0.1:8081/login
 | `/zostan-organizatorem` | Wniosek o rolę | zalecane login |
 | `/terms`, `/privacy` | Regulamin / RODO | — |
 
-### Uwaga o tymczasowym wyłączeniu backendu
+---
 
-Backend był chwilowo zakomentowany w `docker-compose.yml` (działał tylko `web`). **Ponownie włączony i przebudowany** — bez API logowanie nie działa.
+## 6b. Migracja Express/Postgres → Spring/MySQL (2026-08-01)
+
+- Usunięto Node/Express/Prisma z `backend/`  
+- Dodano Maven/`pom.xml` + `./mvnw`, Dockerfile multi-stage (Temurin 21), profile `docker`  
+- Compose: `postgres` → `mysql:8.4` (host **3307**), backup → `mysqldump`  
+- Testy API: MockMvc + Testcontainers (lub Compose MySQL przez `TEST_DB_URL`) — **20/20 PASS** (`docs/testy/wyniki/`)  
+- Dokumentacja: `MVP.md`, `changes.md`, `TESTY.md`, `Guidelines.md`, `README.md`  
 
 ---
 
@@ -167,27 +179,26 @@ Uproszczona app w `mobile/`: login, lista wydarzeń, szczegóły, zapis na start
 
 ## 10. Testy automatyczne (2026-08-01) — dokumentacja dyplomowa
 
-Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wraz z artefaktami do załączenia do pracy dyplomowej.
+Pełny zestaw testów dla **API**, **web** i **mobile** (po migracji API = Spring Boot).
 
 ### Narzędzia
 
 | Warstwa | Narzędzie | Pliki |
 |---------|-----------|--------|
-| API (integracja) | Vitest + Supertest | `backend/tests/api.integration.test.ts` |
+| API (integracja + unit) | JUnit 5 + MockMvc + Testcontainers | `backend/src/test/java/pl/raceportal/` |
 | Mobile (unit) | Vitest | `mobile/tests/unit.client.test.ts` |
 | Web + Mobile E2E | Playwright (Chromium) | `tests/e2e/web.spec.ts`, `tests/e2e/mobile.spec.ts` |
-| Orkiestracja | skrypt + npm scripts | `scripts/run-tests.sh`, root `package.json` (`test:*`) |
+| Orkiestracja | skrypt + npm scripts | `scripts/test-api.sh`, `scripts/run-tests.sh`, `package.json` |
 
-### Wynik ostatniego przebiegu
+### Wynik ostatniego przebiegu (API Spring)
 
 | Zestaw | Wynik |
 |--------|-------|
-| API integration | **20 / 20 PASS** |
-| Mobile unit | **2 / 2 PASS** |
-| Playwright E2E (web-desktop + web-mobile-viewport + mobile-expo) | **29 / 29 PASS** |
-| **Razem** | **51 / 51 PASS** |
+| API JUnit (MockMvc) | **20 / 20 PASS** |
+| Mobile unit (historyczny) | **2 / 2 PASS** |
+| Playwright E2E (historyczny, Express era) | **29 / 29 PASS** — smoke po migracji: `npx playwright test tests/e2e/web.spec.ts` |
 
-Środowisko: Docker (API `:4000`, Web `:8081`), Expo web `:8082`, data przebiegu **2026-08-01**.
+Środowisko API: Docker MySQL + Spring `:4000`, data **2026-08-01**.
 
 ### Dokumentacja i artefakty
 
@@ -195,7 +206,7 @@ Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wr
 |------|-----------|
 | [`docs/testy/TESTY.md`](./testy/TESTY.md) | Metodyka, piramida, przypadki TC-*, uruchomienie, mapowanie do rozdziału dyplomu |
 | [`docs/testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Werdykt + tabele wyników |
-| `docs/testy/wyniki/*.log` | Logi Vitest / Playwright |
+| `docs/testy/wyniki/*.log` | Logi Surefire / Playwright / Vitest mobile |
 | `docs/testy/wyniki/playwright-junit.xml` | JUnit (CI / załącznik) |
 | `docs/testy/wyniki/playwright-results.json` | Surowy raport JSON |
 | `docs/testy/wyniki/playwright-report/` | Raport HTML Playwright |
@@ -206,8 +217,8 @@ Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wr
 docker compose up -d
 cd mobile && npx expo start --web --port 8082   # osobny terminal — E2E mobile
 
-npm --prefix backend test      # API
-npm --prefix mobile test       # unit mobile
+npm run test:api               # JUnit / MockMvc (./mvnw lub Docker Maven)
+npm run test:mobile-unit       # unit mobile
 npx playwright test            # E2E web + mobile
 # albo: npm run test:report    # skrypt zbierający logi do docs/testy/wyniki/
 ```

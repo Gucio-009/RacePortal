@@ -9,7 +9,7 @@ Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/
 | Katalog | Opis |
 |---------|------|
 | [`web/`](./web/) | Aplikacja webowa (Vite + React) |
-| [`backend/`](./backend/) | API (Express + Prisma + PostgreSQL) |
+| [`backend/`](./backend/) | API (Spring Boot + MySQL + JWT) |
 | [`mobile/`](./mobile/) | Aplikacja mobilna (Expo) |
 | [`docs/`](./docs/) | Dokumentacja projektu i dyplomu |
 | [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
@@ -76,14 +76,14 @@ Szczegóły: [`mobile/README.md`](./mobile/README.md)
 
 ## Testy automatyczne
 
-Ostatni przebieg: **51 / 51 PASS** — szczegóły w [`docs/testy/`](./docs/testy/TESTY.md).
+Ostatni przebieg API (Spring): **20 / 20 PASS** — szczegóły w [`docs/testy/`](./docs/testy/TESTY.md).
 
 ```bash
 docker compose up -d
 cd mobile && npx expo start --web --port 8082   # terminal 2
 
-npm --prefix backend test
-npm --prefix mobile test
+npm run test:api
+npm run test:mobile-unit
 npx playwright test
 # albo: npm run test:report
 ```

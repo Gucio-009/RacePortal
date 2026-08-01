@@ -1,6 +1,7 @@
 # RacePortal Mobile (MVP uproszczony)
 
-Aplikacja Expo — logowanie, lista wydarzeń, szczegóły, zapis na start.
+Aplikacja Expo — logowanie, lista wydarzeń, szczegóły, zapis na start.  
+Backend: Spring Boot API na `:4000` (ten sam kontrakt `/api/*` co web).
 
 ## Wymagania
 

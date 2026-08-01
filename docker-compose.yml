@@ -1,24 +1,24 @@
 services:
-  db:
-    image: postgres:16-alpine
-    container_name: raceportal-db
+  mysql:
+    image: mysql:8.4
+    container_name: raceportal-mysql
     environment:
-      POSTGRES_USER: raceportal
-      POSTGRES_PASSWORD: raceportal
-      POSTGRES_DB: raceportal
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: raceportal
+      MYSQL_USER: raceportal
+      MYSQL_PASSWORD: raceportal
     ports:
-      - "5433:5432"
+      - "3307:3306"
     volumes:
-      - raceportal_pg:/var/lib/postgresql/data
+      - raceportal_mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U raceportal -d raceportal"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
     restart: unless-stopped
 
   mailhog:
-    # Mailpit — multi-arch (arm64/amd64), SMTP 1025 + UI 8025
     image: axllent/mailpit:v1.21
     container_name: raceportal-mailhog
     ports:
@@ -32,15 +32,19 @@ services:
     env_file:
       - ./backend/.env.example
     environment:
-      DATABASE_URL: postgresql://raceportal:raceportal@db:5432/raceportal?schema=public
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:mysql://mysql:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: raceportal
+      DATABASE_PASSWORD: raceportal
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
       CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082
       JWT_SECRET: raceportal-dev-secret-change-me
+      SEED_ENABLED: "true"
     ports:
       - "4000:4000"
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
       mailhog:
         condition: service_started
@@ -48,7 +52,8 @@ services:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 20
+      start_period: 60s
     restart: unless-stopped
 
   web:
@@ -62,27 +67,29 @@ services:
     restart: unless-stopped
 
   backup:
-    image: postgres:16-alpine
+    image: mysql:8.4
     container_name: raceportal-backup
     environment:
-      DATABASE_URL: postgresql://raceportal:raceportal@db:5432/raceportal
+      MYSQL_HOST: mysql
+      MYSQL_USER: raceportal
+      MYSQL_PASSWORD: raceportal
+      MYSQL_DATABASE: raceportal
     volumes:
       - ./scripts/backup.sh:/backup.sh:ro
       - raceportal_backups:/backups
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        apk add --no-cache gzip >/dev/null
         chmod +x /backup.sh
         while true; do
           /backup.sh || true
           sleep 86400
         done
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  raceportal_pg:
+  raceportal_mysql:
   raceportal_backups:

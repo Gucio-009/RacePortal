@@ -8,6 +8,6 @@ Routing fallback: [OSRM](http://project-osrm.org/) public demo server (dev). Opt
 
 ### Narzędzia testowe (dev)
 
-- [Vitest](https://vitest.dev/) — testy API i unit mobile  
+- [Vitest](https://vitest.dev/) — unit testy mobile  
+- [JUnit 5](https://junit.org/) + MockMvc + Testcontainers — testy API (Spring Boot)  
 - [Playwright](https://playwright.dev/) — E2E web i Expo web  
-- [Supertest](https://github.com/ladjs/supertest) — HTTP assertions przeciw API  

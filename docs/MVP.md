@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-01 (reorganizacja monorepo + testy)
+**Ostatnia synchronizacja:** 2026-08-01 (Spring Boot + MySQL; docs + push `wojtek`)
 
 ---
 
@@ -74,7 +74,7 @@ Legenda statusu: **OK** · **Częściowo** · **Brak** · **Ponad**
 
 ## 3. Co jest — stan obecny (porównanie funkcja po funkcji)
 
-Stack: **web** (nginx `:8081`) + **api** (Express/Prisma `:4000`) + **Postgres** (`:5433`) + **Mailpit** (`:8025`) + **backup**.
+Stack: **web** (nginx `:8081`) + **api** (Spring Boot `:4000`) + **MySQL** (`:3307`) + **Mailpit** (`:8025`) + **backup**.
 
 Logowanie: http://127.0.0.1:8081/login  
 | Admin | `admin@raceportal.pl` / `admin123` |  
@@ -83,16 +83,16 @@ Logowanie: http://127.0.0.1:8081/login
 
 | # | Miało być | Jest (stan) | Werdykt |
 |---|-----------|-------------|---------|
-| 1 | Kalendarz wydarzeń | Lista z API, paginacja, cache, UI `/wydarzenia` | **OK** |
+| 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto | **OK** |
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa | **OK** |
 | 4 | Panel admina | `/admin` — userzy, pending events, wnioski org. | **OK** |
-| 5 | Konto kierowcy | JWT, `/dashboard`, edycja profilu | **OK** |
+| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto` | **OK** |
 | 6 | Garaż | CRUD `/garaz` + API | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER + wniosek `/zostan-organizatorem` | **OK** |
 | 9 | Narzędzia org. | `/organizer` — tworzenie wydarzeń, lista zgłoszeń | **OK** |
-| 10 | Baza wydarzeń | PostgreSQL + Prisma | **OK** |
+| 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
 | 11 | Maile | SMTP → Mailpit (rejestracja, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet `/mapa` | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
@@ -126,15 +126,15 @@ Logowanie: http://127.0.0.1:8081/login
 
 ### Jakość — zrobione
 
-- [x] Docker Compose (web + api + db + mail + backup)  
+- [x] Docker Compose (web + api + **MySQL** + mail + backup)  
 - [x] Health checks (`/api/health` + Docker)  
-- [x] Backupy codzienne (kontener `backup`)  
-- [x] Paginacja, indeksy Prisma, cache list wydarzeń  
-- [x] RBAC (USER / ORGANIZER / ADMIN)  
-- [x] Walidacja Zod, rate limiting, helmet / nagłówki CSP + X-Frame-Options (nginx)  
+- [x] Backupy codzienne (kontener `backup` → `mysqldump`)  
+- [x] Paginacja, indeksy JPA, cache list wydarzeń (Caffeine)  
+- [x] RBAC (USER / ORGANIZER / ADMIN) + JWT  
+- [x] Bean Validation, nagłówki CSP + X-Frame-Options (nginx)  
 - [x] Polityka prywatności + nota RODO przy tworzeniu wydarzenia  
 - [x] Smoke / testy manualne ścieżek ról  
-- [x] Testy automatyczne: Vitest API (20) + Playwright E2E web/mobile (29) + unit mobile (2) — `docs/testy/TESTY.md`  
+- [x] Testy automatyczne API: JUnit MockMvc **20/20 PASS** + Playwright E2E — `docs/testy/TESTY.md`  
 
 ---
 
@@ -170,7 +170,8 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Galeria z API (upcoming + archive) | Uzupełnienie UX poza ścisłą listą MPC |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
 | Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
-| Automatyczne testy (Vitest + Playwright) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
+| Automatyczne testy (JUnit + Playwright + Vitest mobile) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
+| Migracja backendu na Spring Boot + MySQL | Zgodność ze stackiem DZW (React / Spring / MySQL / Docker / Maven) |
 
 ---
 
@@ -179,9 +180,9 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 ```
 MVP funkcje 1–11:     ████████████████████  11/11 OK
 MVP funkcje 12–15:    ██████████████░░░░░░   12+14 OK; 13 częściowo; 15 Expo uproszczone
-Odbiór (e2e + perf):  ████████████░░░░░░░░   e2e PASS (51); brak 10k/50RPS
-Jakość (Docker/RBAC): ████████████████░░░░   większość OK; HTTPS/alerty brak
-Ponad MVP:            mapa, OSRM, Mailpit, Expo mobile, automatyczne testy + docs
+Odbiór (e2e + perf):  ████████████░░░░░░░░   API JUnit 20/20; E2E Playwright; brak 10k/50RPS
+Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL OK; HTTPS/alerty brak
+Ponad MVP:            mapa, OSRM, Mailpit, Expo mobile, Spring Boot + auto-testy + docs
 ```
 
 ### Komendy
@@ -196,7 +197,7 @@ docker compose up --build -d --remove-orphans
 cd mobile && npm install && npm start
 
 # Testy automatyczne (Expo web :8082 potrzebne do E2E mobile)
-npm --prefix backend test && npm --prefix mobile test && npx playwright test
+npm run test:api && npm run test:mobile-unit && npx playwright test
 ```
 
 ### Dokumentacja powiązana
@@ -205,7 +206,7 @@ npm --prefix backend test && npm --prefix mobile test && npx playwright test
 |------|------|
 | [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy, §11 = struktura repo) |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testowe |
-| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt **51/51 PASS** |
+| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt API Spring **20/20 PASS** |
 | [`../README.md`](../README.md) | Szybki start + testy |
 | [`../mobile/README.md`](../mobile/README.md) | Expo + testy mobile |
 | [`README.md`](./README.md) | Indeks dokumentacji |

@@ -1,7 +1,7 @@
 package pl.raceportal.domain;
 
 public enum Role {
-  USER,
-  ORGANIZER,
-  ADMIN
+    USER,
+    ORGANIZER,
+    ADMIN
 }

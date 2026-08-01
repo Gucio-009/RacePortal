@@ -7,7 +7,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 | Katalog | Zawartość |
 |---------|-----------|
 | `web/` | Aplikacja webowa (Vite/React) + Docker image frontendu |
-| `backend/` | API (Express/Prisma) |
+| `backend/` | API (Spring Boot + MySQL) |
 | `mobile/` | Aplikacja mobilna (Expo) |
 | `docs/` | Dokumentacja projektu i dyplomu |
 | `tests/e2e/` | Testy E2E Playwright (web + mobile Expo) |

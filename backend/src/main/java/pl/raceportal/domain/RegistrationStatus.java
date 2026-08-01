@@ -1,8 +1,8 @@
 package pl.raceportal.domain;
 
 public enum RegistrationStatus {
-  PENDING,
-  APPROVED,
-  REJECTED,
-  CANCELLED
+    PENDING,
+    APPROVED,
+    REJECTED,
+    CANCELLED
 }

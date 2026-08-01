@@ -47,8 +47,8 @@ section "Preflight środowiska"
   echo "- Mobile Expo web: HTTP $(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8082/ || echo 000)"
 } | tee -a "$SUMMARY"
 
-run_block "1. Testy API (Vitest / integration)" "$OUT/api-vitest.log" \
-  bash -lc "cd '$ROOT/backend' && npm test"
+run_block "1. Testy API (JUnit / MockMvc + MySQL)" "$OUT/api-surefire.log" \
+  bash -lc "'$ROOT/scripts/test-api.sh'"
 
 run_block "2. Testy jednostkowe mobile (Vitest)" "$OUT/mobile-unit.log" \
   bash -lc "cd '$ROOT/mobile' && npx vitest run"
