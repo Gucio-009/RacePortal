@@ -1,0 +1,9 @@
+spring:
+  mail:
+    host: localhost
+    port: 1025
+
+raceportal:
+  seed-on-startup: true
+  jwt:
+    secret: test-secret-key-must-be-long-enough-for-hs256-algorithm-ok

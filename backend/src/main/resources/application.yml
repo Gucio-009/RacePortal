@@ -1,0 +1,41 @@
+server:
+  port: ${PORT:4000}
+
+spring:
+  application:
+    name: raceportal-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3307/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:raceportal}
+    password: ${SPRING_DATASOURCE_PASSWORD:raceportal}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  mail:
+    host: ${SMTP_HOST:127.0.0.1}
+    port: ${SMTP_PORT:1025}
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+raceportal:
+  jwt:
+    secret: ${JWT_SECRET:raceportal-dev-secret-change-me-must-be-long-enough-256bits}
+    expiration-ms: 604800000
+  cors-origins: ${CORS_ORIGIN:http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082}
+  mail-from: ${SMTP_FROM:RacePortal <noreply@raceportal.local>}
+  google-maps-api-key: ${GOOGLE_MAPS_API_KEY:}
+  seed-on-startup: ${SEED_ON_STARTUP:true}
+
+logging:
+  level:
+    org.springframework.security: WARN
+    pl.raceportal: INFO
