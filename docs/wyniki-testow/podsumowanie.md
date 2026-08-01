@@ -101,3 +101,7 @@ npx playwright test
 ```
 
 Pełna dokumentacja metodyki: [`docs/TESTY.md`](../TESTY.md)
+
+Historia wprowadzenia testów: [`changes.md`](../../changes.md) §10 · status MVP: [`MVP.md`](../../MVP.md)
+
+*Synchronizacja dokumentacji projektu: 2026-08-01.*

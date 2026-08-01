@@ -53,7 +53,7 @@ Początkowo dane i auth były lokalne (mock / localStorage) — **zastąpione ba
 
 ## 6. Backend + pełny stack Docker (aktualny stan)
 
-Stack działa end-to-end (stan na **2026-07-31**): `web` + `api` + `db` + Mailpit + `backup`.
+Stack działa end-to-end (stan na **2026-08-01**): `web` + `api` + `db` + Mailpit + `backup` + testy automatyczne (patrz sekcja 10).
 
 ### Usługi (`docker-compose.yml`)
 
@@ -155,14 +155,82 @@ docker compose down
 
 ---
 
-*Ostatnia aktualizacja: 2026-07-31 — pełny stack włączony, docs zsynchronizowane.*
+## 9. Aplikacja mobilna Expo (2026-08-01)
+
+Uproszczona app w `mobile/`: login, lista wydarzeń, szczegóły, zapis na start.
+
+- Stack: Expo 57 + React Navigation, dark/gold UI  
+- CORS: `CORS_ORIGIN` rozszerzone o Expo web (`:8082`); tokeny w `localStorage` na web  
+- Docs: [`mobile/README.md`](./mobile/README.md)
+
+---
+
+## 10. Testy automatyczne (2026-08-01) — dokumentacja dyplomowa
+
+Dodano pełny zestaw testów automatycznych dla **API**, **web** i **mobile** wraz z artefaktami do załączenia do pracy dyplomowej.
+
+### Narzędzia
+
+| Warstwa | Narzędzie | Pliki |
+|---------|-----------|--------|
+| API (integracja) | Vitest + Supertest | `backend/tests/api.integration.test.ts` |
+| Mobile (unit) | Vitest | `mobile/tests/unit.client.test.ts` |
+| Web + Mobile E2E | Playwright (Chromium) | `e2e/web.spec.ts`, `e2e/mobile.spec.ts` |
+| Orkiestracja | skrypt + npm scripts | `scripts/run-tests.sh`, root `package.json` (`test:*`) |
+
+### Wynik ostatniego przebiegu
+
+| Zestaw | Wynik |
+|--------|-------|
+| API integration | **20 / 20 PASS** |
+| Mobile unit | **2 / 2 PASS** |
+| Playwright E2E (web-desktop + web-mobile-viewport + mobile-expo) | **29 / 29 PASS** |
+| **Razem** | **51 / 51 PASS** |
+
+Środowisko: Docker (API `:4000`, Web `:8081`), Expo web `:8082`, data przebiegu **2026-08-01**.
+
+### Dokumentacja i artefakty
+
+| Plik | Zawartość |
+|------|-----------|
+| [`docs/TESTY.md`](./docs/TESTY.md) | Metodyka, piramida, przypadki TC-*, uruchomienie, mapowanie do rozdziału dyplomu |
+| [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) | Werdykt + tabele wyników |
+| `docs/wyniki-testow/*.log` | Logi Vitest / Playwright |
+| `docs/wyniki-testow/playwright-junit.xml` | JUnit (CI / załącznik) |
+| `docs/wyniki-testow/playwright-results.json` | Surowy raport JSON |
+| `docs/wyniki-testow/playwright-report/` | Raport HTML Playwright |
+
+### Uruchomienie
+
+```bash
+docker compose up -d
+cd mobile && npx expo start --web --port 8082   # osobny terminal — E2E mobile
+
+npm --prefix backend test      # API
+npm --prefix mobile test       # unit mobile
+npx playwright test            # E2E web + mobile
+# albo: npm run test:report    # skrypt zbierający logi do docs/wyniki-testow/
+```
+
+### Pokrycie względem MVP
+
+- Funkcje 1–11: pokryte głównie testami API + E2E web (auth, wydarzenia, garaż, RBAC admin/org).  
+- #12 mapa, #14 archiwum: E2E web.  
+- #15 mobile: unit + E2E Expo web (login, lista, detal, zapis, wylogowanie).  
+- #11 maile: poza automatami (weryfikacja Mailpit ręcznie).  
+- Brak formalnego testu obciążenia 10k/50 RPS (pozostaje w lukach MVP).
+
+---
 
 ## Powiązane dokumenty
 
 - [`MVP.md`](./MVP.md) — **zawsze** porównanie: miało być / jest / zrobione / do zrobienia / ponad MVP  
+- [`docs/TESTY.md`](./docs/TESTY.md) — testy automatyczne (dyplom)  
+- [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) — ostatnie wyniki PASS  
 - [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) — shadcn/ui, Unsplash, mapa, OSRM  
-- [`guidelines/Guidelines.md`](./guidelines/Guidelines.md) — wytyczne + obowiązek aktualizacji MVP.md
+- [`guidelines/Guidelines.md`](./guidelines/Guidelines.md) — wytyczne + obowiązek aktualizacji MVP.md / changes.md  
+- [`mobile/README.md`](./mobile/README.md) — Expo mobile  
 
-## 10. Aplikacja mobilna Expo (2026-08-01)
+---
 
-Uproszczona app w `mobile/`: login, lista wydarzeń, szczegóły, zapis na start. Stack: Expo 57 + React Navigation. Docs: `mobile/README.md`.
+*Ostatnia aktualizacja: 2026-08-01 — testy automatyczne 51/51 PASS, docs zsynchronizowane.*

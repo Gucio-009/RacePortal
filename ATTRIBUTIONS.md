@@ -5,3 +5,9 @@ This Figma Make file includes photos from [Unsplash](https://unsplash.com) used 
 Map tiles on `/mapa`: OpenStreetMap / CARTO (attribution shown on the map).
 
 Routing fallback: [OSRM](http://project-osrm.org/) public demo server (dev). Optional Google Directions via `GOOGLE_MAPS_API_KEY`.
+
+### Narzędzia testowe (dev)
+
+- [Vitest](https://vitest.dev/) — testy API i unit mobile  
+- [Playwright](https://playwright.dev/) — E2E web i Expo web  
+- [Supertest](https://github.com/ladjs/supertest) — HTTP assertions przeciw API  

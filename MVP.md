@@ -56,8 +56,8 @@ Legenda statusu: **OK** · **Częściowo** · **Brak** · **Ponad**
 
 ### 2.3. Warunki odbioru (miało być)
 
-1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e)  
-2. UX mobile-first  
+1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e) — **e2e automatyczne: PASS (51)**; patrz [`docs/TESTY.md`](./docs/TESTY.md)  
+2. UX mobile-first — web responsive + Expo `mobile/`  
 3. Spójność z pitch / prezentacją  
 
 ### 2.4. Jakość (miało być)
@@ -194,7 +194,20 @@ docker compose up --build -d --remove-orphans
 # Maile:   http://127.0.0.1:8025/
 
 cd mobile && npm install && npm start
+
+# Testy automatyczne (Expo web :8082 potrzebne do E2E mobile)
+npm --prefix backend test && npm --prefix mobile test && npx playwright test
 ```
+
+### Dokumentacja powiązana
+
+| Plik | Rola |
+|------|------|
+| [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy) |
+| [`docs/TESTY.md`](./docs/TESTY.md) | Metodyka i przypadki testowe |
+| [`docs/wyniki-testow/podsumowanie.md`](./docs/wyniki-testow/podsumowanie.md) | Ostatni werdykt **51/51 PASS** |
+| [`README.md`](./README.md) | Szybki start + testy |
+| [`mobile/README.md`](./mobile/README.md) | Expo + testy mobile |
 
 ---
 
@@ -207,9 +220,10 @@ Przy każdej istotnej zmianie w projekcie **zawsze** zaktualizuj w tym pliku:
 3. **Sekcja 5** — usuń zamknięte braki; dodaj nowe luki  
 4. **Sekcja 6** — dopisz rzeczy zrobione poza zakresem MVP  
 5. Datę **Ostatnia synchronizacja** na górze  
+6. Przy zmianie testów — też `docs/TESTY.md`, `docs/wyniki-testow/podsumowanie.md` i wpis w `changes.md`
 
 Nie kasuj sekcji „Co miało być” — to baza porównania.
 
 ---
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-01 (testy).*

@@ -240,4 +240,17 @@ Niepowodzenie pojedynczego TC należy opisać w pracy dyplomowej jako defect / o
 
 ---
 
-*Dokument testów RacePortal — aktualizacja: 2026-08-01.*
+## 9. Powiązane dokumenty w repozytorium
+
+| Plik | Zawartość |
+|------|-----------|
+| [`docs/wyniki-testow/podsumowanie.md`](./wyniki-testow/podsumowanie.md) | Ostatni przebieg — **51/51 PASS** |
+| [`MVP.md`](../MVP.md) | Status odbioru e2e vs luki (perf 10k/50 RPS) |
+| [`changes.md`](../changes.md) | Sekcja 10 — wprowadzenie zestawu testów |
+| [`README.md`](../README.md) | Szybkie komendy uruchomienia testów |
+| [`mobile/README.md`](../mobile/README.md) | Testy warstwy mobile |
+| [`guidelines/Guidelines.md`](../guidelines/Guidelines.md) | Obowiązek aktualizacji docs po zmianach |
+
+---
+
+*Dokument testów RacePortal — aktualizacja: 2026-08-01 (synchronizacja wszystkich .md po przebiegu PASS).*
