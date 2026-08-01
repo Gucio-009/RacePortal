@@ -48,4 +48,21 @@ docker compose down
 
 ---
 
+## Aplikacja mobilna (uproszczona)
+
+Expo — logowanie, lista wydarzeń, szczegóły, zapis.
+
+```bash
+# najpierw Docker (API na :4000)
+docker compose up -d
+
+cd mobile
+npm install
+npm start
+```
+
+Szczegóły: [`mobile/README.md`](./mobile/README.md)
+
+---
+
 Więcej o zakresie MVP: [`MVP.md`](./MVP.md)

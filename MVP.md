@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-07-31
+**Ostatnia synchronizacja:** 2026-08-01
 
 ---
 
@@ -97,7 +97,7 @@ Logowanie: http://127.0.0.1:8081/login
 | 12 | Mapa | Leaflet `/mapa` | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
-| 15 | Aplikacja mobilna | Responsywny web; brak PWA / native | **Częściowo** |
+| 15 | Aplikacja mobilna | Expo w `mobile/` (login, lista, detal, zapis) + web responsive | **Częściowo** |
 
 ---
 
@@ -122,7 +122,7 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] 12 Mapa wydarzeń (Leaflet)  
 - [~] 13 Trasa (OSRM; Google opcjonalnie)  
 - [x] 14 Archiwum  
-- [~] 15 Mobile (responsive web, nie native/PWA)  
+- [~] 15 Mobile — Expo MVP (`mobile/`: auth, events, rejestracja); brak store/PWA/garaż/mapa w app  
 
 ### Jakość — zrobione
 
@@ -147,7 +147,7 @@ Logowanie: http://127.0.0.1:8081/login
 | Średni | #13 Google Maps | Brak klucza `GOOGLE_MAPS_API_KEY` w domyślnym env — jest OSRM |
 | Średni | Alerty | Brak automatycznego alertowania przy błędach krytycznych |
 | Średni | Backup restore | Skrypt dump jest; restore nie jest udokumentowany / przetestowany formalnie |
-| Niski (odbiór formalnie 12–15) | #15 Aplikacja mobilna | Brak PWA / store app — tylko mobile-first web |
+| Niski (odbiór formalnie 12–15) | #15 Aplikacja mobilna | Expo uproszczone OK; brak: PWA, publikacja w store, garaż/mapa/admin w mobile |
 | Niski | Social OAuth | Przyciski Google/Facebook to UI demo, nie produkcyjny OAuth (i social jest **poza** MVP) |
 
 ---
@@ -168,6 +168,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Panel wniosków organizatora end-to-end | Wniosek → mail/admin approve → rola ORGANIZER |
 | Galeria z API (upcoming + archive) | Uzupełnienie UX poza ścisłą listą MPC |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
+| Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
 
 ---
 
@@ -175,10 +176,10 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 
 ```
 MVP funkcje 1–11:     ████████████████████  11/11 OK
-MVP funkcje 12–15:    ████████████░░░░░░░░   12+14 OK; 13 i 15 częściowo
+MVP funkcje 12–15:    ██████████████░░░░░░   12+14 OK; 13 częściowo; 15 Expo uproszczone
 Odbiór (e2e + perf):  ████░░░░░░░░░░░░░░░░   smoke OK; e2e i 10k/50RPS brak
 Jakość (Docker/RBAC): ████████████████░░░░   większość OK; HTTPS/alerty brak
-Ponad MVP:            mapa, OSRM, Mailpit, auto-archiwum, seed ról, hardening
+Ponad MVP:            mapa, OSRM, Mailpit, auto-archiwum, seed ról, Expo mobile
 ```
 
 ### Komendy
@@ -189,6 +190,8 @@ docker compose up --build -d --remove-orphans
 # Login:   http://127.0.0.1:8081/login
 # Health:  http://127.0.0.1:8081/api/health
 # Maile:   http://127.0.0.1:8025/
+
+cd mobile && npm install && npm start
 ```
 
 ---

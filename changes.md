@@ -162,3 +162,7 @@ docker compose down
 - [`MVP.md`](./MVP.md) — **zawsze** porównanie: miało być / jest / zrobione / do zrobienia / ponad MVP  
 - [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) — shadcn/ui, Unsplash, mapa, OSRM  
 - [`guidelines/Guidelines.md`](./guidelines/Guidelines.md) — wytyczne + obowiązek aktualizacji MVP.md
+
+## 10. Aplikacja mobilna Expo (2026-08-01)
+
+Uproszczona app w `mobile/`: login, lista wydarzeń, szczegóły, zapis na start. Stack: Expo 57 + React Navigation. Docs: `mobile/README.md`.

@@ -6,3 +6,5 @@ dist
 .env.*
 backend/node_modules
 backend/dist
+mobile/node_modules
+mobile/.expo
