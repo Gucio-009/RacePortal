@@ -16,8 +16,13 @@ export class ApiError extends Error {
   }
 }
 
+const isWeb = Platform.OS === "web";
+
 export async function getToken(): Promise<string | null> {
   try {
+    if (isWeb && typeof localStorage !== "undefined") {
+      return localStorage.getItem(TOKEN_KEY);
+    }
     return await SecureStore.getItemAsync(TOKEN_KEY);
   } catch {
     return null;
@@ -25,8 +30,17 @@ export async function getToken(): Promise<string | null> {
 }
 
 export async function setToken(token: string | null): Promise<void> {
-  if (token) await SecureStore.setItemAsync(TOKEN_KEY, token);
-  else await SecureStore.deleteItemAsync(TOKEN_KEY);
+  try {
+    if (isWeb && typeof localStorage !== "undefined") {
+      if (token) localStorage.setItem(TOKEN_KEY, token);
+      else localStorage.removeItem(TOKEN_KEY);
+      return;
+    }
+    if (token) await SecureStore.setItemAsync(TOKEN_KEY, token);
+    else await SecureStore.deleteItemAsync(TOKEN_KEY);
+  } catch {
+    /* ignore storage errors */
+  }
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -35,11 +49,16 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (token) headers.Authorization = `Bearer ${token}`;
 
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers,
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${path}`, {
+      method,
+      headers,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(0, `Brak połączenia z API (${API_URL})`);
+  }
 
   if (res.status === 204) return undefined as T;
 
