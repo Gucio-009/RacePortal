@@ -134,6 +134,7 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] Walidacja Zod, rate limiting, helmet / nagłówki CSP + X-Frame-Options (nginx)  
 - [x] Polityka prywatności + nota RODO przy tworzeniu wydarzenia  
 - [x] Smoke / testy manualne ścieżek ról  
+- [x] Testy automatyczne: Vitest API (20) + Playwright E2E web/mobile (29) + unit mobile (2) — `docs/TESTY.md`  
 
 ---
 
@@ -141,7 +142,6 @@ Logowanie: http://127.0.0.1:8081/login
 
 | Priorytet | Pozycja | Brak / luką |
 |-----------|---------|-------------|
-| Wysoki (odbiór) | Testy e2e | Brak automatycznych e2e dla ścieżek 1–11 |
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
 | Średni | HTTPS / HSTS | Brak terminacji TLS (do reverse proxy w prod) |
 | Średni | #13 Google Maps | Brak klucza `GOOGLE_MAPS_API_KEY` w domyślnym env — jest OSRM |
@@ -179,9 +179,9 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 ```
 MVP funkcje 1–11:     ████████████████████  11/11 OK
 MVP funkcje 12–15:    ██████████████░░░░░░   12+14 OK; 13 częściowo; 15 Expo uproszczone
-Odbiór (e2e + perf):  ████░░░░░░░░░░░░░░░░   smoke OK; e2e i 10k/50RPS brak
+Odbiór (e2e + perf):  ████████████░░░░░░░░   e2e PASS (51); brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   większość OK; HTTPS/alerty brak
-Ponad MVP:            mapa, OSRM, Mailpit, auto-archiwum, seed ról, Expo mobile
+Ponad MVP:            mapa, OSRM, Mailpit, Expo mobile, automatyczne testy + docs
 ```
 
 ### Komendy
