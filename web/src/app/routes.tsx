@@ -18,6 +18,7 @@ import { BecomeOrganizerPage } from "./pages/BecomeOrganizerPage";
 import { EventsMapPage } from "./pages/EventsMapPage";
 import { TermsPage, PrivacyPage } from "./pages/LegalPages";
 import { SettingsPage } from "./pages/SettingsPage";
+import { AccountPage } from "./pages/AccountPage";
 import { useAuth } from "./context/AuthContext";
 import type { UserRole } from "./lib/types";
 import { Loader2 } from "lucide-react";
@@ -89,6 +90,14 @@ function ProtectedOrganizer() {
   );
 }
 
+function ProtectedAccount() {
+  return (
+    <AuthGate>
+      <AccountPage />
+    </AuthGate>
+  );
+}
+
 function ProtectedSettings() {
   return (
     <AuthGate>
@@ -107,6 +116,7 @@ export const router = createBrowserRouter([
       { path: "register", Component: RegisterPage },
       { path: "forgot-password", Component: ForgotPasswordPage },
       { path: "dashboard", Component: ProtectedDashboard },
+      { path: "konto", Component: ProtectedAccount },
       { path: "ustawienia", Component: ProtectedSettings },
       { path: "garaz", Component: ProtectedGarage },
       { path: "admin", Component: ProtectedAdmin },

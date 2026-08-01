@@ -1,4 +1,5 @@
 import { Outlet, Link, useNavigate, NavLink } from "react-router";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   Flag,
@@ -9,16 +10,9 @@ import {
   LayoutDashboard,
   Settings,
   ChevronDown,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
@@ -35,8 +29,32 @@ function roleLabel(role?: string) {
 export function RootLayout() {
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  const go = (path: string) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
 
   const handleLogout = () => {
+    setMenuOpen(false);
     logout();
     toast.success("Wylogowano", { description: "Do zobaczenia na torze 🏁" });
     confetti({
@@ -101,88 +119,113 @@ export function RootLayout() {
             )}
 
             {isAuthenticated ? (
-              <DropdownMenu modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    aria-label="Menu konta"
-                    className="flex items-center gap-2 hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-full pl-1 pr-3 py-1 h-auto"
-                  >
-                    <Avatar className="w-8 h-8 border-2 border-[#FFD700]">
-                      <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                      <AvatarFallback className="bg-[#FFD700] text-[#121212]">
-                        {user?.username?.charAt(0).toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="hidden sm:inline max-w-[120px] truncate" style={{ fontWeight: 600 }}>
-                      {user?.username}
-                    </span>
-                    <ChevronDown className="w-4 h-4 text-[#FFD700] shrink-0" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  sideOffset={8}
-                  className="w-64 bg-[#1a1a1a] border-[#2a2a2a] text-white z-[100] shadow-xl"
+              <div className="relative" ref={menuRef}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  aria-label="Menu konta"
+                  aria-haspopup="menu"
+                  aria-expanded={menuOpen}
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="flex items-center gap-2 hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-full pl-1 pr-3 py-1 h-auto"
                 >
-                  <DropdownMenuLabel className="px-3 py-3">
-                    <div className="text-white font-semibold truncate">{user?.username}</div>
-                    <div className="text-[#9ca3af] text-xs truncate font-normal">{user?.email}</div>
-                    <div className="text-[#FFD700] text-xs mt-1 font-normal tracking-wide">
-                      {roleLabel(user?.role)}
+                  <Avatar className="w-8 h-8 border-2 border-[#FFD700]">
+                    <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
+                    <AvatarFallback className="bg-[#FFD700] text-[#121212]">
+                      {user?.username?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="hidden sm:inline max-w-[120px] truncate" style={{ fontWeight: 600 }}>
+                    {user?.username}
+                  </span>
+                  <ChevronDown
+                    className={`w-4 h-4 text-[#FFD700] shrink-0 transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                  />
+                </Button>
+
+                {menuOpen && (
+                  <div
+                    role="menu"
+                    className="absolute right-0 mt-2 w-64 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] text-white shadow-xl z-[200] overflow-hidden"
+                  >
+                    <div className="px-3 py-3 border-b border-[#2a2a2a]">
+                      <div className="text-white font-semibold truncate">{user?.username}</div>
+                      <div className="text-[#9ca3af] text-xs truncate">{user?.email}</div>
+                      <div className="text-[#FFD700] text-xs mt-1 tracking-wide">{roleLabel(user?.role)}</div>
                     </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
-                  <DropdownMenuItem
-                    onSelect={() => navigate("/dashboard")}
-                    className="cursor-pointer text-white focus:bg-[#2a2a2a] focus:text-[#FFD700]"
-                  >
-                    <User className="mr-2 h-4 w-4 text-[#FFD700]" />
-                    Moje konto
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => navigate("/ustawienia")}
-                    className="cursor-pointer text-white focus:bg-[#2a2a2a] focus:text-[#FFD700]"
-                  >
-                    <Settings className="mr-2 h-4 w-4 text-[#FFD700]" />
-                    Ustawienia
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onSelect={() => navigate("/garaz")}
-                    className="cursor-pointer text-white focus:bg-[#2a2a2a] focus:text-[#FFD700]"
-                  >
-                    <Car className="mr-2 h-4 w-4 text-[#FFD700]" />
-                    Garaż
-                  </DropdownMenuItem>
-                  {isOrganizer && (
-                    <DropdownMenuItem
-                      onSelect={() => navigate("/organizer")}
-                      className="cursor-pointer text-white focus:bg-[#2a2a2a] focus:text-[#FFD700]"
+
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      onClick={() => go("/dashboard")}
                     >
-                      <LayoutDashboard className="mr-2 h-4 w-4 text-[#FFD700]" />
-                      Panel organizatora
-                    </DropdownMenuItem>
-                  )}
-                  {isAdmin && (
-                    <DropdownMenuItem
-                      onSelect={() => navigate("/admin")}
-                      className="cursor-pointer text-white focus:bg-[#2a2a2a] focus:text-[#FFD700]"
+                      <User className="h-4 w-4 text-[#FFD700]" />
+                      Moje konto
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      onClick={() => go("/konto")}
                     >
-                      <Shield className="mr-2 h-4 w-4 text-[#FFD700]" />
-                      Panel admina
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator className="bg-[#2a2a2a]" />
-                  <DropdownMenuItem
-                    onSelect={handleLogout}
-                    className="cursor-pointer text-[#ff8a8a] focus:bg-[#2a2a2a] focus:text-[#ff6b6b]"
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    Wyloguj
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <KeyRound className="h-4 w-4 text-[#FFD700]" />
+                      Dane konta (email / hasło)
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      onClick={() => go("/ustawienia")}
+                    >
+                      <Settings className="h-4 w-4 text-[#FFD700]" />
+                      Ustawienia
+                    </button>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      onClick={() => go("/garaz")}
+                    >
+                      <Car className="h-4 w-4 text-[#FFD700]" />
+                      Garaż
+                    </button>
+                    {isOrganizer && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                        onClick={() => go("/organizer")}
+                      >
+                        <LayoutDashboard className="h-4 w-4 text-[#FFD700]" />
+                        Panel organizatora
+                      </button>
+                    )}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                        onClick={() => go("/admin")}
+                      >
+                        <Shield className="h-4 w-4 text-[#FFD700]" />
+                        Panel admina
+                      </button>
+                    )}
+
+                    <div className="border-t border-[#2a2a2a]" />
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[#ff8a8a] hover:bg-[#2a2a2a] hover:text-[#ff6b6b]"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="h-4 w-4" />
+                      Wyloguj
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link to="/login">
                 <Button className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90" style={{ fontWeight: 700 }}>

@@ -15,7 +15,15 @@ interface AuthContextType {
   ) => Promise<{ ok: boolean; message?: string }>;
   socialLogin: (provider: "google" | "facebook") => Promise<void>;
   logout: () => void;
-  updateProfile: (data: { username?: string; avatar?: string }) => Promise<{ ok: boolean; message?: string }>;
+  updateProfile: (data: {
+    username?: string;
+    email?: string;
+    avatar?: string;
+  }) => Promise<{ ok: boolean; message?: string }>;
+  changePassword: (
+    currentPassword: string,
+    newPassword: string,
+  ) => Promise<{ ok: boolean; message?: string }>;
   forgotPassword: (email: string) => Promise<{ ok: boolean; message: string }>;
   isAuthenticated: boolean;
 }
@@ -94,13 +102,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => persistAuth(null);
 
-  const updateProfile = async (data: { username?: string; avatar?: string }) => {
+  const updateProfile = async (data: { username?: string; email?: string; avatar?: string }) => {
     try {
       const updated = await api.patch<User>("/api/auth/me", data);
       setUser(updated);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się zaktualizować profilu";
+      return { ok: false, message };
+    }
+  };
+
+  const changePassword = async (currentPassword: string, newPassword: string) => {
+    try {
+      const res = await api.post<{ message: string }>("/api/auth/me/password", {
+        currentPassword,
+        newPassword,
+      });
+      return { ok: true, message: res.message };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się zmienić hasła";
       return { ok: false, message };
     }
   };
@@ -126,6 +147,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         socialLogin,
         logout,
         updateProfile,
+        changePassword,
         forgotPassword,
         isAuthenticated: !!user,
       }}

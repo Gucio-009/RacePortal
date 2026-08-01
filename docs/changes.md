@@ -262,4 +262,12 @@ Preferencje ustawień w `localStorage` (`raceportal_settings`).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-01 — menu konta + strona ustawień.*
+## 13. Dane konta: email / hasło + pewniejsze menu (2026-08-01)
+
+- Menu avatara bez Radix Portal (działa niezawodnie w preview): **Moje konto**, **Dane konta**, **Ustawienia**, **Wyloguj**  
+- Nowa strona `/konto` — zmiana username, email, awatara i hasła  
+- API: `PATCH /api/auth/me` (email), `POST /api/auth/me/password` (obecne + nowe hasło) + maile potwierdzające  
+
+---
+
+*Ostatnia aktualizacja: 2026-08-01 — dane konta + wylogowanie z menu.*

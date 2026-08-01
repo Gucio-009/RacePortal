@@ -117,13 +117,38 @@ authRouter.patch("/me", requireAuth, async (req, res, next) => {
   try {
     const schema = z.object({
       username: z.string().min(2).max(40).optional(),
-      avatar: z.string().url().optional(),
+      email: z.string().email().optional(),
+      avatar: z.union([z.string().url(), z.literal("")]).optional(),
     });
     const data = schema.parse(req.body);
+    const current = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    if (!current) return res.status(404).json({ error: "Nie znaleziono użytkownika" });
+
+    if (data.email) {
+      const email = data.email.toLowerCase();
+      if (email !== current.email) {
+        const taken = await prisma.user.findUnique({ where: { email } });
+        if (taken) return res.status(409).json({ error: "Ten email jest już zajęty" });
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id: req.user!.id },
-      data,
+      data: {
+        ...(data.username !== undefined ? { username: data.username } : {}),
+        ...(data.email !== undefined ? { email: data.email.toLowerCase() } : {}),
+        ...(data.avatar !== undefined ? { avatar: data.avatar || null } : {}),
+      },
     });
+
+    if (data.email && data.email.toLowerCase() !== current.email) {
+      await sendMail(
+        user.email,
+        "Zmiana adresu e-mail — RACEPORTAL",
+        `<p>Cześć ${user.username},</p><p>Twój adres e-mail w RACEPORTAL został zmieniony na <strong>${user.email}</strong>.</p>`,
+      );
+    }
+
     res.json({
       id: user.id,
       email: user.email,
@@ -132,6 +157,40 @@ authRouter.patch("/me", requireAuth, async (req, res, next) => {
       avatar: user.avatar,
       memberSince: user.createdAt.getFullYear().toString(),
     });
+  } catch (e) {
+    next(e);
+  }
+});
+
+authRouter.post("/me/password", requireAuth, authLimiter, async (req, res, next) => {
+  try {
+    const schema = z.object({
+      currentPassword: z.string().min(1),
+      newPassword: z.string().min(6).max(100),
+    });
+    const data = schema.parse(req.body);
+    const user = await prisma.user.findUnique({ where: { id: req.user!.id } });
+    if (!user) return res.status(404).json({ error: "Nie znaleziono użytkownika" });
+
+    const ok = await bcrypt.compare(data.currentPassword, user.passwordHash);
+    if (!ok) return res.status(400).json({ error: "Obecne hasło jest nieprawidłowe" });
+
+    if (data.currentPassword === data.newPassword) {
+      return res.status(400).json({ error: "Nowe hasło musi być inne niż obecne" });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: await bcrypt.hash(data.newPassword, 10) },
+    });
+
+    await sendMail(
+      user.email,
+      "Hasło zmienione — RACEPORTAL",
+      `<p>Cześć ${user.username},</p><p>Hasło do Twojego konta RACEPORTAL zostało zmienione. Jeśli to nie Ty — skontaktuj się z administratorem.</p>`,
+    );
+
+    res.json({ message: "Hasło zostało zmienione" });
   } catch (e) {
     next(e);
   }
