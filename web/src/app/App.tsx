@@ -23,7 +23,7 @@ export default function App() {
     <AuthProvider>
       <SettingsBootstrap />
       <RouterProvider router={router} />
-      <Toaster position="top-right" theme="dark" />
+      <Toaster position="top-right" theme="dark" closeButton duration={3500} closeButtonAriaLabel="Zamknij powiadomienie" />
     </AuthProvider>
   );
 }

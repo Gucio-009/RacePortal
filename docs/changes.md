@@ -396,4 +396,16 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-02 09:21 — mapa z pinezką przy tworzeniu wydarzenia.*
+## 20. Toast zamykalny (X) (2026-08-02, 09:33)
+
+**Kontekst / argument:** powiadomienie „Zalogowano…” w prawym górnym rogu zasłaniało menu profilu zbyt długo i nie dało się go zamknąć.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:33 | Toast bez przycisku zamknięcia, domyślny długi czas | `Toaster` z `closeButton` + `duration={3500}` | Można od razu kliknąć X i wejść w profil |
+
+**Pliki:** `App.tsx`.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-02 09:33 — zamykalne toasty.*
