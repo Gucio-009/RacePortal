@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-02 08:31 (płatne eventy UI+filtr; proponowane auta przy zapisie)
+**Ostatnia synchronizacja:** 2026-08-02 09:21 (mapa z pinezką przy tworzeniu wydarzenia)
 
 ---
 
@@ -91,7 +91,7 @@ Logowanie: http://127.0.0.1:8081/login
 | 6 | Garaż | CRUD `/garaz` + API; kategorie = klasy wydarzeń; seed 1 auto/kategorię na `test@wp.pl` | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER + wniosek `/zostan-organizatorem` | **OK** |
-| 9 | Narzędzia org. | `/organizer` — tworzenie wydarzeń, lista zgłoszeń | **OK** |
+| 9 | Narzędzia org. | `/organizer` — create UX: selecty (kat./tor/miasto/woj./czas), miniatury zdjęć, chipy wpisowego, auto-fill lokalizacji | **OK** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
 | 11 | Maile | SMTP → Mailpit (rejestracja, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet `/mapa` | **OK** |

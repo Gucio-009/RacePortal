@@ -348,4 +348,52 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-02 08:31 — płatne eventy (UI+filtr+seed) + proponowane auta przy zapisie + reguła dokumentacji z godziną.*
+## 17. Kategoria wydarzenia: select + „Inne” (2026-08-02, 09:15)
+
+**Kontekst / argument:** przy tworzeniu wydarzenia kategoria była wolnym `Input` — łatwo o literówki (`drift` vs `Drift`) i niespójne filtry. Organizator potrzebuje szybkiego wyboru ze znanych klas + wyjścia awaryjnego na niestandardową nazwę.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:15 | Pole tekstowe „Kategoria” | `Select` z listą (stałe `CAR_CATEGORIES` ∪ `/api/events/meta/categories`) + opcja **Inne…** z dodatkowym inputem | Spójne kategorie z listą/filtrami; „Inne” nie blokuje nietypowych klas |
+
+**Pliki:** `OrganizerPanelPage.tsx`.
+
+**Weryfikacja:** `/organizer` → Nowe wydarzenie → wybór Drift / GT Racing… albo Inne + własna nazwa.
+
+---
+
+## 18. Formularz wydarzenia „wyklikaj zamiast wpisywać” (2026-08-02, 09:17–09:20)
+
+**Kontekst / argument:** tworzenie wydarzenia wymagało dużo ręcznego wpisywania (tor, miasto, województwo, lat/lng, URL zdjęcia, godziny, kwoty). To spowalniało organizatora i generowało literówki. Cel: ścieżka happy-path prawie bez klawiatury — tylko nazwa + opis do wpisania.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:17 | Kategoria select + reszta Input | Selekty: kategoria, godzina, tor, miasto, województwo (+ Inne…) | Spójne wartości, mniej błędów |
+| 09:18 | Tor / miasto / woj. osobno | Wybór toru **auto-uzupełnia** miasto, województwo i współrzędne | Jedno kliknięcie zamiast 4 pól |
+| 09:18 | URL zdjęcia na ślepo | Siatka 8 miniaturek do kliknięcia (+ własny URL) | Wizualny wybór bez kopiowania linków |
+| 09:19 | Lat/lng zawsze widoczne | Schowane w „Współrzędne mapy (opcjonalnie)” | Nie straszą przy basic create |
+| 09:19 | Wpisowe / terminy jako free number | Chipy kwot + select terminów anulacji/wpłaty; przycisk konta demo | Szybkie ustawienie płatności |
+
+**Pliki:** `eventFormPresets.ts` (nowy), `OrganizerPanelPage.tsx`, `changes.md`, `MVP.md`.
+
+**Weryfikacja:** `/organizer` → Nowe wydarzenie → wybór toru wypełnia lokalizację; zdjęcie z miniatury; płatne → chip 650 zł.
+
+---
+
+## 19. Pinezka lokalizacji przy tworzeniu wydarzenia (2026-08-02, 09:21)
+
+**Kontekst / argument:** współrzędne były ukryte jako liczby lat/lng — organizator nie widział miejsca na mapie. Po wyborze toru lokalizacja szła do API, ale bez wizualnego potwierdzenia. Potrzeba: kliknięcie pinezki + auto-ustawienie po wyborze toru.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:21 | Lat/lng w zwiniętym „opcjonalnie” | Widoczna mapa Leaflet w formularzu (`LocationMapPicker`) | Lokalizacja „na oko”, nie przez liczby |
+| 09:21 | Tor wypełniał tylko pola tekstowe coords | Tor **przesuwa pinezkę** (`flyTo`) na preset toru | Jedno kliknięcie toru = gotowa lokalizacja na mapie |
+| 09:21 | Brak ręcznego pinu | Klik mapy + przeciąganie markera aktualizuje lat/lng | Korekta miejsca paddocku / parkingu bez kalkulatora GPS |
+
+**Pliki:** `LocationMapPicker.tsx` (nowy), `OrganizerPanelPage.tsx`.
+
+**Weryfikacja:** `/organizer` → Nowe wydarzenie → wybierz „Tor Poznań” → mapa leci na Poznań; klik w inne miejsce przesuwa pinezkę.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-02 09:21 — mapa z pinezką przy tworzeniu wydarzenia.*

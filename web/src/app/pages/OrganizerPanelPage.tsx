@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Calendar, Plus, Users, Loader2, Check, X, Ban } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Calendar, Plus, Users, Loader2, Check, X, Ban, MapPin } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -9,9 +9,23 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { LocationMapPicker } from "../components/LocationMapPicker";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Registration, RegistrationStatus } from "../lib/types";
 import { eventStatusLabel, registrationStatusLabel, formatEventDate } from "../lib/types";
+import { CAR_CATEGORIES } from "../lib/carMatch";
+import {
+  OTHER,
+  VOIVODESHIPS,
+  TRACK_PRESETS,
+  START_TIMES,
+  EVENT_IMAGE_PRESETS,
+  ENTRY_FEE_PRESETS,
+  PAYMENT_DEADLINE_OPTIONS,
+  FREE_CANCEL_OPTIONS,
+  DEMO_BANK_ACCOUNT,
+} from "../lib/eventFormPresets";
 import { toast } from "sonner";
 
 interface OrganizerEvent extends ApiEvent {
@@ -22,21 +36,49 @@ const emptyForm = {
   name: "",
   description: "",
   category: "",
+  categoryOther: "",
   date: "",
   time: "10:00",
-  track: "",
+  timeOther: "",
+  trackKey: "",
+  trackOther: "",
   city: "",
+  cityOther: "",
   voivodeship: "",
   imageUrl: "",
+  imageCustom: false,
   lat: "",
   lng: "",
   paid: false,
   entryFee: "",
+  entryFeeOther: false,
   bankAccount: "",
   paymentDeadlineHours: "72",
   freeCancelDays: "7",
   acceptRegistrations: true,
 };
+
+type FormState = typeof emptyForm;
+
+function applyTrackPreset(prev: FormState, trackName: string): FormState {
+  if (trackName === OTHER) {
+    return { ...prev, trackKey: OTHER, city: "", cityOther: "", voivodeship: "", lat: "", lng: "" };
+  }
+  const preset = TRACK_PRESETS.find((t) => t.track === trackName);
+  if (!preset) {
+    return { ...prev, trackKey: trackName };
+  }
+  return {
+    ...prev,
+    trackKey: preset.track,
+    trackOther: "",
+    city: preset.city,
+    cityOther: "",
+    voivodeship: preset.voivodeship,
+    lat: String(preset.lat),
+    lng: String(preset.lng),
+  };
+}
 
 export function OrganizerPanelPage() {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
@@ -48,8 +90,23 @@ export function OrganizerPanelPage() {
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [apiCategories, setApiCategories] = useState<string[]>([]);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
+
+  const categoryOptions = useMemo(() => {
+    const set = new Set<string>([...CAR_CATEGORIES, ...apiCategories]);
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "pl"));
+  }, [apiCategories]);
+
+  const resolvedCategory =
+    form.category === OTHER ? form.categoryOther.trim() : form.category.trim();
+  const resolvedTrack =
+    form.trackKey === OTHER ? form.trackOther.trim() : form.trackKey.trim();
+  const resolvedCity = form.city === OTHER ? form.cityOther.trim() : form.city.trim();
+  const resolvedTime =
+    form.time === OTHER ? form.timeOther.trim() : form.time.trim();
+  const resolvedEntryFee = form.entryFeeOther ? form.entryFee.trim() : form.entryFee.trim();
 
   const loadEvents = () => {
     setLoading(true);
@@ -62,6 +119,10 @@ export function OrganizerPanelPage() {
 
   useEffect(() => {
     loadEvents();
+    api
+      .get<string[]>("/api/events/meta/categories")
+      .then(setApiCategories)
+      .catch(() => setApiCategories([]));
   }, []);
 
   const loadRegistrations = async (eventId: string) => {
@@ -77,8 +138,16 @@ export function OrganizerPanelPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.name || !form.description || !form.category || !form.date || !form.track || !form.city || !form.voivodeship) {
-      toast.error("Wypełnij wymagane pola");
+    if (
+      !form.name.trim() ||
+      !form.description.trim() ||
+      !resolvedCategory ||
+      !form.date ||
+      !resolvedTrack ||
+      !resolvedCity ||
+      !form.voivodeship.trim()
+    ) {
+      toast.error("Wypełnij wymagane pola (nazwa, opis, kategoria, data, tor, miasto, województwo)");
       return;
     }
     if (form.paid && !form.bankAccount.trim()) {
@@ -90,17 +159,17 @@ export function OrganizerPanelPage() {
       await api.post("/api/events", {
         name: form.name.trim(),
         description: form.description.trim(),
-        category: form.category.trim(),
+        category: resolvedCategory,
         date: form.date,
-        time: form.time,
-        track: form.track.trim(),
-        city: form.city.trim(),
+        time: resolvedTime || "10:00",
+        track: resolvedTrack,
+        city: resolvedCity,
         voivodeship: form.voivodeship.trim(),
         imageUrl: form.imageUrl.trim() || undefined,
         lat: form.lat ? Number(form.lat) : undefined,
         lng: form.lng ? Number(form.lng) : undefined,
         paid: form.paid,
-        entryFee: form.paid && form.entryFee ? Number(form.entryFee) : undefined,
+        entryFee: form.paid && resolvedEntryFee ? Number(resolvedEntryFee) : undefined,
         bankAccount: form.paid ? form.bankAccount.trim() : undefined,
         paymentDeadlineHours: form.paid ? Number(form.paymentDeadlineHours) || 72 : undefined,
         freeCancelDays: Number(form.freeCancelDays) || 7,
@@ -110,6 +179,10 @@ export function OrganizerPanelPage() {
       setCreateOpen(false);
       setForm(emptyForm);
       loadEvents();
+      api
+        .get<string[]>("/api/events/meta/categories")
+        .then(setApiCategories)
+        .catch(() => undefined);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się utworzyć wydarzenia");
     } finally {
@@ -333,63 +406,311 @@ export function OrganizerPanelPage() {
         </Tabs>
       </section>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+      <Dialog
+        open={createOpen}
+        onOpenChange={(open) => {
+          setCreateOpen(open);
+          if (!open) {
+            setForm(emptyForm);
+          }
+        }}
+      >
         <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
               Nowe wydarzenie
             </DialogTitle>
+            <p className="text-sm text-[#9ca3af]">
+              Większość pól wybierasz z listy — „Inne…” tylko gdy potrzebujesz własnej wartości.
+            </p>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             <div className="space-y-2 sm:col-span-2">
               <Label>Nazwa *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                placeholder="np. Drift Masters Polish Grand Prix"
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
             </div>
             <div className="space-y-2 sm:col-span-2">
               <Label>Opis *</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={4} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                rows={3}
+                placeholder="Krótki opis rundy, klas i atrakcji…"
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
             </div>
+
             <div className="space-y-2">
               <Label>Kategoria *</Label>
-              <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Select
+                value={form.category || undefined}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    category: v,
+                    categoryOther: v === OTHER ? form.categoryOther : "",
+                  })
+                }
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectValue placeholder="Wybierz kategorię" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  {categoryOptions.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={OTHER}>Inne…</SelectItem>
+                </SelectContent>
+              </Select>
+              {form.category === OTHER && (
+                <Input
+                  value={form.categoryOther}
+                  onChange={(e) => setForm({ ...form, categoryOther: e.target.value })}
+                  placeholder="Własna kategoria"
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              )}
             </div>
+
             <div className="space-y-2">
               <Label>Data *</Label>
-              <Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
             </div>
+
             <div className="space-y-2">
-              <Label>Godzina</Label>
-              <Input value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Label>Godzina startu</Label>
+              <Select
+                value={form.time || undefined}
+                onValueChange={(v) =>
+                  setForm({ ...form, time: v, timeOther: v === OTHER ? form.timeOther : "" })
+                }
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectValue placeholder="Wybierz godzinę" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  {START_TIMES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={OTHER}>Inna godzina…</SelectItem>
+                </SelectContent>
+              </Select>
+              {form.time === OTHER && (
+                <Input
+                  type="time"
+                  value={form.timeOther}
+                  onChange={(e) => setForm({ ...form, timeOther: e.target.value })}
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              )}
             </div>
+
             <div className="space-y-2">
-              <Label>Tor *</Label>
-              <Input value={form.track} onChange={(e) => setForm({ ...form, track: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Label>Tor / lokalizacja *</Label>
+              <Select
+                value={form.trackKey || undefined}
+                onValueChange={(v) => setForm((prev) => applyTrackPreset(prev, v))}
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectValue placeholder="Wybierz tor" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  {TRACK_PRESETS.map((t) => (
+                    <SelectItem key={t.track} value={t.track}>
+                      {t.track}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value={OTHER}>Inny tor…</SelectItem>
+                </SelectContent>
+              </Select>
+              {form.trackKey === OTHER && (
+                <Input
+                  value={form.trackOther}
+                  onChange={(e) => setForm({ ...form, trackOther: e.target.value })}
+                  placeholder="Nazwa toru"
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              )}
+              {form.trackKey && form.trackKey !== OTHER && (
+                <p className="text-xs text-[#9ca3af]">
+                  Auto: {form.city}, {form.voivodeship}
+                  {form.lat && form.lng ? ` · mapa ${form.lat}, ${form.lng}` : ""}
+                </p>
+              )}
             </div>
+
             <div className="space-y-2">
               <Label>Miasto *</Label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              {form.trackKey === OTHER || !form.trackKey ? (
+                <>
+                  <Select
+                    value={form.city || undefined}
+                    onValueChange={(v) => {
+                      if (v === OTHER) {
+                        setForm({ ...form, city: OTHER, cityOther: "" });
+                        return;
+                      }
+                      const match = TRACK_PRESETS.find((t) => t.city === v);
+                      setForm({
+                        ...form,
+                        city: v,
+                        cityOther: "",
+                        voivodeship: match?.voivodeship ?? form.voivodeship,
+                        lat: match ? String(match.lat) : form.lat,
+                        lng: match ? String(match.lng) : form.lng,
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                      <SelectValue placeholder="Wybierz miasto" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                      {Array.from(new Set(TRACK_PRESETS.map((t) => t.city)))
+                        .sort((a, b) => a.localeCompare(b, "pl"))
+                        .map((city) => (
+                          <SelectItem key={city} value={city}>
+                            {city}
+                          </SelectItem>
+                        ))}
+                      <SelectItem value={OTHER}>Inne miasto…</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {form.city === OTHER && (
+                    <Input
+                      value={form.cityOther}
+                      onChange={(e) => setForm({ ...form, cityOther: e.target.value })}
+                      placeholder="Nazwa miasta"
+                      className="bg-[#121212] border-[#2a2a2a] text-white"
+                    />
+                  )}
+                </>
+              ) : (
+                <Input
+                  value={form.city}
+                  readOnly
+                  className="bg-[#121212]/60 border-[#2a2a2a] text-[#9ca3af]"
+                />
+              )}
             </div>
+
             <div className="space-y-2">
               <Label>Województwo *</Label>
-              <Input value={form.voivodeship} onChange={(e) => setForm({ ...form, voivodeship: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Select
+                value={form.voivodeship || undefined}
+                onValueChange={(v) => setForm({ ...form, voivodeship: v })}
+                disabled={Boolean(form.trackKey && form.trackKey !== OTHER)}
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white disabled:opacity-60">
+                  <SelectValue placeholder="Wybierz województwo" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  {VOIVODESHIPS.map((v) => (
+                    <SelectItem key={v} value={v}>
+                      {v}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
             <div className="space-y-2 sm:col-span-2">
-              <Label>URL zdjęcia</Label>
-              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <Label className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-[#FFD700]" />
+                  Lokalizacja na mapie
+                </Label>
+                {form.lat && form.lng ? (
+                  <span className="text-xs text-[#9ca3af] font-mono">
+                    {form.lat}, {form.lng}
+                  </span>
+                ) : (
+                  <span className="text-xs text-[#9ca3af]">Kliknij mapę lub wybierz tor</span>
+                )}
+              </div>
+              <p className="text-xs text-[#9ca3af]">
+                Wybór toru ustawia pinezkę automatycznie. Możesz też kliknąć mapę albo przeciągnąć marker.
+              </p>
+              {createOpen && (
+                <LocationMapPicker
+                  key="event-location-picker"
+                  lat={form.lat ? Number(form.lat) : null}
+                  lng={form.lng ? Number(form.lng) : null}
+                  onChange={(lat, lng) => setForm((prev) => ({ ...prev, lat: String(lat), lng: String(lng) }))}
+                  height="280px"
+                />
+              )}
+              {(form.lat || form.lng) && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="border-[#2a2a2a] text-[#9ca3af]"
+                  onClick={() => setForm({ ...form, lat: "", lng: "" })}
+                >
+                  Usuń pinezkę
+                </Button>
+              )}
             </div>
-            <div className="space-y-2">
-              <Label>Szer. geogr. (lat)</Label>
-              <Input value={form.lat} onChange={(e) => setForm({ ...form, lat: e.target.value })} type="number" step="any" className="bg-[#121212] border-[#2a2a2a] text-white" />
-            </div>
-            <div className="space-y-2">
-              <Label>Dł. geogr. (lng)</Label>
-              <Input value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} type="number" step="any" className="bg-[#121212] border-[#2a2a2a] text-white" />
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Zdjęcie wydarzenia</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {EVENT_IMAGE_PRESETS.map((img) => {
+                  const selected = !form.imageCustom && form.imageUrl === img.url;
+                  return (
+                    <button
+                      key={img.url}
+                      type="button"
+                      onClick={() => setForm({ ...form, imageUrl: img.url, imageCustom: false })}
+                      className={`relative aspect-video overflow-hidden rounded border transition ${
+                        selected
+                          ? "border-[#FFD700] ring-1 ring-[#FFD700]"
+                          : "border-[#2a2a2a] hover:border-[#FFD700]/50"
+                      }`}
+                      title={img.label}
+                    >
+                      <img src={img.url} alt={img.label} className="h-full w-full object-cover" />
+                    </button>
+                  );
+                })}
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2 border-[#2a2a2a] text-white"
+                onClick={() => setForm({ ...form, imageCustom: true, imageUrl: form.imageCustom ? form.imageUrl : "" })}
+              >
+                Własny URL zdjęcia…
+              </Button>
+              {form.imageCustom && (
+                <Input
+                  value={form.imageUrl}
+                  onChange={(e) => setForm({ ...form, imageUrl: e.target.value, imageCustom: true })}
+                  placeholder="https://…"
+                  className="bg-[#121212] border-[#2a2a2a] text-white mt-2"
+                />
+              )}
             </div>
 
             <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
               <div>
                 <Label className="text-white">Przyjmuj zgłoszenia na stronie</Label>
-                <p className="text-xs text-[#9ca3af]">Switch z diagramu dodawania wydarzenia</p>
+                <p className="text-xs text-[#9ca3af]">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
               </div>
               <Switch
                 checked={form.acceptRegistrations}
@@ -400,47 +721,109 @@ export function OrganizerPanelPage() {
             <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
               <div>
                 <Label className="text-white">Wydarzenie płatne</Label>
-                <p className="text-xs text-[#9ca3af]">Wymaga numeru konta i weryfikacji przelewu</p>
+                <p className="text-xs text-[#9ca3af]">Wpisowe + weryfikacja przelewu</p>
               </div>
               <Switch checked={form.paid} onCheckedChange={(v) => setForm({ ...form, paid: v })} />
             </div>
 
             {form.paid && (
               <>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label>Wpisowe (PLN)</Label>
-                  <Input
-                    type="number"
-                    value={form.entryFee}
-                    onChange={(e) => setForm({ ...form, entryFee: e.target.value })}
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    {ENTRY_FEE_PRESETS.map((fee) => (
+                      <Button
+                        key={fee}
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setForm({ ...form, entryFee: fee, entryFeeOther: false })}
+                        className={
+                          !form.entryFeeOther && form.entryFee === fee
+                            ? "border-[#FFD700] bg-[#FFD700]/15 text-[#FFD700]"
+                            : "border-[#2a2a2a] text-white"
+                        }
+                      >
+                        {fee} zł
+                      </Button>
+                    ))}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setForm({ ...form, entryFeeOther: true, entryFee: "" })}
+                      className={
+                        form.entryFeeOther
+                          ? "border-[#FFD700] bg-[#FFD700]/15 text-[#FFD700]"
+                          : "border-[#2a2a2a] text-white"
+                      }
+                    >
+                      Inna kwota…
+                    </Button>
+                  </div>
+                  {form.entryFeeOther && (
+                    <Input
+                      type="number"
+                      value={form.entryFee}
+                      onChange={(e) => setForm({ ...form, entryFee: e.target.value })}
+                      placeholder="Kwota w PLN"
+                      className="bg-[#121212] border-[#2a2a2a] text-white mt-2"
+                    />
+                  )}
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 sm:col-span-2">
                   <Label>Numer konta *</Label>
                   <Input
                     value={form.bankAccount}
                     onChange={(e) => setForm({ ...form, bankAccount: e.target.value })}
+                    placeholder="PL…"
                     className="bg-[#121212] border-[#2a2a2a] text-white"
                   />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="border-[#2a2a2a] text-[#FFD700]"
+                    onClick={() => setForm({ ...form, bankAccount: DEMO_BANK_ACCOUNT })}
+                  >
+                    Wstaw konto demo
+                  </Button>
                 </div>
                 <div className="space-y-2">
-                  <Label>Termin wpłaty (godz.)</Label>
-                  <Input
-                    type="number"
+                  <Label>Termin wpłaty</Label>
+                  <Select
                     value={form.paymentDeadlineHours}
-                    onChange={(e) => setForm({ ...form, paymentDeadlineHours: e.target.value })}
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
-                  />
+                    onValueChange={(v) => setForm({ ...form, paymentDeadlineHours: v })}
+                  >
+                    <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                      {PAYMENT_DEADLINE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Darmowa anulacja (dni przed)</Label>
-                  <Input
-                    type="number"
+                  <Label>Darmowa anulacja</Label>
+                  <Select
                     value={form.freeCancelDays}
-                    onChange={(e) => setForm({ ...form, freeCancelDays: e.target.value })}
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
-                  />
+                    onValueChange={(v) => setForm({ ...form, freeCancelDays: v })}
+                  >
+                    <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                      {FREE_CANCEL_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </>
             )}
