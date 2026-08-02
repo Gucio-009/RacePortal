@@ -2,60 +2,81 @@ package pl.raceportal.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import pl.raceportal.dto.MapsDtos.RouteRequest;
+import pl.raceportal.dto.MapsDtos.RouteResponse;
+import pl.raceportal.web.ApiException;
+
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import pl.raceportal.web.ApiException;
-import pl.raceportal.web.dto.MapsDtos;
+import java.util.Locale;
 
 @Service
 public class MapsService {
-  private final String googleKey;
-  private final ObjectMapper mapper = new ObjectMapper();
-  private final HttpClient client = HttpClient.newHttpClient();
 
-  public MapsService(@Value("${app.maps.google-api-key:}") String googleKey) {
-    this.googleKey = googleKey == null ? "" : googleKey;
-  }
+    private static final Logger log = LoggerFactory.getLogger(MapsService.class);
 
-  public MapsDtos.RouteResponse route(MapsDtos.RouteRequest req) {
-    try {
-      String url = String.format(
-          "https://router.project-osrm.org/route/v1/driving/%f,%f;%f,%f?overview=full&geometries=geojson",
-          req.fromLng(), req.fromLat(), req.toLng(), req.toLat());
-      HttpRequest httpReq = HttpRequest.newBuilder(URI.create(url)).GET().build();
-      HttpResponse<String> res = client.send(httpReq, HttpResponse.BodyHandlers.ofString());
-      if (res.statusCode() >= 400) {
-        throw new ApiException(HttpStatus.BAD_GATEWAY, "Mapa chwilowo niedostępna");
-      }
-      JsonNode root = mapper.readTree(res.body());
-      JsonNode route = root.path("routes").path(0);
-      if (route.isMissingNode()) {
-        throw new ApiException(HttpStatus.BAD_REQUEST, "Nie udało się wyznaczyć trasy");
-      }
-      long meters = Math.round(route.path("distance").asDouble());
-      long seconds = Math.round(route.path("duration").asDouble());
-      List<double[]> polyline = new ArrayList<>();
-      for (JsonNode coord : route.path("geometry").path("coordinates")) {
-        polyline.add(new double[]{coord.get(1).asDouble(), coord.get(0).asDouble()});
-      }
-      return new MapsDtos.RouteResponse(
-          "osrm",
-          meters,
-          seconds,
-          String.format("%.1f km", meters / 1000.0),
-          String.format("%d min", Math.max(1, seconds / 60)),
-          polyline);
-    } catch (ApiException e) {
-      throw e;
-    } catch (Exception e) {
-      throw new ApiException(HttpStatus.BAD_GATEWAY, "Mapa chwilowo niedostępna");
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
+    private final ObjectMapper objectMapper;
+
+    public MapsService(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
     }
-  }
+
+    public RouteResponse route(RouteRequest request) {
+        String url = String.format(Locale.ROOT,
+                "https://router.project-osrm.org/route/v1/driving/%s,%s;%s,%s?overview=full&geometries=geojson",
+                request.fromLng(), request.fromLat(), request.toLng(), request.toLat());
+
+        JsonNode json;
+        try {
+            HttpRequest httpRequest = HttpRequest.newBuilder(URI.create(url))
+                    .timeout(Duration.ofSeconds(8))
+                    .GET()
+                    .build();
+            HttpResponse<String> response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+            json = objectMapper.readTree(response.body());
+        } catch (IOException | InterruptedException e) {
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
+            log.warn("[maps] OSRM request failed: {}", e.getMessage());
+            throw ApiException.badGateway("Nie udało się wytyczyć trasy");
+        }
+
+        JsonNode routes = json.path("routes");
+        if (!"Ok".equals(json.path("code").asText()) || !routes.isArray() || routes.isEmpty()) {
+            throw ApiException.badGateway("Nie udało się wytyczyć trasy");
+        }
+
+        JsonNode route = routes.get(0);
+        double distanceMeters = route.path("distance").asDouble();
+        double durationSeconds = route.path("duration").asDouble();
+
+        List<double[]> polyline = new ArrayList<>();
+        for (JsonNode coord : route.path("geometry").path("coordinates")) {
+            double lng = coord.get(0).asDouble();
+            double lat = coord.get(1).asDouble();
+            polyline.add(new double[]{lat, lng});
+        }
+
+        return new RouteResponse(
+                "osrm",
+                Math.round(distanceMeters),
+                Math.round(durationSeconds),
+                String.format(Locale.ROOT, "%.1f km", distanceMeters / 1000),
+                String.format(Locale.ROOT, "%d min", Math.round(durationSeconds / 60)),
+                polyline
+        );
+    }
 }

@@ -41,6 +41,15 @@ public class User {
     @Column(length = 500)
     private String avatar;
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = true;
+
+    @Column(name = "email_verification_code", length = 10)
+    private String emailVerificationCode;
+
+    @Column(name = "email_verification_expires")
+    private Instant emailVerificationExpires;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -105,6 +114,30 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
+    }
+
+    public String getEmailVerificationCode() {
+        return emailVerificationCode;
+    }
+
+    public void setEmailVerificationCode(String emailVerificationCode) {
+        this.emailVerificationCode = emailVerificationCode;
+    }
+
+    public Instant getEmailVerificationExpires() {
+        return emailVerificationExpires;
+    }
+
+    public void setEmailVerificationExpires(Instant emailVerificationExpires) {
+        this.emailVerificationExpires = emailVerificationExpires;
     }
 
     public Instant getCreatedAt() {

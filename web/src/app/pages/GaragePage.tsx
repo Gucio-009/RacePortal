@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Car, Plus, Trash2, Loader2 } from "lucide-react";
+import { Car, Plus, Trash2, Loader2, Pencil } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -9,19 +9,22 @@ import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { toast } from "sonner";
 
+const emptyForm = {
+  make: "",
+  model: "",
+  year: "",
+  className: "",
+  plate: "",
+  imageUrl: "",
+};
+
 export function GaragePage() {
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addOpen, setAddOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    make: "",
-    model: "",
-    year: "",
-    className: "",
-    plate: "",
-    imageUrl: "",
-  });
+  const [form, setForm] = useState(emptyForm);
 
   const loadCars = () => {
     setLoading(true);
@@ -36,27 +39,53 @@ export function GaragePage() {
     loadCars();
   }, []);
 
-  const handleAdd = async () => {
+  const openAdd = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (car: GarageCar) => {
+    setEditingId(car.id);
+    setForm({
+      make: car.make,
+      model: car.model,
+      year: car.year ? String(car.year) : "",
+      className: car.className ?? "",
+      plate: car.plate ?? "",
+      imageUrl: car.imageUrl ?? "",
+    });
+    setDialogOpen(true);
+  };
+
+  const handleSave = async () => {
     if (!form.make.trim() || !form.model.trim()) {
       toast.error("Marka i model są wymagane");
       return;
     }
     setSaving(true);
+    const payload = {
+      make: form.make.trim(),
+      model: form.model.trim(),
+      year: form.year ? Number(form.year) : undefined,
+      className: form.className.trim() || undefined,
+      plate: form.plate.trim() || undefined,
+      imageUrl: form.imageUrl.trim() || undefined,
+    };
     try {
-      await api.post("/api/garage", {
-        make: form.make.trim(),
-        model: form.model.trim(),
-        year: form.year ? Number(form.year) : undefined,
-        className: form.className.trim() || undefined,
-        plate: form.plate.trim() || undefined,
-        imageUrl: form.imageUrl.trim() || undefined,
-      });
-      toast.success("Auto dodane do garażu");
-      setAddOpen(false);
-      setForm({ make: "", model: "", year: "", className: "", plate: "", imageUrl: "" });
+      if (editingId) {
+        await api.patch(`/api/garage/${editingId}`, payload);
+        toast.success("Auto zaktualizowane");
+      } else {
+        await api.post("/api/garage", payload);
+        toast.success("Auto dodane do garażu");
+      }
+      setDialogOpen(false);
+      setForm(emptyForm);
+      setEditingId(null);
       loadCars();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się dodać auta");
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się zapisać auta");
     } finally {
       setSaving(false);
     }
@@ -83,7 +112,7 @@ export function GaragePage() {
             <p className="text-[#9ca3af]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
           </div>
           <Button
-            onClick={() => setAddOpen(true)}
+            onClick={openAdd}
             className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
             style={{ fontWeight: 800 }}
           >
@@ -104,7 +133,7 @@ export function GaragePage() {
             <CardContent className="py-16 text-center">
               <Car className="w-16 h-16 text-[#FFD700] mx-auto mb-4" />
               <p className="text-[#9ca3af] mb-6">Twój garaż jest pusty. Dodaj pierwsze auto!</p>
-              <Button onClick={() => setAddOpen(true)} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button onClick={openAdd} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
                 Dodaj auto
               </Button>
             </CardContent>
@@ -123,15 +152,26 @@ export function GaragePage() {
                   {car.year && <p>Rocznik: {car.year}</p>}
                   {car.className && <p>Klasa: {car.className}</p>}
                   {car.plate && <p>Rejestracja: {car.plate}</p>}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(car.id)}
-                    className="mt-4 border-red-900 text-red-400 hover:bg-red-950"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Usuń
-                  </Button>
+                  <div className="flex gap-2 mt-4">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => openEdit(car)}
+                      className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                    >
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edytuj
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(car.id)}
+                      className="border-red-900 text-red-400 hover:bg-red-950"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Usuń
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ))}
@@ -139,11 +179,11 @@ export function GaragePage() {
         )}
       </section>
 
-      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white">
           <DialogHeader>
             <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
-              Dodaj auto
+              {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
@@ -173,11 +213,11 @@ export function GaragePage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setAddOpen(false)} className="border-[#2a2a2a] text-white">
+            <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-[#2a2a2a] text-white">
               Anuluj
             </Button>
-            <Button onClick={handleAdd} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
-              {saving ? "ZAPISYWANIE..." : "Dodaj"}
+            <Button onClick={handleSave} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Dodaj"}
             </Button>
           </DialogFooter>
         </DialogContent>

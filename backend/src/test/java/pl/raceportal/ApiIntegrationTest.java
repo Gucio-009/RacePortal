@@ -2,8 +2,8 @@ package pl.raceportal;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -11,14 +11,22 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MySQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import pl.raceportal.domain.Event;
+import pl.raceportal.domain.EventStatus;
+import pl.raceportal.repository.EventRepository;
 
+import java.math.BigDecimal;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -26,20 +34,42 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@Testcontainers
+@EnabledIf("pl.raceportal.ApiIntegrationTest#dockerOrExternalDbAvailable")
 class ApiIntegrationTest {
 
-    @Container
-    static final MySQLContainer<?> MYSQL = new MySQLContainer<>("mysql:8.0")
-            .withDatabaseName("raceportal")
-            .withUsername("raceportal")
-            .withPassword("raceportal");
+    private static final boolean USE_EXTERNAL_DB = System.getenv("TEST_DB_URL") != null
+            && !System.getenv("TEST_DB_URL").isBlank();
+
+    private static MySQLContainer<?> mysql;
+
+    static {
+        if (!USE_EXTERNAL_DB && DockerClientFactory.instance().isDockerAvailable()) {
+            mysql = new MySQLContainer<>("mysql:8.0")
+                    .withDatabaseName("raceportal")
+                    .withUsername("raceportal")
+                    .withPassword("raceportal");
+            mysql.start();
+        }
+    }
+
+    @SuppressWarnings("unused")
+    static boolean dockerOrExternalDbAvailable() {
+        return USE_EXTERNAL_DB || DockerClientFactory.instance().isDockerAvailable();
+    }
 
     @DynamicPropertySource
     static void datasourceProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", MYSQL::getJdbcUrl);
-        registry.add("spring.datasource.username", MYSQL::getUsername);
-        registry.add("spring.datasource.password", MYSQL::getPassword);
+        if (USE_EXTERNAL_DB) {
+            registry.add("spring.datasource.url", () -> System.getenv("TEST_DB_URL"));
+            registry.add("spring.datasource.username",
+                    () -> System.getenv().getOrDefault("TEST_DB_USER", "raceportal"));
+            registry.add("spring.datasource.password",
+                    () -> System.getenv().getOrDefault("TEST_DB_PASSWORD", "raceportal"));
+        } else if (mysql != null) {
+            registry.add("spring.datasource.url", mysql::getJdbcUrl);
+            registry.add("spring.datasource.username", mysql::getUsername);
+            registry.add("spring.datasource.password", mysql::getPassword);
+        }
     }
 
     @Autowired
@@ -48,10 +78,8 @@ class ApiIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @BeforeAll
-    static void beforeAll() {
-        MYSQL.start();
-    }
+    @Autowired
+    private EventRepository eventRepository;
 
     private String login(String email, String password) throws Exception {
         String body = objectMapper.writeValueAsString(new LoginPayload(email, password));
@@ -132,6 +160,30 @@ class ApiIntegrationTest {
     }
 
     @Test
+    void register_thenVerifyEmail_returnsToken() throws Exception {
+        String email = "nowy.kierowca@example.com";
+        String registerBody = objectMapper.writeValueAsString(new RegisterPayload("NowyKierowca", email, "password123"));
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(registerBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.requiresVerification", is(true)))
+                .andExpect(jsonPath("$.email", is(email)));
+
+        String loginAttemptBody = objectMapper.writeValueAsString(new LoginPayload(email, "password123"));
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(loginAttemptBody))
+                .andExpect(status().isForbidden());
+
+        String wrongCodeBody = objectMapper.writeValueAsString(new VerifyEmailPayload(email, "000000"));
+        mockMvc.perform(post("/api/auth/verify-email")
+                        .contentType("application/json")
+                        .content(wrongCodeBody))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void events_list_returnsSeededApprovedEvents() throws Exception {
         mockMvc.perform(get("/api/events").param("page", "1").param("limit", "12"))
                 .andExpect(status().isOk())
@@ -144,7 +196,183 @@ class ApiIntegrationTest {
         String token = login("test@wp.pl", "test123");
         mockMvc.perform(get("/api/garage").header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(2)));
+                .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(2))));
+    }
+
+    @Test
+    void garage_update_blockedByOpenRegistration_thenAllowedForNonConflictingFields() throws Exception {
+        String token = login("test@wp.pl", "test123");
+
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Toyota", "GR86", 2023, null, "PO 11111", null));
+        String carResponse = mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String carId = objectMapper.readTree(carResponse).get("id").asText();
+
+        Event freeEvent = eventRepository.findAll().stream()
+                .filter(e -> !e.isPaid() && e.getStatus() == EventStatus.APPROVED)
+                .findFirst().orElseThrow();
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(freeEvent.getId(), carId, null));
+        mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated());
+
+        String conflictingUpdate = objectMapper.writeValueAsString(
+                new CarPayload(null, "GR86 Facelift", null, null, null, null));
+        mockMvc.perform(patch("/api/garage/" + carId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(conflictingUpdate))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("otwarte zgłoszenie")));
+
+        mockMvc.perform(delete("/api/garage/" + carId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isBadRequest());
+
+        String plateOnlyUpdate = objectMapper.writeValueAsString(
+                new CarPayload(null, null, null, null, "PO 22222", null));
+        mockMvc.perform(patch("/api/garage/" + carId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(plateOnlyUpdate))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.plate", is("PO 22222")));
+    }
+
+    @Test
+    void driver_cancelRegistration_setsCanceledStatus() throws Exception {
+        String token = login("test@wp.pl", "test123");
+
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Honda", "Civic Type R", 2020, "Track Day", "GD 33333", null));
+        String carResponse = mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String carId = objectMapper.readTree(carResponse).get("id").asText();
+
+        Event trackDayEvent = eventRepository.findAll().stream()
+                .filter(e -> !e.isPaid() && e.getStatus() == EventStatus.APPROVED
+                        && "Track Day".equalsIgnoreCase(e.getCategory()))
+                .findFirst().orElseThrow();
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(trackDayEvent.getId(), carId, null));
+        String regResponse = mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String regId = objectMapper.readTree(regResponse).get("id").asText();
+
+        mockMvc.perform(post("/api/registrations/" + regId + "/cancel")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELED")));
+    }
+
+    @Test
+    void paidRegistration_acceptedThenPaymentProofThenConfirmed() throws Exception {
+        String driverToken = login("test@wp.pl", "test123");
+        String orgToken = login("org@raceportal.pl", "org123");
+
+        Event paidEvent = eventRepository.findAll().stream()
+                .filter(Event::isPaid)
+                .findFirst().orElseThrow();
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(paidEvent.getId(), null, null));
+        String regResponse = mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String regId = objectMapper.readTree(regResponse).get("id").asText();
+
+        String acceptBody = objectMapper.writeValueAsString(
+                new RegistrationStatusPayload("ACCEPTED", "Prosimy o wpłatę wpisowego"));
+        mockMvc.perform(patch("/api/registrations/" + regId + "/status")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(acceptBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("ACCEPTED")))
+                .andExpect(jsonPath("$.paymentDueAt", notNullValue()));
+
+        String proofBody = objectMapper.writeValueAsString(new PaymentProofPayload("https://example.com/proof.png"));
+        mockMvc.perform(post("/api/registrations/" + regId + "/payment-proof")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(proofBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.paymentProofUrl", is("https://example.com/proof.png")));
+
+        String confirmBody = objectMapper.writeValueAsString(new RegistrationStatusPayload("CONFIRMED", null));
+        mockMvc.perform(patch("/api/registrations/" + regId + "/status")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(confirmBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CONFIRMED")));
+    }
+
+    @Test
+    void event_cancel_cancelsOpenRegistrations() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        String driverToken = login("test@wp.pl", "test123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Testowy Trackday do anulowania",
+                "Wydarzenie testowe tworzone przez test integracyjny w celu weryfikacji anulowania.",
+                "Track Day", "2026-12-01", "10:00", "Tor Testowy", "Testowo", "Testowe",
+                null, null, null, false, null, null, null, null, true));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        String approveBody = objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"));
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(approveBody))
+                .andExpect(status().isOk());
+
+        String regBody = objectMapper.writeValueAsString(new RegistrationCreatePayload(eventId, null, null));
+        String regResponse = mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String regId = objectMapper.readTree(regResponse).get("id").asText();
+
+        mockMvc.perform(post("/api/events/" + eventId + "/cancel")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+
+        mockMvc.perform(get("/api/registrations/mine")
+                        .header("Authorization", "Bearer " + driverToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == '" + regId + "')].status", contains("CANCELED")));
     }
 
     @Test
@@ -173,5 +401,29 @@ class ApiIntegrationTest {
     }
 
     private record RegisterPayload(String username, String email, String password) {
+    }
+
+    private record VerifyEmailPayload(String email, String code) {
+    }
+
+    private record CarPayload(String make, String model, Integer year, String className, String plate, String imageUrl) {
+    }
+
+    private record RegistrationCreatePayload(String eventId, String carId, String note) {
+    }
+
+    private record RegistrationStatusPayload(String status, String comment) {
+    }
+
+    private record PaymentProofPayload(String paymentProofUrl) {
+    }
+
+    private record EventStatusPayload(String status) {
+    }
+
+    private record EventCreatePayload(String name, String description, String category, String date, String time,
+                                       String track, String city, String voivodeship, String imageUrl, Double lat,
+                                       Double lng, boolean paid, BigDecimal entryFee, String bankAccount,
+                                       Integer paymentDeadlineHours, Integer freeCancelDays, Boolean acceptRegistrations) {
     }
 }

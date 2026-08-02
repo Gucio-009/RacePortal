@@ -1,7 +1,24 @@
 export type UserRole = "USER" | "ORGANIZER" | "ADMIN";
 
-export type EventStatus = "DRAFT" | "PENDING" | "APPROVED" | "REJECTED" | "ARCHIVED";
-export type RegistrationStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+export type EventStatus =
+  | "DRAFT"
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "ARCHIVED"
+  | "CANCELLED";
+
+/** Diploma statuses + legacy aliases still accepted by API. */
+export type RegistrationStatus =
+  | "PENDING"
+  | "ACCEPTED"
+  | "CONFIRMED"
+  | "CANCELED"
+  | "APPROVED"
+  | "REJECTED"
+  | "CANCELLED";
+
+export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
 export interface User {
   id: string;
@@ -30,6 +47,12 @@ export interface ApiEvent {
   organizerId?: string | null;
   organizer?: { id: string; username: string } | null;
   registrationsCount?: number;
+  paid?: boolean;
+  entryFee?: number | null;
+  bankAccount?: string | null;
+  paymentDeadlineHours?: number | null;
+  freeCancelDays?: number | null;
+  acceptRegistrations?: boolean;
 }
 
 export interface PaginatedEvents {
@@ -60,6 +83,9 @@ export interface Registration {
   carId?: string | null;
   status: RegistrationStatus;
   note?: string | null;
+  organizerComment?: string | null;
+  paymentProofUrl?: string | null;
+  paymentDueAt?: string | null;
   createdAt: string;
   updatedAt: string;
   event?: ApiEvent;
@@ -98,7 +124,7 @@ export interface OrganizerApplication {
   userId: string;
   company: string;
   message: string;
-  status: RegistrationStatus;
+  status: ApplicationStatus;
   createdAt: string;
   user?: { id: string; username: string; email: string };
 }
@@ -120,6 +146,10 @@ export function eventStatusLabel(status: EventStatus): string {
       return "Odrzucone";
     case "ARCHIVED":
       return "Zakończone";
+    case "CANCELLED":
+      return "Anulowane";
+    case "DRAFT":
+      return "Szkic";
     default:
       return status;
   }
@@ -141,15 +171,26 @@ export function eventDateLabel(event: { dateLabel?: string; date?: string }): st
 
 export function registrationStatusLabel(status: RegistrationStatus): string {
   switch (status) {
-    case "APPROVED":
-      return "Zaakceptowane";
     case "PENDING":
       return "Oczekujące";
-    case "REJECTED":
-      return "Odrzucone";
+    case "ACCEPTED":
+    case "APPROVED":
+      return "Zaakceptowane — czekam na płatność";
+    case "CONFIRMED":
+      return "Potwierdzone";
+    case "CANCELED":
     case "CANCELLED":
+    case "REJECTED":
       return "Anulowane";
     default:
       return status;
   }
+}
+
+export function isOpenRegistration(status: RegistrationStatus): boolean {
+  return status === "PENDING" || status === "ACCEPTED" || status === "APPROVED" || status === "CONFIRMED";
+}
+
+export function isPositiveRegistration(status: RegistrationStatus): boolean {
+  return status === "ACCEPTED" || status === "APPROVED" || status === "CONFIRMED";
 }

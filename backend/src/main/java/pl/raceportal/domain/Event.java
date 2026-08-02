@@ -16,6 +16,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
@@ -68,6 +69,24 @@ public class Event {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EventStatus status = EventStatus.PENDING;
+
+    @Column(nullable = false)
+    private boolean paid = false;
+
+    @Column(name = "entry_fee", precision = 10, scale = 2)
+    private BigDecimal entryFee;
+
+    @Column(name = "bank_account", length = 60)
+    private String bankAccount;
+
+    @Column(name = "payment_deadline_hours", nullable = false)
+    private Integer paymentDeadlineHours = 72;
+
+    @Column(name = "free_cancel_days", nullable = false)
+    private Integer freeCancelDays = 7;
+
+    @Column(name = "accept_registrations", nullable = false)
+    private boolean acceptRegistrations = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id")
@@ -201,6 +220,54 @@ public class Event {
 
     public void setOrganizer(User organizer) {
         this.organizer = organizer;
+    }
+
+    public boolean isPaid() {
+        return paid;
+    }
+
+    public void setPaid(boolean paid) {
+        this.paid = paid;
+    }
+
+    public BigDecimal getEntryFee() {
+        return entryFee;
+    }
+
+    public void setEntryFee(BigDecimal entryFee) {
+        this.entryFee = entryFee;
+    }
+
+    public String getBankAccount() {
+        return bankAccount;
+    }
+
+    public void setBankAccount(String bankAccount) {
+        this.bankAccount = bankAccount;
+    }
+
+    public Integer getPaymentDeadlineHours() {
+        return paymentDeadlineHours;
+    }
+
+    public void setPaymentDeadlineHours(Integer paymentDeadlineHours) {
+        this.paymentDeadlineHours = paymentDeadlineHours;
+    }
+
+    public Integer getFreeCancelDays() {
+        return freeCancelDays;
+    }
+
+    public void setFreeCancelDays(Integer freeCancelDays) {
+        this.freeCancelDays = freeCancelDays;
+    }
+
+    public boolean isAcceptRegistrations() {
+        return acceptRegistrations;
+    }
+
+    public void setAcceptRegistrations(boolean acceptRegistrations) {
+        this.acceptRegistrations = acceptRegistrations;
     }
 
     public Instant getCreatedAt() {

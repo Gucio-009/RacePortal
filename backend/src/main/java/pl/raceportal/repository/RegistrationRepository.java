@@ -2,6 +2,7 @@ package pl.raceportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import pl.raceportal.domain.Registration;
+import pl.raceportal.domain.RegistrationStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,4 +16,6 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
     Optional<Registration> findByUser_IdAndEvent_Id(String userId, String eventId);
 
     long countByEvent_Id(String eventId);
+
+    boolean existsByCar_IdAndStatusIn(String carId, List<RegistrationStatus> statuses);
 }

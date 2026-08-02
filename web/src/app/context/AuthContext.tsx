@@ -4,6 +4,11 @@ import type { User } from "../lib/types";
 
 export type { User };
 
+type RegisterResult =
+  | { ok: true; requiresVerification?: false }
+  | { ok: true; requiresVerification: true; email: string; message?: string }
+  | { ok: false; message?: string };
+
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -12,7 +17,9 @@ interface AuthContextType {
     username: string,
     email: string,
     password: string,
-  ) => Promise<{ ok: boolean; message?: string }>;
+  ) => Promise<RegisterResult>;
+  verifyEmail: (email: string, code: string) => Promise<{ ok: boolean; message?: string }>;
+  resendCode: (email: string) => Promise<{ ok: boolean; message?: string }>;
   socialLogin: (provider: "google" | "facebook") => Promise<void>;
   logout: () => void;
   updateProfile: (data: {
@@ -78,17 +85,52 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (username: string, email: string, password: string) => {
+  const register = async (username: string, email: string, password: string): Promise<RegisterResult> => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/register", {
-        username,
-        email,
-        password,
-      });
-      persistAuth(res.user, res.token);
+      const res = await api.post<{
+        requiresVerification?: boolean;
+        email?: string;
+        message?: string;
+        token?: string;
+        user?: User;
+      }>("/api/auth/register", { username, email, password });
+
+      if (res.requiresVerification) {
+        return {
+          ok: true,
+          requiresVerification: true,
+          email: res.email || email,
+          message: res.message,
+        };
+      }
+
+      if (res.token && res.user) {
+        persistAuth(res.user, res.token);
+      }
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się utworzyć konta";
+      return { ok: false, message };
+    }
+  };
+
+  const verifyEmail = async (email: string, code: string) => {
+    try {
+      const res = await api.post<{ token: string; user: User }>("/api/auth/verify-email", { email, code });
+      persistAuth(res.user, res.token);
+      return { ok: true };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nieprawidłowy kod weryfikacyjny";
+      return { ok: false, message };
+    }
+  };
+
+  const resendCode = async (email: string) => {
+    try {
+      const res = await api.post<{ message: string }>("/api/auth/resend-code", { email });
+      return { ok: true, message: res.message || "Kod wysłany ponownie" };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się wysłać kodu";
       return { ok: false, message };
     }
   };
@@ -144,6 +186,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isLoading,
         login,
         register,
+        verifyEmail,
+        resendCode,
         socialLogin,
         logout,
         updateProfile,

@@ -133,10 +133,26 @@ Wejdź na http://127.0.0.1:8081/login
 - Usunięto Node/Express/Prisma z `backend/`  
 - Dodano Maven/`pom.xml` + `./mvnw`, Dockerfile multi-stage (Temurin 21), profile `docker`  
 - Compose: `postgres` → `mysql:8.4` (host **3307**), backup → `mysqldump`  
-- Testy API: MockMvc + Testcontainers (lub Compose MySQL przez `TEST_DB_URL`) — **20/20 PASS** (`docs/testy/wyniki/`)  
+- Testy API: MockMvc + Testcontainers (lub Compose MySQL przez `TEST_DB_URL`)  
 - Dokumentacja: `MVP.md`, `changes.md`, `TESTY.md`, `Guidelines.md`, `README.md`  
 
 ---
+
+## 6c. Wyrównanie do Dokumentacji dyplomowej — przepływy (2026-08-02)
+
+Skan `Dokumentacja/` (bez „stare wersje”): diagramy przepływu/sekwencji + statusy zgłoszeń.
+
+| Obszar | Zmiana |
+|--------|--------|
+| Statusy zgłoszeń | `PENDING` → `ACCEPTED` / `CONFIRMED` / `CANCELED` (aliasy APPROVED/REJECTED/CANCELLED) |
+| Płatne wydarzenia | pola `paid`, `entryFee`, `bankAccount`, `paymentDeadlineHours`, `freeCancelDays`, `acceptRegistrations` |
+| Opłacanie | `POST /api/registrations/{id}/payment-proof` + weryfikacja org. → `CONFIRMED` |
+| Anulowanie | kierowca: `POST .../cancel`; org.: `POST /api/events/{id}/cancel` (+ mail, anulacja zgłoszeń) |
+| Garaż | `PATCH /api/garage/{id}`; blokada edycji/usuwania przy otwartym zgłoszeniu |
+| Rejestracja | kod e-mail (`verify-email` / `resend-code`); `register-organizer` + wniosek admina |
+| UI | Dashboard (anuluj/przelew), Garage (edycja), Organizer (płatne, decyzje, anuluj event), Register (OTP) |
+
+Poza kodem MVP (świadomie): bramka płatności online, upload binarny plików, live timing / Project X.
 
 ## 7. Uruchomienie
 
@@ -194,11 +210,11 @@ Pełny zestaw testów dla **API**, **web** i **mobile** (po migracji API = Sprin
 
 | Zestaw | Wynik |
 |--------|-------|
-| API JUnit (MockMvc) | **20 / 20 PASS** |
+| API JUnit (MockMvc) | **22 / 22 PASS** (2026-08-02 — statusy dyplomowe, płatności, anulowania, garaż PATCH, OTP) |
 | Mobile unit (historyczny) | **2 / 2 PASS** |
 | Playwright E2E (historyczny, Express era) | **29 / 29 PASS** — smoke po migracji: `npx playwright test tests/e2e/web.spec.ts` |
 
-Środowisko API: Docker MySQL + Spring `:4000`, data **2026-08-01**.
+Środowisko API: Compose MySQL (`TEST_DB_URL`) lub Testcontainers, data **2026-08-02**.
 
 ### Dokumentacja i artefakty
 

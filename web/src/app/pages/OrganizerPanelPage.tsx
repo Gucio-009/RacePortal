@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { Calendar, Plus, Users, Loader2, Check, X } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Calendar, Plus, Users, Loader2, Check, X, Ban } from "lucide-react";
+import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
+import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { api, ApiError } from "../lib/api";
-import type { ApiEvent, Registration } from "../lib/types";
+import type { ApiEvent, Registration, RegistrationStatus } from "../lib/types";
 import { eventStatusLabel, registrationStatusLabel, formatEventDate } from "../lib/types";
 import { toast } from "sonner";
 
@@ -29,6 +30,12 @@ const emptyForm = {
   imageUrl: "",
   lat: "",
   lng: "",
+  paid: false,
+  entryFee: "",
+  bankAccount: "",
+  paymentDeadlineHours: "72",
+  freeCancelDays: "7",
+  acceptRegistrations: true,
 };
 
 export function OrganizerPanelPage() {
@@ -40,6 +47,9 @@ export function OrganizerPanelPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
+  const [comments, setComments] = useState<Record<string, string>>({});
+
+  const selectedEvent = events.find((e) => e.id === selectedEventId);
 
   const loadEvents = () => {
     setLoading(true);
@@ -71,6 +81,10 @@ export function OrganizerPanelPage() {
       toast.error("Wypełnij wymagane pola");
       return;
     }
+    if (form.paid && !form.bankAccount.trim()) {
+      toast.error("Dla płatnego wydarzenia podaj numer konta");
+      return;
+    }
     setSaving(true);
     try {
       await api.post("/api/events", {
@@ -85,6 +99,12 @@ export function OrganizerPanelPage() {
         imageUrl: form.imageUrl.trim() || undefined,
         lat: form.lat ? Number(form.lat) : undefined,
         lng: form.lng ? Number(form.lng) : undefined,
+        paid: form.paid,
+        entryFee: form.paid && form.entryFee ? Number(form.entryFee) : undefined,
+        bankAccount: form.paid ? form.bankAccount.trim() : undefined,
+        paymentDeadlineHours: form.paid ? Number(form.paymentDeadlineHours) || 72 : undefined,
+        freeCancelDays: Number(form.freeCancelDays) || 7,
+        acceptRegistrations: form.acceptRegistrations,
       });
       toast.success("Wydarzenie utworzone — oczekuje na akceptację admina");
       setCreateOpen(false);
@@ -97,13 +117,34 @@ export function OrganizerPanelPage() {
     }
   };
 
-  const updateRegistrationStatus = async (id: string, status: "APPROVED" | "REJECTED") => {
+  const updateRegistrationStatus = async (id: string, status: RegistrationStatus) => {
     try {
-      const updated = await api.patch<Registration>(`/api/registrations/${id}/status`, { status });
+      const updated = await api.patch<Registration>(`/api/registrations/${id}/status`, {
+        status,
+        comment: comments[id]?.trim() || undefined,
+      });
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      toast.success(`Zgłoszenie: ${registrationStatusLabel(status)}`);
+      toast.success(`Zgłoszenie: ${registrationStatusLabel(updated.status)}`);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
+    }
+  };
+
+  const cancelEvent = async (eventId: string) => {
+    if (!confirm("Na pewno anulować wydarzenie? Wszystkie otwarte zgłoszenia zostaną anulowane.")) {
+      return;
+    }
+    try {
+      await api.post(`/api/events/${eventId}/cancel`, {});
+      toast.success("Wydarzenie anulowane");
+      loadEvents();
+      if (selectedEventId === eventId) {
+        setRegistrations([]);
+        setSelectedEventId(null);
+        setActiveTab("events");
+      }
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się anulować wydarzenia");
     }
   };
 
@@ -151,6 +192,11 @@ export function OrganizerPanelPage() {
                         <Badge variant="outline" className="border-[#2a2a2a] text-white">
                           {eventStatusLabel(event.status)}
                         </Badge>
+                        {event.paid && (
+                          <Badge variant="outline" className="border-[#FFD700] text-[#FFD700]">
+                            Płatne
+                          </Badge>
+                        )}
                       </div>
                       <h3 className="font-['Orbitron'] text-white" style={{ fontWeight: 800 }}>
                         {event.name}
@@ -164,14 +210,26 @@ export function OrganizerPanelPage() {
                         {event._count?.registrations ?? event.registrationsCount ?? 0} zgłoszeń
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      onClick={() => loadRegistrations(event.id)}
-                      className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
-                      style={{ fontWeight: 700 }}
-                    >
-                      Zobacz zgłoszenia
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => loadRegistrations(event.id)}
+                        className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                        style={{ fontWeight: 700 }}
+                      >
+                        Zobacz zgłoszenia
+                      </Button>
+                      {event.status !== "CANCELLED" && event.status !== "ARCHIVED" && (
+                        <Button
+                          variant="outline"
+                          onClick={() => cancelEvent(event.id)}
+                          className="border-red-900 text-red-400 hover:bg-red-950"
+                        >
+                          <Ban className="w-4 h-4 mr-2" />
+                          Anuluj
+                        </Button>
+                      )}
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -184,30 +242,89 @@ export function OrganizerPanelPage() {
             ) : (
               registrations.map((reg) => (
                 <Card key={reg.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
-                  <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <p className="text-white" style={{ fontWeight: 700 }}>
-                        {reg.user?.username ?? "Kierowca"}
-                      </p>
-                      <p className="text-[#9ca3af] text-sm">{reg.user?.email}</p>
-                      {reg.car && (
-                        <p className="text-[#9ca3af] text-sm">
-                          Auto: {reg.car.make} {reg.car.model}
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div>
+                        <p className="text-white" style={{ fontWeight: 700 }}>
+                          {reg.user?.username ?? "Kierowca"}
                         </p>
-                      )}
-                      {reg.note && <p className="text-[#9ca3af] text-sm italic">{reg.note}</p>}
-                      <Badge className="mt-2 bg-[#2a2a2a] text-white">{registrationStatusLabel(reg.status)}</Badge>
-                    </div>
-                    {reg.status === "PENDING" && (
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => updateRegistrationStatus(reg.id, "APPROVED")} className="bg-green-700 hover:bg-green-600">
-                          <Check className="w-4 h-4" />
-                        </Button>
-                        <Button size="sm" variant="outline" onClick={() => updateRegistrationStatus(reg.id, "REJECTED")} className="border-red-800 text-red-400">
-                          <X className="w-4 h-4" />
-                        </Button>
+                        <p className="text-[#9ca3af] text-sm">{reg.user?.email}</p>
+                        {reg.car && (
+                          <p className="text-[#9ca3af] text-sm">
+                            Auto: {reg.car.make} {reg.car.model}
+                            {reg.car.className ? ` · ${reg.car.className}` : ""}
+                          </p>
+                        )}
+                        {reg.note && <p className="text-[#9ca3af] text-sm italic">{reg.note}</p>}
+                        {reg.paymentProofUrl && (
+                          <a
+                            href={reg.paymentProofUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-[#FFD700] text-sm underline"
+                          >
+                            Potwierdzenie przelewu
+                          </a>
+                        )}
+                        {reg.organizerComment && (
+                          <p className="text-sm text-[#9ca3af] mt-1">Komentarz: {reg.organizerComment}</p>
+                        )}
+                        <Badge className="mt-2 bg-[#2a2a2a] text-white">{registrationStatusLabel(reg.status)}</Badge>
                       </div>
-                    )}
+                      <div className="flex flex-col gap-2 min-w-[200px]">
+                        <Input
+                          placeholder="Komentarz (opcjonalnie)"
+                          value={comments[reg.id] || ""}
+                          onChange={(e) => setComments((prev) => ({ ...prev, [reg.id]: e.target.value }))}
+                          className="bg-[#121212] border-[#2a2a2a] text-white"
+                        />
+                        {reg.status === "PENDING" && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() =>
+                                updateRegistrationStatus(
+                                  reg.id,
+                                  selectedEvent?.paid ? "ACCEPTED" : "CONFIRMED",
+                                )
+                              }
+                              className="bg-green-700 hover:bg-green-600 flex-1"
+                            >
+                              <Check className="w-4 h-4 mr-1" />
+                              {selectedEvent?.paid ? "Akceptuj" : "Potwierdź"}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateRegistrationStatus(reg.id, "CANCELED")}
+                              className="border-red-800 text-red-400"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                        {reg.status === "ACCEPTED" && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              disabled={!reg.paymentProofUrl}
+                              onClick={() => updateRegistrationStatus(reg.id, "CONFIRMED")}
+                              className="bg-green-700 hover:bg-green-600 flex-1 disabled:opacity-40"
+                            >
+                              Potwierdź wpłatę
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => updateRegistrationStatus(reg.id, "CANCELED")}
+                              className="border-red-800 text-red-400"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))
@@ -268,6 +385,66 @@ export function OrganizerPanelPage() {
               <Label>Dł. geogr. (lng)</Label>
               <Input value={form.lng} onChange={(e) => setForm({ ...form, lng: e.target.value })} type="number" step="any" className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
+
+            <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
+              <div>
+                <Label className="text-white">Przyjmuj zgłoszenia na stronie</Label>
+                <p className="text-xs text-[#9ca3af]">Switch z diagramu dodawania wydarzenia</p>
+              </div>
+              <Switch
+                checked={form.acceptRegistrations}
+                onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
+              />
+            </div>
+
+            <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
+              <div>
+                <Label className="text-white">Wydarzenie płatne</Label>
+                <p className="text-xs text-[#9ca3af]">Wymaga numeru konta i weryfikacji przelewu</p>
+              </div>
+              <Switch checked={form.paid} onCheckedChange={(v) => setForm({ ...form, paid: v })} />
+            </div>
+
+            {form.paid && (
+              <>
+                <div className="space-y-2">
+                  <Label>Wpisowe (PLN)</Label>
+                  <Input
+                    type="number"
+                    value={form.entryFee}
+                    onChange={(e) => setForm({ ...form, entryFee: e.target.value })}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Numer konta *</Label>
+                  <Input
+                    value={form.bankAccount}
+                    onChange={(e) => setForm({ ...form, bankAccount: e.target.value })}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Termin wpłaty (godz.)</Label>
+                  <Input
+                    type="number"
+                    value={form.paymentDeadlineHours}
+                    onChange={(e) => setForm({ ...form, paymentDeadlineHours: e.target.value })}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Darmowa anulacja (dni przed)</Label>
+                  <Input
+                    type="number"
+                    value={form.freeCancelDays}
+                    onChange={(e) => setForm({ ...form, freeCancelDays: e.target.value })}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+              </>
+            )}
+
             <p className="sm:col-span-2 text-xs text-[#9ca3af] leading-relaxed">
               Dodając wydarzenie, potwierdzasz, że dane organizatora i wydarzenia będą przetwarzane zgodnie z{" "}
               <a href="/privacy" className="text-[#FFD700] hover:underline">

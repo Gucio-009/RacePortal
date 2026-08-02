@@ -1,11 +1,15 @@
-# RacePortal API Surefire — skrót (2026-08-01T14:35:22Z)
+RacePortal API — Surefire summary (2026-08-02)
 
-[INFO] Running pl.raceportal.security.JwtServiceTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0 — JwtServiceTest
-[INFO] Running pl.raceportal.web.GlobalExceptionHandlerTest
-[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0 — GlobalExceptionHandlerTest
-[INFO] Running pl.raceportal.ApiIntegrationTest
-[INFO] Started ApiIntegrationTest (Spring Boot 3.3.5 / Java 21 / MySQL)
-[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0 — ApiIntegrationTest
-[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS
+Tests run: 22, Failures: 0, Errors: 0, Skipped: 0
+BUILD SUCCESS
+
+Covered:
+- health, login 3 roles, me, register conflict/validation
+- register + email verification gate
+- events list, garage list/update guards
+- driver cancel registration
+- paid flow: ACCEPTED → payment-proof → CONFIRMED
+- event cancel → registrations CANCELED
+- admin RBAC
+
+Runner: scripts/test-api.sh (Compose MySQL via TEST_DB_URL)

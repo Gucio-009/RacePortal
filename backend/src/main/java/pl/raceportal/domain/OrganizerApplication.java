@@ -42,7 +42,7 @@ public class OrganizerApplication {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private RegistrationStatus status = RegistrationStatus.PENDING;
+    private ApplicationStatus status = ApplicationStatus.PENDING;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -94,11 +94,11 @@ public class OrganizerApplication {
         this.message = message;
     }
 
-    public RegistrationStatus getStatus() {
+    public ApplicationStatus getStatus() {
         return status;
     }
 
-    public void setStatus(RegistrationStatus status) {
+    public void setStatus(ApplicationStatus status) {
         this.status = status;
     }
 

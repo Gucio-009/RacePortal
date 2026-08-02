@@ -228,4 +228,10 @@ Nie kasuj sekcji „Co miało być” — to baza porównania.
 
 ---
 
+
+
+## 8. Wyrównanie do Dokumentacji (2026-08-02)
+
+Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+web: statusy PENDING/ACCEPTED/CONFIRMED/CANCELED, wydarzenia płatne + proof przelewu, anulowanie zgłoszenia/wydarzenia, edycja garażu z blokadą przy otwartym zgłoszeniu, weryfikacja e-mail przy rejestracji. Poza MVP kodu: bramka płatności, upload binarny, Project X.
+
 *MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-01 (testy).*

@@ -10,9 +10,14 @@ import { Separator } from "../components/ui/separator";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar, Registration } from "../lib/types";
-import { registrationStatusLabel, eventDateLabel } from "../lib/types";
+import {
+  registrationStatusLabel,
+  eventDateLabel,
+  isOpenRegistration,
+  isPositiveRegistration,
+} from "../lib/types";
 import { toast } from "sonner";
 
 export function DashboardPage() {
@@ -24,14 +29,17 @@ export function DashboardPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
+  const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
+
+  const reloadRegistrations = () =>
+    api
+      .get<Registration[]>("/api/registrations/mine")
+      .then(setRegistrations)
+      .catch(() => setRegistrations([]));
 
   useEffect(() => {
-    Promise.all([
-      api.get<Registration[]>("/api/registrations/mine"),
-      api.get<GarageCar[]>("/api/garage"),
-    ])
-      .then(([regs, garageCars]) => {
-        setRegistrations(regs);
+    Promise.all([reloadRegistrations(), api.get<GarageCar[]>("/api/garage")])
+      .then(([, garageCars]) => {
         setCars(garageCars);
       })
       .catch(() => {
@@ -42,8 +50,39 @@ export function DashboardPage() {
   }, []);
 
   const upcomingRegistrations = registrations.filter(
-    (r) => r.event && r.event.status === "APPROVED" && new Date(r.event.date) >= new Date(),
+    (r) =>
+      r.event &&
+      r.event.status === "APPROVED" &&
+      isOpenRegistration(r.status) &&
+      new Date(r.event.date) >= new Date(),
   );
+
+  const cancelRegistration = async (id: string) => {
+    try {
+      const updated = await api.post<Registration>(`/api/registrations/${id}/cancel`, {});
+      setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      toast.success("Zgłoszenie anulowane");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się anulować");
+    }
+  };
+
+  const attachProof = async (id: string) => {
+    const url = (proofUrls[id] || "").trim();
+    if (!url) {
+      toast.error("Podaj URL potwierdzenia przelewu");
+      return;
+    }
+    try {
+      const updated = await api.post<Registration>(`/api/registrations/${id}/payment-proof`, {
+        paymentProofUrl: url,
+      });
+      setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      toast.success("Potwierdzenie przelewu dołączone");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się zapisać potwierdzenia");
+    }
+  };
 
   const openEdit = () => {
     setUsername(user?.username ?? "");
@@ -188,10 +227,10 @@ export function DashboardPage() {
                   <div key={reg.id}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <Badge
                             className={
-                              reg.status === "APPROVED"
+                              isPositiveRegistration(reg.status)
                                 ? "bg-[#FFD700] text-[#121212]"
                                 : "bg-[#2a2a2a] text-white"
                             }
@@ -199,6 +238,12 @@ export function DashboardPage() {
                           >
                             {registrationStatusLabel(reg.status)}
                           </Badge>
+                          {reg.event?.paid && (
+                            <Badge variant="outline" className="border-[#2a2a2a] text-[#FFD700]">
+                              Płatne
+                              {reg.event.entryFee != null ? ` · ${reg.event.entryFee} PLN` : ""}
+                            </Badge>
+                          )}
                           {reg.event && (
                             <span className="text-[#9ca3af]" style={{ fontSize: "14px" }}>
                               {eventDateLabel(reg.event)}
@@ -225,19 +270,62 @@ export function DashboardPage() {
                             Auto: {reg.car.make} {reg.car.model}
                           </p>
                         )}
+                        {reg.status === "ACCEPTED" && reg.event?.paid && (
+                          <div className="mt-3 space-y-2">
+                            {reg.event.bankAccount && (
+                              <p className="text-sm text-[#9ca3af]">
+                                Wpłać na konto: <span className="text-white">{reg.event.bankAccount}</span>
+                              </p>
+                            )}
+                            {reg.paymentProofUrl ? (
+                              <p className="text-sm text-green-400">Potwierdzenie dołączone</p>
+                            ) : (
+                              <div className="flex flex-col sm:flex-row gap-2">
+                                <Input
+                                  placeholder="URL potwierdzenia przelewu"
+                                  value={proofUrls[reg.id] || ""}
+                                  onChange={(e) =>
+                                    setProofUrls((prev) => ({ ...prev, [reg.id]: e.target.value }))
+                                  }
+                                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                                />
+                                <Button
+                                  size="sm"
+                                  onClick={() => attachProof(reg.id)}
+                                  className="bg-[#FFD700] text-[#121212]"
+                                  style={{ fontWeight: 700 }}
+                                >
+                                  Dołącz
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {reg.event && (
-                        <Link to={`/wydarzenia/${reg.event.id}`}>
+                      <div className="flex flex-col gap-2">
+                        {reg.event && (
+                          <Link to={`/wydarzenia/${reg.event.id}`}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212] w-full"
+                              style={{ fontWeight: 700 }}
+                            >
+                              SZCZEGÓŁY
+                            </Button>
+                          </Link>
+                        )}
+                        {isOpenRegistration(reg.status) && (
                           <Button
                             size="sm"
                             variant="outline"
-                            className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
-                            style={{ fontWeight: 700 }}
+                            onClick={() => cancelRegistration(reg.id)}
+                            className="border-red-900 text-red-400 hover:bg-red-950"
                           >
-                            SZCZEGÓŁY
+                            Anuluj
                           </Button>
-                        </Link>
-                      )}
+                        )}
+                      </div>
                     </div>
                     {idx < registrations.length - 1 && <Separator className="bg-[#2a2a2a] mt-4" />}
                   </div>

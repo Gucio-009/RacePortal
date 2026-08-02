@@ -50,6 +50,15 @@ public class Registration {
     @Column(length = 500)
     private String note;
 
+    @Column(name = "organizer_comment", length = 500)
+    private String organizerComment;
+
+    @Column(name = "payment_proof_url", length = 500)
+    private String paymentProofUrl;
+
+    @Column(name = "payment_due_at")
+    private Instant paymentDueAt;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -114,6 +123,30 @@ public class Registration {
 
     public void setNote(String note) {
         this.note = note;
+    }
+
+    public String getOrganizerComment() {
+        return organizerComment;
+    }
+
+    public void setOrganizerComment(String organizerComment) {
+        this.organizerComment = organizerComment;
+    }
+
+    public String getPaymentProofUrl() {
+        return paymentProofUrl;
+    }
+
+    public void setPaymentProofUrl(String paymentProofUrl) {
+        this.paymentProofUrl = paymentProofUrl;
+    }
+
+    public Instant getPaymentDueAt() {
+        return paymentDueAt;
+    }
+
+    public void setPaymentDueAt(Instant paymentDueAt) {
+        this.paymentDueAt = paymentDueAt;
     }
 
     public Instant getCreatedAt() {

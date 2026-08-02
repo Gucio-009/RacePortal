@@ -33,7 +33,7 @@ public class UserPrincipal implements UserDetails {
         return id;
     }
 
-    public String getEmail() {
+    public String getEmailAddress() {
         return email;
     }
 
