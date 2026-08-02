@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://mysql:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:raceportal}
+    password: ${DATABASE_PASSWORD:raceportal}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+  mail:
+    host: ${SMTP_HOST:mailhog}
+    port: ${SMTP_PORT:1025}
+
+app:
+  cors:
+    origin: ${CORS_ORIGIN:*}
+
+logging:
+  level:
+    root: INFO

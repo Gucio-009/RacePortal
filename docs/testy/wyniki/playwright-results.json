@@ -1,0 +1,1158 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.3.0/bin/node",
+      "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/node_modules/.bin/playwright",
+      "test"
+    ],
+    "configFile": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/playwright.config.ts",
+    "rootDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-desktop",
+        "name": "web-desktop",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-mobile-viewport",
+        "name": "web-mobile-viewport",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-expo",
+        "name": "mobile-expo",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "open": "never",
+          "outputFolder": "docs/wyniki-testow/playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "docs/wyniki-testow/playwright-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "docs/wyniki-testow/playwright-junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "web.spec.ts",
+      "file": "web.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Web — publiczne strony",
+          "file": "web.spec.ts",
+          "line": 13,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-WEB-01: strona główna ładuje hero RACEPORTAL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 793,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:07.853Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-cb385ed9e86bf3cc42e8",
+              "file": "web.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-02: kalendarz wydarzeń pokazuje karty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 829,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:08.902Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-bdcebf855a748e2caa96",
+              "file": "web.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-03: wyszukiwarka filtruje listę",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1248,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:09.738Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-8f2a4c8865e8b4f1c4f1",
+              "file": "web.spec.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-04: szczegóły wydarzenia",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 889,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:11.007Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-fa044257fb83020a6e43",
+              "file": "web.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-05: mapa wydarzeń",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 505,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:11.903Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-c7bb667b69edf8db7f7d",
+              "file": "web.spec.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-06: archiwum",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 506,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:12.414Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-5827fb6d237a2c875d1a",
+              "file": "web.spec.ts",
+              "line": 47,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-01: strona główna ładuje hero RACEPORTAL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 681,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:18.713Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-f068d2e803b90fc9d7d4",
+              "file": "web.spec.ts",
+              "line": 14,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-02: kalendarz wydarzeń pokazuje karty",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1050,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:19.528Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-82b6ac1277aa49c3c8fb",
+              "file": "web.spec.ts",
+              "line": 20,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-03: wyszukiwarka filtruje listę",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1477,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:20.587Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-e2916fb9f305226a838a",
+              "file": "web.spec.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-04: szczegóły wydarzenia",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1063,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:22.074Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-7af60f152a85a0bdf975",
+              "file": "web.spec.ts",
+              "line": 33,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-05: mapa wydarzeń",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 580,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:23.143Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-7cd29db6b5bda155faa6",
+              "file": "web.spec.ts",
+              "line": 41,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-06: archiwum",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 541,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:23.730Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-24825e44cea48c721d8b",
+              "file": "web.spec.ts",
+              "line": 47,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Web — auth i panel kierowcy",
+          "file": "web.spec.ts",
+          "line": 53,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-WEB-07: logowanie kierowcy i wejście na dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 610,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:12.927Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-f635677e9af6ed2ff980",
+              "file": "web.spec.ts",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-08: błędne logowanie pokazuje błąd",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 543,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:13.543Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-faf61766275d3716e981",
+              "file": "web.spec.ts",
+              "line": 60,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-09: garaż po zalogowaniu pokazuje auta",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 545,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:14.091Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-a5daf9cc046b8195e2e4",
+              "file": "web.spec.ts",
+              "line": 70,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-07: logowanie kierowcy i wejście na dashboard",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 576,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:24.277Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-2e862b6d831e891082e0",
+              "file": "web.spec.ts",
+              "line": 54,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-08: błędne logowanie pokazuje błąd",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 638,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:24.860Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-902e56b85b47b9d4d130",
+              "file": "web.spec.ts",
+              "line": 60,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-09: garaż po zalogowaniu pokazuje auta",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 655,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:25.505Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-63b1276e9e73f51d89b9",
+              "file": "web.spec.ts",
+              "line": 70,
+              "column": 3
+            }
+          ]
+        },
+        {
+          "title": "Web — RBAC",
+          "file": "web.spec.ts",
+          "line": 79,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-WEB-10: admin widzi panel admina",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 579,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:14.642Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-eeb730399c7770dca7d5",
+              "file": "web.spec.ts",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-11: organizator widzi panel organizatora",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 627,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:15.227Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-b29aa6a2f925decca726",
+              "file": "web.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-12: zwykły user nie wejdzie na /admin",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-desktop",
+                  "projectName": "web-desktop",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2325,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:15.860Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-84551fe9d1b38742b0c2",
+              "file": "web.spec.ts",
+              "line": 97,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-10: admin widzi panel admina",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 602,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:26.167Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-70e7802c3ee3d8efcf01",
+              "file": "web.spec.ts",
+              "line": 80,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-11: organizator widzi panel organizatora",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 616,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:26.774Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-81992b6753dc2daf5efb",
+              "file": "web.spec.ts",
+              "line": 89,
+              "column": 3
+            },
+            {
+              "title": "TC-WEB-12: zwykły user nie wejdzie na /admin",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "web-mobile-viewport",
+                  "projectName": "web-mobile-viewport",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 2522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:27.396Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "2948388c6448a8e5345d-aca42a609f4d7cf768d4",
+              "file": "web.spec.ts",
+              "line": 97,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Mobile Expo (web preview)",
+          "file": "mobile.spec.ts",
+          "line": 3,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-MOB-01: ekran logowania RACEPORTAL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 403,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:30.326Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-d4a81e9fb2be3d020b64",
+              "file": "mobile.spec.ts",
+              "line": 4,
+              "column": 3
+            },
+            {
+              "title": "TC-MOB-02: logowanie demo kierowcy i lista wydarzeń",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 836,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:30.857Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-66684dcbc92b954d107b",
+              "file": "mobile.spec.ts",
+              "line": 12,
+              "column": 3
+            },
+            {
+              "title": "TC-MOB-03: błędne hasło pokazuje komunikat",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 522,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:31.700Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-19f385757b44404e881c",
+              "file": "mobile.spec.ts",
+              "line": 26,
+              "column": 3
+            },
+            {
+              "title": "TC-MOB-04: wejście w szczegóły i przycisk zapisu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 736,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:32.228Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-3e3b3eeabecbf45820e4",
+              "file": "mobile.spec.ts",
+              "line": 38,
+              "column": 3
+            },
+            {
+              "title": "TC-MOB-05: wylogowanie wraca do logowania",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 686,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-01T11:15:32.971Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-89fde4abd93ddbf3037f",
+              "file": "mobile.spec.ts",
+              "line": 50,
+              "column": 3
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-01T11:15:07.354Z",
+    "duration": 26350.666,
+    "expected": 29,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

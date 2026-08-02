@@ -1,0 +1,21 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  mail:
+    host: localhost
+    port: 1025
+
+app:
+  cors:
+    origin: "*"
+  jwt:
+    secret: raceportal-test-secret-change-me-please
+  seed:
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    pl.raceportal: INFO

@@ -1,125 +1,101 @@
-# 🏁 RacePortal
-**Centralny katalog wydarzeń motorsportowych w Polsce**
+# RacePortal
 
-RacePortal to aplikacja webowa, której celem jest zebranie w jednym miejscu aktualnych wydarzeń motorsportowych w Polsce. Projekt eliminuje problem rozproszenia informacji pomiędzy grupami Facebookowymi, stronami torów i pojedynczymi witrynami organizatorów.
+Centralny katalog wydarzeń motorsportowych w Polsce.
 
----
+Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/Gucio-009/RacePortal)
 
-## 🚗 Funkcjonalności (MVP)
+## Struktura repozytorium
 
-- Przejrzysty **katalog wydarzeń**: widok listy oraz kalendarza.
-- **Filtrowanie** po: kategorii, torze, województwie, słowach kluczowych.
-- **Szczegóły wydarzenia**: data, opis, lokalizacja, organizator, linki zewnętrzne.
-- **Panel administratora**: pełne CRUD dla eventów i moderacja treści.
-- **Konta organizatorów**: z możliwością dodawania i edycji własnych wydarzeń.
-- **Konta kierowców**: z możliwością zapisów na zawody i dodawanie auta do garażu
-- **Garaż aut**: możliwość posiadania skonfigurowane swoje pojazdy
-- **Powiadomienia mailowe**: potwierdzenia i informacje
-- **Archiwum wydarzeń**: dostęp do wydarzeń, które już się odbyły.
-- **System Zgłoszeń**: wysyłanie formularzy zgłoszeniowych przez kierowców na dane wydarzenie.
-- Ręczny/semi-automatyczny **import danych** przez formularze.
-- **Aplikacja mobilna**: wersja MVP będzie w pełni responsywna PWA/Mobile-first
-- **Integracja z Google Maps API - geokodowanie oraz wytyczanie trasy z lokalizacji użytkownika do miejsca wydarzenia.
+| Katalog | Opis |
+|---------|------|
+| [`web/`](./web/) | Aplikacja webowa (Vite + React) |
+| [`backend/`](./backend/) | API (Spring Boot + MySQL + JWT) |
+| [`mobile/`](./mobile/) | Aplikacja mobilna (Expo) |
+| [`docs/`](./docs/) | Dokumentacja projektu i dyplomu |
+| [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
+| [`scripts/`](./scripts/) | Backup DB + uruchamianie testów |
 
-### Funkcje planowane (poza MVP)
-- Integracja z kalendarzami zewnętrznymi (Google Calendar, Apple Calendar).
-- Zaawansowany system powiadomień push w aplikacji.
-- Integracja z social media (automatyczny post na FB/Instagram po dodaniu eventu).
-- System pomiaru czasów live (Live Timing).
+Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)
 
+## Jak odpalić lokalnie (Docker)
 
----
+### 1. Wymagania
 
-## 🧱 Architektura systemu
-```
-React (Frontend) → Spring Boot REST API → MySQL
+- zainstalowany [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- Docker Desktop włączony
+
+### 2. Pobierz projekt
+
+```bash
+git clone -b wojtek https://github.com/Gucio-009/RacePortal.git
+cd RacePortal
 ```
 
-### Technologie
-- **Frontend:** React.js
-- **Backend:** Spring Boot (REST, Security, JWT)
-- **Baza danych:** MySQL
-- **Konteneryzacja:** Docker
-- **Integracje:** Google Maps, zewnętrzne linki do wydarzeń
-- **Narzędzia:**  GitHub, Discord, DyskGoogle
+### 3. Uruchom
+
+```bash
+docker compose up --build -d
+```
+
+### 4. Otwórz w przeglądarce
+
+| Co | Adres |
+|----|--------|
+| Aplikacja | http://127.0.0.1:8081/ |
+| Logowanie | http://127.0.0.1:8081/login |
+| API health | http://127.0.0.1:8081/api/health |
+| Maile (Mailpit) | http://127.0.0.1:8025/ |
+
+### 5. Konta testowe
+
+| Rola | Email | Hasło |
+|------|-------|-------|
+| Admin | `admin@raceportal.pl` | `admin123` |
+| Organizator | `org@raceportal.pl` | `org123` |
+| Kierowca | `test@wp.pl` | `test123` |
+
+### 6. Zatrzymanie
+
+```bash
+docker compose down
+```
 
 ---
 
-## 🔐 Bezpieczeństwo
-- JWT + RBAC (ADMIN, ORGANIZER).
-- Zgodność z **OWASP ASVS Level 1**.
-- Walidacja danych + rate limiting.
-- Wymuszone HTTPS, zabezpieczenia nagłówków (CSP, HSTS itd.).
+## Aplikacja mobilna
+
+```bash
+docker compose up -d
+cd mobile && npm install && npm start
+```
+
+Expo web (także pod E2E): `npx expo start --web --port 8082`  
+Szczegóły: [`mobile/README.md`](./mobile/README.md)
 
 ---
 
-## ⚡ Wydajność
-- Paginacja + indeksowanie zapytań.
-- API ≤ **500–700 ms P95** dla listy do 50 rekordów.
-- Skalowanie testowane przy **10 000 rekordów** i 50 RPS.
+## Testy automatyczne
+
+Ostatni przebieg API (Spring): **20 / 20 PASS** — szczegóły w [`docs/testy/`](./docs/testy/TESTY.md).
+
+```bash
+docker compose up -d
+cd mobile && npx expo start --web --port 8082   # terminal 2
+
+npm run test:api
+npm run test:mobile-unit
+npx playwright test
+# albo: npm run test:report
+```
 
 ---
 
-## 📦 Wymagania niefunkcjonalne
-- Monitoring i alertowanie.
-- Pełna przenośność środowiska dzięki Dockerowi.
-- Responsywne UI (mobile-first).
+## Dokumentacja
 
----
-
-## 🧩 Kategorie użytkowników
-- **Anonimowi** – przeglądanie wydarzeń.
-- **Kierowcy** – Profil kierowcy i dodawanie do polubionych wydarzeń
-- **Organizatorzy** – dodawanie i edycja własnych eventów (po weryfikacji).
-- **Administratorzy** – zarządzanie całą treścią.
-
----
-
-## 👥 Zespół projektowy
-**Kierownik projektu:**
-- Michał Gutowski
-
-**Frontend:** Natalia Otrombke, Oliwier Kasprowicz
-**Backend:** Michał Gutowski, Miłosz Parkitny
-**Testing&Security:** Wojciech Wronisz
-**Opiekun projektu:** Marek Bednarczyk
-
----
-
-## 🧵 Workflow i zasady pracy z repozytorium
-Aby zapewnić porządek, czytelność i pełną kontrolę nad rozwojem projektu, obowiązują poniższe zasady pracy z repozytorium:
-
-### 🌿 Struktura branchy
-- **main** – stabilna, produkcyjna wersja projektu; tylko zatwierdzone PR.
-- **develop** – główny branch rozwojowy; tu trafiają wszystkie PR z funkcjonalności po code review.
-- **feature/**
-  - Każda funkcjonalność rozwijana jest w osobnym branchu.
-  - Nazewnictwo: `feature/nazwa-funkcji-back/front` (np. `feature/landing-page-front`).
-- **fix/**
-  - Branch do poprawek błędów.
-  - Nazewnictwo: `fix/poprawka-opisu`, `fix/błąd-api`.
-- **hotfix/**
-  - Nagłe poprawki krytyczne w `main`.
-  - Po wdrożeniu merge do `main` i **obowiązkowo** do `develop`.
-
-### 🔀 Pull Requesty
-- PR **zawsze** z branchy `feature/*` → do `develop`.
-- PR do `main` wyłącznie przy oficjalnych release’ach lub hotfixach.
-- Każdy PR wymaga:
-  - opisu zmian
-  
-
-### 🧪 Testowanie i jakość
-- Frontend i backend muszą przechodzić testy lokalne przed PR.
-- Zakaz pushowania bezpośrednio na `main` i `develop`.
-- Każdy PR musi posiadać checklistę wykonania (testy).
-
-### 📦 Release’y
-- Release tworzony jest z brancha `develop` → merge do `main`.
-- Tagowanie: `vX.Y.Z` (SemVer).
-
----
-
-## 📄 Dokumentacja
-Pełen *Dokument Założeń Wstępnych* znajduje się w repozytorium:
-`02_DZW-GrA(Kasprowicz, Gutowski, Otrombke, Parkitny, Wronisz)_v1.1.pdf`
+| Plik | Zawartość |
+|------|-----------|
+| [`docs/MVP.md`](./docs/MVP.md) | Zakres MPC: miało być / jest / zrobione / luki |
+| [`docs/changes.md`](./docs/changes.md) | Chronologia prac |
+| [`docs/testy/TESTY.md`](./docs/testy/TESTY.md) | Testy automatyczne |
+| [`docs/Guidelines.md`](./docs/Guidelines.md) | Wytyczne |
+| [`docs/ATTRIBUTIONS.md`](./docs/ATTRIBUTIONS.md) | Licencje / atrybucje |

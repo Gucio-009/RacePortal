@@ -1,0 +1,15 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.*
+web/node_modules
+web/dist
+backend/node_modules
+backend/dist
+mobile/node_modules
+mobile/.expo
+test-results
+playwright-report
+blob-report

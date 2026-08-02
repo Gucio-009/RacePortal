@@ -1,0 +1,66 @@
+<testsuites id="" name="" tests="29" failures="0" skipped="0" errors="0" time="26.350666">
+<testsuite name="web.spec.ts" timestamp="2026-08-01T11:15:07.448Z" hostname="web-desktop" tests="12" failures="0" skipped="0" time="9.999" errors="0">
+<testcase name="Web — publiczne strony › TC-WEB-01: strona główna ładuje hero RACEPORTAL" classname="web.spec.ts" time="0.793">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-02: kalendarz wydarzeń pokazuje karty" classname="web.spec.ts" time="0.829">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-03: wyszukiwarka filtruje listę" classname="web.spec.ts" time="1.248">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-04: szczegóły wydarzenia" classname="web.spec.ts" time="0.889">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-05: mapa wydarzeń" classname="web.spec.ts" time="0.505">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-06: archiwum" classname="web.spec.ts" time="0.506">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-07: logowanie kierowcy i wejście na dashboard" classname="web.spec.ts" time="0.61">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-08: błędne logowanie pokazuje błąd" classname="web.spec.ts" time="0.543">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-09: garaż po zalogowaniu pokazuje auta" classname="web.spec.ts" time="0.545">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-10: admin widzi panel admina" classname="web.spec.ts" time="0.579">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-11: organizator widzi panel organizatora" classname="web.spec.ts" time="0.627">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-12: zwykły user nie wejdzie na /admin" classname="web.spec.ts" time="2.325">
+</testcase>
+</testsuite>
+<testsuite name="web.spec.ts" timestamp="2026-08-01T11:15:07.448Z" hostname="web-mobile-viewport" tests="12" failures="0" skipped="0" time="11.001" errors="0">
+<testcase name="Web — publiczne strony › TC-WEB-01: strona główna ładuje hero RACEPORTAL" classname="web.spec.ts" time="0.681">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-02: kalendarz wydarzeń pokazuje karty" classname="web.spec.ts" time="1.05">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-03: wyszukiwarka filtruje listę" classname="web.spec.ts" time="1.477">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-04: szczegóły wydarzenia" classname="web.spec.ts" time="1.063">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-05: mapa wydarzeń" classname="web.spec.ts" time="0.58">
+</testcase>
+<testcase name="Web — publiczne strony › TC-WEB-06: archiwum" classname="web.spec.ts" time="0.541">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-07: logowanie kierowcy i wejście na dashboard" classname="web.spec.ts" time="0.576">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-08: błędne logowanie pokazuje błąd" classname="web.spec.ts" time="0.638">
+</testcase>
+<testcase name="Web — auth i panel kierowcy › TC-WEB-09: garaż po zalogowaniu pokazuje auta" classname="web.spec.ts" time="0.655">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-10: admin widzi panel admina" classname="web.spec.ts" time="0.602">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-11: organizator widzi panel organizatora" classname="web.spec.ts" time="0.616">
+</testcase>
+<testcase name="Web — RBAC › TC-WEB-12: zwykły user nie wejdzie na /admin" classname="web.spec.ts" time="2.522">
+</testcase>
+</testsuite>
+<testsuite name="mobile.spec.ts" timestamp="2026-08-01T11:15:07.448Z" hostname="mobile-expo" tests="5" failures="0" skipped="0" time="3.183" errors="0">
+<testcase name="Mobile Expo (web preview) › TC-MOB-01: ekran logowania RACEPORTAL" classname="mobile.spec.ts" time="0.403">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-02: logowanie demo kierowcy i lista wydarzeń" classname="mobile.spec.ts" time="0.836">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-03: błędne hasło pokazuje komunikat" classname="mobile.spec.ts" time="0.522">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-04: wejście w szczegóły i przycisk zapisu" classname="mobile.spec.ts" time="0.736">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-05: wylogowanie wraca do logowania" classname="mobile.spec.ts" time="0.686">
+</testcase>
+</testsuite>
+</testsuites>

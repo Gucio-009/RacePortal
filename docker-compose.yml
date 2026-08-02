@@ -1,51 +1,95 @@
-version: '3.8'
 services:
-  db:
-    image: mysql:8.0
-    container_name: mysql-db
-    restart: always
+  mysql:
+    image: mysql:8.4
+    container_name: raceportal-mysql
     environment:
-      MYSQL_DATABASE: raceportal_db
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin
+      MYSQL_DATABASE: raceportal
+      MYSQL_USER: raceportal
+      MYSQL_PASSWORD: raceportal
     ports:
       - "3307:3306"
     volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - app-network
+      - raceportal_mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-    
-  backend-api:
-    build: ./backend_raceportal
-    container_name: spring-app
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  mailhog:
+    image: axllent/mailpit:v1.21
+    container_name: raceportal-mailhog
     ports:
-      - "8080:8080"
-    volumes:
-      - ./backend-data:/app/data # Mapuje folder w Dockerze na folder na Twoim komputerze
-    networks:
-      - app-network
+      - "8025:8025"
+      - "1025:1025"
+    restart: unless-stopped
+
+  api:
+    build: ./backend
+    container_name: raceportal-api
+    env_file:
+      - ./backend/.env.example
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:mysql://mysql:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: raceportal
+      DATABASE_PASSWORD: raceportal
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082
+      JWT_SECRET: raceportal-dev-secret-change-me
+      SEED_ENABLED: "true"
+    ports:
+      - "4000:4000"
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
+      mailhog:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    restart: unless-stopped
 
-  frontend-ui:
-    build: ./frontend_raceportal
-    container_name: react-app
+  web:
+    build: ./web
+    container_name: raceportal-web
     ports:
-      - "3000:80"
+      - "8081:80"
     depends_on:
-      - backend-api
-    networks:
-      - app-network
+      api:
+        condition: service_healthy
+    restart: unless-stopped
 
-networks:
-  app-network:
-    driver: bridge
-  
+  backup:
+    image: mysql:8.4
+    container_name: raceportal-backup
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: raceportal
+      MYSQL_PASSWORD: raceportal
+      MYSQL_DATABASE: raceportal
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - raceportal_backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        chmod +x /backup.sh
+        while true; do
+          /backup.sh || true
+          sleep 86400
+        done
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
-  db_data:
+  raceportal_mysql:
+  raceportal_backups:

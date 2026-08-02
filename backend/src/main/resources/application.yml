@@ -1,0 +1,66 @@
+server:
+  port: ${PORT:4000}
+  error:
+    include-message: always
+    include-binding-errors: never
+    include-stacktrace: never
+
+spring:
+  application:
+    name: raceportal-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:default}
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${DATABASE_USERNAME:raceportal}
+    password: ${DATABASE_PASSWORD:raceportal}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+    show-sql: false
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:1025}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:false}
+          starttls:
+            enable: ${SMTP_STARTTLS:false}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+  cache:
+    type: caffeine
+    cache-names: events
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=20s
+
+app:
+  cors:
+    origin: ${CORS_ORIGIN:*}
+  jwt:
+    secret: ${JWT_SECRET:raceportal-dev-secret-change-me}
+    expiration-days: ${JWT_EXPIRATION_DAYS:7}
+  mail:
+    from: ${SMTP_FROM:RACEPORTAL <noreply@raceportal.local>}
+  maps:
+    google-api-key: ${GOOGLE_MAPS_API_KEY:}
+  seed:
+    enabled: ${SEED_ENABLED:true}
+
+logging:
+  level:
+    root: INFO
+    pl.raceportal: INFO
