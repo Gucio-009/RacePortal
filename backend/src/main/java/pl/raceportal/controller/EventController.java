@@ -41,9 +41,11 @@ public class EventController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false, defaultValue = "0") String archive,
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String paid,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         boolean archiveFlag = "1".equals(archive);
-        return ResponseEntity.ok(eventService.list(page, limit, q, category, city, archiveFlag, status, currentUser));
+        return ResponseEntity.ok(
+                eventService.list(page, limit, q, category, city, archiveFlag, status, paid, currentUser));
     }
 
     @GetMapping("/meta/categories")

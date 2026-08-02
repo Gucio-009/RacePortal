@@ -297,4 +297,55 @@ Preferencje ustawień w `localStorage` (`raceportal_settings`).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-01 — dane konta + wylogowanie z menu.*
+## 14. Płatne wydarzenia: seed + oznaczenia + filtr (2026-08-02, 08:20–08:26)
+
+**Kontekst / argument:** po wdrożeniu pól płatnych z Dokumentacji lista wyglądała jak „wszystko darmowe” — brakowało widocznych przykładów i sposobu szybkiego znalezienia płatnych startów. Bez seedu i UI kierowca nie widział różnicy między free a paid.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| ~08:20 | Seed pomijał istniejące DB; płatne eventy tylko w kodzie create org. | `ensurePaidDemoEvents()` idempotentnie przy każdym starcie API | Demo musi działać na już zseedowanej bazie (seedFresh się nie powtarza) |
+| ~08:21 | Brak stabilnego zestawu płatnych APPROVED | 5 wydarzeń: GT Racing 890 zł, Drift 650 zł, Rally 450 zł, Endurance 1200 zł, Time Attack 320 zł + konto `PL61…` | Realistyczne przykłady do demo przepływu ACCEPTED → proof → CONFIRMED |
+| ~08:22 | `GET /api/events` bez filtra płatności | Query `paid=true\|false\|all` (aliasy `1/0`, `paid/free`) w `EventService` | Filtr po stronie API, żeby UI i mobile mogły używać tego samego kontraktu |
+| ~08:23 | Karty wydarzeń bez wyróżnienia paid | `PaidEventBadge` (gold gradient + Banknote) + złota ramka karty | Paid ma być **od razu** widoczne bez otwierania szczegółów |
+| ~08:24 | Lista `/wydarzenia` tylko q + kategoria | Select: Wszystkie / Płatne / Darmowe | Szybkie wyszukiwanie wpisowych bez scrollowania całej listy |
+| ~08:25 | Home + detal bez kontekstu wpisowego | Badge na Home; detal: wpisowe + numer konta po akceptacji | Spójność oznaczeń na całej ścieżce przeglądania → zapis |
+
+**Pliki (główne):** `DataInitializer.java`, `EventService.java`, `EventController.java`, `EventRepository.java`, `PaidEventBadge.tsx`, `EventsPage.tsx`, `HomePage.tsx`, `EventDetailPage.tsx`, `types.ts` (`formatEntryFee`).
+
+**Weryfikacja:** `GET /api/events?paid=true` → 5 pozycji z `paid:true` i `entryFee`; UI na `:8081`.
+
+---
+
+## 15. Garaż vs kategoria wydarzenia: proponowane auta + seed (2026-08-02, 08:27–08:31)
+
+**Kontekst / argument:** przy zapisie lista aut była płaska — kierowca nie widział, które auto pasuje do klasy wyścigu (np. Drift). Stare seedowe auta miały klasy `GT4`/`Cup`, a eventy `Drift`/`GT Racing`, więc dopasowanie było niemożliwe „na oko”. Brakowało też kompletnego garażu demo na `test@wp.pl`.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| ~08:27 | `className` dowolny tekst; seed 2 auta GT4/Cup | Kategorie jak eventy: Drift, GT Racing, Rally, Endurance, Time Attack, Racing, Track Day, MPWS | Jedna semantyka auto↔wydarzenie; mniej pomyłek przy zgłoszeniu |
+| ~08:28 | Brak logiki „pasuje / nie pasuje” | `web/src/app/lib/carMatch.ts` — match + aliasy (np. GT4/Cup → GT Racing) | Legacy klasy ze starego seedu nadal działają; nie trzeba kasować starych aut |
+| ~08:28 | Select aut: jedna lista | Grupy: **Proponowane / zalecane** + Pozostałe; licznik „Dopasowane do {kategoria}: N / M” | Od razu widać ile aut nadaje się do danego wyścigu |
+| ~08:29 | Brak auto-wyboru | Domyślnie pierwsze zalecane auto; reset przy zmianie eventu | Mniej klików; mniej zgłoszeń z „złym” autem przypadkiem |
+| ~08:29 | Garaż: pole „Klasa” jako Input | Select kategorii + etykieta „Kategoria / klasa” | Spójność z kategoriami wydarzeń przy dodawaniu auta |
+| ~08:30 | Seed garażu tylko w `seedFresh` (raz) | `ensureDemoGarageCars()` przy każdym starcie — 8 aut (1/kategorię) na `test@wp.pl` | Istniejąca DB też dostaje komplet; demo bez ręcznego CRUD |
+| ~08:30 | Upsert eventów po nazwie; brak upsertu aut | `CarRepository.findFirstByUser_IdAndMakeIgnoreCaseAndModelIgnoreCase` | Idempotentny seed bez duplikatów przy restartach |
+
+**Pliki (główne):** `DataInitializer.java`, `CarRepository.java`, `carMatch.ts`, `EventDetailPage.tsx`, `GaragePage.tsx`.
+
+**Weryfikacja:** login `test@wp.pl` → `/garaz` (8+ aut z kategoriami); detal Drift → „Proponowane” = Nissan Silvia S15; licznik dopasowanych > 0.
+
+---
+
+## 16. Zasada dokumentowania zmian (od 2026-08-02, 08:31)
+
+Na prośbę właściciela projektu wpisy w `docs/changes.md` **zawsze**:
+
+1. mają **datę + godzinę** (nie sam dzień) — zakres godzin jeśli praca trwała dłużej,  
+2. opisują **historię z argumentami**: *było → jest → dlaczego*,  
+3. są synchronizowane z `docs/MVP.md` (sekcje 3–6 + data synchronizacji).
+
+Szczegóły także w [`Guidelines.md`](./Guidelines.md).
+
+---
+
+*Ostatnia aktualizacja: 2026-08-02 08:31 — płatne eventy (UI+filtr+seed) + proponowane auta przy zapisie + reguła dokumentacji z godziną.*

@@ -4,6 +4,7 @@ import { Calendar, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { PaidEventBadge } from "../components/PaidEventBadge";
 import { api } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
 import { eventImage } from "../lib/types";
@@ -91,7 +92,9 @@ export function HomePage() {
             {upcomingEvents.map((event) => (
               <Card
                 key={event.id}
-                className="bg-[#1a1a1a] border-[#2a2a2a] overflow-hidden hover:border-[#FFD700] transition-all duration-300 group"
+                className={`bg-[#1a1a1a] overflow-hidden hover:border-[#FFD700] transition-all duration-300 group ${
+                  event.paid ? "border-[#FFD700]/55" : "border-[#2a2a2a]"
+                }`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <ImageWithFallback
@@ -99,6 +102,7 @@ export function HomePage() {
                     alt={event.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
+                  <PaidEventBadge event={event} variant="overlay" />
                   <div
                     className="absolute top-4 right-4 bg-[#FFD700] text-[#121212] px-3 py-1 rounded"
                     style={{ fontWeight: 700 }}

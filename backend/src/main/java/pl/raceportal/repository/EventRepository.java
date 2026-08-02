@@ -18,4 +18,6 @@ public interface EventRepository extends JpaRepository<Event, String>, JpaSpecif
     List<Event> findByStatusInOrderByCategoryAsc(List<EventStatus> statuses);
 
     long countByStatus(EventStatus status);
+
+    java.util.Optional<Event> findFirstByNameIgnoreCase(String name);
 }

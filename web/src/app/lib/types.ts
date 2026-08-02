@@ -194,3 +194,11 @@ export function isOpenRegistration(status: RegistrationStatus): boolean {
 export function isPositiveRegistration(status: RegistrationStatus): boolean {
   return status === "ACCEPTED" || status === "APPROVED" || status === "CONFIRMED";
 }
+
+export function formatEntryFee(fee?: number | null): string | null {
+  if (fee == null || Number.isNaN(Number(fee))) return null;
+  return `${Number(fee).toLocaleString("pl-PL", {
+    minimumFractionDigits: Number(fee) % 1 === 0 ? 0 : 2,
+    maximumFractionDigits: 2,
+  })} PLN`;
+}

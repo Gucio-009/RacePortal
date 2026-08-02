@@ -5,8 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
+import { CAR_CATEGORIES } from "../lib/carMatch";
 import { toast } from "sonner";
 
 const emptyForm = {
@@ -150,7 +152,14 @@ export function GaragePage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-[#9ca3af]">
                   {car.year && <p>Rocznik: {car.year}</p>}
-                  {car.className && <p>Klasa: {car.className}</p>}
+                  {car.className && (
+                    <p>
+                      Kategoria:{" "}
+                      <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                        {car.className}
+                      </span>
+                    </p>
+                  )}
                   {car.plate && <p>Rejestracja: {car.plate}</p>}
                   <div className="flex gap-2 mt-4">
                     <Button
@@ -200,8 +209,27 @@ export function GaragePage() {
               <Input value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} type="number" className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
             <div className="space-y-2">
-              <Label>Klasa</Label>
-              <Input value={form.className} onChange={(e) => setForm({ ...form, className: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Label>Kategoria / klasa</Label>
+              <Select
+                value={form.className || "none"}
+                onValueChange={(v) => setForm({ ...form, className: v === "none" ? "" : v })}
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectValue placeholder="Wybierz kategorię" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  <SelectItem value="none">Bez kategorii</SelectItem>
+                  {CAR_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                  {form.className &&
+                    !(CAR_CATEGORIES as readonly string[]).includes(form.className) && (
+                      <SelectItem value={form.className}>{form.className}</SelectItem>
+                    )}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label>Rejestracja</Label>

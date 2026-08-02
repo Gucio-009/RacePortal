@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-01 (Spring Boot + MySQL; docs + push `wojtek`)
+**Ostatnia synchronizacja:** 2026-08-02 08:31 (płatne eventy UI+filtr; proponowane auta przy zapisie)
 
 ---
 
@@ -84,11 +84,11 @@ Logowanie: http://127.0.0.1:8081/login
 | # | Miało być | Jest (stan) | Werdykt |
 |---|-----------|-------------|---------|
 | 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
-| 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto | **OK** |
-| 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa | **OK** |
+| 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
+| 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
 | 4 | Panel admina | `/admin` — userzy, pending events, wnioski org. | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto` | **OK** |
-| 6 | Garaż | CRUD `/garaz` + API | **OK** |
+| 6 | Garaż | CRUD `/garaz` + API; kategorie = klasy wydarzeń; seed 1 auto/kategorię na `test@wp.pl` | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER + wniosek `/zostan-organizatorem` | **OK** |
 | 9 | Narzędzia org. | `/organizer` — tworzenie wydarzeń, lista zgłoszeń | **OK** |
@@ -172,6 +172,8 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
 | Automatyczne testy (JUnit + Playwright + Vitest mobile) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
 | Migracja backendu na Spring Boot + MySQL | Zgodność ze stackiem DZW (React / Spring / MySQL / Docker / Maven) |
+| Seed płatnych wydarzeń + filtr `paid` + badge UI | Demo i UX przepływu płatnego (Dokumentacja); nie wymagane wprost w MPC 1–11 |
+| Proponowane / zalecane auta przy zapisie (`carMatch`) | UX dopasowania klasy auta do kategorii wyścigu + licznik dostępnych |
 
 ---
 
@@ -234,4 +236,6 @@ Nie kasuj sekcji „Co miało być” — to baza porównania.
 
 Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+web: statusy PENDING/ACCEPTED/CONFIRMED/CANCELED, wydarzenia płatne + proof przelewu, anulowanie zgłoszenia/wydarzenia, edycja garażu z blokadą przy otwartym zgłoszeniu, weryfikacja e-mail przy rejestracji. Poza MVP kodu: bramka płatności, upload binarny, Project X.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-01 (testy).*
+**2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
+
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-02 08:31.*

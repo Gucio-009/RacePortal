@@ -1,17 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
 import { Label } from "../components/ui/label";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { PaidEventBadge } from "../components/PaidEventBadge";
 import { EventsMapView } from "../components/EventsMapView";
 import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Car, RouteResult } from "../lib/types";
-import { eventImage, eventStatusLabel } from "../lib/types";
+import { eventImage, eventStatusLabel, formatEntryFee } from "../lib/types";
+import { formatCarLabel, partitionCarsForEvent } from "../lib/carMatch";
 import { toast } from "sonner";
 
 export function EventDetailPage() {
@@ -44,6 +55,22 @@ export function EventDetailPage() {
       .then(setCars)
       .catch(() => setCars([]));
   }, [isAuthenticated]);
+
+  const { recommended, other } = useMemo(
+    () => partitionCarsForEvent(cars, event?.category ?? ""),
+    [cars, event?.category],
+  );
+
+  useEffect(() => {
+    setCarId("none");
+  }, [event?.id]);
+
+  useEffect(() => {
+    if (carId !== "none") return;
+    if (recommended.length > 0) {
+      setCarId(recommended[0].id);
+    }
+  }, [recommended, carId]);
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
@@ -147,6 +174,7 @@ export function EventDetailPage() {
             <Badge variant="outline" className="border-[#2a2a2a] text-white">
               {eventStatusLabel(event.status)}
             </Badge>
+            <PaidEventBadge event={event} />
           </div>
           <h1 className="font-['Orbitron'] text-white" style={{ fontSize: "40px", fontWeight: 900 }}>
             {event.name}
@@ -217,28 +245,99 @@ export function EventDetailPage() {
               <span style={{ fontWeight: 600 }}>{event.voivodeship}</span>
             </div>
 
+            {event.paid && (
+              <div className="rounded-md border border-[#FFD700]/40 bg-[#FFD700]/10 p-3 space-y-1">
+                <PaidEventBadge event={event} />
+                <p className="text-sm text-[#9ca3af]">
+                  Wpisowe:{" "}
+                  <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                    {formatEntryFee(event.entryFee) ?? "do ustalenia"}
+                  </span>
+                </p>
+                {event.bankAccount && (
+                  <p className="text-xs text-[#9ca3af]">
+                    Po akceptacji wpłać na: <span className="text-white">{event.bankAccount}</span>
+                  </p>
+                )}
+              </div>
+            )}
+
             {isAuthenticated && event.status === "APPROVED" && (
               <>
                 <div className="space-y-2 pt-2 border-t border-[#2a2a2a]">
-                  <Label className="text-white">Auto z garażu (opcjonalnie)</Label>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Label className="text-white">Auto z garażu</Label>
+                    <span className="text-xs text-[#9ca3af]">
+                      {recommended.length > 0 ? (
+                        <>
+                          Dopasowane do{" "}
+                          <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                            {event.category}
+                          </span>
+                          :{" "}
+                          <span className="text-white" style={{ fontWeight: 700 }}>
+                            {recommended.length}
+                          </span>
+                          {cars.length > recommended.length
+                            ? ` / ${cars.length} w garażu`
+                            : ""}
+                        </>
+                      ) : cars.length > 0 ? (
+                        <>
+                          Brak aut klasy{" "}
+                          <span className="text-[#FFD700]">{event.category}</span> — masz {cars.length} w
+                          garażu
+                        </>
+                      ) : (
+                        "Brak aut w garażu"
+                      )}
+                    </span>
+                  </div>
                   <Select value={carId} onValueChange={setCarId}>
                     <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
                       <SelectValue placeholder="Wybierz auto" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
                       <SelectItem value="none">Bez auta</SelectItem>
-                      {cars.map((car) => (
-                        <SelectItem key={car.id} value={car.id}>
-                          {car.make} {car.model}
-                          {car.year ? ` (${car.year})` : ""}
-                        </SelectItem>
-                      ))}
+                      {recommended.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel className="text-[#FFD700]">
+                            Proponowane / zalecane ({event.category})
+                          </SelectLabel>
+                          {recommended.map((car) => (
+                            <SelectItem key={car.id} value={car.id}>
+                              {formatCarLabel(car, true)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                      {recommended.length > 0 && other.length > 0 && <SelectSeparator />}
+                      {other.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel className="text-[#9ca3af]">Pozostałe auta</SelectLabel>
+                          {other.map((car) => (
+                            <SelectItem key={car.id} value={car.id}>
+                              {formatCarLabel(car)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
                     </SelectContent>
                   </Select>
                   {cars.length === 0 && (
                     <Link to="/garaz" className="text-[#FFD700] text-sm hover:underline">
                       Dodaj auto w garażu
                     </Link>
+                  )}
+                  {cars.length > 0 && recommended.length === 0 && (
+                    <p className="text-xs text-amber-400/90">
+                      Żadne auto nie ma kategorii „{event.category}”. Możesz wybrać inne albo dodać
+                      właściwe w{" "}
+                      <Link to="/garaz" className="text-[#FFD700] underline">
+                        garażu
+                      </Link>
+                      .
+                    </p>
                   )}
                 </div>
                 <div className="space-y-2">

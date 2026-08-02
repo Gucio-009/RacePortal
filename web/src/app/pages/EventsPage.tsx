@@ -6,6 +6,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { PaidEventBadge } from "../components/PaidEventBadge";
 import { api } from "../lib/api";
 import type { ApiEvent, PaginatedEvents } from "../lib/types";
 import { eventImage } from "../lib/types";
@@ -13,6 +14,7 @@ import { eventImage } from "../lib/types";
 export function EventsPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [paidFilter, setPaidFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [categories, setCategories] = useState<string[]>([]);
   const [data, setData] = useState<PaginatedEvents | null>(null);
@@ -28,6 +30,7 @@ export function EventsPage() {
       const params = new URLSearchParams({ page: String(page), limit: "12" });
       if (query.trim()) params.set("q", query.trim());
       if (category !== "all") params.set("category", category);
+      if (paidFilter !== "all") params.set("paid", paidFilter);
 
       api
         .get<PaginatedEvents>(`/api/events?${params}`)
@@ -36,11 +39,11 @@ export function EventsPage() {
         .finally(() => setLoading(false));
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, category, page]);
+  }, [query, category, paidFilter, page]);
 
   useEffect(() => {
     setPage(1);
-  }, [query, category]);
+  }, [query, category, paidFilter]);
 
   const items = data?.items ?? [];
 
@@ -86,6 +89,16 @@ export function EventsPage() {
               ))}
             </SelectContent>
           </Select>
+          <Select value={paidFilter} onValueChange={setPaidFilter}>
+            <SelectTrigger className="w-full md:w-52 bg-[#1a1a1a] border-[#2a2a2a] text-white h-12">
+              <SelectValue placeholder="Opłata" />
+            </SelectTrigger>
+            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectItem value="all">Wszystkie (opłata)</SelectItem>
+              <SelectItem value="true">Tylko płatne</SelectItem>
+              <SelectItem value="false">Tylko darmowe</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {loading ? (
@@ -98,10 +111,13 @@ export function EventsPage() {
               {items.map((event: ApiEvent) => (
                 <Card
                   key={event.id}
-                  className="bg-[#1a1a1a] border-[#2a2a2a] overflow-hidden hover:border-[#FFD700] transition-all"
+                  className={`bg-[#1a1a1a] overflow-hidden hover:border-[#FFD700] transition-all ${
+                    event.paid ? "border-[#FFD700]/55 shadow-[0_0_0_1px_rgba(255,215,0,0.15)]" : "border-[#2a2a2a]"
+                  }`}
                 >
                   <div className="relative h-48 overflow-hidden">
                     <ImageWithFallback src={eventImage(event)} alt={event.name} className="w-full h-full object-cover" />
+                    <PaidEventBadge event={event} variant="overlay" />
                     <div className="absolute top-4 right-4 bg-[#FFD700] text-[#121212] px-3 py-1 rounded" style={{ fontWeight: 700 }}>
                       {event.category}
                     </div>

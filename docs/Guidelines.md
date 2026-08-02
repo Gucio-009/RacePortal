@@ -17,9 +17,20 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 Przy każdej istotnej zmianie aktualizuj:
 
 1. **`docs/MVP.md`** — format porównania (poniżej)
-2. **`docs/changes.md`** — chronologia / co doszło
+2. **`docs/changes.md`** — chronologia / co doszło (**z godziną**, nie samym dniem)
 3. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
 4. **`docs/testy/TESTY.md`** + **`docs/testy/wyniki/podsumowanie.md`** — gdy zmienia się zestaw lub wynik testów
+
+### `changes.md` — format historii (obowiązkowy)
+
+Każdy nowy wpis musi zawierać:
+
+1. **Datę i godzinę** (np. `2026-08-02 08:27` albo zakres `08:27–08:31`) — nigdy tylko dzień  
+2. Tabelę lub listę **Było → Jest → Dlaczego** (argument decyzji, nie sama lista plików)  
+3. Krótki kontekst *po co* zmiana (problem użytkownika / Dokumentacja / demo)  
+4. Główne pliki + sposób weryfikacji  
+
+Bez uzasadnienia („dlaczego A zamiast B”) wpis jest niepełny.
 
 ### MVP.md — obowiązkowy format porównania
 
@@ -35,7 +46,7 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 
 ## Zasady
 
-- Zmiany funkcjonalne dokumentuj w `docs/changes.md` i synchronizuj `docs/MVP.md` jak wyżej
+- Zmiany funkcjonalne dokumentuj w `docs/changes.md` (**data+godzina** + **było/jest/dlaczego**) i synchronizuj `docs/MVP.md` jak wyżej
 - Auth idzie wyłącznie przez API (`raceportal_token`); bez działającego `api` logowanie nie działa
 - Nie commitować sekretów; JWT / DB hasła w compose to wartości deweloperskie
 - Nie dodawać mocków localStorage auth z powrotem, o ile użytkownik tego nie zażąda

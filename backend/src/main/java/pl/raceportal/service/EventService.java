@@ -58,10 +58,12 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public EventListResponse list(int pageParam, int limitParam, String q, String category, String city,
-                                   boolean archive, String statusParam, UserPrincipal currentUser) {
+                                   boolean archive, String statusParam, String paidParam,
+                                   UserPrincipal currentUser) {
         int page = Math.max(1, pageParam);
         int limit = Math.min(50, Math.max(1, limitParam));
         LocalDate startOfToday = LocalDate.now();
+        Boolean paidFilter = parsePaidFilter(paidParam);
 
         Specification<Event> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -99,6 +101,9 @@ public class EventService {
             if (city != null && !city.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("city")), "%" + city.toLowerCase(Locale.ROOT) + "%"));
             }
+            if (paidFilter != null) {
+                predicates.add(cb.equal(root.get("paid"), paidFilter));
+            }
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
@@ -110,6 +115,19 @@ public class EventService {
 
         return new EventListResponse(page, limit, pageResult.getTotalElements(),
                 pageResult.getTotalPages(), items);
+    }
+
+    private static Boolean parsePaidFilter(String paidParam) {
+        if (paidParam == null || paidParam.isBlank() || "all".equalsIgnoreCase(paidParam)) {
+            return null;
+        }
+        if ("1".equals(paidParam) || "true".equalsIgnoreCase(paidParam) || "paid".equalsIgnoreCase(paidParam)) {
+            return true;
+        }
+        if ("0".equals(paidParam) || "false".equalsIgnoreCase(paidParam) || "free".equalsIgnoreCase(paidParam)) {
+            return false;
+        }
+        return null;
     }
 
     @Transactional(readOnly = true)
