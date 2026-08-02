@@ -81,7 +81,7 @@ React (Frontend) → Spring Boot REST API → MySQL
 
 **Frontend:** Natalia Otrombke, Oliwier Kasprowicz
 **Backend:** Michał Gutowski, Miłosz Parkitny
-**Testing&Security:** Wojciech Wronisz
+**Fullstack&Testing&Security:** Wojciech Wronisz
 **Opiekun projektu:** Marek Bednarczyk
 
 ---
