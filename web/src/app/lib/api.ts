@@ -3,11 +3,13 @@ export const TOKEN_KEY = "raceportal_token";
 
 export class ApiError extends Error {
   status: number;
+  details?: Record<string, string>;
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, details?: Record<string, string>) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -18,6 +20,15 @@ export function getToken(): string | null {
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+}
+
+function formatApiError(error?: string, details?: Record<string, string>): string {
+  const base = error || "Żądanie nie powiodło się";
+  if (!details || Object.keys(details).length === 0) return base;
+  const fields = Object.entries(details)
+    .map(([field, msg]) => `${field}: ${msg}`)
+    .join("; ");
+  return `${base} (${fields})`;
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -43,7 +54,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     return undefined as T;
   }
 
-  let data: { error?: string; message?: string } = {};
+  let data: { error?: string; message?: string; details?: Record<string, string> } = {};
   try {
     data = await res.json();
   } catch {
@@ -51,7 +62,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   if (!res.ok) {
-    throw new ApiError(res.status, data.error || data.message || "Żądanie nie powiodło się");
+    throw new ApiError(
+      res.status,
+      formatApiError(data.error || data.message, data.details),
+      data.details,
+    );
   }
 
   return data as T;
