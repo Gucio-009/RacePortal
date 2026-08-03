@@ -2,8 +2,9 @@
 
 :root {
   --font-size: 16px;
-  --font-family-primary: 'Montserrat', sans-serif;
-  --font-family-display: 'Orbitron', sans-serif;
+  --font-family-primary: "Montserrat", sans-serif;
+  /* Oxanium: display jak Orbitron, ale z polskimi znakami (latin-ext) */
+  --font-family-display: "Oxanium", "Montserrat", sans-serif;
   --race-accent: #FFD700;
   --race-motion: 200ms;
   --background: #121212;
@@ -93,6 +94,8 @@ html[data-pit-stop="on"] *::after {
 }
 
 @theme inline {
+  --font-sans: var(--font-family-primary);
+  --font-display: var(--font-family-display);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);

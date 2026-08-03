@@ -200,7 +200,7 @@ export function OrganizerPanelPage() {
       <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
         <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "40px", fontWeight: 900 }}>
+            <h1 className="font-display text-white mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
               PANEL <span className="text-[var(--race-accent)]">ORGANIZATORA</span>
             </h1>
             <p className="text-[#9ca3af]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>

@@ -159,8 +159,8 @@ export function SettingsPage() {
     <div className="min-h-screen bg-[#121212]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="mb-8">
-          <p className="text-[var(--race-accent)] font-['Orbitron'] tracking-widest text-sm mb-2">KOKPIT</p>
-          <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
+          <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KOKPIT</p>
+          <h1 className="font-display text-white mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
             USTAWIENIA
           </h1>
           <p className="text-[#9ca3af]">
@@ -184,7 +184,7 @@ export function SettingsPage() {
         <div className="space-y-6">
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <Bell className="w-5 h-5 text-[var(--race-accent)]" />
                 Powiadomienia
               </CardTitle>
@@ -223,7 +223,7 @@ export function SettingsPage() {
 
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <Palette className="w-5 h-5 text-[var(--race-accent)]" />
                 Wygląd
               </CardTitle>
@@ -265,7 +265,7 @@ export function SettingsPage() {
 
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <Sparkles className="w-5 h-5 text-[var(--race-accent)]" />
                 Flair zespołu
               </CardTitle>

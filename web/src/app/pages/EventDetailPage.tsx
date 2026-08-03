@@ -142,7 +142,7 @@ export function EventDetailPage() {
   if (!event) {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
-        <h1 className="font-['Orbitron'] text-white mb-4" style={{ fontSize: "32px", fontWeight: 800 }}>
+        <h1 className="font-display text-white mb-4" style={{ fontSize: "32px", fontWeight: 800 }}>
           Nie znaleziono wydarzenia
         </h1>
         <Link to="/wydarzenia">
@@ -176,7 +176,7 @@ export function EventDetailPage() {
             </Badge>
             <PaidEventBadge event={event} />
           </div>
-          <h1 className="font-['Orbitron'] text-white" style={{ fontSize: "40px", fontWeight: 900 }}>
+          <h1 className="font-display text-white" style={{ fontSize: "40px", fontWeight: 800 }}>
             {event.name}
           </h1>
         </div>
@@ -185,7 +185,7 @@ export function EventDetailPage() {
       <div className="container mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
-            <h2 className="font-['Orbitron'] text-white mb-4" style={{ fontSize: "24px", fontWeight: 800 }}>
+            <h2 className="font-display text-white mb-4" style={{ fontSize: "24px", fontWeight: 800 }}>
               Opis
             </h2>
             <p className="text-[#9ca3af] leading-relaxed" style={{ fontSize: "16px" }}>
@@ -196,7 +196,7 @@ export function EventDetailPage() {
           {mapMarkers.length > 0 && (
             <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-['Orbitron'] text-white" style={{ fontSize: "24px", fontWeight: 800 }}>
+                <h2 className="font-display text-white" style={{ fontSize: "24px", fontWeight: 800 }}>
                   Mapa
                 </h2>
                 <Button

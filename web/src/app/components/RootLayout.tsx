@@ -81,7 +81,7 @@ export function RootLayout() {
         <nav className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3 shrink-0">
             <Flag className="w-8 h-8 text-[var(--race-accent)]" />
-            <span className="font-['Orbitron'] tracking-wider" style={{ fontSize: "24px", fontWeight: 800 }}>
+            <span className="font-display tracking-wider" style={{ fontSize: "24px", fontWeight: 800 }}>
               RACEPORTAL
             </span>
           </Link>

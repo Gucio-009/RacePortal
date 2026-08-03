@@ -39,7 +39,7 @@ export function ForgotPasswordPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
-          <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "32px", fontWeight: 900 }}>
+          <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
             RESET <span className="text-[var(--race-accent)]">HASŁA</span>
           </h1>
           <p className="text-[#9ca3af]">Podaj email powiązany z kontem</p>

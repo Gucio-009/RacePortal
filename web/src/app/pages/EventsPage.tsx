@@ -163,7 +163,7 @@ export function EventsPage() {
         }}
       >
         <div className="container mx-auto px-4">
-          <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
+          <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
             KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
           <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
@@ -331,7 +331,7 @@ export function EventsPage() {
               `}</style>
             </div>
             <div className="space-y-3">
-              <h3 className="text-white font-['Orbitron']" style={{ fontWeight: 800 }}>
+              <h3 className="text-white font-display" style={{ fontWeight: 800 }}>
                 {selectedDay ? format(selectedDay, "d MMMM yyyy", { locale: pl }) : "Wybierz dzień"}
               </h3>
               {!selectedDay ? (
@@ -376,7 +376,7 @@ export function EventsPage() {
                         <CalendarIcon className="w-4 h-4" />
                         {event.dateLabel || event.date}
                       </div>
-                      <h3 className="text-white mb-2 font-['Orbitron'] group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
+                      <h3 className="text-white mb-2 font-display group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                         {event.name}
                       </h3>
                       <div className="flex items-center gap-2 text-[#9ca3af] text-sm mb-4">

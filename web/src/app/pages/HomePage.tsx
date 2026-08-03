@@ -40,8 +40,8 @@ export function HomePage() {
       >
         <div className="container mx-auto px-4 text-center z-10">
           <h1
-            className="font-['Orbitron'] mb-6 tracking-wider text-white"
-            style={{ fontSize: "72px", fontWeight: 900, lineHeight: "1.2" }}
+            className="font-display mb-6 tracking-wider text-white"
+            style={{ fontSize: "72px", fontWeight: 800, lineHeight: "1.2" }}
           >
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">WYŚCIGU</span>
           </h1>
@@ -77,7 +77,7 @@ export function HomePage() {
       <section className="container mx-auto px-4 py-16">
         <div className="flex items-center justify-between mb-12 gap-4 flex-wrap">
           <div>
-            <h2 className="font-['Orbitron'] mb-2" style={{ fontSize: "42px", fontWeight: 800 }}>
+            <h2 className="font-display mb-2" style={{ fontSize: "42px", fontWeight: 800 }}>
               NADCHODZĄCE <span className="text-[var(--race-accent)]">WYDARZENIA</span>
             </h2>
             <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
@@ -126,7 +126,7 @@ export function HomePage() {
                     <Calendar className="w-4 h-4" />
                     <span style={{ fontSize: "14px", fontWeight: 700 }}>{event.dateLabel}</span>
                   </div>
-                  <h3 className="font-['Orbitron'] mb-2 text-white" style={{ fontSize: "20px", fontWeight: 700 }}>
+                  <h3 className="font-display mb-2 text-white" style={{ fontSize: "20px", fontWeight: 700 }}>
                     {event.name}
                   </h3>
                   <div className="flex items-center gap-2 text-[#9ca3af] mb-4">
@@ -151,7 +151,7 @@ export function HomePage() {
       <section id="o-nas" className="bg-[#1a1a1a] py-16 mt-16 scroll-mt-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 max-w-3xl mx-auto">
-            <h2 className="font-['Orbitron'] text-white mb-4" style={{ fontSize: "36px", fontWeight: 800 }}>
+            <h2 className="font-display text-white mb-4" style={{ fontSize: "36px", fontWeight: 800 }}>
               O <span className="text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
             <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
@@ -161,7 +161,7 @@ export function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
                 250+
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
@@ -169,7 +169,7 @@ export function HomePage() {
               </p>
             </div>
             <div>
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
                 50K+
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
@@ -177,7 +177,7 @@ export function HomePage() {
               </p>
             </div>
             <div>
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
                 24/7
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>

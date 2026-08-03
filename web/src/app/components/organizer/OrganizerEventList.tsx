@@ -56,7 +56,7 @@ export function OrganizerEventList({
                   </Badge>
                 )}
               </div>
-              <h3 className="font-['Orbitron'] text-white" style={{ fontWeight: 800 }}>
+              <h3 className="font-display text-white" style={{ fontWeight: 800 }}>
                 {event.name}
               </h3>
               <p className="text-[#9ca3af] text-sm flex items-center gap-2 mt-1">

@@ -42,7 +42,7 @@ export function ArchivePage() {
         }}
       >
         <div className="container mx-auto px-4">
-          <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
+          <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
             ARCHIWUM <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
           <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
@@ -79,7 +79,7 @@ export function ArchivePage() {
                           {event.dateLabel}
                         </span>
                       </div>
-                      <h2 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "24px", fontWeight: 800 }}>
+                      <h2 className="font-display text-white mb-2" style={{ fontSize: "24px", fontWeight: 800 }}>
                         {event.name}
                       </h2>
                       <div className="flex items-center gap-2 text-[#9ca3af] mb-4">

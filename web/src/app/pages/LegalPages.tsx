@@ -12,7 +12,7 @@ function LegalLayout({
     <div className="min-h-screen">
       <section className="border-b border-[#2a2a2a] bg-[#1a1a1a] py-16">
         <div className="container mx-auto px-4">
-          <h1 className="font-['Orbitron'] text-white" style={{ fontSize: "40px", fontWeight: 900 }}>
+          <h1 className="font-display text-white" style={{ fontSize: "40px", fontWeight: 800 }}>
             {title}
           </h1>
         </div>

@@ -559,4 +559,14 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 34. Font display z polskimi znakami (2026-08-03, 22:20)
+
+**Kontekst / argument:** Orbitron nie ma latin-ext — ą/ć/ę/ł/ń/ó/ś/ź/ż spadały do innego fontu w nagłówkach.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 22:20 | Orbitron + fallback na PL | Oxanium (`font-display`) + Montserrat body; wagi do 800 | Spójny look i dopasowane polskie znaki |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

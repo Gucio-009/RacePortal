@@ -171,7 +171,7 @@ export function GaragePage() {
       <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
         <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "40px", fontWeight: 900 }}>
+            <h1 className="font-display text-white mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
               MÓJ <span className="text-[var(--race-accent)]">GARAŻ</span>
             </h1>
             <p className="text-[#9ca3af]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
@@ -210,7 +210,7 @@ export function GaragePage() {
             {cars.map((car) => (
               <Card key={car.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
                 <CardHeader>
-                  <CardTitle className="font-['Orbitron'] text-white flex items-center gap-2" style={{ fontWeight: 800 }}>
+                  <CardTitle className="font-display text-white flex items-center gap-2" style={{ fontWeight: 800 }}>
                     <Car className="w-5 h-5 text-[var(--race-accent)]" />
                     {car.make} {car.model}
                   </CardTitle>
@@ -258,7 +258,7 @@ export function GaragePage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
+            <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
           </DialogHeader>

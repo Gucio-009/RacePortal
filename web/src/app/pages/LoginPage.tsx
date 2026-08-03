@@ -68,8 +68,8 @@ export function LoginPage() {
             <Flag className="w-16 h-16 text-[var(--race-accent)]" />
           </div>
           <h1
-            className="font-['Orbitron'] text-white mb-2"
-            style={{ fontSize: '36px', fontWeight: 900 }}
+            className="font-display text-white mb-2"
+            style={{ fontSize: '36px', fontWeight: 800 }}
           >
             WITAJ Z <span className="text-[var(--race-accent)]">POWROTEM</span>
           </h1>

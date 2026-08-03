@@ -92,8 +92,8 @@ export function AccountPage() {
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div>
-            <p className="text-[var(--race-accent)] font-['Orbitron'] tracking-widest text-sm mb-2">KONTO</p>
-            <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
+            <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KONTO</p>
+            <h1 className="font-display text-white mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
               DANE KONTA
             </h1>
             <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło.</p>
@@ -120,7 +120,7 @@ export function AccountPage() {
         <div className="space-y-6">
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <User className="w-5 h-5 text-[var(--race-accent)]" />
                 Profil
               </CardTitle>
@@ -216,7 +216,7 @@ export function AccountPage() {
 
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
                 Zmiana hasła
               </CardTitle>

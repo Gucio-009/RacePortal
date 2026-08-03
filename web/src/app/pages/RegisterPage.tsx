@@ -159,8 +159,8 @@ export function RegisterPage() {
             <Flag className="w-16 h-16 text-[var(--race-accent)]" />
           </div>
           <h1
-            className="font-['Orbitron'] text-white mb-2"
-            style={{ fontSize: "36px", fontWeight: 900 }}
+            className="font-display text-white mb-2"
+            style={{ fontSize: "36px", fontWeight: 800 }}
           >
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
           </h1>

@@ -133,13 +133,13 @@ export function DashboardPage() {
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
               <Avatar className="w-32 h-32 border-4 border-[var(--race-accent)]">
                 <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontSize: "48px", fontWeight: 900 }}>
+                <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontSize: "48px", fontWeight: 800 }}>
                   {userInitials(user ?? {})}
                 </AvatarFallback>
               </Avatar>
 
               <div className="flex-1 text-center md:text-left">
-                <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "32px", fontWeight: 900 }}>
+                <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
                   {user?.username}
                 </h1>
                 <p className="text-[#9ca3af] mb-4" style={{ fontSize: "16px" }}>
@@ -171,7 +171,7 @@ export function DashboardPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
               <Calendar className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 800 }}>
                 {upcomingRegistrations.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -183,7 +183,7 @@ export function DashboardPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
               <Car className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 800 }}>
                 {cars.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -195,7 +195,7 @@ export function DashboardPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
               <Trophy className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 800 }}>
                 {registrations.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -209,7 +209,7 @@ export function DashboardPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle
-                className="font-['Orbitron'] text-white flex items-center gap-2"
+                className="font-display text-white flex items-center gap-2"
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
                 <Calendar className="w-6 h-6 text-[var(--race-accent)]" />
@@ -339,7 +339,7 @@ export function DashboardPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle
-                className="font-['Orbitron'] text-white flex items-center gap-2"
+                className="font-display text-white flex items-center gap-2"
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
                 <Car className="w-6 h-6 text-[var(--race-accent)]" />
@@ -380,7 +380,7 @@ export function DashboardPage() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white">
           <DialogHeader>
-            <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
+            <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
               Edytuj profil
             </DialogTitle>
           </DialogHeader>

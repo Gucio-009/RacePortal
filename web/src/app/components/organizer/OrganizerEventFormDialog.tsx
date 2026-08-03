@@ -45,7 +45,7 @@ export function OrganizerEventFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
+          <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
             {editingId ? "Edytuj wydarzenie" : "Nowe wydarzenie"}
           </DialogTitle>
           <p className="text-sm text-[#9ca3af]">
