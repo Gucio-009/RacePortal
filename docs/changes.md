@@ -528,4 +528,15 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 31. Fix: testy API wipe’owały bazę Compose (2026-08-03, 21:42)
+
+**Kontekst / argument:** UI `/wydarzenia` pokazywał „Nie udało się pobrać wydarzeń” — log API: `Table 'raceportal.events' doesn't exist`. Po `scripts/test-api.sh` bez lokalnej Javy testy szły na tę samą MySQL Compose z `ddl-auto: create-drop` i na koniec **dropowały schemat**.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 21:42 | `TEST_DB_URL` → baza `raceportal` | Osobna `raceportal_test` (+ CREATE DATABASE) | create-drop nie niszczy demo |
+| 21:42 | Pusta DB / 500 na `/api/events` | Restart API odtworzył tabele + seed | Natychmiastowa naprawa środowiska |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*
