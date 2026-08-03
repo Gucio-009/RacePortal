@@ -539,4 +539,13 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 32. Awatar: galeria + domyślne inicjały (2026-08-03, 21:50)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 21:50 | Pole „URL awatara” + auto Dicebear przy rejestracji | Galeria presetów (`AVATAR_PRESETS`) + opcja inicjałów; domyślnie `avatar=null` | Bez wklejania URL |
+| 21:50 | `PATCH /me` nie czyścił awatara pustym stringiem | Pusty string → `null` (inicjały) | Powrót do domyślnego |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

@@ -191,7 +191,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const updated = await api.patch<User>("/api/auth/me", {
         username: data.username,
-        avatar: data.avatar,
+        avatar: data.avatar ?? "",
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,

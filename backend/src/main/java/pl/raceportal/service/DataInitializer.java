@@ -62,9 +62,9 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedFresh() {
-        User admin = createUser("admin@raceportal.pl", "Administrator", "admin123", Role.ADMIN, "admin");
-        User organizer = createUser("org@raceportal.pl", "Organizator", "org123", Role.ORGANIZER, "organizer");
-        User driver = createUser("test@wp.pl", "test", "test123", Role.USER, "test");
+        User admin = createUser("admin@raceportal.pl", "Administrator", "admin123", Role.ADMIN);
+        User organizer = createUser("org@raceportal.pl", "Organizator", "org123", Role.ORGANIZER);
+        User driver = createUser("test@wp.pl", "test", "test123", Role.USER);
 
         eventRepository.save(event(organizer, "Mistrzostwa Polski Wyścigów Samochodowych",
                 "Główna runda Mistrzostw Polski Wyścigów Samochodowych. Sprinty kwalifikacyjne i wyścig główny na torze Poznań.",
@@ -210,13 +210,13 @@ public class DataInitializer implements CommandLineRunner {
         log.info("{} demo car: {} {} [{}]", created ? "Created" : "Updated", make, model, className);
     }
 
-    private User createUser(String email, String username, String rawPassword, Role role, String avatarSeed) {
+    private User createUser(String email, String username, String rawPassword, Role role) {
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setRole(role);
-        user.setAvatar("https://api.dicebear.com/7.x/avataaars/svg?seed=" + avatarSeed);
+        user.setAvatar(null);
         user.setEmailVerified(true);
         return userRepository.save(user);
     }

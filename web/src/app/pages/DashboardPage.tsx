@@ -10,6 +10,7 @@ import { Separator } from "../components/ui/separator";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { AvatarPicker } from "../components/AvatarPicker";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar, Registration } from "../lib/types";
 import {
@@ -17,6 +18,7 @@ import {
   eventDateLabel,
   isOpenRegistration,
   isPositiveRegistration,
+  userInitials,
 } from "../lib/types";
 import { toast } from "sonner";
 
@@ -132,7 +134,7 @@ export function DashboardPage() {
               <Avatar className="w-32 h-32 border-4 border-[#FFD700]">
                 <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
                 <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontSize: "48px", fontWeight: 900 }}>
-                  {user?.username?.charAt(0).toUpperCase()}
+                  {userInitials(user ?? {})}
                 </AvatarFallback>
               </Avatar>
 
@@ -386,8 +388,8 @@ export function DashboardPage() {
             <div className="flex justify-center">
               <Avatar className="w-24 h-24 border-2 border-[#FFD700]">
                 <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-[#FFD700] text-[#121212]">
-                  {username?.charAt(0)?.toUpperCase() || "R"}
+                <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+                  {userInitials({ username, firstName: user?.firstName, lastName: user?.lastName })}
                 </AvatarFallback>
               </Avatar>
             </div>
@@ -400,12 +402,13 @@ export function DashboardPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">URL awatara</Label>
-              <Input
+              <Label className="text-white">Awatar</Label>
+              <AvatarPicker
                 value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                className="bg-[#121212] border-[#2a2a2a] text-white"
-                placeholder="https://..."
+                onChange={setAvatarUrl}
+                username={username}
+                firstName={user?.firstName ?? undefined}
+                lastName={user?.lastName ?? undefined}
               />
             </div>
           </div>

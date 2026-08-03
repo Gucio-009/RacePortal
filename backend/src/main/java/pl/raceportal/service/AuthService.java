@@ -21,8 +21,6 @@ import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.JwtService;
 import pl.raceportal.web.ApiException;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -162,10 +160,7 @@ public class AuthService {
             user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
             user.setRole(Role.USER);
             user.setEmailVerified(true);
-            user.setAvatar(picture != null && !picture.isBlank()
-                    ? picture
-                    : "https://api.dicebear.com/7.x/avataaars/svg?seed=" +
-                    URLEncoder.encode(email, StandardCharsets.UTF_8));
+            user.setAvatar(picture != null && !picture.isBlank() ? picture : null);
             if (givenName != null) user.setFirstName(givenName);
             if (familyName != null) user.setLastName(familyName);
             user = userRepository.save(user);
@@ -225,8 +220,9 @@ public class AuthService {
         if (request.username() != null && !request.username().isBlank()) {
             user.setUsername(request.username());
         }
-        if (request.avatar() != null && !request.avatar().isBlank()) {
-            user.setAvatar(request.avatar());
+        if (request.avatar() != null) {
+            String avatar = request.avatar().trim();
+            user.setAvatar(avatar.isEmpty() ? null : avatar);
         }
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
                 request.hasDrivingLicenseB(), request.pzmLicense());
@@ -264,8 +260,7 @@ public class AuthService {
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setRole(role);
-        user.setAvatar("https://api.dicebear.com/7.x/avataaars/svg?seed=" +
-                URLEncoder.encode(rawEmail, StandardCharsets.UTF_8));
+        user.setAvatar(null);
         user.setEmailVerified(false);
         return userRepository.save(user);
     }

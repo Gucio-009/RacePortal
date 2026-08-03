@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { KeyRound, Loader2, Shield, User, Phone, IdCard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { AvatarPicker } from "../components/AvatarPicker";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
@@ -10,6 +11,7 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { toast } from "sonner";
+import { userInitials } from "../lib/types";
 
 export function AccountPage() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -99,8 +101,8 @@ export function AccountPage() {
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[#FFD700]">
               <AvatarImage src={user?.avatar ?? undefined} />
-              <AvatarFallback className="bg-[#FFD700] text-[#121212]">
-                {user?.username?.charAt(0).toUpperCase()}
+              <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+                {userInitials(user ?? {})}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1">
@@ -185,12 +187,13 @@ export function AccountPage() {
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-white">URL awatara</Label>
-                <Input
+                <Label className="text-white">Awatar</Label>
+                <AvatarPicker
                   value={avatar}
-                  onChange={(e) => setAvatar(e.target.value)}
-                  placeholder="https://..."
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  onChange={setAvatar}
+                  username={username}
+                  firstName={firstName}
+                  lastName={lastName}
                 />
               </div>
               <Button

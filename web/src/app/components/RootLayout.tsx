@@ -16,6 +16,7 @@ import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { userInitials } from "../lib/types";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `${isActive ? "text-[#FFD700]" : "text-[#9ca3af] hover:text-[#FFD700]"} transition-colors text-sm md:text-base`;
@@ -131,8 +132,8 @@ export function RootLayout() {
                 >
                   <Avatar className="w-8 h-8 border-2 border-[#FFD700]">
                     <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                    <AvatarFallback className="bg-[#FFD700] text-[#121212]">
-                      {user?.username?.charAt(0).toUpperCase()}
+                    <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+                      {userInitials(user ?? {})}
                     </AvatarFallback>
                   </Avatar>
                   <span className="hidden sm:inline max-w-[120px] truncate" style={{ fontWeight: 600 }}>
