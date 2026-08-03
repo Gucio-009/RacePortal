@@ -20,6 +20,7 @@ import { BecomeOrganizerScreen } from "./src/screens/BecomeOrganizerScreen";
 import { ArchiveScreen, ResultsScreen } from "./src/screens/ArchiveScreen";
 import { GalleryScreen } from "./src/screens/GalleryScreen";
 import { LegalScreen } from "./src/screens/LegalScreen";
+import { RequireAuth } from "./src/navigation/RequireAuth";
 import { colors } from "./src/theme/colors";
 import type {
   EventsStackParamList,
@@ -27,6 +28,8 @@ import type {
   MoreStackParamList,
   RootStackParamList,
 } from "./src/navigation/types";
+import type { UserRole } from "./src/api/types";
+import type { ReactNode } from "react";
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 const EventsStack = createNativeStackNavigator<EventsStackParamList>();
@@ -51,6 +54,66 @@ const stackScreenOptions = {
   headerTitleStyle: { color: colors.text, fontWeight: "800" as const },
 };
 
+function Gate({ roles, children }: { roles?: UserRole[]; children: ReactNode }) {
+  return <RequireAuth roles={roles}>{children}</RequireAuth>;
+}
+
+function DashboardTabScreen() {
+  return (
+    <Gate>
+      <DashboardScreen />
+    </Gate>
+  );
+}
+
+function GarageTabScreen() {
+  return (
+    <Gate>
+      <GarageScreen />
+    </Gate>
+  );
+}
+
+function AccountGateScreen() {
+  return (
+    <Gate>
+      <AccountScreen />
+    </Gate>
+  );
+}
+
+function SettingsGateScreen() {
+  return (
+    <Gate>
+      <SettingsScreen />
+    </Gate>
+  );
+}
+
+function AdminGateScreen() {
+  return (
+    <Gate roles={["ADMIN"]}>
+      <AdminScreen />
+    </Gate>
+  );
+}
+
+function OrganizerGateScreen() {
+  return (
+    <Gate roles={["ORGANIZER", "ADMIN"]}>
+      <OrganizerScreen />
+    </Gate>
+  );
+}
+
+function BecomeOrganizerGateScreen() {
+  return (
+    <Gate>
+      <BecomeOrganizerScreen />
+    </Gate>
+  );
+}
+
 function EventsNavigator() {
   return (
     <EventsStack.Navigator screenOptions={stackScreenOptions}>
@@ -64,13 +127,13 @@ function MoreNavigator() {
   return (
     <MoreStack.Navigator screenOptions={stackScreenOptions}>
       <MoreStack.Screen name="MoreHome" component={MoreScreen} options={{ headerShown: false }} />
-      <MoreStack.Screen name="Account" component={AccountScreen} options={{ title: "Konto" }} />
-      <MoreStack.Screen name="Settings" component={SettingsScreen} options={{ title: "Ustawienia" }} />
-      <MoreStack.Screen name="Admin" component={AdminScreen} options={{ title: "Admin" }} />
-      <MoreStack.Screen name="Organizer" component={OrganizerScreen} options={{ title: "Organizator" }} />
+      <MoreStack.Screen name="Account" component={AccountGateScreen} options={{ title: "Konto" }} />
+      <MoreStack.Screen name="Settings" component={SettingsGateScreen} options={{ title: "Ustawienia" }} />
+      <MoreStack.Screen name="Admin" component={AdminGateScreen} options={{ title: "Admin" }} />
+      <MoreStack.Screen name="Organizer" component={OrganizerGateScreen} options={{ title: "Organizator" }} />
       <MoreStack.Screen
         name="BecomeOrganizer"
-        component={BecomeOrganizerScreen}
+        component={BecomeOrganizerGateScreen}
         options={{ title: "Organizator" }}
       />
       <MoreStack.Screen name="Archive" component={ArchiveScreen} options={{ title: "Archiwum" }} />
@@ -105,7 +168,7 @@ function MainTabs() {
       />
       <Tab.Screen
         name="DashboardTab"
-        component={DashboardScreen}
+        component={DashboardTabScreen}
         options={{
           title: "Moje",
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 16 }}>📋</Text>,
@@ -113,7 +176,7 @@ function MainTabs() {
       />
       <Tab.Screen
         name="GarageTab"
-        component={GarageScreen}
+        component={GarageTabScreen}
         options={{
           title: "Garaż",
           tabBarIcon: ({ color }) => <Text style={{ color, fontSize: 16 }}>🚗</Text>,
@@ -142,12 +205,19 @@ function RootNavigator() {
     );
   }
 
-  // Gość widzi Eventy (jak web); Login/Register jako stack overlay.
   return (
     <RootStack.Navigator screenOptions={{ headerShown: false }}>
       <RootStack.Screen name="Main" component={MainTabs} />
-      <RootStack.Screen name="Login" component={LoginScreen} options={{ presentation: "modal", headerShown: true, title: "Logowanie", ...stackScreenOptions }} />
-      <RootStack.Screen name="Register" component={RegisterScreen} options={{ presentation: "modal", headerShown: true, title: "Rejestracja", ...stackScreenOptions }} />
+      <RootStack.Screen
+        name="Login"
+        component={LoginScreen}
+        options={{ presentation: "modal", headerShown: true, title: "Logowanie", ...stackScreenOptions }}
+      />
+      <RootStack.Screen
+        name="Register"
+        component={RegisterScreen}
+        options={{ presentation: "modal", headerShown: true, title: "Rejestracja", ...stackScreenOptions }}
+      />
       <RootStack.Screen
         name="ForgotPassword"
         component={ForgotPasswordScreen}

@@ -154,16 +154,16 @@ mobile/
 | `/login` | Auth → Login | ✅ |
 | `/register` (+ verify) | Register | ✅ |
 | `/forgot-password` | ForgotPassword | ✅ |
-| `/wydarzenia` | Tab Eventy + filtry | Mapa/kalendarz → skrócone (Maps) |
+| `/wydarzenia` | Tab Eventy: lista / kalendarz / mapa + pełniejsze filtry | Mapa = lista GPS + deep-link Maps |
 | `/wydarzenia/:id` | EventDetail | ✅ + wybór auta |
-| `/dashboard` | Tab Moje | ✅ |
-| `/garaz` | Tab Garaż | ✅ |
-| `/konto` | Więcej → Konto | ✅ |
-| `/ustawienia` | Więcej → Ustawienia | Lokalnie (SecureStore / localStorage) |
+| `/dashboard` | Tab Moje (`RequireAuth`) | ✅ |
+| `/garaz` | Tab Garaż (`RequireAuth`) | ✅ |
+| `/konto` | Więcej → Konto (`RequireAuth`) | ✅ |
+| `/ustawienia` | Więcej → Ustawienia (`RequireAuth`) | Lokalnie (SecureStore / localStorage) |
 | `/wyniki`, `/archiwum` | Więcej | ✅ |
-| `/galeria` | Placeholder „później” | Świadomie jak web |
-| `/organizer` | Więcej → Organizator | Formularz eventów uproszczony vs web presets |
-| `/admin` | Więcej → Admin | ✅ |
+| `/galeria` | Placeholder „później” | Świadomie jak web (odłożona) |
+| `/organizer` | Więcej → Organizator (`RequireAuth` ORGANIZER/ADMIN) | Formularz eventów uproszczony vs web presets |
+| `/admin` | Więcej → Admin (`RequireAuth` ADMIN) | ✅ |
 | `/zostan-organizatorem` | Więcej | ✅ |
 | `/terms`, `/privacy` | Legal | Skrót treści |
 
@@ -185,8 +185,9 @@ Wymagane: `docker compose up` + `SEED_ENABLED` / `DataInitializer` (szczegóły:
 
 | Temat | Powód |
 |-------|--------|
-| Galeria zdjęć | Odłożona także na webie |
-| Pełna mapa Leaflet / kalendarz jak `/wydarzenia` | Zamiast: filtry + Apple Maps z lat/lng |
+| Galeria zdjęć (pełna) | **Świadomie odłożona** także na webie — nav „później” |
+| Leaflet WebView na mapie eventów | Jest kalendarz + lista lokalizacji z deep-link Maps; WebView opcjonalnie później |
+| Identyczny formularz org. jak web | Presety / mapa pickera uproszczone |
 | Wszystkie selecty/presety organizatora 1:1 z web | Formularz mobilny z kluczowymi polami API |
 | Upload plików (binaria) | Jak web — URL |
 | Push notifications | Poza obecnym zakresem |

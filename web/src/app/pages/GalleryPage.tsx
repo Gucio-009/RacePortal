@@ -3,10 +3,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
 import { eventImage } from "../lib/types";
-import { gallery as fallbackGallery } from "../data/events";
 
 interface GalleryItem {
   id: string;
@@ -21,6 +20,8 @@ export function GalleryPage() {
   const [category, setCategory] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [items, setItems] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     const toItems = (events: ApiEvent[]): GalleryItem[] =>
@@ -35,6 +36,8 @@ export function GalleryPage() {
           category: e.category,
         }));
 
+    setLoading(true);
+    setLoadError(null);
     Promise.all([
       api.get<{ items: ApiEvent[] }>("/api/events?limit=50"),
       api.get<{ items: ApiEvent[] }>("/api/events?archive=1&limit=50"),
@@ -42,33 +45,14 @@ export function GalleryPage() {
       .then(([upcoming, archived]) => {
         const fromApi = [...toItems(upcoming.items), ...toItems(archived.items)];
         const unique = Array.from(new Map(fromApi.map((i) => [i.id, i])).values());
-        if (unique.length > 0) {
-          setItems(unique);
-        } else {
-          setItems(
-            fallbackGallery.map((g) => ({
-              id: String(g.id),
-              image: g.image,
-              title: g.title,
-              event: g.event,
-              date: g.date,
-              category: g.category,
-            })),
-          );
-        }
+        setItems(unique);
+        setLoadError(null);
       })
-      .catch(() =>
-        setItems(
-          fallbackGallery.map((g) => ({
-            id: String(g.id),
-            image: g.image,
-            title: g.title,
-            event: g.event,
-            date: g.date,
-            category: g.category,
-          })),
-        ),
-      );
+      .catch((e) => {
+        setItems([]);
+        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać galerii. Sprawdź API / połączenie.");
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const categories = useMemo(
@@ -107,6 +91,13 @@ export function GalleryPage() {
       </section>
 
       <section className="container mx-auto px-4 py-10">
+        {loading ? (
+          <p className="text-center text-[#9ca3af] py-16">Ładowanie galerii...</p>
+        ) : loadError ? (
+          <p className="text-center text-red-400 py-16">{loadError}</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-center text-[#9ca3af] py-16">Brak zdjęć z wydarzeń (galeria odłożona — podgląd z API).</p>
+        ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((item) => (
             <button
@@ -132,6 +123,7 @@ export function GalleryPage() {
             </button>
           ))}
         </div>
+        )}
       </section>
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelectedId(null)}>

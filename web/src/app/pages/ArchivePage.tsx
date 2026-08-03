@@ -5,7 +5,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import type { ApiEvent, PaginatedEvents } from "../lib/types";
 import { eventImage, eventStatusLabel } from "../lib/types";
 
@@ -13,13 +13,21 @@ export function ArchivePage() {
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PaginatedEvents | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     setLoading(true);
+    setLoadError(null);
     api
       .get<PaginatedEvents>(`/api/events?archive=1&page=${page}&limit=12`)
-      .then(setData)
-      .catch(() => setData(null))
+      .then((res) => {
+        setData(res);
+        setLoadError(null);
+      })
+      .catch((e) => {
+        setData(null);
+        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać archiwum. Sprawdź API / połączenie.");
+      })
       .finally(() => setLoading(false));
   }, [page]);
 
@@ -46,6 +54,8 @@ export function ArchivePage() {
       <section className="container mx-auto px-4 py-10 space-y-6">
         {loading ? (
           <p className="text-center text-[#9ca3af] py-16">Ładowanie archiwum...</p>
+        ) : loadError ? (
+          <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : items.length === 0 ? (
           <p className="text-center text-[#9ca3af] py-16">Brak zarchiwizowanych wydarzeń.</p>
         ) : (

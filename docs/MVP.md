@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-03 17:10 (`packages/api-types`, markers API, Organizer split, e-mail UI)
+**Ostatnia synchronizacja:** 2026-08-03 17:25 (mobile filtry/mapa/kalendarz/gates; empty≠error; galeria deferred)
 
 ---
 
@@ -167,7 +167,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Rate limiting + security headers na nginx | ASVS L1 basics ponad „gołe” CRUD |
 | Volume backup + skrypt dzienny | Niezawodność wykraczająca poza samą bazę „w Dockerze” |
 | Panel wniosków organizatora end-to-end | Wniosek → mail/admin approve → rola ORGANIZER |
-| Galeria z API (upcoming + archive) | Uzupełnienie UX poza ścisłą listą MPC |
+| Galeria z API (upcoming + archive) | **Świadomie odłożona** — prosty podgląd zdjęć z eventów; bez mock-fallback przy błędzie |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
 | Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
 | Automatyczne testy (JUnit + Playwright + Vitest mobile) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
@@ -241,4 +241,4 @@ Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+we
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-03 17:10.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-03 17:25.*

@@ -514,4 +514,18 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 30. Mobile parity + empty/error Home/Archive/Gallery (2026-08-03, 17:25)
+
+**Kontekst / argument:** średni priorytet z review — filtry/mapa/kalendarz/role gates na mobile; Home/Archive/Gallery myliły awarię z pustką; galeria niespójnie „zrobiona ponad MVP”.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 17:25 | Mobile: q/paid/kategoria tekst | Woj./miasto/tor/daty/auto + kategorie chips | Parity z web filtrami |
+| 17:25 | Tylko lista + Apple Maps w detalu | Widoki Lista / Kalendarz / Mapa (`/markers`) | Kalendarz grid; mapa = GPS lista + deep-link |
+| 17:25 | Soft-check ról w ekranach | `RequireAuth` w nawigacji | Jak web AuthGate |
+| 17:25 | Home/Archive catch → pusto; Gallery → mock | `loadError` + brak mocka przy błędzie | Empty ≠ error |
+| 17:25 | MVP „Galeria z API” jako extras OK | Oznaczenie świadomie odłożona | Spójność docs |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

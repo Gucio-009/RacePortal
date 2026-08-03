@@ -5,19 +5,28 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { PaidEventBadge } from "../components/PaidEventBadge";
-import { api } from "../lib/api";
+import { api, ApiError } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
 import { eventImage } from "../lib/types";
 
 export function HomePage() {
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoading(true);
+    setLoadError(null);
     api
       .get<{ items: ApiEvent[] }>("/api/events?limit=6")
-      .then((res) => setUpcomingEvents(res.items))
-      .catch(() => setUpcomingEvents([]))
+      .then((res) => {
+        setUpcomingEvents(res.items);
+        setLoadError(null);
+      })
+      .catch((e) => {
+        setUpcomingEvents([]);
+        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -85,6 +94,8 @@ export function HomePage() {
 
         {loading ? (
           <p className="text-center text-[#9ca3af] py-12">Ładowanie wydarzeń...</p>
+        ) : loadError ? (
+          <p className="text-center text-red-400 py-12">{loadError}</p>
         ) : upcomingEvents.length === 0 ? (
           <p className="text-center text-[#9ca3af] py-12">Brak nadchodzących wydarzeń.</p>
         ) : (
