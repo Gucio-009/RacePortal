@@ -84,7 +84,7 @@ export function AdminPanelPage() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-[#9ca3af]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FFD700] mr-3" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)] mr-3" />
         Ładowanie panelu admina...
       </div>
     );
@@ -95,7 +95,7 @@ export function AdminPanelPage() {
       <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
         <div className="container mx-auto px-4">
           <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "40px", fontWeight: 900 }}>
-            PANEL <span className="text-[#FFD700]">ADMINA</span>
+            PANEL <span className="text-[var(--race-accent)]">ADMINA</span>
           </h1>
           <p className="text-[#9ca3af]">Zarządzanie użytkownikami, wydarzeniami i wnioskami organizatorów.</p>
         </div>
@@ -113,8 +113,8 @@ export function AdminPanelPage() {
             ].map(({ label, value, icon: Icon }) => (
               <Card key={label} className="bg-[#1a1a1a] border-[#2a2a2a]">
                 <CardContent className="pt-6 text-center">
-                  <Icon className="w-8 h-8 text-[#FFD700] mx-auto mb-2" />
-                  <div className="font-['Orbitron'] text-[#FFD700]" style={{ fontSize: "28px", fontWeight: 900 }}>
+                  <Icon className="w-8 h-8 text-[var(--race-accent)] mx-auto mb-2" />
+                  <div className="font-['Orbitron'] text-[var(--race-accent)]" style={{ fontSize: "28px", fontWeight: 900 }}>
                     {value}
                   </div>
                   <p className="text-[#9ca3af] text-sm">{label}</p>
@@ -140,7 +140,7 @@ export function AdminPanelPage() {
                   <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                       <div className="flex flex-wrap gap-2 mb-2">
-                        <Badge className="bg-[#FFD700] text-[#121212]">{event.category}</Badge>
+                        <Badge className="bg-[var(--race-accent)] text-[#121212]">{event.category}</Badge>
                         <Badge variant="outline" className="border-[#2a2a2a] text-white">
                           {eventStatusLabel(event.status)}
                         </Badge>

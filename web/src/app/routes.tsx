@@ -46,7 +46,7 @@ function AuthGate({
   if (isLoading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FFD700]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
       </div>
     );
   }

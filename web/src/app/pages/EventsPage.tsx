@@ -164,7 +164,7 @@ export function EventsPage() {
       >
         <div className="container mx-auto px-4">
           <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
-            KALENDARZ <span className="text-[#FFD700]">WYDARZEŃ</span>
+            KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
           <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
             Lista, mapa i kalendarz — wspólne filtry dla każdego widoku.
@@ -188,7 +188,7 @@ export function EventsPage() {
               onClick={() => setView(id)}
               className={
                 view === id
-                  ? "border-[#FFD700] bg-[#FFD700]/15 text-[#FFD700]"
+                  ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
                   : "border-[#2a2a2a] text-white"
               }
             >
@@ -216,7 +216,7 @@ export function EventsPage() {
               <SelectItem value="all">Wszystkie kategorie</SelectItem>
               {EVENT_CATEGORY_GROUPS.map((g) => (
                 <SelectGroup key={g.group}>
-                  <SelectLabel className="text-[#FFD700]">{g.group}</SelectLabel>
+                  <SelectLabel className="text-[var(--race-accent)]">{g.group}</SelectLabel>
                   {g.items.map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat}
@@ -326,8 +326,8 @@ export function EventsPage() {
                 className="mx-auto"
               />
               <style>{`
-                .rdp-has-event:not([disabled]) { background: rgba(255,215,0,0.25); border-radius: 6px; color: #FFD700; font-weight: 700; }
-                .rdp { --rdp-accent-color: #FFD700; --rdp-background-color: #1a1a1a; color: #fff; }
+                .rdp-has-event:not([disabled]) { background: color-mix(in srgb, var(--race-accent) 25%, transparent); border-radius: 6px; color: var(--race-accent); font-weight: 700; }
+                .rdp { --rdp-accent-color: var(--race-accent); --rdp-background-color: #1a1a1a; color: #fff; }
               `}</style>
             </div>
             <div className="space-y-3">
@@ -340,7 +340,7 @@ export function EventsPage() {
                 <p className="text-[#9ca3af]">Brak wydarzeń w tym dniu (dla filtrów).</p>
               ) : (
                 dayEvents.map((event) => (
-                  <Link key={event.id} to={`/wydarzenia/${event.id}`} className="block border border-[#2a2a2a] rounded-md p-4 hover:border-[#FFD700]">
+                  <Link key={event.id} to={`/wydarzenia/${event.id}`} className="block border border-[#2a2a2a] rounded-md p-4 hover:border-[var(--race-accent)]">
                     <p className="text-white" style={{ fontWeight: 700 }}>{event.name}</p>
                     <p className="text-[#9ca3af] text-sm">{event.category} · {event.track} · {event.time}</p>
                   </Link>
@@ -356,8 +356,8 @@ export function EventsPage() {
               {items.map((event) => (
                 <Link key={event.id} to={`/wydarzenia/${event.id}`}>
                   <Card
-                    className={`bg-[#1a1a1a] overflow-hidden hover:border-[#FFD700] transition-all duration-300 group h-full ${
-                      event.paid ? "border-[#FFD700]/55 shadow-[0_0_0_1px_rgba(255,215,0,0.15)]" : "border-[#2a2a2a]"
+                    className={`bg-[#1a1a1a] overflow-hidden hover:border-[var(--race-accent)] transition-all duration-300 group h-full ${
+                      event.paid ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)] shadow-[0_0_0_1px_color-mix(in_srgb,var(--race-accent)_15%,transparent)]" : "border-[#2a2a2a]"
                     }`}
                   >
                     <div className="relative h-48 overflow-hidden">
@@ -367,23 +367,23 @@ export function EventsPage() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                       <PaidEventBadge event={event} variant="overlay" />
-                      <div className="absolute top-4 right-4 bg-[#FFD700] text-[#121212] px-3 py-1 rounded" style={{ fontWeight: 700 }}>
+                      <div className="absolute top-4 right-4 bg-[var(--race-accent)] text-[#121212] px-3 py-1 rounded" style={{ fontWeight: 700 }}>
                         {event.category}
                       </div>
                     </div>
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-2 text-[#FFD700] mb-2 text-sm">
+                      <div className="flex items-center gap-2 text-[var(--race-accent)] mb-2 text-sm">
                         <CalendarIcon className="w-4 h-4" />
                         {event.dateLabel || event.date}
                       </div>
-                      <h3 className="text-white mb-2 font-['Orbitron'] group-hover:text-[#FFD700]" style={{ fontWeight: 700 }}>
+                      <h3 className="text-white mb-2 font-['Orbitron'] group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                         {event.name}
                       </h3>
                       <div className="flex items-center gap-2 text-[#9ca3af] text-sm mb-4">
                         <MapPin className="w-4 h-4" />
                         {event.track}, {event.city}
                       </div>
-                      <div className="flex items-center text-[#FFD700] text-sm" style={{ fontWeight: 700 }}>
+                      <div className="flex items-center text-[var(--race-accent)] text-sm" style={{ fontWeight: 700 }}>
                         Szczegóły <ChevronRight className="w-4 h-4 ml-1" />
                       </div>
                     </CardContent>

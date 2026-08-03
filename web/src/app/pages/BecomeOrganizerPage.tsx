@@ -41,7 +41,7 @@ export function BecomeOrganizerPage() {
       <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-16">
         <div className="container mx-auto px-4 max-w-2xl">
           <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "40px", fontWeight: 900 }}>
-            ZOSTAŃ <span className="text-[#FFD700]">ORGANIZATOREM</span>
+            ZOSTAŃ <span className="text-[var(--race-accent)]">ORGANIZATOREM</span>
           </h1>
           <p className="text-[#9ca3af]">
             Organizujesz wyścigi, track daye lub eventy motorsportowe? Wyślij wniosek i zarządzaj wydarzeniami w
@@ -58,7 +58,7 @@ export function BecomeOrganizerPage() {
             </p>
             <p className="text-[#9ca3af]">Administrator skontaktuje się z Tobą po weryfikacji.</p>
             <Link to="/dashboard">
-              <Button className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                 Wróć do profilu
               </Button>
             </Link>
@@ -66,7 +66,7 @@ export function BecomeOrganizerPage() {
         ) : (
           <form onSubmit={handleSubmit} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 space-y-6">
             {!isAuthenticated && (
-              <p className="text-[#FFD700] text-sm">
+              <p className="text-[var(--race-accent)] text-sm">
                 Musisz być zalogowany.{" "}
                 <Link to="/login" className="underline">
                   Zaloguj się
@@ -75,7 +75,7 @@ export function BecomeOrganizerPage() {
             )}
             <div className="space-y-2">
               <Label className="text-white flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-[#FFD700]" />
+                <Building2 className="w-4 h-4 text-[var(--race-accent)]" />
                 Firma / organizacja *
               </Label>
               <Input
@@ -88,7 +88,7 @@ export function BecomeOrganizerPage() {
             </div>
             <div className="space-y-2">
               <Label className="text-white flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-[#FFD700]" />
+                <MessageSquare className="w-4 h-4 text-[var(--race-accent)]" />
                 Wiadomość *
               </Label>
               <Textarea
@@ -103,7 +103,7 @@ export function BecomeOrganizerPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#FFD700] text-[#121212] h-12"
+              className="w-full bg-[var(--race-accent)] text-[#121212] h-12"
               style={{ fontWeight: 800 }}
             >
               {loading ? (

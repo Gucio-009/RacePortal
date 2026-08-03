@@ -4,19 +4,21 @@
   --font-size: 16px;
   --font-family-primary: 'Montserrat', sans-serif;
   --font-family-display: 'Orbitron', sans-serif;
+  --race-accent: #FFD700;
+  --race-motion: 200ms;
   --background: #121212;
   --foreground: #ffffff;
   --card: #1a1a1a;
   --card-foreground: #ffffff;
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
-  --primary: #FFD700;
+  --primary: var(--race-accent);
   --primary-foreground: #121212;
   --secondary: #2a2a2a;
   --secondary-foreground: #ffffff;
   --muted: #2a2a2a;
   --muted-foreground: #9ca3af;
-  --accent: #FFD700;
+  --accent: var(--race-accent);
   --accent-foreground: #121212;
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
@@ -26,8 +28,8 @@
   --switch-background: #2a2a2a;
   --font-weight-medium: 600;
   --font-weight-normal: 400;
-  --ring: #FFD700;
-  --chart-1: #FFD700;
+  --ring: var(--race-accent);
+  --chart-1: var(--race-accent);
   --chart-2: #60a5fa;
   --chart-3: #34d399;
   --chart-4: #f472b6;
@@ -35,12 +37,22 @@
   --radius: 0.5rem;
   --sidebar: #1a1a1a;
   --sidebar-foreground: #ffffff;
-  --sidebar-primary: #FFD700;
+  --sidebar-primary: var(--race-accent);
   --sidebar-primary-foreground: #121212;
   --sidebar-accent: #2a2a2a;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2a2a2a;
-  --sidebar-ring: #FFD700;
+  --sidebar-ring: var(--race-accent);
+}
+
+/* Preferencje z Ustawień → akcent + tryb pit-stop */
+html[data-pit-stop="on"] *,
+html[data-pit-stop="on"] *::before,
+html[data-pit-stop="on"] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
 }
 
 .dark {

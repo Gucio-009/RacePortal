@@ -92,21 +92,21 @@ export function AccountPage() {
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div>
-            <p className="text-[#FFD700] font-['Orbitron'] tracking-widest text-sm mb-2">KONTO</p>
+            <p className="text-[var(--race-accent)] font-['Orbitron'] tracking-widest text-sm mb-2">KONTO</p>
             <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
               DANE KONTA
             </h1>
             <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło.</p>
           </div>
           <div className="flex items-center gap-3">
-            <Avatar className="w-14 h-14 border-2 border-[#FFD700]">
+            <Avatar className="w-14 h-14 border-2 border-[var(--race-accent)]">
               <AvatarImage src={user?.avatar ?? undefined} />
-              <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+              <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
                 {userInitials(user ?? {})}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1">
-              <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                 <Shield className="w-3 h-3 mr-1" />
                 {roleLabel}
               </Badge>
@@ -121,7 +121,7 @@ export function AccountPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
-                <User className="w-5 h-5 text-[#FFD700]" />
+                <User className="w-5 h-5 text-[var(--race-accent)]" />
                 Profil
               </CardTitle>
             </CardHeader>
@@ -154,7 +154,7 @@ export function AccountPage() {
               </div>
               <div className="space-y-2">
                 <Label className="text-white flex items-center gap-2">
-                  <Phone className="w-4 h-4 text-[#FFD700]" />
+                  <Phone className="w-4 h-4 text-[var(--race-accent)]" />
                   Telefon
                 </Label>
                 <Input
@@ -168,7 +168,7 @@ export function AccountPage() {
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <Label className="text-white flex items-center gap-2">
-                      <IdCard className="w-4 h-4 text-[#FFD700]" />
+                      <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
                       Prawo jazdy kat. B
                     </Label>
                   </div>
@@ -199,7 +199,7 @@ export function AccountPage() {
               <Button
                 onClick={saveProfile}
                 disabled={savingProfile}
-                className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {savingProfile ? (
@@ -217,7 +217,7 @@ export function AccountPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
-                <KeyRound className="w-5 h-5 text-[#FFD700]" />
+                <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
                 Zmiana hasła
               </CardTitle>
             </CardHeader>
@@ -255,7 +255,7 @@ export function AccountPage() {
               <Button
                 onClick={savePassword}
                 disabled={savingPassword}
-                className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {savingPassword ? (

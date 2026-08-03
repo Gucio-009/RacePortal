@@ -156,13 +156,13 @@ export function RegisterPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Flag className="w-16 h-16 text-[#FFD700]" />
+            <Flag className="w-16 h-16 text-[var(--race-accent)]" />
           </div>
           <h1
             className="font-['Orbitron'] text-white mb-2"
             style={{ fontSize: "36px", fontWeight: 900 }}
           >
-            DOŁĄCZ DO <span className="text-[#FFD700]">ZESPOŁU</span>
+            DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: "16px" }}>
             {pendingEmail ? "Potwierdź adres e-mail kodem" : "Stwórz konto i rozpocznij wyścig"}
@@ -189,7 +189,7 @@ export function RegisterPage() {
                     placeholder="123456"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12 tracking-widest"
+                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12 tracking-widest"
                     required
                   />
                 </div>
@@ -197,7 +197,7 @@ export function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12"
+                className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
                 style={{ fontSize: "16px", fontWeight: 800 }}
               >
                 {isLoading ? "WERYFIKACJA..." : "AKTYWUJ KONTO"}
@@ -227,7 +227,7 @@ export function RegisterPage() {
                       placeholder="twoja_nazwa"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                       required
                     />
                   </div>
@@ -245,7 +245,7 @@ export function RegisterPage() {
                       placeholder="twoj@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                       required
                     />
                   </div>
@@ -262,7 +262,7 @@ export function RegisterPage() {
                       placeholder="Jan"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                   <div className="space-y-2">
@@ -275,7 +275,7 @@ export function RegisterPage() {
                       placeholder="Kowalski"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export function RegisterPage() {
                       placeholder="+48 600 000 000"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                 </div>
@@ -309,13 +309,13 @@ export function RegisterPage() {
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#FFD700]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -329,7 +329,7 @@ export function RegisterPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <Label htmlFor="licenseB" className="text-white flex items-center gap-2" style={{ fontWeight: 600 }}>
-                        <IdCard className="w-4 h-4 text-[#FFD700]" />
+                        <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
                         Prawo jazdy kat. B
                       </Label>
                       <p className="text-xs text-[#9ca3af]">Posiadam ważne prawo jazdy</p>
@@ -351,7 +351,7 @@ export function RegisterPage() {
                         placeholder="Numer licencji PZM"
                         value={pzmLicense}
                         onChange={(e) => setPzmLicense(e.target.value)}
-                        className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-10"
+                        className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-10"
                       />
                     </div>
                   )}
@@ -369,13 +369,13 @@ export function RegisterPage() {
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#FFD700]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -387,7 +387,7 @@ export function RegisterPage() {
                     id="terms"
                     checked={acceptTerms}
                     onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                    className="mt-1 border-[#2a2a2a] data-[state=checked]:bg-[#FFD700] data-[state=checked]:border-[#FFD700]"
+                    className="mt-1 border-[#2a2a2a] data-[state=checked]:bg-[var(--race-accent)] data-[state=checked]:border-[var(--race-accent)]"
                   />
                   <Label
                     htmlFor="terms"
@@ -395,11 +395,11 @@ export function RegisterPage() {
                     style={{ fontSize: "14px" }}
                   >
                     Akceptuję{" "}
-                    <Link to="/terms" className="text-[#FFD700] hover:underline">
+                    <Link to="/terms" className="text-[var(--race-accent)] hover:underline">
                       regulamin
                     </Link>{" "}
                     i{" "}
-                    <Link to="/privacy" className="text-[#FFD700] hover:underline">
+                    <Link to="/privacy" className="text-[var(--race-accent)] hover:underline">
                       politykę prywatności
                     </Link>
                   </Label>
@@ -408,7 +408,7 @@ export function RegisterPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12"
+                  className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
                   style={{ fontSize: "16px", fontWeight: 800 }}
                 >
                   {isLoading ? "TWORZENIE KONTA..." : "STWÓRZ KONTO"}
@@ -444,7 +444,7 @@ export function RegisterPage() {
           <div className="mt-6 text-center">
             <p className="text-[#9ca3af]">
               Masz już konto?{" "}
-              <Link to="/login" className="text-[#FFD700] hover:underline" style={{ fontWeight: 700 }}>
+              <Link to="/login" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
                 Zaloguj się
               </Link>
             </p>

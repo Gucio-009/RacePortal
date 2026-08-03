@@ -19,7 +19,7 @@ import confetti from "canvas-confetti";
 import { userInitials } from "../lib/types";
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `${isActive ? "text-[#FFD700]" : "text-[#9ca3af] hover:text-[#FFD700]"} transition-colors text-sm md:text-base`;
+  `${isActive ? "text-[var(--race-accent)]" : "text-[#9ca3af] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
 
 function roleLabel(role?: string) {
   if (role === "ADMIN") return "Administrator";
@@ -62,7 +62,11 @@ export function RootLayout() {
       particleCount: 60,
       spread: 50,
       origin: { y: 0.2, x: 0.9 },
-      colors: ["#FFD700", "#ffffff", "#9ca3af"],
+      colors: [
+        getComputedStyle(document.documentElement).getPropertyValue("--race-accent").trim() || "#FFD700",
+        "#ffffff",
+        "#9ca3af",
+      ],
     });
     navigate("/");
   };
@@ -76,7 +80,7 @@ export function RootLayout() {
       <header className="border-b border-[#2a2a2a] bg-[#1a1a1a] sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3 shrink-0">
-            <Flag className="w-8 h-8 text-[#FFD700]" />
+            <Flag className="w-8 h-8 text-[var(--race-accent)]" />
             <span className="font-['Orbitron'] tracking-wider" style={{ fontSize: "24px", fontWeight: 800 }}>
               RACEPORTAL
             </span>
@@ -130,9 +134,9 @@ export function RootLayout() {
                   onClick={() => setMenuOpen((v) => !v)}
                   className="flex items-center gap-2 hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-full pl-1 pr-3 py-1 h-auto"
                 >
-                  <Avatar className="w-8 h-8 border-2 border-[#FFD700]">
+                  <Avatar className="w-8 h-8 border-2 border-[var(--race-accent)]">
                     <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                    <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+                    <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
                       {userInitials(user ?? {})}
                     </AvatarFallback>
                   </Avatar>
@@ -140,7 +144,7 @@ export function RootLayout() {
                     {user?.username}
                   </span>
                   <ChevronDown
-                    className={`w-4 h-4 text-[#FFD700] shrink-0 transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                    className={`w-4 h-4 text-[var(--race-accent)] shrink-0 transition-transform ${menuOpen ? "rotate-180" : ""}`}
                   />
                 </Button>
 
@@ -152,53 +156,53 @@ export function RootLayout() {
                     <div className="px-3 py-3 border-b border-[#2a2a2a]">
                       <div className="text-white font-semibold truncate">{user?.username}</div>
                       <div className="text-[#9ca3af] text-xs truncate">{user?.email}</div>
-                      <div className="text-[#FFD700] text-xs mt-1 tracking-wide">{roleLabel(user?.role)}</div>
+                      <div className="text-[var(--race-accent)] text-xs mt-1 tracking-wide">{roleLabel(user?.role)}</div>
                     </div>
 
                     <button
                       type="button"
                       role="menuitem"
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                       onClick={() => go("/dashboard")}
                     >
-                      <User className="h-4 w-4 text-[#FFD700]" />
+                      <User className="h-4 w-4 text-[var(--race-accent)]" />
                       Moje konto
                     </button>
                     <button
                       type="button"
                       role="menuitem"
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                       onClick={() => go("/konto")}
                     >
-                      <KeyRound className="h-4 w-4 text-[#FFD700]" />
+                      <KeyRound className="h-4 w-4 text-[var(--race-accent)]" />
                       Dane konta (email / hasło)
                     </button>
                     <button
                       type="button"
                       role="menuitem"
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                       onClick={() => go("/ustawienia")}
                     >
-                      <Settings className="h-4 w-4 text-[#FFD700]" />
+                      <Settings className="h-4 w-4 text-[var(--race-accent)]" />
                       Ustawienia
                     </button>
                     <button
                       type="button"
                       role="menuitem"
-                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                      className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                       onClick={() => go("/garaz")}
                     >
-                      <Car className="h-4 w-4 text-[#FFD700]" />
+                      <Car className="h-4 w-4 text-[var(--race-accent)]" />
                       Garaż
                     </button>
                     {isOrganizer && (
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                         onClick={() => go("/organizer")}
                       >
-                        <LayoutDashboard className="h-4 w-4 text-[#FFD700]" />
+                        <LayoutDashboard className="h-4 w-4 text-[var(--race-accent)]" />
                         Panel organizatora
                       </button>
                     )}
@@ -206,10 +210,10 @@ export function RootLayout() {
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[#FFD700]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
                         onClick={() => go("/admin")}
                       >
-                        <Shield className="h-4 w-4 text-[#FFD700]" />
+                        <Shield className="h-4 w-4 text-[var(--race-accent)]" />
                         Panel admina
                       </button>
                     )}
@@ -229,7 +233,7 @@ export function RootLayout() {
               </div>
             ) : (
               <Link to="/login">
-                <Button className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90" style={{ fontWeight: 700 }}>
+                <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>
                   ZALOGUJ SIĘ
                 </Button>
               </Link>
@@ -246,16 +250,16 @@ export function RootLayout() {
         <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#9ca3af]">
           <p>© 2026 RACEPORTAL. Wszystkie prawa zastrzeżone.</p>
           <div className="flex flex-wrap gap-4 justify-center" style={{ fontSize: "14px" }}>
-            <Link to="/terms" className="hover:text-[#FFD700]">
+            <Link to="/terms" className="hover:text-[var(--race-accent)]">
               Regulamin
             </Link>
-            <Link to="/privacy" className="hover:text-[#FFD700]">
+            <Link to="/privacy" className="hover:text-[var(--race-accent)]">
               Polityka prywatności
             </Link>
-            <Link to="/wydarzenia" className="hover:text-[#FFD700]">
+            <Link to="/wydarzenia" className="hover:text-[var(--race-accent)]">
               Wydarzenia
             </Link>
-            <Link to="/archiwum" className="hover:text-[#FFD700]">
+            <Link to="/archiwum" className="hover:text-[var(--race-accent)]">
               Archiwum
             </Link>
           </div>

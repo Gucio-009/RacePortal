@@ -131,9 +131,9 @@ export function DashboardPage() {
         <Card className="bg-[#1a1a1a] border-[#2a2a2a] mb-8">
           <CardContent className="pt-6">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-              <Avatar className="w-32 h-32 border-4 border-[#FFD700]">
+              <Avatar className="w-32 h-32 border-4 border-[var(--race-accent)]">
                 <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontSize: "48px", fontWeight: 900 }}>
+                <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontSize: "48px", fontWeight: 900 }}>
                   {userInitials(user ?? {})}
                 </AvatarFallback>
               </Avatar>
@@ -146,7 +146,7 @@ export function DashboardPage() {
                   {user?.email}
                 </p>
                 <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+                  <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                     <Trophy className="w-4 h-4 mr-1" />
                     {roleBadge}
                   </Badge>
@@ -158,7 +158,7 @@ export function DashboardPage() {
 
               <Button
                 onClick={openEdit}
-                className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 EDYTUJ PROFIL
@@ -170,8 +170,8 @@ export function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
-              <Calendar className="w-12 h-12 text-[#FFD700] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[#FFD700] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <Calendar className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
                 {upcomingRegistrations.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -182,8 +182,8 @@ export function DashboardPage() {
 
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
-              <Car className="w-12 h-12 text-[#FFD700] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[#FFD700] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <Car className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
                 {cars.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -194,8 +194,8 @@ export function DashboardPage() {
 
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="pt-6 text-center">
-              <Trophy className="w-12 h-12 text-[#FFD700] mx-auto mb-3" />
-              <div className="font-['Orbitron'] text-[#FFD700] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
+              <Trophy className="w-12 h-12 text-[var(--race-accent)] mx-auto mb-3" />
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-1" style={{ fontSize: "36px", fontWeight: 900 }}>
                 {registrations.length}
               </div>
               <p className="text-[#9ca3af]" style={{ fontWeight: 600 }}>
@@ -212,14 +212,14 @@ export function DashboardPage() {
                 className="font-['Orbitron'] text-white flex items-center gap-2"
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
-                <Calendar className="w-6 h-6 text-[#FFD700]" />
+                <Calendar className="w-6 h-6 text-[var(--race-accent)]" />
                 Moje zgłoszenia
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {loading ? (
                 <div className="text-center py-8 text-[#9ca3af]">
-                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[#FFD700]" />
+                  <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[var(--race-accent)]" />
                   Ładowanie...
                 </div>
               ) : registrations.length === 0 ? (
@@ -233,7 +233,7 @@ export function DashboardPage() {
                           <Badge
                             className={
                               isPositiveRegistration(reg.status)
-                                ? "bg-[#FFD700] text-[#121212]"
+                                ? "bg-[var(--race-accent)] text-[#121212]"
                                 : "bg-[#2a2a2a] text-white"
                             }
                             style={{ fontWeight: 700, fontSize: "12px" }}
@@ -241,7 +241,7 @@ export function DashboardPage() {
                             {registrationStatusLabel(reg.status)}
                           </Badge>
                           {reg.event?.paid && (
-                            <Badge variant="outline" className="border-[#2a2a2a] text-[#FFD700]">
+                            <Badge variant="outline" className="border-[#2a2a2a] text-[var(--race-accent)]">
                               Płatne
                               {reg.event.entryFee != null ? ` · ${reg.event.entryFee} PLN` : ""}
                             </Badge>
@@ -294,7 +294,7 @@ export function DashboardPage() {
                                 <Button
                                   size="sm"
                                   onClick={() => attachProof(reg.id)}
-                                  className="bg-[#FFD700] text-[#121212]"
+                                  className="bg-[var(--race-accent)] text-[#121212]"
                                   style={{ fontWeight: 700 }}
                                 >
                                   Dołącz
@@ -310,7 +310,7 @@ export function DashboardPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212] w-full"
+                              className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] w-full"
                               style={{ fontWeight: 700 }}
                             >
                               SZCZEGÓŁY
@@ -342,7 +342,7 @@ export function DashboardPage() {
                 className="font-['Orbitron'] text-white flex items-center gap-2"
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
-                <Car className="w-6 h-6 text-[#FFD700]" />
+                <Car className="w-6 h-6 text-[var(--race-accent)]" />
                 Mój garaż
               </CardTitle>
             </CardHeader>
@@ -368,7 +368,7 @@ export function DashboardPage() {
                 ))
               )}
               <Link to="/garaz">
-                <Button variant="ghost" className="w-full text-[#FFD700] hover:bg-[#2a2a2a]" style={{ fontWeight: 700 }}>
+                <Button variant="ghost" className="w-full text-[var(--race-accent)] hover:bg-[#2a2a2a]" style={{ fontWeight: 700 }}>
                   Zarządzaj garażem
                 </Button>
               </Link>
@@ -386,9 +386,9 @@ export function DashboardPage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="flex justify-center">
-              <Avatar className="w-24 h-24 border-2 border-[#FFD700]">
+              <Avatar className="w-24 h-24 border-2 border-[var(--race-accent)]">
                 <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+                <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
                   {userInitials({ username, firstName: user?.firstName, lastName: user?.lastName })}
                 </AvatarFallback>
               </Avatar>
@@ -419,7 +419,7 @@ export function DashboardPage() {
             <Button
               onClick={saveProfile}
               disabled={saving}
-              className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+              className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
               style={{ fontWeight: 700 }}
             >
               {saving ? "ZAPISYWANIE..." : "Zapisz"}

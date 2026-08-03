@@ -548,4 +548,15 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 33. Motywy Ustawień faktycznie zmieniają UI (2026-08-03, 22:00)
+
+**Kontekst / argument:** wybór Redline/Ice wyglądał aktywny, ale nic nie zmieniał — `applyUserSettings` ustawiało `--race-accent`, a komponenty miały hardcoded `#FFD700`.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 22:00 | Akcent tylko w localStorage / CSS var bez użycia | UI używa `var(--race-accent)`; pit-stop skraca animacje | Preferencje działają |
+| 22:15 | Docker `:8081` serwował starą buildkę (hardcoded `#FFD700`) | `docker compose up --build -d web` — Redline/Ice + pit-stop OK | Zmiany frontu wymagają rebuild obrazu |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

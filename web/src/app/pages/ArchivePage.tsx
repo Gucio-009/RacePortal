@@ -43,7 +43,7 @@ export function ArchivePage() {
       >
         <div className="container mx-auto px-4">
           <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
-            ARCHIWUM <span className="text-[#FFD700]">WYDARZEŃ</span>
+            ARCHIWUM <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
           <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
             Zakończone wyścigi i wydarzenia z poprzednich sezonów.
@@ -69,7 +69,7 @@ export function ArchivePage() {
                     </div>
                     <div className="p-6">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+                        <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                           {event.category}
                         </Badge>
                         <Badge variant="outline" className="border-[#2a2a2a] text-white">
@@ -90,7 +90,7 @@ export function ArchivePage() {
                       <Link to={`/wydarzenia/${event.id}`}>
                         <Button
                           variant="outline"
-                          className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                          className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
                           style={{ fontWeight: 700 }}
                         >
                           SZCZEGÓŁY

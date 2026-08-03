@@ -133,7 +133,7 @@ export function EventDetailPage() {
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-24 text-center text-[#9ca3af]">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#FFD700]" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
         Ładowanie wydarzenia...
       </div>
     );
@@ -146,7 +146,7 @@ export function EventDetailPage() {
           Nie znaleziono wydarzenia
         </h1>
         <Link to="/wydarzenia">
-          <Button className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90">Wróć do kalendarza</Button>
+          <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95">Wróć do kalendarza</Button>
         </Link>
       </div>
     );
@@ -163,12 +163,12 @@ export function EventDetailPage() {
         <ImageWithFallback src={eventImage(event)} alt={event.name} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-8">
-          <Link to="/wydarzenia" className="inline-flex items-center text-[#FFD700] mb-4 hover:underline" style={{ fontWeight: 600 }}>
+          <Link to="/wydarzenia" className="inline-flex items-center text-[var(--race-accent)] mb-4 hover:underline" style={{ fontWeight: 600 }}>
             <ChevronLeft className="w-4 h-4" />
             Wróć do kalendarza
           </Link>
           <div className="flex flex-wrap gap-2 mb-3">
-            <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+            <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
               {event.category}
             </Badge>
             <Badge variant="outline" className="border-[#2a2a2a] text-white">
@@ -203,7 +203,7 @@ export function EventDetailPage() {
                   onClick={handleRoute}
                   disabled={routeLoading}
                   variant="outline"
-                  className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                  className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
                   style={{ fontWeight: 700 }}
                 >
                   {routeLoading ? (
@@ -215,7 +215,7 @@ export function EventDetailPage() {
                 </Button>
               </div>
               {route && (
-                <p className="text-[#FFD700]" style={{ fontWeight: 600 }}>
+                <p className="text-[var(--race-accent)]" style={{ fontWeight: 600 }}>
                   {route.distanceText} · {route.durationText}
                 </p>
               )}
@@ -227,30 +227,30 @@ export function EventDetailPage() {
         <div className="space-y-4">
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3 text-white">
-              <Calendar className="w-5 h-5 text-[#FFD700]" />
+              <Calendar className="w-5 h-5 text-[var(--race-accent)]" />
               <span style={{ fontWeight: 600 }}>{event.dateLabel}</span>
             </div>
             <div className="flex items-center gap-3 text-white">
-              <Clock className="w-5 h-5 text-[#FFD700]" />
+              <Clock className="w-5 h-5 text-[var(--race-accent)]" />
               <span style={{ fontWeight: 600 }}>Start: {event.time}</span>
             </div>
             <div className="flex items-center gap-3 text-white">
-              <MapPin className="w-5 h-5 text-[#FFD700]" />
+              <MapPin className="w-5 h-5 text-[var(--race-accent)]" />
               <span style={{ fontWeight: 600 }}>
                 {event.track}, {event.city}
               </span>
             </div>
             <div className="flex items-center gap-3 text-white">
-              <Flag className="w-5 h-5 text-[#FFD700]" />
+              <Flag className="w-5 h-5 text-[var(--race-accent)]" />
               <span style={{ fontWeight: 600 }}>{event.voivodeship}</span>
             </div>
 
             {event.paid && (
-              <div className="rounded-md border border-[#FFD700]/40 bg-[#FFD700]/10 p-3 space-y-1">
+              <div className="rounded-md border border-[var(--race-accent)]/40 bg-[var(--race-accent)]/10 p-3 space-y-1">
                 <PaidEventBadge event={event} />
                 <p className="text-sm text-[#9ca3af]">
                   Wpisowe:{" "}
-                  <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                  <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                     {formatEntryFee(event.entryFee) ?? "do ustalenia"}
                   </span>
                 </p>
@@ -271,7 +271,7 @@ export function EventDetailPage() {
                       {recommended.length > 0 ? (
                         <>
                           Dopasowane do{" "}
-                          <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                          <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                             {event.category}
                           </span>
                           :{" "}
@@ -285,7 +285,7 @@ export function EventDetailPage() {
                       ) : cars.length > 0 ? (
                         <>
                           Brak aut klasy{" "}
-                          <span className="text-[#FFD700]">{event.category}</span> — masz {cars.length} w
+                          <span className="text-[var(--race-accent)]">{event.category}</span> — masz {cars.length} w
                           garażu
                         </>
                       ) : (
@@ -301,7 +301,7 @@ export function EventDetailPage() {
                       <SelectItem value="none">Bez auta</SelectItem>
                       {recommended.length > 0 && (
                         <SelectGroup>
-                          <SelectLabel className="text-[#FFD700]">
+                          <SelectLabel className="text-[var(--race-accent)]">
                             Proponowane / zalecane ({event.category})
                           </SelectLabel>
                           {recommended.map((car) => (
@@ -325,7 +325,7 @@ export function EventDetailPage() {
                     </SelectContent>
                   </Select>
                   {cars.length === 0 && (
-                    <Link to="/garaz" className="text-[#FFD700] text-sm hover:underline">
+                    <Link to="/garaz" className="text-[var(--race-accent)] text-sm hover:underline">
                       Dodaj auto w garażu
                     </Link>
                   )}
@@ -333,7 +333,7 @@ export function EventDetailPage() {
                     <p className="text-xs text-amber-400/90">
                       Żadne auto nie ma kategorii „{event.category}”. Możesz wybrać inne albo dodać
                       właściwe w{" "}
-                      <Link to="/garaz" className="text-[#FFD700] underline">
+                      <Link to="/garaz" className="text-[var(--race-accent)] underline">
                         garażu
                       </Link>
                       .
@@ -356,7 +356,7 @@ export function EventDetailPage() {
             <Button
               onClick={handleRegister}
               disabled={registering || event.status !== "APPROVED"}
-              className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12 mt-2"
+              className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12 mt-2"
               style={{ fontWeight: 800 }}
             >
               {registering

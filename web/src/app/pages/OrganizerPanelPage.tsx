@@ -201,11 +201,11 @@ export function OrganizerPanelPage() {
         <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "40px", fontWeight: 900 }}>
-              PANEL <span className="text-[#FFD700]">ORGANIZATORA</span>
+              PANEL <span className="text-[var(--race-accent)]">ORGANIZATORA</span>
             </h1>
             <p className="text-[#9ca3af]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
           </div>
-          <Button onClick={openCreate} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+          <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
             <Plus className="w-4 h-4 mr-2" />
             NOWE WYDARZENIE
           </Button>

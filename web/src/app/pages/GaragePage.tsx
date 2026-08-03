@@ -172,13 +172,13 @@ export function GaragePage() {
         <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "40px", fontWeight: 900 }}>
-              MÓJ <span className="text-[#FFD700]">GARAŻ</span>
+              MÓJ <span className="text-[var(--race-accent)]">GARAŻ</span>
             </h1>
             <p className="text-[#9ca3af]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
           </div>
           <Button
             onClick={openAdd}
-            className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+            className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
             style={{ fontWeight: 800 }}
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -190,7 +190,7 @@ export function GaragePage() {
       <section className="container mx-auto px-4 py-10">
         {loading ? (
           <div className="text-center py-16 text-[#9ca3af]">
-            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#FFD700]" />
+            <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
             Ładowanie garażu...
           </div>
         ) : loadError ? (
@@ -198,9 +198,9 @@ export function GaragePage() {
         ) : cars.length === 0 ? (
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="py-16 text-center">
-              <Car className="w-16 h-16 text-[#FFD700] mx-auto mb-4" />
+              <Car className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
               <p className="text-[#9ca3af] mb-6">Twój garaż jest pusty. Dodaj pierwsze auto!</p>
-              <Button onClick={openAdd} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button onClick={openAdd} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                 Dodaj auto
               </Button>
             </CardContent>
@@ -211,7 +211,7 @@ export function GaragePage() {
               <Card key={car.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
                 <CardHeader>
                   <CardTitle className="font-['Orbitron'] text-white flex items-center gap-2" style={{ fontWeight: 800 }}>
-                    <Car className="w-5 h-5 text-[#FFD700]" />
+                    <Car className="w-5 h-5 text-[var(--race-accent)]" />
                     {car.make} {car.model}
                   </CardTitle>
                 </CardHeader>
@@ -222,7 +222,7 @@ export function GaragePage() {
                   {car.className && (
                     <p>
                       Kategoria:{" "}
-                      <span className="text-[#FFD700]" style={{ fontWeight: 700 }}>
+                      <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                         {car.className}
                       </span>
                     </p>
@@ -233,7 +233,7 @@ export function GaragePage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEdit(car)}
-                      className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                      className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
                     >
                       <Pencil className="w-4 h-4 mr-2" />
                       Edytuj
@@ -441,7 +441,7 @@ export function GaragePage() {
             <Button variant="outline" onClick={() => setDialogOpen(false)} className="border-[#2a2a2a] text-white">
               Anuluj
             </Button>
-            <Button onClick={handleSave} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+            <Button onClick={handleSave} disabled={saving} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
               {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Dodaj"}
             </Button>
           </DialogFooter>

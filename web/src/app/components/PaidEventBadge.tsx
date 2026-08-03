@@ -24,7 +24,7 @@ export function PaidEventBadge({ event, variant = "inline", className = "" }: Pr
           fontWeight: 800,
           fontSize: "12px",
           letterSpacing: "0.04em",
-          background: "linear-gradient(135deg, #FFD700 0%, #f5a623 100%)",
+          background: "linear-gradient(135deg, var(--race-accent) 0%, #f5a623 100%)",
           color: "#121212",
         }}
       >
@@ -40,7 +40,7 @@ export function PaidEventBadge({ event, variant = "inline", className = "" }: Pr
       style={{
         fontWeight: 800,
         fontSize: "12px",
-        background: "linear-gradient(135deg, #FFD700 0%, #f5a623 100%)",
+        background: "linear-gradient(135deg, var(--race-accent) 0%, #f5a623 100%)",
         color: "#121212",
       }}
     >

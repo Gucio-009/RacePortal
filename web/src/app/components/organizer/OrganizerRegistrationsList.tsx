@@ -50,7 +50,7 @@ export function OrganizerRegistrationsList({
                     href={reg.paymentProofUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-[#FFD700] text-sm underline"
+                    className="text-[var(--race-accent)] text-sm underline"
                   >
                     Potwierdzenie przelewu
                   </a>

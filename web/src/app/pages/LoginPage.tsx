@@ -65,13 +65,13 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <Flag className="w-16 h-16 text-[#FFD700]" />
+            <Flag className="w-16 h-16 text-[var(--race-accent)]" />
           </div>
           <h1
             className="font-['Orbitron'] text-white mb-2"
             style={{ fontSize: '36px', fontWeight: 900 }}
           >
-            WITAJ Z <span className="text-[#FFD700]">POWROTEM</span>
+            WITAJ Z <span className="text-[var(--race-accent)]">POWROTEM</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: '16px' }}>
             Zaloguj się do swojego konta
@@ -92,7 +92,7 @@ export function LoginPage() {
                   placeholder="twoj@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                  className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                   required
                 />
               </div>
@@ -110,13 +110,13 @@ export function LoginPage() {
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                  className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#FFD700]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -126,7 +126,7 @@ export function LoginPage() {
             <div className="flex items-center justify-end">
               <Link
                 to="/forgot-password"
-                className="text-[#FFD700] hover:underline"
+                className="text-[var(--race-accent)] hover:underline"
                 style={{ fontSize: '14px', fontWeight: 600 }}
               >
                 Nie pamiętasz hasła?
@@ -136,7 +136,7 @@ export function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12"
+              className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
               style={{ fontSize: '16px', fontWeight: 800 }}
             >
               {isLoading ? "LOGOWANIE..." : "ZALOGUJ SIĘ"}
@@ -162,7 +162,7 @@ export function LoginPage() {
           <div className="mt-6 text-center space-y-3">
             <p className="text-[#9ca3af]">
               Nie masz konta?{" "}
-              <Link to="/register" className="text-[#FFD700] hover:underline" style={{ fontWeight: 700 }}>
+              <Link to="/register" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
                 Zarejestruj się
               </Link>
             </p>

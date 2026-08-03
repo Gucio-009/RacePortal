@@ -38,9 +38,9 @@ export function ForgotPasswordPage() {
     >
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <Flag className="w-16 h-16 text-[#FFD700] mx-auto mb-4" />
+          <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
           <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "32px", fontWeight: 900 }}>
-            RESET <span className="text-[#FFD700]">HASŁA</span>
+            RESET <span className="text-[var(--race-accent)]">HASŁA</span>
           </h1>
           <p className="text-[#9ca3af]">Podaj email powiązany z kontem</p>
         </div>
@@ -52,11 +52,11 @@ export function ForgotPasswordPage() {
                 Sprawdź skrzynkę
               </p>
               <p className="text-[#9ca3af]" style={{ fontSize: "14px" }}>
-                Jeśli konto z adresem <span className="text-[#FFD700]">{email}</span> istnieje, wysłaliśmy instrukcję
+                Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje, wysłaliśmy instrukcję
                 resetu hasła.
               </p>
               <Link to="/login">
-                <Button className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12" style={{ fontWeight: 800 }}>
+                <Button className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12" style={{ fontWeight: 800 }}>
                   Wróć do logowania
                 </Button>
               </Link>
@@ -83,12 +83,12 @@ export function ForgotPasswordPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 h-12"
+                className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
                 {isLoading ? "WYSYŁANIE..." : "WYŚLIJ LINK"}
               </Button>
-              <Link to="/login" className="flex items-center justify-center gap-2 text-[#9ca3af] hover:text-[#FFD700]">
+              <Link to="/login" className="flex items-center justify-center gap-2 text-[#9ca3af] hover:text-[var(--race-accent)]">
                 <ArrowLeft className="w-4 h-4" />
                 Wróć do logowania
               </Link>

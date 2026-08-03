@@ -64,12 +64,14 @@ function defaultSettings(): UserSettings {
 
 export function applyUserSettings(settings: UserSettings) {
   const accent = ACCENTS[settings.accent]?.color ?? "#FFD700";
-  document.documentElement.style.setProperty("--race-accent", accent);
-  document.documentElement.dataset.pitStop = settings.pitStopMode ? "on" : "off";
+  const root = document.documentElement;
+  root.style.setProperty("--race-accent", accent);
+  root.dataset.accent = settings.accent;
+  root.dataset.pitStop = settings.pitStopMode ? "on" : "off";
   if (settings.pitStopMode) {
-    document.documentElement.style.setProperty("--race-motion", "0.01s");
+    root.style.setProperty("--race-motion", "0.01ms");
   } else {
-    document.documentElement.style.removeProperty("--race-motion");
+    root.style.removeProperty("--race-motion");
   }
 }
 
@@ -116,6 +118,7 @@ export function SettingsPage() {
 
   const setAccent = (accent: AccentTheme) => {
     persist({ ...settings, accent }, `Akcent: ${ACCENTS[accent].label}`);
+    if (settings.pitStopMode) return;
     confetti({
       particleCount: 48,
       spread: 55,
@@ -130,14 +133,21 @@ export function SettingsPage() {
   };
 
   const celebrate = () => {
-    confetti({ particleCount: 120, spread: 70, origin: { y: 0.6 }, colors: ["#FFD700", "#fff", "#FF3B3B"] });
+    if (!settings.pitStopMode) {
+      confetti({
+        particleCount: 120,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: [ACCENTS[settings.accent].color, "#fff", "#FF3B3B"],
+      });
+    }
     toast.message("Checkered flag!", { description: "Ustawienia zapisane lokalnie w tej przeglądarce." });
   };
 
   if (!ready) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
-        <Loader2 className="w-8 h-8 animate-spin text-[#FFD700]" />
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
       </div>
     );
   }
@@ -149,7 +159,7 @@ export function SettingsPage() {
     <div className="min-h-screen bg-[#121212]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="mb-8">
-          <p className="text-[#FFD700] font-['Orbitron'] tracking-widest text-sm mb-2">KOKPIT</p>
+          <p className="text-[var(--race-accent)] font-['Orbitron'] tracking-widest text-sm mb-2">KOKPIT</p>
           <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
             USTAWIENIA
           </h1>
@@ -158,12 +168,12 @@ export function SettingsPage() {
             przeglądarce.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+            <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
               <Trophy className="w-3 h-3 mr-1" />
               {roleLabel}
             </Badge>
             {settings.teamFlair ? (
-              <Badge variant="outline" className="border-[#FFD700] text-[#FFD700]">
+              <Badge variant="outline" className="border-[var(--race-accent)] text-[var(--race-accent)]">
                 <Flame className="w-3 h-3 mr-1" />
                 {settings.teamFlair}
               </Badge>
@@ -175,13 +185,13 @@ export function SettingsPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
-                <Bell className="w-5 h-5 text-[#FFD700]" />
+                <Bell className="w-5 h-5 text-[var(--race-accent)]" />
                 Powiadomienia
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <SettingRow
-                icon={<Shield className="w-4 h-4 text-[#FFD700]" />}
+                icon={<Shield className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Alerty e-mail"
                 desc="Potwierdzenia zgłoszeń i statusów (Mailpit w dev)"
                 checked={settings.emailAlerts}
@@ -190,7 +200,7 @@ export function SettingsPage() {
                 }
               />
               <SettingRow
-                icon={<Gauge className="w-4 h-4 text-[#FFD700]" />}
+                icon={<Gauge className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Przypomnienia o starcie"
                 desc="Przypominaj o nadchodzących wydarzeniach"
                 checked={settings.startReminders}
@@ -202,7 +212,7 @@ export function SettingsPage() {
                 }
               />
               <SettingRow
-                icon={<Volume2 className="w-4 h-4 text-[#FFD700]" />}
+                icon={<Volume2 className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Dźwięki UI"
                 desc="Krótki bip przy przełączaniu (demo)"
                 checked={settings.soundFx}
@@ -214,7 +224,7 @@ export function SettingsPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
-                <Palette className="w-5 h-5 text-[#FFD700]" />
+                <Palette className="w-5 h-5 text-[var(--race-accent)]" />
                 Wygląd
               </CardTitle>
             </CardHeader>
@@ -229,8 +239,9 @@ export function SettingsPage() {
                       type="button"
                       onClick={() => setAccent(key)}
                       className={`rounded-lg border p-4 text-left transition-all ${
-                        active ? "border-[#FFD700] bg-[#221f10]" : "border-[#2a2a2a] bg-[#121212] hover:border-[#444]"
+                        active ? "bg-[#161616]" : "border-[#2a2a2a] bg-[#121212] hover:border-[#444]"
                       }`}
+                      style={active ? { borderColor: item.color, boxShadow: `0 0 0 1px ${item.color}` } : undefined}
                     >
                       <div className="w-8 h-8 rounded-full mb-3 border border-white/20" style={{ background: item.color }} />
                       <div className="text-white font-semibold mb-1">{item.label}</div>
@@ -241,7 +252,7 @@ export function SettingsPage() {
               </div>
 
               <SettingRow
-                icon={<Moon className="w-4 h-4 text-[#FFD700]" />}
+                icon={<Moon className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Tryb pit-stop"
                 desc="Minimalne animacje — jak w boksach przed wyjazdem"
                 checked={settings.pitStopMode}
@@ -255,7 +266,7 @@ export function SettingsPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-['Orbitron']">
-                <Sparkles className="w-5 h-5 text-[#FFD700]" />
+                <Sparkles className="w-5 h-5 text-[var(--race-accent)]" />
                 Flair zespołu
               </CardTitle>
             </CardHeader>
@@ -279,7 +290,7 @@ export function SettingsPage() {
                 </div>
                 <Button
                   onClick={saveFlair}
-                  className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 self-end"
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 self-end"
                   style={{ fontWeight: 700 }}
                 >
                   ZAPISZ FLAIR
@@ -291,7 +302,7 @@ export function SettingsPage() {
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={celebrate}
-              className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90"
+              className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
               style={{ fontWeight: 700 }}
             >
               <Sparkles className="w-4 h-4 mr-2" />

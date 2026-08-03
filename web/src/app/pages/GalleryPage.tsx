@@ -69,7 +69,7 @@ export function GalleryPage() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "40px", fontWeight: 900 }}>
-              GALERIA <span className="text-[#FFD700]">(ODŁOŻONA)</span>
+              GALERIA <span className="text-[var(--race-accent)]">(ODŁOŻONA)</span>
             </h1>
             <p className="text-[#9ca3af] max-w-2xl">
               Zgodnie z uwagami przeglądu — rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
@@ -104,7 +104,7 @@ export function GalleryPage() {
               key={item.id}
               type="button"
               onClick={() => setSelectedId(item.id)}
-              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#2a2a2a] hover:border-[#FFD700] transition-all text-left"
+              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#2a2a2a] hover:border-[var(--race-accent)] transition-all text-left"
             >
               <ImageWithFallback
                 src={item.image}
@@ -113,7 +113,7 @@ export function GalleryPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <Badge className="bg-[#FFD700] text-[#121212] mb-2" style={{ fontWeight: 700 }}>
+                <Badge className="bg-[var(--race-accent)] text-[#121212] mb-2" style={{ fontWeight: 700 }}>
                   {item.category}
                 </Badge>
                 <p className="text-white" style={{ fontWeight: 700 }}>

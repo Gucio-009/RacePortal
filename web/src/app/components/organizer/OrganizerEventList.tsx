@@ -25,7 +25,7 @@ export function OrganizerEventList({
   if (loading) {
     return (
       <div className="text-center py-12 text-[#9ca3af]">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#FFD700]" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
         Ładowanie...
       </div>
     );
@@ -46,12 +46,12 @@ export function OrganizerEventList({
           <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="flex flex-wrap gap-2 mb-2">
-                <Badge className="bg-[#FFD700] text-[#121212]">{event.category}</Badge>
+                <Badge className="bg-[var(--race-accent)] text-[#121212]">{event.category}</Badge>
                 <Badge variant="outline" className="border-[#2a2a2a] text-white">
                   {eventStatusLabel(event.status)}
                 </Badge>
                 {event.paid && (
-                  <Badge variant="outline" className="border-[#FFD700] text-[#FFD700]">
+                  <Badge variant="outline" className="border-[var(--race-accent)] text-[var(--race-accent)]">
                     Płatne
                   </Badge>
                 )}
@@ -80,7 +80,7 @@ export function OrganizerEventList({
               <Button
                 variant="outline"
                 onClick={() => onLoadRegistrations(event.id)}
-                className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
                 style={{ fontWeight: 700 }}
               >
                 Zobacz zgłoszenia

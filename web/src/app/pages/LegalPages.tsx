@@ -23,7 +23,7 @@ function LegalLayout({
         </div>
         <div className="mt-8">
           <Link to="/register">
-            <Button className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90" style={{ fontWeight: 700 }}>
+            <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>
               Wróć do rejestracji
             </Button>
           </Link>

@@ -83,7 +83,7 @@ export function EventsMapView({
           </Marker>
         ))}
         {polyline && polyline.length > 1 && (
-          <Polyline positions={polyline} pathOptions={{ color: "#FFD700", weight: 4, opacity: 0.85 }} />
+          <Polyline positions={polyline} pathOptions={{ color: "var(--race-accent)", weight: 4, opacity: 0.85 }} />
         )}
       </MapContainer>
     </div>

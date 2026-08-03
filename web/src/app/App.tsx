@@ -9,10 +9,25 @@ function SettingsBootstrap() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("raceportal_settings");
-      if (!raw) return;
-      applyUserSettings(JSON.parse(raw));
+      const parsed = raw ? JSON.parse(raw) : {};
+      applyUserSettings({
+        emailAlerts: true,
+        startReminders: true,
+        soundFx: false,
+        pitStopMode: false,
+        accent: "gold",
+        teamFlair: "",
+        ...parsed,
+      });
     } catch {
-      /* ignore */
+      applyUserSettings({
+        emailAlerts: true,
+        startReminders: true,
+        soundFx: false,
+        pitStopMode: false,
+        accent: "gold",
+        teamFlair: "",
+      });
     }
   }, []);
   return null;

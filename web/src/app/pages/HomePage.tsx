@@ -43,7 +43,7 @@ export function HomePage() {
             className="font-['Orbitron'] mb-6 tracking-wider text-white"
             style={{ fontSize: "72px", fontWeight: 900, lineHeight: "1.2" }}
           >
-            DOŁĄCZ DO <span className="text-[#FFD700]">WYŚCIGU</span>
+            DOŁĄCZ DO <span className="text-[var(--race-accent)]">WYŚCIGU</span>
           </h1>
           <p className="mb-8 text-[#9ca3af] max-w-2xl mx-auto" style={{ fontSize: "20px", fontWeight: 500 }}>
             Twoje centrum motoryzacyjnych emocji. Śledź najważniejsze polskie wydarzenia wyścigowe, sprawdzaj
@@ -52,7 +52,7 @@ export function HomePage() {
           <div className="flex gap-4 justify-center flex-wrap">
             <Link to="/register">
               <Button
-                className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 px-8 py-6"
+                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6"
                 style={{ fontSize: "18px", fontWeight: 800 }}
               >
                 ZAREJESTRUJ SIĘ
@@ -62,7 +62,7 @@ export function HomePage() {
             <a href="#o-nas">
               <Button
                 variant="outline"
-                className="border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212] px-8 py-6"
+                className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6"
                 style={{ fontSize: "18px", fontWeight: 800 }}
               >
                 POZNAJ WIĘCEJ
@@ -78,14 +78,14 @@ export function HomePage() {
         <div className="flex items-center justify-between mb-12 gap-4 flex-wrap">
           <div>
             <h2 className="font-['Orbitron'] mb-2" style={{ fontSize: "42px", fontWeight: 800 }}>
-              NADCHODZĄCE <span className="text-[#FFD700]">WYDARZENIA</span>
+              NADCHODZĄCE <span className="text-[var(--race-accent)]">WYDARZENIA</span>
             </h2>
             <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
               Nie przegap najgorętszych polskich wyścigów sezonu
             </p>
           </div>
           <Link to="/wydarzenia">
-            <Button variant="ghost" className="text-[#FFD700] hover:bg-[#2a2a2a]" style={{ fontWeight: 700 }}>
+            <Button variant="ghost" className="text-[var(--race-accent)] hover:bg-[#2a2a2a]" style={{ fontWeight: 700 }}>
               ZOBACZ WSZYSTKIE
               <ChevronRight className="ml-2 w-5 h-5" />
             </Button>
@@ -103,8 +103,8 @@ export function HomePage() {
             {upcomingEvents.map((event) => (
               <Card
                 key={event.id}
-                className={`bg-[#1a1a1a] overflow-hidden hover:border-[#FFD700] transition-all duration-300 group ${
-                  event.paid ? "border-[#FFD700]/55" : "border-[#2a2a2a]"
+                className={`bg-[#1a1a1a] overflow-hidden hover:border-[var(--race-accent)] transition-all duration-300 group ${
+                  event.paid ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)]" : "border-[#2a2a2a]"
                 }`}
               >
                 <div className="relative h-48 overflow-hidden">
@@ -115,14 +115,14 @@ export function HomePage() {
                   />
                   <PaidEventBadge event={event} variant="overlay" />
                   <div
-                    className="absolute top-4 right-4 bg-[#FFD700] text-[#121212] px-3 py-1 rounded"
+                    className="absolute top-4 right-4 bg-[var(--race-accent)] text-[#121212] px-3 py-1 rounded"
                     style={{ fontWeight: 700 }}
                   >
                     {event.category}
                   </div>
                 </div>
                 <CardContent className="p-6">
-                  <div className="flex items-center gap-2 text-[#FFD700] mb-3">
+                  <div className="flex items-center gap-2 text-[var(--race-accent)] mb-3">
                     <Calendar className="w-4 h-4" />
                     <span style={{ fontSize: "14px", fontWeight: 700 }}>{event.dateLabel}</span>
                   </div>
@@ -135,7 +135,7 @@ export function HomePage() {
                   </div>
                   <Link to={`/wydarzenia/${event.id}`}>
                     <Button
-                      className="w-full bg-transparent border border-[#FFD700] text-[#FFD700] hover:bg-[#FFD700] hover:text-[#121212]"
+                      className="w-full bg-transparent border border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
                       style={{ fontWeight: 700 }}
                     >
                       SPRAWDŹ SZCZEGÓŁY
@@ -152,7 +152,7 @@ export function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12 max-w-3xl mx-auto">
             <h2 className="font-['Orbitron'] text-white mb-4" style={{ fontSize: "36px", fontWeight: 800 }}>
-              O <span className="text-[#FFD700]">RACEPORTAL</span>
+              O <span className="text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
             <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
               Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów —
@@ -161,7 +161,7 @@ export function HomePage() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
             <div>
-              <div className="font-['Orbitron'] text-[#FFD700] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
                 250+
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
@@ -169,7 +169,7 @@ export function HomePage() {
               </p>
             </div>
             <div>
-              <div className="font-['Orbitron'] text-[#FFD700] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
                 50K+
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
@@ -177,7 +177,7 @@ export function HomePage() {
               </p>
             </div>
             <div>
-              <div className="font-['Orbitron'] text-[#FFD700] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
+              <div className="font-['Orbitron'] text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 900 }}>
                 24/7
               </div>
               <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
@@ -187,7 +187,7 @@ export function HomePage() {
           </div>
           <div className="text-center mt-10">
             <Link to="/wydarzenia">
-              <Button className="bg-[#FFD700] text-[#121212] hover:bg-[#ffd700]/90 px-8" style={{ fontWeight: 800 }}>
+              <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8" style={{ fontWeight: 800 }}>
                 PRZEJDŹ DO KALENDARZA
               </Button>
             </Link>

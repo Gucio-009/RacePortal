@@ -91,7 +91,7 @@ export function OrganizerEventFormDialog({
               <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
                 {EVENT_CATEGORY_GROUPS.map((g) => (
                   <SelectGroup key={g.group}>
-                    <SelectLabel className="text-[#FFD700]">{g.group}</SelectLabel>
+                    <SelectLabel className="text-[var(--race-accent)]">{g.group}</SelectLabel>
                     {g.items.map((cat) => (
                       <SelectItem key={cat} value={cat}>
                         {cat}
@@ -263,7 +263,7 @@ export function OrganizerEventFormDialog({
           <div className="space-y-2 sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Label className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#FFD700]" />
+                <MapPin className="w-4 h-4 text-[var(--race-accent)]" />
                 Lokalizacja na mapie
               </Label>
               {form.lat && form.lng ? (
@@ -311,8 +311,8 @@ export function OrganizerEventFormDialog({
                     onClick={() => setForm({ ...form, imageUrl: img.url, imageCustom: false })}
                     className={`relative aspect-video overflow-hidden rounded border transition ${
                       selected
-                        ? "border-[#FFD700] ring-1 ring-[#FFD700]"
-                        : "border-[#2a2a2a] hover:border-[#FFD700]/50"
+                        ? "border-[var(--race-accent)] ring-1 ring-[var(--race-accent)]"
+                        : "border-[#2a2a2a] hover:border-[var(--race-accent)]/50"
                     }`}
                     title={img.label}
                   >
@@ -353,7 +353,7 @@ export function OrganizerEventFormDialog({
 
           {form.acceptRegistrations && (
             <div className="sm:col-span-2 space-y-3 border border-[#2a2a2a] rounded-md p-3">
-              <p className="text-sm text-[#FFD700]" style={{ fontWeight: 700 }}>
+              <p className="text-sm text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                 Wymagania dla kierowców
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -441,7 +441,7 @@ export function OrganizerEventFormDialog({
                       onClick={() => setForm({ ...form, entryFee: fee, entryFeeOther: false })}
                       className={
                         !form.entryFeeOther && form.entryFee === fee
-                          ? "border-[#FFD700] bg-[#FFD700]/15 text-[#FFD700]"
+                          ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
                           : "border-[#2a2a2a] text-white"
                       }
                     >
@@ -455,7 +455,7 @@ export function OrganizerEventFormDialog({
                     onClick={() => setForm({ ...form, entryFeeOther: true, entryFee: "" })}
                     className={
                       form.entryFeeOther
-                        ? "border-[#FFD700] bg-[#FFD700]/15 text-[#FFD700]"
+                        ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
                         : "border-[#2a2a2a] text-white"
                     }
                   >
@@ -484,7 +484,7 @@ export function OrganizerEventFormDialog({
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="border-[#2a2a2a] text-[#FFD700]"
+                  className="border-[#2a2a2a] text-[var(--race-accent)]"
                   onClick={() => setForm({ ...form, bankAccount: DEMO_BANK_ACCOUNT })}
                 >
                   Wstaw konto demo
@@ -531,7 +531,7 @@ export function OrganizerEventFormDialog({
 
           <p className="sm:col-span-2 text-xs text-[#9ca3af] leading-relaxed">
             Dodając wydarzenie, potwierdzasz, że dane organizatora i wydarzenia będą przetwarzane zgodnie z{" "}
-            <a href="/privacy" className="text-[#FFD700] hover:underline">
+            <a href="/privacy" className="text-[var(--race-accent)] hover:underline">
               polityką prywatności
             </a>{" "}
             (RODO) wyłącznie w celu publikacji i obsługi zgłoszeń.
@@ -541,7 +541,7 @@ export function OrganizerEventFormDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#2a2a2a] text-white">
             Anuluj
           </Button>
-          <Button onClick={onSave} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+          <Button onClick={onSave} disabled={saving} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
             {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Utwórz"}
           </Button>
         </DialogFooter>
