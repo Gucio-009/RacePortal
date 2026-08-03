@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import { Field, PrimaryButton, ErrorText, ToggleRow } from "../components/ui";
 import { colors } from "../theme/colors";
-import type { AuthStackParamList } from "../navigation/types";
+import type { RootStackParamList } from "../navigation/types";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "Register">;
+type Props = NativeStackScreenProps<RootStackParamList, "Register">;
 
 export function RegisterScreen({ navigation }: Props) {
   const { register, verifyEmail, resendCode } = useAuth();
@@ -30,8 +30,8 @@ export function RegisterScreen({ navigation }: Props) {
       setError("Hasła muszą być takie same");
       return;
     }
-    if (password.length < 8) {
-      setError("Hasło min. 8 znaków");
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[^A-Za-z0-9]/.test(password)) {
+      setError("Hasło: min. 8 znaków, wielka litera, cyfra i znak specjalny");
       return;
     }
     setBusy(true);

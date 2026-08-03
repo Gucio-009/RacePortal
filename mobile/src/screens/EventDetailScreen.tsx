@@ -15,6 +15,7 @@ import { api, ApiError } from "../api/client";
 import type { ApiEvent, Car } from "../api/types";
 import { DEFAULT_IMAGE } from "../api/types";
 import { useAuth } from "../context/AuthContext";
+import { partitionCarsForEvent } from "../lib/carMatch";
 import { colors } from "../theme/colors";
 import type { EventsStackParamList, MoreStackParamList } from "../navigation/types";
 
@@ -39,7 +40,8 @@ export function EventDetailScreen({ route }: Props) {
       .then(([ev, garage]) => {
         setEvent(ev);
         setCars(garage);
-        setCarId(garage[0]?.id ?? null);
+        const { recommended, other } = partitionCarsForEvent(garage, ev.category);
+        setCarId(recommended[0]?.id ?? other[0]?.id ?? null);
       })
       .catch(() => setEvent(null))
       .finally(() => setLoading(false));
@@ -107,20 +109,44 @@ export function EventDetailScreen({ route }: Props) {
         )}
         <Text style={styles.desc}>{event.description}</Text>
 
-        {cars.length > 0 ? (
+        {cars.length > 0 && event ? (
           <View style={{ marginTop: 16, gap: 8 }}>
             <Text style={styles.section}>Auto z garażu</Text>
-            {cars.map((car) => (
-              <Pressable
-                key={car.id}
-                style={[styles.carChip, carId === car.id && styles.carChipOn]}
-                onPress={() => setCarId(car.id)}
-              >
-                <Text style={styles.carText}>
-                  {car.make} {car.model}
-                </Text>
-              </Pressable>
-            ))}
+            {(() => {
+              const { recommended, other } = partitionCarsForEvent(cars, event.category);
+              return (
+                <>
+                  {recommended.length > 0 ? (
+                    <Text style={styles.meta}>Pasujące do kategorii</Text>
+                  ) : null}
+                  {recommended.map((car) => (
+                    <Pressable
+                      key={car.id}
+                      style={[styles.carChip, carId === car.id && styles.carChipOn]}
+                      onPress={() => setCarId(car.id)}
+                    >
+                      <Text style={styles.carText}>
+                        ★ {car.make} {car.model}
+                        {car.className ? ` · ${car.className}` : ""}
+                      </Text>
+                    </Pressable>
+                  ))}
+                  {other.length > 0 ? <Text style={styles.meta}>Pozostałe</Text> : null}
+                  {other.map((car) => (
+                    <Pressable
+                      key={car.id}
+                      style={[styles.carChip, carId === car.id && styles.carChipOn]}
+                      onPress={() => setCarId(car.id)}
+                    >
+                      <Text style={styles.carText}>
+                        {car.make} {car.model}
+                        {car.className ? ` · ${car.className}` : ""}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </>
+              );
+            })()}
           </View>
         ) : null}
 

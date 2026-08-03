@@ -36,13 +36,17 @@ export function LoginPage() {
   };
 
   const handleSocialLogin = async (provider: "google" | "facebook") => {
+    if (!import.meta.env.DEV) {
+      toast.error("Logowanie Google/Facebook będzie dostępne wkrótce");
+      return;
+    }
     setIsLoading(true);
     try {
       await socialLogin(provider);
-      toast.success(`Zalogowano przez ${provider === "google" ? "Google" : "Facebook"}`);
+      toast.success("Zalogowano kontem demo (tryb deweloperski)");
       navigate("/dashboard");
-    } catch {
-      toast.error("Nie udało się zalogować");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nie udało się zalogować");
     } finally {
       setIsLoading(false);
     }
@@ -196,7 +200,9 @@ export function LoginPage() {
               </Link>
             </p>
             <p className="text-[#6b7280] text-xs">
-              Demo: test@wp.pl / test123 · admin@raceportal.pl / admin123 · org@raceportal.pl / org123
+              {import.meta.env.DEV
+                ? "DEV — demo: test@wp.pl / test123 · admin@raceportal.pl / admin123 · org@raceportal.pl / org123"
+                : null}
             </p>
           </div>
         </div>

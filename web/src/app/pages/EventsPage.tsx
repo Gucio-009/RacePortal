@@ -37,6 +37,7 @@ export function EventsPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PaginatedEvents | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
@@ -49,12 +50,15 @@ export function EventsPage() {
     api.get<Car[]>("/api/garage").then(setCars).catch(() => setCars([]));
   }, [isAuthenticated]);
 
-  const limit = view === "list" ? 12 : 50;
+  // Lista: paginacja 12. Mapa/kalendarz: większy limit, zawsze page=1 (żeby nie „gubić” eventów).
+  const limit = view === "list" ? 12 : 200;
+  const fetchPage = view === "list" ? page : 1;
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true);
-      const params = new URLSearchParams({ page: String(page), limit: String(limit) });
+      setLoadError(null);
+      const params = new URLSearchParams({ page: String(fetchPage), limit: String(limit) });
       if (query.trim()) params.set("q", query.trim());
       if (category !== "all") params.set("category", category);
       if (paidFilter !== "all") params.set("paid", paidFilter);
@@ -67,12 +71,18 @@ export function EventsPage() {
 
       api
         .get<PaginatedEvents>(`/api/events?${params}`)
-        .then(setData)
-        .catch(() => setData(null))
+        .then((res) => {
+          setData(res);
+          setLoadError(null);
+        })
+        .catch(() => {
+          setData(null);
+          setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+        })
         .finally(() => setLoading(false));
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, page, limit, view]);
+  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, fetchPage, limit, view]);
 
   useEffect(() => {
     setPage(1);
@@ -261,6 +271,8 @@ export function EventsPage() {
 
         {loading ? (
           <p className="text-center text-[#9ca3af] py-16">Ładowanie wydarzeń...</p>
+        ) : loadError ? (
+          <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : view === "map" ? (
           markers.length === 0 ? (
             <p className="text-center text-[#9ca3af] py-16">Brak wydarzeń z GPS dla wybranych filtrów.</p>

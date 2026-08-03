@@ -105,6 +105,12 @@ Recenzenci mylili **Expo `:8082`** z usługą Compose oraz **MySQL `:3307`** z H
 - Windows: **Android Emulator** (`a`) lub Expo web — bez iOS Simulatora
 - [`mobile/README.md`](../mobile/README.md) rozdzielone na sekcje Mac / Windows
 
+### Etap G — Code review + gość + carMatch (2026-08-03)
+
+**Było:** wymuszony login; auta bez dopasowania kategorii; credentials w polach.  
+**Jest:** przeglądanie Eventów jako gość; `carMatch`; puste pola logowania; E2E zaktualizowane.  
+Szczegóły: [`review-2026-08-03.md`](./review-2026-08-03.md).
+
 ---
 
 ## 4. Architektura (stan obecny)

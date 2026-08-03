@@ -1,37 +1,48 @@
 # Wyniki testów automatycznych — RacePortal
 
-**Data uruchomienia (UTC):** 2026-08-01T14:35:22Z  
+**Data uruchomienia:** 2026-08-03 (~16:40 lokalnie)  
 **Branch:** `wojtek`  
-**Backend:** Spring Boot 3.3 + MySQL 8 + JUnit 5 / MockMvc
+**Pełny raport CR:** [`../review-2026-08-03.md`](../review-2026-08-03.md)
 
-## Preflight środowiska
+## Preflight
 
-- API: `{"db":"up","ok":true}` (Compose)
-- MySQL: `:3307` (kontener `raceportal-mysql`)
-- Web: `:8081` (proxy `/api`)
+- API health: `db: up` (po ewentualnym `docker compose restart api` jeśli Maven zrzucił schemat)
+- Web Compose: `:8081`
+- Expo web: `:8082` (osobno)
 
-## 1. Testy API (JUnit / MockMvc)
+## 1. API (JUnit / MockMvc)
 
-**Status: PASS**
+**Status: PASS — 22 / 22**
 
+| Klasa | TC |
+|-------|-----|
+| `ApiIntegrationTest` | 16 |
+| `JwtServiceTest` + `GlobalExceptionHandlerTest` | 6 |
+
+Uruchomienie: `npm run test:api`
+
+**Uwaga:** kontener Maven może wyczyścić tabele w DB Compose — po teście zrestartuj `api`.
+
+## 2. Mobile unit (Vitest)
+
+**Status: PASS — 2 / 2**
+
+```bash
+npm run test:mobile-unit
 ```
-Tests run: 20, Failures: 0, Errors: 0, Skipped: 0
-BUILD SUCCESS
-```
 
-| Klasa | Liczba TC | Zakres |
-|-------|-----------|--------|
-| `ApiIntegrationTest` | 14 | health, login 3 ról, 401, register/409, me, PATCH/hasło, events, org→admin approve, garage+403, registrations, admin/apps, maps, walidacja 400, RBAC 403 |
-| `JwtServiceTest` | 2 | generowanie/parsowanie JWT, invalid token |
-| `GlobalExceptionHandlerTest` | 4 | ApiException, 403, 401, 500 |
+## 3. Web E2E (Playwright · web-desktop)
 
-Log: `docs/testy/wyniki/api-surefire.log`  
-Uruchomienie: `npm run test:api` → `scripts/test-api.sh` (lokalny `./mvnw` lub Maven w Dockerze + Compose MySQL)
+**Status: PASS — 12 / 12**
 
-## 2. E2E / mobile
+TC-WEB-01…12 (publiczne, auth, RBAC). Mapa: tab „Mapa” na `/wydarzenia`.
 
-Playwright i Vitest mobile — bez zmian ścieżek; po migracji zalecany smoke: `npx playwright test tests/e2e/web.spec.ts` przy healthy stacku.
+## 4. Mobile E2E (Playwright · mobile-expo)
+
+**Status: PASS — 5 / 5**
+
+Gość → logowanie → lista/detal → wylogowanie (tryb gościa).
 
 ## Werdykt
 
-**Testy API Spring (20/20): PASS**
+**API 22/22 · mobile unit 2/2 · web E2E 12/12 · mobile E2E 5/5 — PASS**

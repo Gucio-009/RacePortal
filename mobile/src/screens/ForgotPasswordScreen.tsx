@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { api, ApiError } from "../api/client";
 import { Field, PrimaryButton, ErrorText } from "../components/ui";
 import { colors } from "../theme/colors";
-import type { AuthStackParamList } from "../navigation/types";
+import type { RootStackParamList } from "../navigation/types";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "ForgotPassword">;
+type Props = NativeStackScreenProps<RootStackParamList, "ForgotPassword">;
 
 export function ForgotPasswordScreen({ navigation }: Props) {
   const [email, setEmail] = useState("");

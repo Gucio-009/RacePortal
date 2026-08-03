@@ -18,10 +18,11 @@ import { DEFAULT_IMAGE } from "../api/types";
 import { useAuth } from "../context/AuthContext";
 import { ScreenHeader, GhostButton } from "../components/ui";
 import { colors } from "../theme/colors";
-import type { EventsStackParamList } from "../navigation/types";
+import type { EventsStackParamList, RootStackParamList } from "../navigation/types";
 
 export function EventsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
+  const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { user, logout } = useAuth();
   const [items, setItems] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,7 +66,13 @@ export function EventsScreen() {
       <ScreenHeader
         title="WYDARZENIA"
         subtitle={user?.username ?? "Gość"}
-        right={user ? <GhostButton label="Wyloguj" onPress={logout} /> : null}
+        right={
+          user ? (
+            <GhostButton label="Wyloguj" onPress={logout} />
+          ) : (
+            <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} />
+          )
+        }
       />
 
       <View style={styles.filters}>

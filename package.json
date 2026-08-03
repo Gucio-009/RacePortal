@@ -11,7 +11,7 @@
     "test:e2e": "playwright test",
     "test:e2e:web": "playwright test tests/e2e/web.spec.ts",
     "test:e2e:mobile": "playwright test tests/e2e/mobile.spec.ts",
-    "test:mobile-unit": "npm --prefix mobile exec vitest run",
+    "test:mobile-unit": "npm --prefix mobile run test",
     "test:report": "bash scripts/run-tests.sh"
   },
   "devDependencies": {

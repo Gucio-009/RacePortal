@@ -92,6 +92,7 @@ function buildPayload(form: typeof emptyForm) {
 export function GaragePage() {
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -99,10 +100,17 @@ export function GaragePage() {
 
   const loadCars = () => {
     setLoading(true);
+    setLoadError(null);
     api
       .get<GarageCar[]>("/api/garage")
-      .then(setCars)
-      .catch(() => setCars([]))
+      .then((items) => {
+        setCars(items);
+        setLoadError(null);
+      })
+      .catch((e) => {
+        setCars([]);
+        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać garażu");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -185,6 +193,8 @@ export function GaragePage() {
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#FFD700]" />
             Ładowanie garażu...
           </div>
+        ) : loadError ? (
+          <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : cars.length === 0 ? (
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardContent className="py-16 text-center">

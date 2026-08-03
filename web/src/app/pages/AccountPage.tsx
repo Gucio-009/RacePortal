@@ -47,14 +47,9 @@ export function AccountPage() {
       toast.error("Nazwa użytkownika musi mieć min. 2 znaki");
       return;
     }
-    if (!email.trim() || !email.includes("@")) {
-      toast.error("Podaj poprawny adres e-mail");
-      return;
-    }
     setSavingProfile(true);
     const result = await updateProfile({
       username: username.trim(),
-      email: email.trim(),
       avatar: avatar.trim(),
       firstName: firstName.trim() || undefined,
       lastName: lastName.trim() || undefined,
@@ -64,9 +59,7 @@ export function AccountPage() {
     });
     setSavingProfile(false);
     if (result.ok) {
-      toast.success("Dane konta zapisane", {
-        description: email.trim() !== user?.email ? "Sprawdź Mailpit, jeśli zmieniłeś e-mail." : undefined,
-      });
+      toast.success("Dane konta zapisane");
     } else {
       toast.error(result.message || "Nie udało się zapisać");
     }
@@ -103,7 +96,7 @@ export function AccountPage() {
             <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
               DANE KONTA
             </h1>
-            <p className="text-[#9ca3af]">Zmień nazwę, e-mail, awatar lub hasło.</p>
+            <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło. E-mail jest tylko do odczytu.</p>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[#FFD700]">
@@ -144,9 +137,11 @@ export function AccountPage() {
                 <Input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  readOnly
+                  disabled
+                  className="bg-[#121212] border-[#2a2a2a] text-[#9ca3af]"
                 />
+                <p className="text-xs text-[#6b7280]">Zmiana e-maila nie jest jeszcze obsługiwana przez API.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">

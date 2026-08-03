@@ -151,6 +151,7 @@ export function OrganizerPanelPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -171,10 +172,17 @@ export function OrganizerPanelPage() {
 
   const loadEvents = () => {
     setLoading(true);
+    setLoadError(null);
     api
       .get<OrganizerEvent[]>("/api/organizer/events")
-      .then(setEvents)
-      .catch(() => setEvents([]))
+      .then((items) => {
+        setEvents(items);
+        setLoadError(null);
+      })
+      .catch((e) => {
+        setEvents([]);
+        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -341,6 +349,8 @@ export function OrganizerPanelPage() {
                 <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[#FFD700]" />
                 Ładowanie...
               </div>
+            ) : loadError ? (
+              <p className="text-red-400 text-center py-12">{loadError}</p>
             ) : events.length === 0 ? (
               <p className="text-[#9ca3af] text-center py-12">Brak wydarzeń. Utwórz pierwsze!</p>
             ) : (

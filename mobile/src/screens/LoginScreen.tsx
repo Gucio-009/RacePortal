@@ -10,17 +10,17 @@ import {
   Platform,
   ScrollView,
 } from "react-native";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
-import type { AuthStackParamList } from "../navigation/types";
+import type { RootStackParamList } from "../navigation/types";
 
-type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
-
-export function LoginScreen({ navigation }: Props) {
+export function LoginScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { login } = useAuth();
-  const [email, setEmail] = useState("test@wp.pl");
-  const [password, setPassword] = useState("test123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -28,8 +28,14 @@ export function LoginScreen({ navigation }: Props) {
     setBusy(true);
     setError(null);
     const res = await login(email.trim(), password);
-    if (!res.ok) setError(res.message || "Nie udało się zalogować");
+    if (!res.ok) {
+      setError(res.message || "Nie udało się zalogować");
+      setBusy(false);
+      return;
+    }
     setBusy(false);
+    if (navigation.canGoBack()) navigation.goBack();
+    else navigation.navigate("Main");
   };
 
   return (
@@ -73,7 +79,7 @@ export function LoginScreen({ navigation }: Props) {
           <Pressable onPress={() => navigation.navigate("Register")}>
             <Text style={styles.link}>Załóż konto</Text>
           </Pressable>
-          <Text style={styles.hint}>Demo: test@wp.pl / test123</Text>
+          {__DEV__ ? <Text style={styles.hint}>DEV demo: test@wp.pl / test123</Text> : null}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

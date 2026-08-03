@@ -4,11 +4,12 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import { ScreenHeader, GhostButton } from "../components/ui";
 import { colors } from "../theme/colors";
-import type { MoreStackParamList } from "../navigation/types";
+import type { MoreStackParamList, RootStackParamList } from "../navigation/types";
 
 export function MoreScreen() {
   const { user, logout } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<MoreStackParamList>>();
+  const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const Item = ({ label, onPress }: { label: string; onPress: () => void }) => (
     <Pressable style={styles.item} onPress={onPress}>
@@ -22,17 +23,25 @@ export function MoreScreen() {
       <ScreenHeader
         title="WIĘCEJ"
         subtitle={user ? `${user.username} · ${user.role}` : "Gość"}
-        right={user ? <GhostButton label="Wyloguj" onPress={logout} /> : null}
+        right={
+          user ? (
+            <GhostButton label="Wyloguj" onPress={logout} />
+          ) : (
+            <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} />
+          )
+        }
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
+        {!user ? <Item label="Zaloguj / załóż konto" onPress={() => rootNav.navigate("Login")} /> : null}
         {user ? <Item label="Konto" onPress={() => navigation.navigate("Account")} /> : null}
         {user ? <Item label="Ustawienia" onPress={() => navigation.navigate("Settings")} /> : null}
         <Item label="Wyniki / archiwum" onPress={() => navigation.navigate("Results")} />
         <Item label="Archiwum wydarzeń" onPress={() => navigation.navigate("Archive")} />
         <Item label="Galeria (później)" onPress={() => navigation.navigate("Gallery")} />
-        {user?.role === "USER" || !user ? (
+        {user?.role === "USER" ? (
           <Item label="Zostań organizatorem" onPress={() => navigation.navigate("BecomeOrganizer")} />
         ) : null}
+        {!user ? <Item label="Zostań organizatorem" onPress={() => rootNav.navigate("Login")} /> : null}
         {user?.role === "ORGANIZER" || user?.role === "ADMIN" ? (
           <Item label="Panel organizatora" onPress={() => navigation.navigate("Organizer")} />
         ) : null}

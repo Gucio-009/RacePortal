@@ -127,13 +127,17 @@ export function RegisterPage() {
       toast.error("Zaakceptuj regulamin przed kontynuacją");
       return;
     }
+    if (!import.meta.env.DEV) {
+      toast.error("Rejestracja Google/Facebook będzie dostępna wkrótce");
+      return;
+    }
     setIsLoading(true);
     try {
       await socialLogin(provider);
-      toast.success(`Konto utworzone przez ${provider === "google" ? "Google" : "Facebook"}`);
+      toast.success("Zalogowano kontem demo (tryb deweloperski)");
       navigate("/dashboard");
-    } catch {
-      toast.error("Nie udało się zarejestrować");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nie udało się zarejestrować");
     } finally {
       setIsLoading(false);
     }

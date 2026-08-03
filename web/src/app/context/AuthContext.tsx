@@ -168,6 +168,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const socialLogin = async (_provider: "google" | "facebook") => {
+    // OAuth nie jest podłączone — w DEV tylko jawny login demo (nie udawaj Google/Facebook).
+    if (!import.meta.env.DEV) {
+      throw new Error("Logowanie społecznościowe będzie dostępne wkrótce");
+    }
     const result = await login("test@wp.pl", "test123");
     if (!result.ok) {
       throw new Error(result.message || "Demo login failed");

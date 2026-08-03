@@ -31,6 +31,8 @@ export type MainTabParamList = {
 };
 
 export type RootStackParamList = {
-  Auth: undefined;
   Main: undefined;
+  Login: undefined;
+  Register: undefined;
+  ForgotPassword: undefined;
 };

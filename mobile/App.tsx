@@ -22,13 +22,13 @@ import { GalleryScreen } from "./src/screens/GalleryScreen";
 import { LegalScreen } from "./src/screens/LegalScreen";
 import { colors } from "./src/theme/colors";
 import type {
-  AuthStackParamList,
   EventsStackParamList,
   MainTabParamList,
   MoreStackParamList,
+  RootStackParamList,
 } from "./src/navigation/types";
 
-const AuthStack = createNativeStackNavigator<AuthStackParamList>();
+const RootStack = createNativeStackNavigator<RootStackParamList>();
 const EventsStack = createNativeStackNavigator<EventsStackParamList>();
 const MoreStack = createNativeStackNavigator<MoreStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -131,18 +131,8 @@ function MainTabs() {
   );
 }
 
-function AuthNavigator() {
-  return (
-    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-    </AuthStack.Navigator>
-  );
-}
-
 function RootNavigator() {
-  const { user, loading } = useAuth();
+  const { loading } = useAuth();
 
   if (loading) {
     return (
@@ -152,7 +142,19 @@ function RootNavigator() {
     );
   }
 
-  return user ? <MainTabs /> : <AuthNavigator />;
+  // Gość widzi Eventy (jak web); Login/Register jako stack overlay.
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      <RootStack.Screen name="Main" component={MainTabs} />
+      <RootStack.Screen name="Login" component={LoginScreen} options={{ presentation: "modal", headerShown: true, title: "Logowanie", ...stackScreenOptions }} />
+      <RootStack.Screen name="Register" component={RegisterScreen} options={{ presentation: "modal", headerShown: true, title: "Rejestracja", ...stackScreenOptions }} />
+      <RootStack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+        options={{ presentation: "modal", headerShown: true, title: "Reset hasła", ...stackScreenOptions }}
+      />
+    </RootStack.Navigator>
+  );
 }
 
 export default function App() {

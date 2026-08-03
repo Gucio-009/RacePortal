@@ -473,4 +473,18 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-03 10:55 — mobile Mac/Windows docs.*
+## 27. Code review web+mobile + testy + hardening (2026-08-03, 16:40)
+
+**Kontekst / argument:** potrzeba rzetelnego CR (spaghetti / auth / empty-vs-error) i zielonych testów API/web/mobile.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 16:40 | Fake OAuth, fałszywy e-mail save, mobile tylko po loginie, błędy API = pusta lista | Naprawy w web/mobile; gość mobile; mapa limit 200; carMatch mobile | Mniej footgunów i dryfu vs web |
+| 16:40 | E2E mapa na `/mapa`; mobile unit łapał Playwright | E2E tab Mapa; `test:mobile-unit` → `npm --prefix mobile run test` | Stabilne CI lokalne |
+| 16:40 | Brak raportu CR | [`docs/review-2026-08-03.md`](./review-2026-08-03.md) | Jedno miejsce: findings + wyniki testów |
+
+**Wyniki testów (ten przebieg):** API 22/22 · mobile unit 2/2 · web E2E 12/12 · mobile E2E 5/5.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

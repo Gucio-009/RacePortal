@@ -39,8 +39,8 @@ test.describe("Web — publiczne strony", () => {
   });
 
   test("TC-WEB-05: mapa wydarzeń", async ({ page }) => {
-    await page.goto("/mapa");
-    await expect(page.getByText(/MAPA/i).first()).toBeVisible();
+    await page.goto("/wydarzenia");
+    await page.getByRole("button", { name: /^Mapa$/i }).click();
     await expect(page.locator(".leaflet-container")).toBeVisible({ timeout: 20000 });
   });
 
