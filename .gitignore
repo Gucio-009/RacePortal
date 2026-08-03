@@ -6,6 +6,7 @@ dist
 .env.*
 !.env.example
 !backend/.env.example
+!web/.env.example
 web/node_modules
 web/dist
 backend/node_modules

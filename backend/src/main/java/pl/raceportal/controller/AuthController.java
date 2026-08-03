@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RestController;
 import pl.raceportal.dto.AuthDtos.AuthResponse;
 import pl.raceportal.dto.AuthDtos.ChangePasswordRequest;
 import pl.raceportal.dto.AuthDtos.ForgotPasswordRequest;
+import pl.raceportal.dto.AuthDtos.GoogleLoginRequest;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
 import pl.raceportal.dto.AuthDtos.MessageResponse;
+import pl.raceportal.dto.AuthDtos.OAuthProvidersResponse;
 import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
 import pl.raceportal.dto.AuthDtos.RegisterRequest;
 import pl.raceportal.dto.AuthDtos.RegisterResponse;
@@ -61,6 +63,16 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @GetMapping("/oauth/providers")
+    public ResponseEntity<OAuthProvidersResponse> oauthProviders() {
+        return ResponseEntity.ok(new OAuthProvidersResponse(authService.isGoogleOAuthEnabled()));
+    }
+
+    @PostMapping("/oauth/google")
+    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
+        return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
     }
 
     @PostMapping("/forgot-password")

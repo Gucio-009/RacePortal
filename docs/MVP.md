@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-03 09:20 (uwagi przeglądu: filtry+3 widoki, kategorie, admin, formularze, galeria deferred)
+**Ostatnia synchronizacja:** 2026-08-03 16:55 (Google OAuth prawdziwy; usunięty fake social login)
 
 ---
 
@@ -149,7 +149,7 @@ Logowanie: http://127.0.0.1:8081/login
 | Średni | Backup restore | Skrypt dump jest; restore nie jest udokumentowany / przetestowany formalnie |
 | Niski (odbiór formalnie 12–15) | #15 Aplikacja mobilna | Expo uproszczone OK; brak: PWA, publikacja w store, garaż/mapa/admin w mobile |
 | Niski | Perf / load | Brak formalnego testu 10k/50 RPS (osobny etap) |
-| Niski | Social OAuth | Przyciski Google/Facebook to UI demo, nie produkcyjny OAuth (i social jest **poza** MVP) |
+| Niski | Social OAuth | Google Sign-In opcjonalny (`GOOGLE_OAUTH_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID`); Facebook poza zakresem |
 
 ---
 
@@ -174,6 +174,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Migracja backendu na Spring Boot + MySQL | Zgodność ze stackiem DZW (React / Spring / MySQL / Docker / Maven) |
 | Seed płatnych wydarzeń + filtr `paid` + badge UI | Demo i UX przepływu płatnego (Dokumentacja); nie wymagane wprost w MPC 1–11 |
 | Proponowane / zalecane auta przy zapisie (`carMatch`) | UX dopasowania klasy auta do kategorii wyścigu + licznik dostępnych |
+| Google Sign-In (opcjonalny Client ID) | Prawdziwa weryfikacja ID tokenu; poza ścisłym MVP social |
 
 ---
 
@@ -238,4 +239,4 @@ Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+we
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-02 08:31.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-03 16:55.*

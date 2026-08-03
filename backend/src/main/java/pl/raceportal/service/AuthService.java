@@ -38,15 +38,18 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MailService mailService;
+    private final GoogleIdTokenService googleIdTokenService;
     private final SecureRandom random = new SecureRandom();
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
-                        PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService) {
+                        PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
+                        GoogleIdTokenService googleIdTokenService) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.mailService = mailService;
+        this.googleIdTokenService = googleIdTokenService;
     }
 
     /** Diagram "Proces Rejestracji (kierowca/użytkownik)": account is created unverified and a code is mailed. */
@@ -132,6 +135,80 @@ public class AuthService {
 
         String token = jwtService.generateToken(user);
         return new AuthResponse(token, toUserDto(user));
+    }
+
+    public boolean isGoogleOAuthEnabled() {
+        return googleIdTokenService.isConfigured();
+    }
+
+    /**
+     * Google Sign-In: weryfikacja ID tokenu, find-or-create użytkownika (email już verified przez Google),
+     * wydanie JWT RacePortal. Hasło lokalne to losowy hash — logowanie hasłem wymaga resetu/ustawienia.
+     */
+    @Transactional
+    public AuthResponse loginWithGoogle(String idToken) {
+        var payload = googleIdTokenService.verify(idToken);
+        String email = payload.getEmail().toLowerCase();
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+        String givenName = (String) payload.get("given_name");
+        String familyName = (String) payload.get("family_name");
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user == null) {
+            user = new User();
+            user.setEmail(email);
+            user.setUsername(uniqueUsernameFrom(email, name));
+            user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
+            user.setRole(Role.USER);
+            user.setEmailVerified(true);
+            user.setAvatar(picture != null && !picture.isBlank()
+                    ? picture
+                    : "https://api.dicebear.com/7.x/avataaars/svg?seed=" +
+                    URLEncoder.encode(email, StandardCharsets.UTF_8));
+            if (givenName != null) user.setFirstName(givenName);
+            if (familyName != null) user.setLastName(familyName);
+            user = userRepository.save(user);
+        } else {
+            if (!user.isEmailVerified()) {
+                user.setEmailVerified(true);
+                user.setEmailVerificationCode(null);
+                user.setEmailVerificationExpires(null);
+            }
+            if ((user.getAvatar() == null || user.getAvatar().isBlank()) && picture != null && !picture.isBlank()) {
+                user.setAvatar(picture);
+            }
+            user = userRepository.save(user);
+        }
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, toUserDto(user));
+    }
+
+    private String uniqueUsernameFrom(String email, String name) {
+        String base;
+        if (name != null && !name.isBlank()) {
+            base = name.trim().replaceAll("\\s+", "").replaceAll("[^\\p{L}\\p{N}_-]", "");
+        } else {
+            base = email.split("@")[0].replaceAll("[^\\p{L}\\p{N}_-]", "");
+        }
+        if (base.length() < 2) {
+            base = "user";
+        }
+        if (base.length() > 36) {
+            base = base.substring(0, 36);
+        }
+        String candidate = base;
+        int n = 0;
+        while (userRepository.existsByUsernameIgnoreCase(candidate)) {
+            n++;
+            String suffix = String.valueOf(n);
+            candidate = base.substring(0, Math.min(base.length(), 40 - suffix.length())) + suffix;
+            if (n > 1000) {
+                return "user" + random.nextInt(1_000_000);
+            }
+        }
+        return candidate;
     }
 
     @Transactional(readOnly = true)

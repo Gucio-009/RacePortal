@@ -487,4 +487,18 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 28. Usunięcie fake Google/Facebook + prawdziwy Google OAuth (2026-08-03, 16:55)
+
+**Kontekst / argument:** klik „Zaloguj przez Google” nawet w DEV logował na `test@wp.pl` — mylące i niebezpieczne jako nawyk. Facebook bez App ID nie da się „łatwo” podpiąć.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 16:55 | Fake `socialLogin` → `test@wp.pl` (DEV) | Usunięte; brak Facebook | Zero udawania providera |
+| 16:55 | Brak weryfikacji Google ID token | `POST /api/auth/oauth/google` + `GoogleIdTokenService`; `GET /api/auth/oauth/providers` | Find-or-create user, JWT RacePortal |
+| 16:55 | Przyciski SVG „Google/Facebook” | Oficjalny GIS button gdy `VITE_GOOGLE_CLIENT_ID`; inaczej sekcja ukryta | Bez Client ID nie ma fałszywego CTA |
+
+**Konfiguracja (opcjonalna):** w Google Cloud Console utwórz OAuth 2.0 Client ID (typ Web). Authorized JavaScript origins: `http://localhost:8081`, `http://localhost:5173`. Ten sam ID w `GOOGLE_OAUTH_CLIENT_ID` (API / Compose) i `VITE_GOOGLE_CLIENT_ID` (web build / `web/.env`).
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

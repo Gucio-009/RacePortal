@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound, Phone, IdCard } from "lucide-react";
@@ -9,6 +9,7 @@ import { Checkbox } from "../components/ui/checkbox";
 import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
+import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
 
 function isStrongPassword(password: string): boolean {
   return (
@@ -35,8 +36,9 @@ export function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const { register, verifyEmail, resendCode, socialLogin } = useAuth();
+  const { register, verifyEmail, resendCode, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const googleEnabled = isGoogleClientConfigured();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -122,26 +124,27 @@ export function RegisterPage() {
     }
   };
 
-  const handleSocialRegister = async (provider: "google" | "facebook") => {
-    if (!acceptTerms) {
-      toast.error("Zaakceptuj regulamin przed kontynuacją");
-      return;
-    }
-    if (!import.meta.env.DEV) {
-      toast.error("Rejestracja Google/Facebook będzie dostępna wkrótce");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      await socialLogin(provider);
-      toast.success("Zalogowano kontem demo (tryb deweloperski)");
-      navigate("/dashboard");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Nie udało się zarejestrować");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const handleGoogle = useCallback(
+    async (idToken: string) => {
+      if (!acceptTerms) {
+        toast.error("Zaakceptuj regulamin przed kontynuacją");
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const result = await loginWithGoogle(idToken);
+        if (result.ok) {
+          toast.success("Konto Google połączone — jesteś zalogowany");
+          navigate("/dashboard");
+        } else {
+          toast.error(result.message || "Nie udało się kontynuować z Google");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [acceptTerms, loginWithGoogle, navigate],
+  );
 
   return (
     <div
@@ -412,38 +415,29 @@ export function RegisterPage() {
                 </Button>
               </form>
 
-              <div className="relative my-6">
-                <Separator className="bg-[#2a2a2a]" />
-                <span
-                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] px-4 text-[#9ca3af]"
-                  style={{ fontSize: "14px" }}
-                >
-                  lub
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialRegister("google")}
-                  disabled={isLoading}
-                  className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
-                  style={{ fontWeight: 600 }}
-                >
-                  Zarejestruj przez Google
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleSocialRegister("facebook")}
-                  disabled={isLoading}
-                  className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
-                  style={{ fontWeight: 600 }}
-                >
-                  Zarejestruj przez Facebook
-                </Button>
-              </div>
+              {googleEnabled ? (
+                <>
+                  <div className="relative my-6">
+                    <Separator className="bg-[#2a2a2a]" />
+                    <span
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] px-4 text-[#9ca3af]"
+                      style={{ fontSize: "14px" }}
+                    >
+                      lub
+                    </span>
+                  </div>
+                  <GoogleSignInButton
+                    onCredential={handleGoogle}
+                    onError={(msg) => toast.error(msg)}
+                    disabled={isLoading || !acceptTerms}
+                  />
+                  {!acceptTerms ? (
+                    <p className="text-[#6b7280] text-xs text-center mt-2">
+                      Zaznacz regulamin, aby kontynuować z Google
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
             </>
           )}
 

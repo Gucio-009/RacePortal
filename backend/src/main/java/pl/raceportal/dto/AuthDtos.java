@@ -54,6 +54,16 @@ public final class AuthDtos {
     ) {
     }
 
+    public record GoogleLoginRequest(
+            @NotBlank @Size(min = 20, max = 4096) String idToken
+    ) {
+    }
+
+    public record OAuthProvidersResponse(
+            boolean google
+    ) {
+    }
+
     public record ForgotPasswordRequest(
             @NotBlank @Email String email
     ) {

@@ -36,6 +36,8 @@ cd RacePortal
 
 Plik [`backend/.env.example`](./backend/.env.example) jest w repo (Compose `env_file`). Nie wymaga kopiowania do `.env` przy `docker compose up`.
 
+Opcjonalnie Google Sign-In: ustaw ten sam Client ID w `GOOGLE_OAUTH_CLIENT_ID` i `VITE_GOOGLE_CLIENT_ID` (patrz `backend/.env.example`, `web/.env.example`), potem `docker compose up --build -d`. Bez kluczy przycisk Google się nie pojawia — logowanie e-mail/hasło działa jak wcześniej.
+
 ```bash
 docker compose up --build -d
 ```

@@ -58,7 +58,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register",
                                 "/api/auth/register-organizer", "/api/auth/verify-email", "/api/auth/resend-code",
-                                "/api/auth/forgot-password").permitAll()
+                                "/api/auth/forgot-password", "/api/auth/oauth/google").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/oauth/providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/events/**", "/api/events/meta/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/maps/route").permitAll()
                         .anyRequest().authenticated())

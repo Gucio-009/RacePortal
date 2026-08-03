@@ -27,7 +27,7 @@ interface AuthContextType {
   ) => Promise<RegisterResult>;
   verifyEmail: (email: string, code: string) => Promise<{ ok: boolean; message?: string }>;
   resendCode: (email: string) => Promise<{ ok: boolean; message?: string }>;
-  socialLogin: (provider: "google" | "facebook") => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<{ ok: boolean; message?: string }>;
   logout: () => void;
   updateProfile: (data: {
     username?: string;
@@ -167,14 +167,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const socialLogin = async (_provider: "google" | "facebook") => {
-    // OAuth nie jest podłączone — w DEV tylko jawny login demo (nie udawaj Google/Facebook).
-    if (!import.meta.env.DEV) {
-      throw new Error("Logowanie społecznościowe będzie dostępne wkrótce");
-    }
-    const result = await login("test@wp.pl", "test123");
-    if (!result.ok) {
-      throw new Error(result.message || "Demo login failed");
+  const loginWithGoogle = async (idToken: string) => {
+    try {
+      const res = await api.post<{ token: string; user: User }>("/api/auth/oauth/google", { idToken });
+      persistAuth(res.user, res.token);
+      return { ok: true };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się zalogować przez Google";
+      return { ok: false, message };
     }
   };
 
@@ -241,7 +241,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         verifyEmail,
         resendCode,
-        socialLogin,
+        loginWithGoogle,
         logout,
         updateProfile,
         changePassword,
