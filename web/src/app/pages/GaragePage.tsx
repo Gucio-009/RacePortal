@@ -4,12 +4,17 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
+import { Switch } from "../components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES } from "../lib/carMatch";
 import { toast } from "sonner";
+
+const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
+const REGISTRATION_TYPES = ["cywilne", "sportowe"] as const;
 
 const emptyForm = {
   make: "",
@@ -18,7 +23,71 @@ const emptyForm = {
   className: "",
   plate: "",
   imageUrl: "",
+  driveType: "",
+  powerHp: "",
+  engineCc: "",
+  weightKg: "",
+  registered: true,
+  registrationType: "",
+  kssNumber: "",
+  hasRollCage: false,
+  hasOc: false,
+  hasPt: false,
+  socialUrl: "",
+  videoUrl: "",
+  modifications: "",
 };
+
+function carToForm(car: GarageCar) {
+  return {
+    make: car.make,
+    model: car.model,
+    year: car.year ? String(car.year) : "",
+    className: car.className ?? "",
+    plate: car.plate ?? "",
+    imageUrl: car.imageUrl ?? "",
+    driveType: car.driveType ?? "",
+    powerHp: car.powerHp ? String(car.powerHp) : "",
+    engineCc: car.engineCc ? String(car.engineCc) : "",
+    weightKg: car.weightKg ? String(car.weightKg) : "",
+    registered: car.registered ?? true,
+    registrationType: car.registrationType ?? "",
+    kssNumber: car.kssNumber ?? "",
+    hasRollCage: car.hasRollCage ?? false,
+    hasOc: car.hasOc ?? false,
+    hasPt: car.hasPt ?? false,
+    socialUrl: car.socialUrl ?? "",
+    videoUrl: car.videoUrl ?? "",
+    modifications: car.modifications ?? "",
+  };
+}
+
+function buildPayload(form: typeof emptyForm) {
+  return {
+    make: form.make.trim(),
+    model: form.model.trim(),
+    year: form.year ? Number(form.year) : undefined,
+    className: form.className.trim() || undefined,
+    plate: form.plate.trim() || undefined,
+    imageUrl: form.imageUrl.trim() || undefined,
+    driveType: form.driveType || undefined,
+    powerHp: form.powerHp ? Number(form.powerHp) : undefined,
+    engineCc: form.engineCc ? Number(form.engineCc) : undefined,
+    weightKg: form.weightKg ? Number(form.weightKg) : undefined,
+    registered: form.registered,
+    registrationType: form.registered ? form.registrationType || undefined : undefined,
+    kssNumber:
+      form.registered && form.registrationType === "sportowe"
+        ? form.kssNumber.trim() || undefined
+        : undefined,
+    hasRollCage: form.hasRollCage,
+    hasOc: form.hasOc,
+    hasPt: form.hasPt,
+    socialUrl: form.socialUrl.trim() || undefined,
+    videoUrl: form.videoUrl.trim() || undefined,
+    modifications: form.modifications.trim() || undefined,
+  };
+}
 
 export function GaragePage() {
   const [cars, setCars] = useState<GarageCar[]>([]);
@@ -49,14 +118,7 @@ export function GaragePage() {
 
   const openEdit = (car: GarageCar) => {
     setEditingId(car.id);
-    setForm({
-      make: car.make,
-      model: car.model,
-      year: car.year ? String(car.year) : "",
-      className: car.className ?? "",
-      plate: car.plate ?? "",
-      imageUrl: car.imageUrl ?? "",
-    });
+    setForm(carToForm(car));
     setDialogOpen(true);
   };
 
@@ -66,14 +128,7 @@ export function GaragePage() {
       return;
     }
     setSaving(true);
-    const payload = {
-      make: form.make.trim(),
-      model: form.model.trim(),
-      year: form.year ? Number(form.year) : undefined,
-      className: form.className.trim() || undefined,
-      plate: form.plate.trim() || undefined,
-      imageUrl: form.imageUrl.trim() || undefined,
-    };
+    const payload = buildPayload(form);
     try {
       if (editingId) {
         await api.patch(`/api/garage/${editingId}`, payload);
@@ -152,6 +207,8 @@ export function GaragePage() {
                 </CardHeader>
                 <CardContent className="space-y-2 text-[#9ca3af]">
                   {car.year && <p>Rocznik: {car.year}</p>}
+                  {car.driveType && <p>Napęd: {car.driveType}</p>}
+                  {car.powerHp && <p>Moc: {car.powerHp} KM</p>}
                   {car.className && (
                     <p>
                       Kategoria:{" "}
@@ -189,7 +246,7 @@ export function GaragePage() {
       </section>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white">
+        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
               {editingId ? "Edytuj auto" : "Dodaj auto"}
@@ -207,6 +264,37 @@ export function GaragePage() {
             <div className="space-y-2">
               <Label>Rocznik</Label>
               <Input value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} type="number" className="bg-[#121212] border-[#2a2a2a] text-white" />
+            </div>
+            <div className="space-y-2">
+              <Label>Napęd</Label>
+              <Select
+                value={form.driveType || "none"}
+                onValueChange={(v) => setForm({ ...form, driveType: v === "none" ? "" : v })}
+              >
+                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectValue placeholder="Wybierz napęd" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  <SelectItem value="none">—</SelectItem>
+                  {DRIVE_TYPES.map((dt) => (
+                    <SelectItem key={dt} value={dt}>
+                      {dt}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Moc (KM)</Label>
+              <Input value={form.powerHp} onChange={(e) => setForm({ ...form, powerHp: e.target.value })} type="number" className="bg-[#121212] border-[#2a2a2a] text-white" />
+            </div>
+            <div className="space-y-2">
+              <Label>Pojemność (cm³)</Label>
+              <Input value={form.engineCc} onChange={(e) => setForm({ ...form, engineCc: e.target.value })} type="number" className="bg-[#121212] border-[#2a2a2a] text-white" />
+            </div>
+            <div className="space-y-2">
+              <Label>Masa (kg)</Label>
+              <Input value={form.weightKg} onChange={(e) => setForm({ ...form, weightKg: e.target.value })} type="number" className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
             <div className="space-y-2">
               <Label>Kategoria / klasa</Label>
@@ -232,12 +320,111 @@ export function GaragePage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Rejestracja</Label>
+              <Label>Tablica rejestracyjna</Label>
               <Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
+
+            <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
+              <div>
+                <Label className="text-white">Zarejestrowane</Label>
+                <p className="text-xs text-[#9ca3af]">Auto posiada ważną rejestrację</p>
+              </div>
+              <Switch
+                checked={form.registered}
+                onCheckedChange={(v) =>
+                  setForm({
+                    ...form,
+                    registered: v,
+                    registrationType: v ? form.registrationType : "",
+                    kssNumber: v ? form.kssNumber : "",
+                  })
+                }
+              />
+            </div>
+
+            {form.registered && (
+              <>
+                <div className="space-y-2">
+                  <Label>Typ rejestracji</Label>
+                  <Select
+                    value={form.registrationType || "none"}
+                    onValueChange={(v) =>
+                      setForm({
+                        ...form,
+                        registrationType: v === "none" ? "" : v,
+                        kssNumber: v === "sportowe" ? form.kssNumber : "",
+                      })
+                    }
+                  >
+                    <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                      <SelectValue placeholder="Wybierz typ" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                      <SelectItem value="none">—</SelectItem>
+                      {REGISTRATION_TYPES.map((rt) => (
+                        <SelectItem key={rt} value={rt}>
+                          {rt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {form.registrationType === "sportowe" && (
+                  <div className="space-y-2">
+                    <Label>Numer KSS</Label>
+                    <Input
+                      value={form.kssNumber}
+                      onChange={(e) => setForm({ ...form, kssNumber: e.target.value })}
+                      placeholder="np. KSS/2024/12345"
+                      className="bg-[#121212] border-[#2a2a2a] text-white"
+                    />
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {(
+                [
+                  ["hasRollCage", "Klatka bezpieczeństwa"],
+                  ["hasOc", "Ubezpieczenie OC"],
+                  ["hasPt", "Przegląd techniczny"],
+                ] as const
+              ).map(([key, label]) => (
+                <div
+                  key={key}
+                  className="flex items-center justify-between border border-[#2a2a2a] rounded-md p-3"
+                >
+                  <Label className="text-white text-sm">{label}</Label>
+                  <Switch
+                    checked={form[key]}
+                    onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                  />
+                </div>
+              ))}
+            </div>
+
             <div className="space-y-2 sm:col-span-2">
               <Label>URL zdjęcia</Label>
               <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://..." />
+            </div>
+            <div className="space-y-2">
+              <Label>Profil społecznościowy</Label>
+              <Input value={form.socialUrl} onChange={(e) => setForm({ ...form, socialUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://instagram.com/..." />
+            </div>
+            <div className="space-y-2">
+              <Label>Link do wideo</Label>
+              <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://youtube.com/..." />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Modyfikacje</Label>
+              <Textarea
+                value={form.modifications}
+                onChange={(e) => setForm({ ...form, modifications: e.target.value })}
+                rows={3}
+                placeholder="Opis modyfikacji, tuning, wyposażenie wyścigowe…"
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
             </div>
           </div>
           <DialogFooter>

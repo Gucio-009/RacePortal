@@ -19,6 +19,19 @@ public final class GarageDtos {
             String className,
             String plate,
             String imageUrl,
+            String driveType,
+            Integer powerHp,
+            Integer engineCc,
+            Integer weightKg,
+            boolean registered,
+            String registrationType,
+            String kssNumber,
+            boolean hasRollCage,
+            boolean hasOc,
+            boolean hasPt,
+            String socialUrl,
+            String videoUrl,
+            String modifications,
             String createdAt,
             String updatedAt
     ) {
@@ -30,7 +43,20 @@ public final class GarageDtos {
             @Min(1950) @Max(2100) Integer year,
             @Size(max = 60) String className,
             @Size(max = 20) String plate,
-            String imageUrl
+            String imageUrl,
+            @Size(max = 10) String driveType,
+            @Min(1) @Max(5000) Integer powerHp,
+            @Min(1) @Max(20000) Integer engineCc,
+            @Min(1) @Max(10000) Integer weightKg,
+            Boolean registered,
+            @Size(max = 20) String registrationType,
+            @Size(max = 40) String kssNumber,
+            Boolean hasRollCage,
+            Boolean hasOc,
+            Boolean hasPt,
+            @Size(max = 500) String socialUrl,
+            @Size(max = 500) String videoUrl,
+            @Size(max = 5000) String modifications
     ) {
     }
 
@@ -40,7 +66,20 @@ public final class GarageDtos {
             @Min(1950) @Max(2100) Integer year,
             @Size(max = 60) String className,
             @Size(max = 20) String plate,
-            String imageUrl
+            String imageUrl,
+            @Size(max = 10) String driveType,
+            @Min(1) @Max(5000) Integer powerHp,
+            @Min(1) @Max(20000) Integer engineCc,
+            @Min(1) @Max(10000) Integer weightKg,
+            Boolean registered,
+            @Size(max = 20) String registrationType,
+            @Size(max = 40) String kssNumber,
+            Boolean hasRollCage,
+            Boolean hasOc,
+            Boolean hasPt,
+            @Size(max = 500) String socialUrl,
+            @Size(max = 500) String videoUrl,
+            @Size(max = 5000) String modifications
     ) {
     }
 }

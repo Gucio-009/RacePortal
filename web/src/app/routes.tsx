@@ -15,7 +15,6 @@ import { GaragePage } from "./pages/GaragePage";
 import { AdminPanelPage } from "./pages/AdminPanelPage";
 import { OrganizerPanelPage } from "./pages/OrganizerPanelPage";
 import { BecomeOrganizerPage } from "./pages/BecomeOrganizerPage";
-import { EventsMapPage } from "./pages/EventsMapPage";
 import { TermsPage, PrivacyPage } from "./pages/LegalPages";
 import { SettingsPage } from "./pages/SettingsPage";
 import { AccountPage } from "./pages/AccountPage";
@@ -127,7 +126,7 @@ export const router = createBrowserRouter([
       { path: "wyniki", Component: ResultsPage },
       { path: "archiwum", Component: ArchivePage },
       { path: "galeria", Component: GalleryPage },
-      { path: "mapa", Component: EventsMapPage },
+      { path: "mapa", element: <Navigate to="/wydarzenia" replace /> },
       { path: "terms", Component: TermsPage },
       { path: "privacy", Component: PrivacyPage },
       { path: "*", element: <Navigate to="/" replace /> },

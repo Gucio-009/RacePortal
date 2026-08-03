@@ -21,6 +21,7 @@ import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.service.EventService;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/events")
@@ -39,18 +40,29 @@ public class EventController {
             @RequestParam(required = false) String q,
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String city,
+            @RequestParam(required = false) String voivodeship,
+            @RequestParam(required = false) String track,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam(required = false, defaultValue = "0") String archive,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String paid,
+            @RequestParam(required = false) String carId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
         boolean archiveFlag = "1".equals(archive);
         return ResponseEntity.ok(
-                eventService.list(page, limit, q, category, city, archiveFlag, status, paid, currentUser));
+                eventService.list(page, limit, q, category, city, voivodeship, track, dateFrom, dateTo,
+                        archiveFlag, status, paid, carId, currentUser));
     }
 
     @GetMapping("/meta/categories")
     public ResponseEntity<List<String>> categories() {
         return ResponseEntity.ok(eventService.categories());
+    }
+
+    @GetMapping("/meta/category-groups")
+    public ResponseEntity<List<Map<String, Object>>> categoryGroups() {
+        return ResponseEntity.ok(eventService.categoryGroups());
     }
 
     @GetMapping("/{id}")

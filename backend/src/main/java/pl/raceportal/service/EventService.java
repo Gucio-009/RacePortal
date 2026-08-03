@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.Car;
 import pl.raceportal.domain.Event;
 import pl.raceportal.domain.EventStatus;
 import pl.raceportal.domain.Registration;
@@ -18,6 +19,7 @@ import pl.raceportal.dto.EventDtos.EventListResponse;
 import pl.raceportal.dto.EventDtos.EventResponse;
 import pl.raceportal.dto.EventDtos.EventUpdateRequest;
 import pl.raceportal.dto.EventDtos.OrganizerRef;
+import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
@@ -33,6 +35,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class EventService {
@@ -46,24 +49,37 @@ public class EventService {
     private final EventRepository eventRepository;
     private final RegistrationRepository registrationRepository;
     private final UserRepository userRepository;
+    private final CarRepository carRepository;
     private final MailService mailService;
 
     public EventService(EventRepository eventRepository, RegistrationRepository registrationRepository,
-                         UserRepository userRepository, MailService mailService) {
+                         UserRepository userRepository, CarRepository carRepository, MailService mailService) {
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
         this.userRepository = userRepository;
+        this.carRepository = carRepository;
         this.mailService = mailService;
     }
 
     @Transactional(readOnly = true)
     public EventListResponse list(int pageParam, int limitParam, String q, String category, String city,
-                                   boolean archive, String statusParam, String paidParam,
+                                   String voivodeship, String track, String dateFrom, String dateTo,
+                                   boolean archive, String statusParam, String paidParam, String carId,
                                    UserPrincipal currentUser) {
         int page = Math.max(1, pageParam);
         int limit = Math.min(50, Math.max(1, limitParam));
         LocalDate startOfToday = LocalDate.now();
         Boolean paidFilter = parsePaidFilter(paidParam);
+        LocalDate from = parseFilterDate(dateFrom);
+        LocalDate to = parseFilterDate(dateTo);
+
+        String carClass = null;
+        if (carId != null && !carId.isBlank() && currentUser != null) {
+            carClass = carRepository.findByIdAndUser_Id(carId, currentUser.getId())
+                    .map(Car::getClassName)
+                    .orElse(null);
+        }
+        final String matchCarClass = carClass;
 
         Specification<Event> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -101,6 +117,18 @@ public class EventService {
             if (city != null && !city.isBlank()) {
                 predicates.add(cb.like(cb.lower(root.get("city")), "%" + city.toLowerCase(Locale.ROOT) + "%"));
             }
+            if (voivodeship != null && !voivodeship.isBlank() && !"all".equalsIgnoreCase(voivodeship)) {
+                predicates.add(cb.equal(root.get("voivodeship"), voivodeship));
+            }
+            if (track != null && !track.isBlank() && !"all".equalsIgnoreCase(track)) {
+                predicates.add(cb.like(cb.lower(root.get("track")), "%" + track.toLowerCase(Locale.ROOT) + "%"));
+            }
+            if (from != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("date"), from));
+            }
+            if (to != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("date"), to));
+            }
             if (paidFilter != null) {
                 predicates.add(cb.equal(root.get("paid"), paidFilter));
             }
@@ -109,12 +137,35 @@ public class EventService {
         };
 
         Sort sort = Sort.by(archive ? Sort.Direction.DESC : Sort.Direction.ASC, "date");
-        var pageResult = eventRepository.findAll(spec, PageRequest.of(page - 1, limit, sort));
+        // When filtering by car, fetch a wider page then filter in memory (category match is fuzzy).
+        int fetchLimit = matchCarClass != null ? Math.min(200, limit * 10) : limit;
+        var pageResult = eventRepository.findAll(spec, PageRequest.of(page - 1, fetchLimit, sort));
 
-        List<EventResponse> items = pageResult.getContent().stream().map(this::serialize).toList();
+        List<EventResponse> items = pageResult.getContent().stream()
+                .filter(e -> matchCarClass == null || CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                .limit(limit)
+                .map(this::serialize)
+                .toList();
 
-        return new EventListResponse(page, limit, pageResult.getTotalElements(),
-                pageResult.getTotalPages(), items);
+        long total = matchCarClass != null
+                ? eventRepository.findAll(spec).stream()
+                    .filter(e -> CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                    .count()
+                : pageResult.getTotalElements();
+        long totalPages = Math.max(1, (long) Math.ceil(total / (double) limit));
+
+        return new EventListResponse(page, limit, total, totalPages, items);
+    }
+
+    private static LocalDate parseFilterDate(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(value.trim());
+        } catch (DateTimeException e) {
+            return null;
+        }
     }
 
     private static Boolean parsePaidFilter(String paidParam) {
@@ -132,12 +183,38 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<String> categories() {
-        return eventRepository.findByStatusInOrderByCategoryAsc(List.of(EventStatus.APPROVED, EventStatus.ARCHIVED))
+        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>(dictionaryCategories());
+        eventRepository.findByStatusInOrderByCategoryAsc(List.of(EventStatus.APPROVED, EventStatus.ARCHIVED))
                 .stream()
                 .map(Event::getCategory)
-                .distinct()
-                .sorted()
+                .forEach(set::add);
+        return set.stream().sorted(String.CASE_INSENSITIVE_ORDER).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> categoryGroups() {
+        return List.of(
+                Map.of("group", "Rajdy", "items", List.of("Rajdy", "KJS", "RallySprint", "SuperOES", "Super Sprint", "RSMP", "SKJS", "HRSMP")),
+                Map.of("group", "Wyścigi", "items", List.of("Wyścigi górskie", "Rallycross", "Wrak race", "Time Attack", "Track Day", "Drag race", "Sprint", "GT Racing", "Endurance", "MPWS", "Racing")),
+                Map.of("group", "Drift", "items", List.of("Drift", "Drift trening", "Drift amatorskie", "Drift pro")),
+                Map.of("group", "Inne", "items", List.of("Inne"))
+        );
+    }
+
+    private static List<String> dictionaryCategories() {
+        return categoryGroupsStatic().stream()
+                .flatMap(g -> ((List<?>) g.get("items")).stream())
+                .map(Object::toString)
                 .toList();
+    }
+
+    private static List<Map<String, Object>> categoryGroupsStatic() {
+        return List.of(
+                Map.of("group", "Rajdy", "items", List.of("Rajdy", "KJS", "RallySprint", "SuperOES", "Super Sprint", "RSMP", "SKJS", "HRSMP")),
+                Map.of("group", "Wyścigi", "items", List.of("Wyścigi górskie", "Rallycross", "Wrak race", "Time Attack", "Track Day", "Drag race", "Sprint", "GT Racing", "Endurance", "MPWS", "Racing")),
+                Map.of("group", "Drift", "items", List.of("Drift", "Drift trening", "Drift amatorskie", "Drift pro")),
+                Map.of("group", "Inne", "items", List.of("Inne"))
+        );
     }
 
     @Transactional(readOnly = true)
@@ -182,6 +259,10 @@ public class EventService {
         if (request.paymentDeadlineHours() != null) event.setPaymentDeadlineHours(request.paymentDeadlineHours());
         if (request.freeCancelDays() != null) event.setFreeCancelDays(request.freeCancelDays());
         if (request.acceptRegistrations() != null) event.setAcceptRegistrations(request.acceptRegistrations());
+        applyOptionalEventFields(event, request.endDate(), request.endTime(), request.street(),
+                request.spectatorFee(), request.externalUrl(), request.requireDrivingLicense(),
+                request.requirePzmLicense(), request.requireOc(), request.requirePt(),
+                request.requireCage(), request.requireRegistered());
 
         event = eventRepository.save(event);
         return serialize(event);
@@ -215,6 +296,17 @@ public class EventService {
         if (request.paymentDeadlineHours() != null) event.setPaymentDeadlineHours(request.paymentDeadlineHours());
         if (request.freeCancelDays() != null) event.setFreeCancelDays(request.freeCancelDays());
         if (request.acceptRegistrations() != null) event.setAcceptRegistrations(request.acceptRegistrations());
+        if (request.endDate() != null) event.setEndDate(parseOptionalDate(request.endDate()));
+        if (request.endTime() != null) event.setEndTime(request.endTime().isBlank() ? null : request.endTime());
+        if (request.street() != null) event.setStreet(request.street().isBlank() ? null : request.street());
+        if (request.spectatorFee() != null) event.setSpectatorFee(request.spectatorFee());
+        if (request.externalUrl() != null) event.setExternalUrl(request.externalUrl().isBlank() ? null : request.externalUrl());
+        if (request.requireDrivingLicense() != null) event.setRequireDrivingLicense(request.requireDrivingLicense());
+        if (request.requirePzmLicense() != null) event.setRequirePzmLicense(request.requirePzmLicense());
+        if (request.requireOc() != null) event.setRequireOc(request.requireOc());
+        if (request.requirePt() != null) event.setRequirePt(request.requirePt());
+        if (request.requireCage() != null) event.setRequireCage(request.requireCage());
+        if (request.requireRegistered() != null) event.setRequireRegistered(request.requireRegistered());
         if (!event.isPaid()) {
             event.setEntryFee(null);
             event.setBankAccount(null);
@@ -310,7 +402,10 @@ public class EventService {
                 event.getDate().atStartOfDay(ZoneOffset.UTC).toInstant().toString(),
                 event.getDate().format(POLISH_DATE_FORMATTER).toUpperCase(POLISH_LOCALE),
                 event.getTime(),
+                event.getEndDate() != null ? event.getEndDate().toString() : null,
+                event.getEndTime(),
                 event.getTrack(),
+                event.getStreet(),
                 event.getCity(),
                 event.getVoivodeship(),
                 event.getImageUrl(),
@@ -325,7 +420,40 @@ public class EventService {
                 event.getBankAccount(),
                 event.getPaymentDeadlineHours(),
                 event.getFreeCancelDays(),
-                event.isAcceptRegistrations()
+                event.isAcceptRegistrations(),
+                event.getSpectatorFee(),
+                event.getExternalUrl(),
+                event.isRequireDrivingLicense(),
+                event.isRequirePzmLicense(),
+                event.isRequireOc(),
+                event.isRequirePt(),
+                event.isRequireCage(),
+                event.isRequireRegistered()
         );
+    }
+
+    private void applyOptionalEventFields(Event event, String endDate, String endTime, String street,
+                                           java.math.BigDecimal spectatorFee, String externalUrl,
+                                           Boolean requireDrivingLicense, Boolean requirePzmLicense,
+                                           Boolean requireOc, Boolean requirePt,
+                                           Boolean requireCage, Boolean requireRegistered) {
+        if (endDate != null && !endDate.isBlank()) event.setEndDate(parseDate(endDate));
+        if (endTime != null && !endTime.isBlank()) event.setEndTime(endTime);
+        if (street != null && !street.isBlank()) event.setStreet(street);
+        if (spectatorFee != null) event.setSpectatorFee(spectatorFee);
+        if (externalUrl != null && !externalUrl.isBlank()) event.setExternalUrl(externalUrl);
+        if (requireDrivingLicense != null) event.setRequireDrivingLicense(requireDrivingLicense);
+        if (requirePzmLicense != null) event.setRequirePzmLicense(requirePzmLicense);
+        if (requireOc != null) event.setRequireOc(requireOc);
+        if (requirePt != null) event.setRequirePt(requirePt);
+        if (requireCage != null) event.setRequireCage(requireCage);
+        if (requireRegistered != null) event.setRequireRegistered(requireRegistered);
+    }
+
+    private LocalDate parseOptionalDate(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        return parseDate(raw);
     }
 }

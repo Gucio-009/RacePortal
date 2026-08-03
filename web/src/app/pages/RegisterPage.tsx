@@ -1,17 +1,32 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound, Phone, IdCard } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Checkbox } from "../components/ui/checkbox";
+import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
+
+function isStrongPassword(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
 
 export function RegisterPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
+  const [pzmLicense, setPzmLicense] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
@@ -36,15 +51,26 @@ export function RegisterPage() {
       return;
     }
 
-    if (password.length < 6) {
-      toast.error("Hasło musi mieć minimum 6 znaków");
+    if (password.length < 8) {
+      toast.error("Hasło musi mieć minimum 8 znaków");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      toast.error("Hasło musi zawierać wielką literę, cyfrę i znak specjalny");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const result = await register(username, email, password);
+      const result = await register(username, email, password, {
+        firstName,
+        lastName,
+        phone,
+        hasDrivingLicenseB,
+        pzmLicense,
+      });
       if (!result.ok) {
         toast.error(result.message || "Nie udało się utworzyć konta");
         return;
@@ -218,6 +244,52 @@ export function RegisterPage() {
                   </div>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-white" style={{ fontWeight: 600 }}>
+                      Imię
+                    </Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Jan"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-white" style={{ fontWeight: 600 }}>
+                      Nazwisko
+                    </Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Kowalski"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-white" style={{ fontWeight: 600 }}>
+                    Telefon
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+48 600 000 000"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-12"
+                    />
+                  </div>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-white" style={{ fontWeight: 600 }}>
                     Hasło
@@ -241,6 +313,41 @@ export function RegisterPage() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
+                  <p className="text-xs text-[#9ca3af]">
+                    Min. 8 znaków, wielka litera, cyfra i znak specjalny (np. !@#$)
+                  </p>
+                </div>
+
+                <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <Label htmlFor="licenseB" className="text-white flex items-center gap-2" style={{ fontWeight: 600 }}>
+                        <IdCard className="w-4 h-4 text-[#FFD700]" />
+                        Prawo jazdy kat. B
+                      </Label>
+                      <p className="text-xs text-[#9ca3af]">Posiadam ważne prawo jazdy</p>
+                    </div>
+                    <Switch
+                      id="licenseB"
+                      checked={hasDrivingLicenseB}
+                      onCheckedChange={setHasDrivingLicenseB}
+                    />
+                  </div>
+                  {hasDrivingLicenseB && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pzmLicense" className="text-white text-sm">
+                        Licencja PZM (opcjonalnie)
+                      </Label>
+                      <Input
+                        id="pzmLicense"
+                        type="text"
+                        placeholder="Numer licencji PZM"
+                        value={pzmLicense}
+                        onChange={(e) => setPzmLicense(e.target.value)}
+                        className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[#FFD700] h-10"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-2">

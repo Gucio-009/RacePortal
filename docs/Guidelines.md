@@ -54,6 +54,12 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 - Social login (Google/Facebook) to UI demo — nie produkcyjny OAuth
 - Po dodaniu / zmianie ścieżek krytycznych uzupełnij testy (JUnit API lub Playwright) i odśwież wyniki w `docs/testy/wyniki/`
 
+## Seed / Compose / porty
+
+**Źródło prawdy dla recenzentów:** [`FAQ-przeglad.md`](./FAQ-przeglad.md) (seed, MySQL TCP, Expo poza Compose, `.env.example`).
+
+Krótko: seed = `DataInitializer` przy starcie API; MySQL `:3307` ≠ HTTP; Expo `:8082` ręcznie z `mobile/`.
+
 ## Konta deweloperskie (seed)
 
 | Rola | Email | Hasło |

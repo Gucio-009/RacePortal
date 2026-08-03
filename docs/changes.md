@@ -408,4 +408,32 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-02 09:33 — zamykalne toasty.*
+## 21. Uwagi przeglądu — P0–P4 (2026-08-03, 09:11–09:20)
+
+**Kontekst / argument:** feedback recenzenta (Compose `.env.example`, seed, MySQL/Expo „down”, ubogie filtry, brak 3 widoków, kategorie, self-demote admina, brak edycji eventu, formularze vs Specyfikacja, galeria).
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:11 | `.env.*` w gitignore blokował `.env.example` | `!.env.example` + plik w repo; docs seed/MySQL/Expo | Compose nie pada przy clone |
+| 09:12 | Admin mógł odebrać sobie rolę | Blokada self-demote + ostatni ADMIN; UI disabled | Nie da się zablokować systemu |
+| 09:14 | Filtry: q/kategoria/paid; osobna mapa | Lista/mapa/kalendarz + woj./miasto/tor/daty/auto z garażu | Spełnia uwagi o filtrach i 3 widokach |
+| 09:16 | Płaskie kategorie Drift/GT… | Hierarchia Rajdy/Wyścigi/Drift/Inne + edycja eventu (PATCH UI) | Zgodność z listą kategorii + brakująca edycja |
+| 09:17 | Formularze uproszczone vs Specyfikacja | Pola profilu, garaż V3 (napęd/KM/OC/PT…), event end/bilety/wymogi | Alignment ze Specyfikacją Formularzy |
+| 09:18 | Galeria w nav jak pełny feature | Oznaczenie „później” / deferred; `/mapa` → `/wydarzenia` | Galeria odłożona; mapa w widoku wydarzeń |
+
+**Seed (odpowiedź):** `DataInitializer` przy starcie API (`SEED_ENABLED`).  
+**FAQ dla kolejnych czytających (żeby pytania się nie powtarzały):** [`FAQ-przeglad.md`](./FAQ-przeglad.md).
+
+---
+
+## 22. FAQ przeglądu — jedno miejsce na powtarzające się pytania (2026-08-03, 09:21)
+
+**Kontekst / argument:** te same pytania (seed, MySQL HTTP, Expo, `.env.example`) wracały od kolejnych osób przeglądających. Potrzebny kanoniczny dokument zamiast rozproszonych wzmianek w README/Guidelines.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:21 | Odpowiedzi rozrzucone / łatwe do przeoczenia | [`docs/FAQ-przeglad.md`](./FAQ-przeglad.md) + linki z README / docs/README / Guidelines | Jedno źródło prawdy; mniej duplikatów ticketów |
+
+---
+
+*Ostatnia aktualizacja: 2026-08-03 09:21 — FAQ przeglądu.*

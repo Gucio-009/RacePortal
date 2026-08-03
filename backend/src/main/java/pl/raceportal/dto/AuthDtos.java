@@ -12,7 +12,12 @@ public final class AuthDtos {
     public record RegisterRequest(
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
-            @NotBlank @Size(min = 6, max = 100) String password
+            @NotBlank @Size(min = 6, max = 100) String password,
+            @Size(max = 80) String firstName,
+            @Size(max = 80) String lastName,
+            @Size(max = 30) String phone,
+            Boolean hasDrivingLicenseB,
+            @Size(max = 40) String pzmLicense
     ) {
     }
 
@@ -56,7 +61,12 @@ public final class AuthDtos {
 
     public record UpdateMeRequest(
             @Size(min = 2, max = 40) String username,
-            String avatar
+            String avatar,
+            @Size(max = 80) String firstName,
+            @Size(max = 80) String lastName,
+            @Size(max = 30) String phone,
+            Boolean hasDrivingLicenseB,
+            @Size(max = 40) String pzmLicense
     ) {
     }
 
@@ -72,7 +82,12 @@ public final class AuthDtos {
             String username,
             String role,
             String avatar,
-            String memberSince
+            String memberSince,
+            String firstName,
+            String lastName,
+            String phone,
+            boolean hasDrivingLicenseB,
+            String pzmLicense
     ) {
     }
 

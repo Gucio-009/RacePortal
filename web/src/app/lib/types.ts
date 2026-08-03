@@ -27,6 +27,11 @@ export interface User {
   role: UserRole;
   avatar?: string | null;
   memberSince: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
+  hasDrivingLicenseB?: boolean;
+  pzmLicense?: string | null;
 }
 
 export interface ApiEvent {
@@ -53,6 +58,17 @@ export interface ApiEvent {
   paymentDeadlineHours?: number | null;
   freeCancelDays?: number | null;
   acceptRegistrations?: boolean;
+  endDate?: string | null;
+  endTime?: string | null;
+  street?: string | null;
+  spectatorFee?: number | null;
+  externalUrl?: string | null;
+  requireDrivingLicense?: boolean;
+  requirePzmLicense?: boolean;
+  requireOc?: boolean;
+  requirePt?: boolean;
+  requireCage?: boolean;
+  requireRegistered?: boolean;
 }
 
 export interface PaginatedEvents {
@@ -72,6 +88,19 @@ export interface Car {
   className?: string | null;
   plate?: string | null;
   imageUrl?: string | null;
+  driveType?: string | null;
+  powerHp?: number | null;
+  engineCc?: number | null;
+  weightKg?: number | null;
+  registered?: boolean;
+  registrationType?: string | null;
+  kssNumber?: string | null;
+  hasRollCage?: boolean;
+  hasOc?: boolean;
+  hasPt?: boolean;
+  socialUrl?: string | null;
+  videoUrl?: string | null;
+  modifications?: string | null;
   createdAt: string;
   updatedAt: string;
 }

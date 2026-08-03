@@ -53,6 +53,9 @@ public class AuthService {
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
         User user = createUnverifiedUser(request.username(), request.email(), request.password(), Role.USER);
+        applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
+                request.hasDrivingLicenseB(), request.pzmLicense());
+        user = userRepository.save(user);
         sendVerificationCode(user);
         return new RegisterResponse(true, user.getEmail(),
                 "Wysłaliśmy 6-cyfrowy kod weryfikacyjny na Twój adres email.");
@@ -148,6 +151,8 @@ public class AuthService {
         if (request.avatar() != null && !request.avatar().isBlank()) {
             user.setAvatar(request.avatar());
         }
+        applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
+                request.hasDrivingLicenseB(), request.pzmLicense());
         user = userRepository.save(user);
         return toUserDto(user);
     }
@@ -203,6 +208,17 @@ public class AuthService {
     private UserDto toUserDto(User user) {
         String memberSince = String.valueOf(user.getCreatedAt().atZone(ZoneOffset.UTC).getYear());
         return new UserDto(user.getId(), user.getEmail(), user.getUsername(),
-                user.getRole().name(), user.getAvatar(), memberSince);
+                user.getRole().name(), user.getAvatar(), memberSince,
+                user.getFirstName(), user.getLastName(), user.getPhone(),
+                user.isHasDrivingLicenseB(), user.getPzmLicense());
+    }
+
+    private void applyProfileFields(User user, String firstName, String lastName, String phone,
+                                     Boolean hasDrivingLicenseB, String pzmLicense) {
+        if (firstName != null) user.setFirstName(firstName.isBlank() ? null : firstName.trim());
+        if (lastName != null) user.setLastName(lastName.isBlank() ? null : lastName.trim());
+        if (phone != null) user.setPhone(phone.isBlank() ? null : phone.trim());
+        if (hasDrivingLicenseB != null) user.setHasDrivingLicenseB(hasDrivingLicenseB);
+        if (pzmLicense != null) user.setPzmLicense(pzmLicense.isBlank() ? null : pzmLicense.trim());
     }
 }

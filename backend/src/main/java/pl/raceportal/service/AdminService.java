@@ -20,6 +20,7 @@ import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.OrganizerApplicationRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
+import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.web.ApiException;
 
 import java.util.List;
@@ -68,7 +69,7 @@ public class AdminService {
     }
 
     @Transactional
-    public UserAdminResponse updateUserRole(String userId, RoleUpdateRequest request) {
+    public UserAdminResponse updateUserRole(String userId, RoleUpdateRequest request, UserPrincipal currentUser) {
         Role role;
         try {
             role = Role.valueOf(request.role().toUpperCase(Locale.ROOT));
@@ -78,6 +79,18 @@ public class AdminService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+
+        if (currentUser != null && currentUser.getId().equals(userId) && user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            throw ApiException.badRequest("Nie możesz odebrać sobie roli administratora");
+        }
+
+        if (user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            long adminCount = userRepository.findAll().stream().filter(u -> u.getRole() == Role.ADMIN).count();
+            if (adminCount <= 1) {
+                throw ApiException.badRequest("Musi pozostać co najmniej jeden administrator");
+            }
+        }
+
         user.setRole(role);
         user = userRepository.save(user);
 

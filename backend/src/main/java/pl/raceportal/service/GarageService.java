@@ -53,6 +53,7 @@ public class GarageService {
         car.setClassName(request.className());
         car.setPlate(request.plate());
         car.setImageUrl((request.imageUrl() == null || request.imageUrl().isBlank()) ? null : request.imageUrl());
+        applyCarFields(car, request);
 
         car = carRepository.save(car);
         return serialize(car);
@@ -85,6 +86,7 @@ public class GarageService {
         if (request.className() != null) car.setClassName(request.className());
         if (request.plate() != null) car.setPlate(request.plate());
         if (request.imageUrl() != null) car.setImageUrl(request.imageUrl().isBlank() ? null : request.imageUrl());
+        applyCarUpdateFields(car, request);
 
         car = carRepository.save(car);
         return serialize(car);
@@ -114,8 +116,57 @@ public class GarageService {
                 car.getClassName(),
                 car.getPlate(),
                 car.getImageUrl(),
+                car.getDriveType(),
+                car.getPowerHp(),
+                car.getEngineCc(),
+                car.getWeightKg(),
+                car.isRegistered(),
+                car.getRegistrationType(),
+                car.getKssNumber(),
+                car.isHasRollCage(),
+                car.isHasOc(),
+                car.isHasPt(),
+                car.getSocialUrl(),
+                car.getVideoUrl(),
+                car.getModifications(),
                 car.getCreatedAt().toString(),
                 car.getUpdatedAt().toString()
         );
+    }
+
+    private void applyCarFields(Car car, CarCreateRequest request) {
+        car.setDriveType(blankToNull(request.driveType()));
+        car.setPowerHp(request.powerHp());
+        car.setEngineCc(request.engineCc());
+        car.setWeightKg(request.weightKg());
+        if (request.registered() != null) car.setRegistered(request.registered());
+        car.setRegistrationType(blankToNull(request.registrationType()));
+        car.setKssNumber(blankToNull(request.kssNumber()));
+        if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
+        if (request.hasOc() != null) car.setHasOc(request.hasOc());
+        if (request.hasPt() != null) car.setHasPt(request.hasPt());
+        car.setSocialUrl(blankToNull(request.socialUrl()));
+        car.setVideoUrl(blankToNull(request.videoUrl()));
+        car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private void applyCarUpdateFields(Car car, CarUpdateRequest request) {
+        if (request.driveType() != null) car.setDriveType(blankToNull(request.driveType()));
+        if (request.powerHp() != null) car.setPowerHp(request.powerHp());
+        if (request.engineCc() != null) car.setEngineCc(request.engineCc());
+        if (request.weightKg() != null) car.setWeightKg(request.weightKg());
+        if (request.registered() != null) car.setRegistered(request.registered());
+        if (request.registrationType() != null) car.setRegistrationType(blankToNull(request.registrationType()));
+        if (request.kssNumber() != null) car.setKssNumber(blankToNull(request.kssNumber()));
+        if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
+        if (request.hasOc() != null) car.setHasOc(request.hasOc());
+        if (request.hasPt() != null) car.setHasPt(request.hasPt());
+        if (request.socialUrl() != null) car.setSocialUrl(blankToNull(request.socialUrl()));
+        if (request.videoUrl() != null) car.setVideoUrl(blankToNull(request.videoUrl()));
+        if (request.modifications() != null) car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private static String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value;
     }
 }

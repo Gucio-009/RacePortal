@@ -17,6 +17,13 @@ interface AuthContextType {
     username: string,
     email: string,
     password: string,
+    profile?: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      hasDrivingLicenseB?: boolean;
+      pzmLicense?: string;
+    },
   ) => Promise<RegisterResult>;
   verifyEmail: (email: string, code: string) => Promise<{ ok: boolean; message?: string }>;
   resendCode: (email: string) => Promise<{ ok: boolean; message?: string }>;
@@ -26,6 +33,11 @@ interface AuthContextType {
     username?: string;
     email?: string;
     avatar?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    hasDrivingLicenseB?: boolean;
+    pzmLicense?: string;
   }) => Promise<{ ok: boolean; message?: string }>;
   changePassword: (
     currentPassword: string,
@@ -85,7 +97,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const register = async (username: string, email: string, password: string): Promise<RegisterResult> => {
+  const register = async (
+    username: string,
+    email: string,
+    password: string,
+    profile?: {
+      firstName?: string;
+      lastName?: string;
+      phone?: string;
+      hasDrivingLicenseB?: boolean;
+      pzmLicense?: string;
+    },
+  ): Promise<RegisterResult> => {
     try {
       const res = await api.post<{
         requiresVerification?: boolean;
@@ -93,7 +116,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         message?: string;
         token?: string;
         user?: User;
-      }>("/api/auth/register", { username, email, password });
+      }>("/api/auth/register", {
+        username,
+        email,
+        password,
+        firstName: profile?.firstName?.trim() || undefined,
+        lastName: profile?.lastName?.trim() || undefined,
+        phone: profile?.phone?.trim() || undefined,
+        hasDrivingLicenseB: profile?.hasDrivingLicenseB ?? false,
+        pzmLicense: profile?.pzmLicense?.trim() || undefined,
+      });
 
       if (res.requiresVerification) {
         return {
@@ -144,9 +176,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = () => persistAuth(null);
 
-  const updateProfile = async (data: { username?: string; email?: string; avatar?: string }) => {
+  const updateProfile = async (data: {
+    username?: string;
+    email?: string;
+    avatar?: string;
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    hasDrivingLicenseB?: boolean;
+    pzmLicense?: string;
+  }) => {
     try {
-      const updated = await api.patch<User>("/api/auth/me", data);
+      const updated = await api.patch<User>("/api/auth/me", {
+        username: data.username,
+        avatar: data.avatar,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        phone: data.phone,
+        hasDrivingLicenseB: data.hasDrivingLicenseB,
+        pzmLicense: data.pzmLicense,
+      });
       setUser(updated);
       return { ok: true };
     } catch (e) {

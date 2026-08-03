@@ -1,25 +1,17 @@
 import type { Car } from "./types";
+import { CAR_CLASS_OPTIONS } from "./eventCategories";
 
-/** Known race categories used as car className and event.category. */
-export const CAR_CATEGORIES = [
-  "Drift",
-  "GT Racing",
-  "Rally",
-  "Endurance",
-  "Time Attack",
-  "Racing",
-  "Track Day",
-  "MPWS",
-] as const;
+/** @deprecated use CAR_CLASS_OPTIONS — kept for imports */
+export const CAR_CATEGORIES = CAR_CLASS_OPTIONS;
 
-/** Alias groups so legacy class names (GT4, Cup…) still match event categories. */
+/** Alias groups so legacy class names still match event categories. */
 const CATEGORY_ALIASES: Record<string, string[]> = {
-  drift: ["drift", "drifting", "drifter"],
+  drift: ["drift", "drifting", "drifter", "drift trening", "drift amatorskie", "drift pro"],
   "gt racing": ["gt racing", "gt", "gt4", "gt3", "cup", "gtr"],
-  rally: ["rally", "rajd", "rallysprint"],
+  rally: ["rally", "rajd", "rajdy", "rallysprint", "kjs", "superoes", "super sprint", "rsmp", "skjs", "hrsmp"],
   endurance: ["endurance", "dlugodystans", "długodystans"],
   "time attack": ["time attack", "timeattack", "ta"],
-  racing: ["racing", "wyscig", "wyścig", "touring"],
+  racing: ["racing", "wyscig", "wyścig", "wyścigi górskie", "touring", "sprint", "drag race", "wrak race", "rallycross"],
   "track day": ["track day", "trackday", "td"],
   mpws: ["mpws"],
 };
@@ -44,7 +36,6 @@ function aliasKeyFor(normalized: string): string | null {
   return null;
 }
 
-/** Whether a garage car class fits the event category (zalecane). */
 export function carMatchesEventCategory(
   carClass: string | null | undefined,
   eventCategory: string | null | undefined,

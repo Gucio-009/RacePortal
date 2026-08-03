@@ -6,6 +6,7 @@ import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { api, ApiError } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
 import { eventStatusLabel } from "../lib/types";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ interface PendingEvent extends ApiEvent {
 }
 
 export function AdminPanelPage() {
+  const { user: me } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
@@ -180,8 +182,12 @@ export function AdminPanelPage() {
                     </p>
                     <p className="text-[#9ca3af] text-sm">{user.email}</p>
                   </div>
-                  <Select value={user.role} onValueChange={(role) => updateUserRole(user.id, role)}>
-                    <SelectTrigger className="w-40 bg-[#121212] border-[#2a2a2a] text-white">
+                  <Select
+                    value={user.role}
+                    onValueChange={(role) => updateUserRole(user.id, role)}
+                    disabled={me?.id === user.id}
+                  >
+                    <SelectTrigger className="w-40 bg-[#121212] border-[#2a2a2a] text-white disabled:opacity-50">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
@@ -190,6 +196,9 @@ export function AdminPanelPage() {
                       <SelectItem value="ADMIN">ADMIN</SelectItem>
                     </SelectContent>
                   </Select>
+                  {me?.id === user.id && (
+                    <p className="text-xs text-[#9ca3af] sm:absolute sm:sr-only">Nie możesz zmienić własnej roli</p>
+                  )}
                 </CardContent>
               </Card>
             ))}

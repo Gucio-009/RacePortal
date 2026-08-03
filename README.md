@@ -15,7 +15,8 @@ Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/
 | [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
 | [`scripts/`](./scripts/) | Backup DB + uruchamianie testów |
 
-Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)
+Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)  
+**FAQ przeglądu (seed / MySQL / Expo / `.env`):** [`docs/FAQ-przeglad.md`](./docs/FAQ-przeglad.md)
 
 ## Jak odpalić lokalnie (Docker)
 
@@ -33,9 +34,23 @@ cd RacePortal
 
 ### 3. Uruchom
 
+Plik [`backend/.env.example`](./backend/.env.example) jest w repo (Compose `env_file`). Nie wymaga kopiowania do `.env` przy `docker compose up`.
+
 ```bash
 docker compose up --build -d
 ```
+
+**Uwagi o „zdrowiu” usług** (szczegóły i typowe pomyłki → [`docs/FAQ-przeglad.md`](./docs/FAQ-przeglad.md)):
+
+| Usługa | Port | Jak sprawdzić |
+|--------|------|----------------|
+| Web | 8081 | http://127.0.0.1:8081/ |
+| API | 4000 | http://127.0.0.1:4000/api/health (`db: up`) |
+| MySQL | **3307** | TCP (nie HTTP). `docker compose ps` → `healthy` |
+| Mailpit | 8025 | http://127.0.0.1:8025/ |
+| Expo web | 8082 | **poza Compose** — `cd mobile && npx expo start --web --port 8082` |
+
+Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
 
 ### 4. Otwórz w przeglądarce
 

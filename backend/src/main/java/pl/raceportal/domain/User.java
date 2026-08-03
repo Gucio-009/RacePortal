@@ -41,6 +41,21 @@ public class User {
     @Column(length = 500)
     private String avatar;
 
+    @Column(name = "first_name", length = 80)
+    private String firstName;
+
+    @Column(name = "last_name", length = 80)
+    private String lastName;
+
+    @Column(length = 30)
+    private String phone;
+
+    @Column(name = "has_driving_license_b", nullable = false)
+    private boolean hasDrivingLicenseB = false;
+
+    @Column(name = "pzm_license", length = 40)
+    private String pzmLicense;
+
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = true;
 
@@ -114,6 +129,46 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public boolean isHasDrivingLicenseB() {
+        return hasDrivingLicenseB;
+    }
+
+    public void setHasDrivingLicenseB(boolean hasDrivingLicenseB) {
+        this.hasDrivingLicenseB = hasDrivingLicenseB;
+    }
+
+    public String getPzmLicense() {
+        return pzmLicense;
+    }
+
+    public void setPzmLicense(String pzmLicense) {
+        this.pzmLicense = pzmLicense;
     }
 
     public boolean isEmailVerified() {

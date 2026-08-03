@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { KeyRound, Loader2, Mail, Shield, User } from "lucide-react";
+import { KeyRound, Loader2, Mail, Shield, User, Phone, IdCard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
@@ -8,6 +8,7 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Switch } from "../components/ui/switch";
 import { toast } from "sonner";
 
 export function AccountPage() {
@@ -15,6 +16,11 @@ export function AccountPage() {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [avatar, setAvatar] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
+  const [pzmLicense, setPzmLicense] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -26,6 +32,11 @@ export function AccountPage() {
     setUsername(user?.username ?? "");
     setEmail(user?.email ?? "");
     setAvatar(user?.avatar ?? "");
+    setFirstName(user?.firstName ?? "");
+    setLastName(user?.lastName ?? "");
+    setPhone(user?.phone ?? "");
+    setHasDrivingLicenseB(user?.hasDrivingLicenseB ?? false);
+    setPzmLicense(user?.pzmLicense ?? "");
   }, [user]);
 
   const roleLabel =
@@ -45,6 +56,11 @@ export function AccountPage() {
       username: username.trim(),
       email: email.trim(),
       avatar: avatar.trim(),
+      firstName: firstName.trim() || undefined,
+      lastName: lastName.trim() || undefined,
+      phone: phone.trim() || undefined,
+      hasDrivingLicenseB,
+      pzmLicense: pzmLicense.trim() || undefined,
     });
     setSavingProfile(false);
     if (result.ok) {
@@ -131,6 +147,58 @@ export function AccountPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-white">Imię</Label>
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Nazwisko</Label>
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white flex items-center gap-2">
+                  <Phone className="w-4 h-4 text-[#FFD700]" />
+                  Telefon
+                </Label>
+                <Input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              </div>
+              <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <Label className="text-white flex items-center gap-2">
+                      <IdCard className="w-4 h-4 text-[#FFD700]" />
+                      Prawo jazdy kat. B
+                    </Label>
+                  </div>
+                  <Switch checked={hasDrivingLicenseB} onCheckedChange={setHasDrivingLicenseB} />
+                </div>
+                {hasDrivingLicenseB && (
+                  <div className="space-y-2">
+                    <Label className="text-white text-sm">Licencja PZM</Label>
+                    <Input
+                      value={pzmLicense}
+                      onChange={(e) => setPzmLicense(e.target.value)}
+                      placeholder="Numer licencji PZM"
+                      className="bg-[#121212] border-[#2a2a2a] text-white"
+                    />
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label className="text-white">URL awatara</Label>

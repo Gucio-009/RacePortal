@@ -41,7 +41,7 @@ public class Event {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 60)
     private String category;
 
     @Column(nullable = false)
@@ -50,8 +50,17 @@ public class Event {
     @Column(nullable = false, length = 10)
     private String time;
 
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
+    @Column(name = "end_time", length = 10)
+    private String endTime;
+
     @Column(nullable = false, length = 120)
     private String track;
+
+    @Column(length = 120)
+    private String street;
 
     @Column(nullable = false, length = 80)
     private String city;
@@ -87,6 +96,30 @@ public class Event {
 
     @Column(name = "accept_registrations", nullable = false)
     private boolean acceptRegistrations = true;
+
+    @Column(name = "spectator_fee", precision = 10, scale = 2)
+    private BigDecimal spectatorFee;
+
+    @Column(name = "external_url", length = 500)
+    private String externalUrl;
+
+    @Column(name = "require_driving_license", nullable = false)
+    private boolean requireDrivingLicense = false;
+
+    @Column(name = "require_pzm_license", nullable = false)
+    private boolean requirePzmLicense = false;
+
+    @Column(name = "require_oc", nullable = false)
+    private boolean requireOc = false;
+
+    @Column(name = "require_pt", nullable = false)
+    private boolean requirePt = false;
+
+    @Column(name = "require_cage", nullable = false)
+    private boolean requireCage = false;
+
+    @Column(name = "require_registered", nullable = false)
+    private boolean requireRegistered = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id")
@@ -158,12 +191,36 @@ public class Event {
         this.time = time;
     }
 
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public String getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(String endTime) {
+        this.endTime = endTime;
+    }
+
     public String getTrack() {
         return track;
     }
 
     public void setTrack(String track) {
         this.track = track;
+    }
+
+    public String getStreet() {
+        return street;
+    }
+
+    public void setStreet(String street) {
+        this.street = street;
     }
 
     public String getCity() {
@@ -268,6 +325,70 @@ public class Event {
 
     public void setAcceptRegistrations(boolean acceptRegistrations) {
         this.acceptRegistrations = acceptRegistrations;
+    }
+
+    public BigDecimal getSpectatorFee() {
+        return spectatorFee;
+    }
+
+    public void setSpectatorFee(BigDecimal spectatorFee) {
+        this.spectatorFee = spectatorFee;
+    }
+
+    public String getExternalUrl() {
+        return externalUrl;
+    }
+
+    public void setExternalUrl(String externalUrl) {
+        this.externalUrl = externalUrl;
+    }
+
+    public boolean isRequireDrivingLicense() {
+        return requireDrivingLicense;
+    }
+
+    public void setRequireDrivingLicense(boolean requireDrivingLicense) {
+        this.requireDrivingLicense = requireDrivingLicense;
+    }
+
+    public boolean isRequirePzmLicense() {
+        return requirePzmLicense;
+    }
+
+    public void setRequirePzmLicense(boolean requirePzmLicense) {
+        this.requirePzmLicense = requirePzmLicense;
+    }
+
+    public boolean isRequireOc() {
+        return requireOc;
+    }
+
+    public void setRequireOc(boolean requireOc) {
+        this.requireOc = requireOc;
+    }
+
+    public boolean isRequirePt() {
+        return requirePt;
+    }
+
+    public void setRequirePt(boolean requirePt) {
+        this.requirePt = requirePt;
+    }
+
+    public boolean isRequireCage() {
+        return requireCage;
+    }
+
+    public void setRequireCage(boolean requireCage) {
+        this.requireCage = requireCage;
+    }
+
+    public boolean isRequireRegistered() {
+        return requireRegistered;
+    }
+
+    public void setRequireRegistered(boolean requireRegistered) {
+        this.requireRegistered = requireRegistered;
     }
 
     public Instant getCreatedAt() {

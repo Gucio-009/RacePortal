@@ -17,6 +17,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 
 | Plik | Opis |
 |------|------|
+| [`FAQ-przeglad.md`](./FAQ-przeglad.md) | **FAQ dla recenzentów** — seed, MySQL, Expo, `.env`, konta (czytaj najpierw) |
 | [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
 | [`changes.md`](./changes.md) | Chronologia prac |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
@@ -25,3 +26,5 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatnie wyniki testów |
 
 Root repozytorium zawiera tylko [`README.md`](../README.md) (szybki start) oraz konfigurację monorepo / Docker Compose.
+
+> **Dla osób przeglądających projekt:** pytania o seed, „niedziałający” MySQL/Expo i `env_file` są zebrane w [`FAQ-przeglad.md`](./FAQ-przeglad.md) — prosimy nie zgłaszać ich ponownie bez sprawdzenia FAQ.

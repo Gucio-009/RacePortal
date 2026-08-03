@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { Calendar, Plus, Users, Loader2, Check, X, Ban, MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Calendar, Plus, Users, Loader2, Check, X, Ban, MapPin, Pencil } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -9,12 +9,12 @@ import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../components/ui/select";
 import { LocationMapPicker } from "../components/LocationMapPicker";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Registration, RegistrationStatus } from "../lib/types";
 import { eventStatusLabel, registrationStatusLabel, formatEventDate } from "../lib/types";
-import { CAR_CATEGORIES } from "../lib/carMatch";
+import { ALL_EVENT_CATEGORIES, EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import {
   OTHER,
   VOIVODESHIPS,
@@ -56,6 +56,16 @@ const emptyForm = {
   paymentDeadlineHours: "72",
   freeCancelDays: "7",
   acceptRegistrations: true,
+  endDate: "",
+  endTime: "",
+  spectatorFee: "",
+  externalUrl: "",
+  requireDrivingLicense: false,
+  requirePzmLicense: false,
+  requireOc: false,
+  requirePt: false,
+  requireCage: false,
+  requireRegistered: false,
 };
 
 type FormState = typeof emptyForm;
@@ -80,24 +90,75 @@ function applyTrackPreset(prev: FormState, trackName: string): FormState {
   };
 }
 
+function eventToForm(event: ApiEvent): FormState {
+  const categoryInList = ALL_EVENT_CATEGORIES.includes(event.category);
+  const trackPreset = TRACK_PRESETS.find((t) => t.track === event.track);
+  const timeInList = (START_TIMES as readonly string[]).includes(event.time);
+  const imagePreset = EVENT_IMAGE_PRESETS.find((img) => img.url === event.imageUrl);
+  const entryFeeStr = event.entryFee != null ? String(event.entryFee) : "";
+  const entryFeeOther =
+    Boolean(event.paid && entryFeeStr && !(ENTRY_FEE_PRESETS as readonly string[]).includes(entryFeeStr));
+
+  let city = event.city;
+  let cityOther = "";
+  if (!trackPreset) {
+    const cityInList = TRACK_PRESETS.some((t) => t.city === event.city);
+    if (!cityInList) {
+      city = OTHER;
+      cityOther = event.city;
+    }
+  }
+
+  return {
+    name: event.name,
+    description: event.description,
+    category: categoryInList ? event.category : OTHER,
+    categoryOther: categoryInList ? "" : event.category,
+    date: event.date.slice(0, 10),
+    time: timeInList ? event.time : OTHER,
+    timeOther: timeInList ? "" : event.time,
+    trackKey: trackPreset ? trackPreset.track : OTHER,
+    trackOther: trackPreset ? "" : event.track,
+    city,
+    cityOther,
+    voivodeship: event.voivodeship,
+    imageUrl: event.imageUrl ?? "",
+    imageCustom: Boolean(event.imageUrl && !imagePreset),
+    lat: event.lat != null ? String(event.lat) : "",
+    lng: event.lng != null ? String(event.lng) : "",
+    paid: event.paid ?? false,
+    entryFee: entryFeeStr,
+    entryFeeOther,
+    bankAccount: event.bankAccount ?? "",
+    paymentDeadlineHours: String(event.paymentDeadlineHours ?? 72),
+    freeCancelDays: String(event.freeCancelDays ?? 7),
+    acceptRegistrations: event.acceptRegistrations ?? true,
+    endDate: event.endDate?.slice(0, 10) ?? "",
+    endTime: event.endTime ?? "",
+    spectatorFee: event.spectatorFee != null ? String(event.spectatorFee) : "",
+    externalUrl: event.externalUrl ?? "",
+    requireDrivingLicense: event.requireDrivingLicense ?? false,
+    requirePzmLicense: event.requirePzmLicense ?? false,
+    requireOc: event.requireOc ?? false,
+    requirePt: event.requirePt ?? false,
+    requireCage: event.requireCage ?? false,
+    requireRegistered: event.requireRegistered ?? false,
+  };
+}
+
 export function OrganizerPanelPage() {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
   const [comments, setComments] = useState<Record<string, string>>({});
-  const [apiCategories, setApiCategories] = useState<string[]>([]);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
-
-  const categoryOptions = useMemo(() => {
-    const set = new Set<string>([...CAR_CATEGORIES, ...apiCategories]);
-    return Array.from(set).sort((a, b) => a.localeCompare(b, "pl"));
-  }, [apiCategories]);
 
   const resolvedCategory =
     form.category === OTHER ? form.categoryOther.trim() : form.category.trim();
@@ -119,10 +180,6 @@ export function OrganizerPanelPage() {
 
   useEffect(() => {
     loadEvents();
-    api
-      .get<string[]>("/api/events/meta/categories")
-      .then(setApiCategories)
-      .catch(() => setApiCategories([]));
   }, []);
 
   const loadRegistrations = async (eventId: string) => {
@@ -137,7 +194,19 @@ export function OrganizerPanelPage() {
     }
   };
 
-  const handleCreate = async () => {
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setCreateOpen(true);
+  };
+
+  const openEdit = (event: OrganizerEvent) => {
+    setEditingId(event.id);
+    setForm(eventToForm(event));
+    setCreateOpen(true);
+  };
+
+  const handleSave = async () => {
     if (
       !form.name.trim() ||
       !form.description.trim() ||
@@ -155,36 +224,55 @@ export function OrganizerPanelPage() {
       return;
     }
     setSaving(true);
+    const payload = {
+      name: form.name.trim(),
+      description: form.description.trim(),
+      category: resolvedCategory,
+      date: form.date,
+      time: resolvedTime || "10:00",
+      track: resolvedTrack,
+      city: resolvedCity,
+      voivodeship: form.voivodeship.trim(),
+      imageUrl: form.imageUrl.trim() || undefined,
+      lat: form.lat ? Number(form.lat) : undefined,
+      lng: form.lng ? Number(form.lng) : undefined,
+      paid: form.paid,
+      entryFee: form.paid && resolvedEntryFee ? Number(resolvedEntryFee) : undefined,
+      bankAccount: form.paid ? form.bankAccount.trim() : undefined,
+      paymentDeadlineHours: form.paid ? Number(form.paymentDeadlineHours) || 72 : undefined,
+      freeCancelDays: Number(form.freeCancelDays) || 7,
+      acceptRegistrations: form.acceptRegistrations,
+      endDate: form.endDate.trim() || undefined,
+      endTime: form.endTime.trim() || undefined,
+      spectatorFee: form.spectatorFee.trim() ? Number(form.spectatorFee) : undefined,
+      externalUrl: form.externalUrl.trim() || undefined,
+      requireDrivingLicense: form.acceptRegistrations ? form.requireDrivingLicense : false,
+      requirePzmLicense: form.acceptRegistrations ? form.requirePzmLicense : false,
+      requireOc: form.acceptRegistrations ? form.requireOc : false,
+      requirePt: form.acceptRegistrations ? form.requirePt : false,
+      requireCage: form.acceptRegistrations ? form.requireCage : false,
+      requireRegistered: form.acceptRegistrations ? form.requireRegistered : false,
+    };
     try {
-      await api.post("/api/events", {
-        name: form.name.trim(),
-        description: form.description.trim(),
-        category: resolvedCategory,
-        date: form.date,
-        time: resolvedTime || "10:00",
-        track: resolvedTrack,
-        city: resolvedCity,
-        voivodeship: form.voivodeship.trim(),
-        imageUrl: form.imageUrl.trim() || undefined,
-        lat: form.lat ? Number(form.lat) : undefined,
-        lng: form.lng ? Number(form.lng) : undefined,
-        paid: form.paid,
-        entryFee: form.paid && resolvedEntryFee ? Number(resolvedEntryFee) : undefined,
-        bankAccount: form.paid ? form.bankAccount.trim() : undefined,
-        paymentDeadlineHours: form.paid ? Number(form.paymentDeadlineHours) || 72 : undefined,
-        freeCancelDays: Number(form.freeCancelDays) || 7,
-        acceptRegistrations: form.acceptRegistrations,
-      });
-      toast.success("Wydarzenie utworzone — oczekuje na akceptację admina");
+      if (editingId) {
+        await api.patch(`/api/events/${editingId}`, payload);
+        toast.success("Wydarzenie zaktualizowane");
+      } else {
+        await api.post("/api/events", payload);
+        toast.success("Wydarzenie utworzone — oczekuje na akceptację admina");
+      }
       setCreateOpen(false);
       setForm(emptyForm);
+      setEditingId(null);
       loadEvents();
-      api
-        .get<string[]>("/api/events/meta/categories")
-        .then(setApiCategories)
-        .catch(() => undefined);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się utworzyć wydarzenia");
+      toast.error(
+        e instanceof ApiError
+          ? e.message
+          : editingId
+            ? "Nie udało się zaktualizować wydarzenia"
+            : "Nie udało się utworzyć wydarzenia",
+      );
     } finally {
       setSaving(false);
     }
@@ -231,7 +319,7 @@ export function OrganizerPanelPage() {
             </h1>
             <p className="text-[#9ca3af]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
           </div>
-          <Button onClick={() => setCreateOpen(true)} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
+          <Button onClick={openCreate} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 800 }}>
             <Plus className="w-4 h-4 mr-2" />
             NOWE WYDARZENIE
           </Button>
@@ -284,6 +372,14 @@ export function OrganizerPanelPage() {
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() => openEdit(event)}
+                        className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+                      >
+                        <Pencil className="w-4 h-4 mr-2" />
+                        Edytuj
+                      </Button>
                       <Button
                         variant="outline"
                         onClick={() => loadRegistrations(event.id)}
@@ -412,13 +508,14 @@ export function OrganizerPanelPage() {
           setCreateOpen(open);
           if (!open) {
             setForm(emptyForm);
+            setEditingId(null);
           }
         }}
       >
         <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-['Orbitron']" style={{ fontWeight: 800 }}>
-              Nowe wydarzenie
+              {editingId ? "Edytuj wydarzenie" : "Nowe wydarzenie"}
             </DialogTitle>
             <p className="text-sm text-[#9ca3af]">
               Większość pól wybierasz z listy — „Inne…” tylko gdy potrzebujesz własnej wartości.
@@ -460,11 +557,16 @@ export function OrganizerPanelPage() {
                 <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
                   <SelectValue placeholder="Wybierz kategorię" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-                  {categoryOptions.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
+                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+                  {EVENT_CATEGORY_GROUPS.map((g) => (
+                    <SelectGroup key={g.group}>
+                      <SelectLabel className="text-[#FFD700]">{g.group}</SelectLabel>
+                      {g.items.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
                   ))}
                   <SelectItem value={OTHER}>Inne…</SelectItem>
                 </SelectContent>
@@ -718,6 +820,74 @@ export function OrganizerPanelPage() {
               />
             </div>
 
+            {form.acceptRegistrations && (
+              <div className="sm:col-span-2 space-y-3 border border-[#2a2a2a] rounded-md p-3">
+                <p className="text-sm text-[#FFD700]" style={{ fontWeight: 700 }}>
+                  Wymagania dla kierowców
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {(
+                    [
+                      ["requireDrivingLicense", "Prawo jazdy kat. B"],
+                      ["requirePzmLicense", "Licencja PZM"],
+                      ["requireOc", "Ubezpieczenie OC"],
+                      ["requirePt", "Przegląd techniczny (PT)"],
+                      ["requireCage", "Klatka bezpieczeństwa"],
+                      ["requireRegistered", "Zarejestrowane auto"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between gap-2 rounded border border-[#2a2a2a] px-3 py-2">
+                      <Label className="text-white text-sm">{label}</Label>
+                      <Switch
+                        checked={form[key]}
+                        onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Data zakończenia (opcj.)</Label>
+              <Input
+                type="date"
+                value={form.endDate}
+                onChange={(e) => setForm({ ...form, endDate: e.target.value })}
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Godzina zakończenia (opcj.)</Label>
+              <Input
+                type="time"
+                value={form.endTime}
+                onChange={(e) => setForm({ ...form, endTime: e.target.value })}
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Bilet widza (PLN, opcj.)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={form.spectatorFee}
+                onChange={(e) => setForm({ ...form, spectatorFee: e.target.value })}
+                placeholder="np. 50"
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
+            </div>
+            <div className="space-y-2 sm:col-span-2">
+              <Label>Link zewnętrzny (opcj.)</Label>
+              <Input
+                value={form.externalUrl}
+                onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
+                placeholder="https://organizator.pl/wydarzenie"
+                className="bg-[#121212] border-[#2a2a2a] text-white"
+              />
+            </div>
+
             <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
               <div>
                 <Label className="text-white">Wydarzenie płatne</Label>
@@ -840,8 +1010,8 @@ export function OrganizerPanelPage() {
             <Button variant="outline" onClick={() => setCreateOpen(false)} className="border-[#2a2a2a] text-white">
               Anuluj
             </Button>
-            <Button onClick={handleCreate} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
-              {saving ? "TWORZENIE..." : "Utwórz"}
+            <Button onClick={handleSave} disabled={saving} className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+              {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Utwórz"}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -5,7 +5,7 @@ import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { api } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
-import { DEFAULT_EVENT_IMAGE, eventImage } from "../lib/types";
+import { eventImage } from "../lib/types";
 import { gallery as fallbackGallery } from "../data/events";
 
 interface GalleryItem {
@@ -81,23 +81,18 @@ export function GalleryPage() {
 
   return (
     <div className="min-h-screen">
-      <section
-        className="relative py-20 bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('${DEFAULT_EVENT_IMAGE}')`,
-        }}
-      >
+      <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
         <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
-            <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "48px", fontWeight: 900 }}>
-              GALERIA <span className="text-[#FFD700]">WYŚCIGÓW</span>
+            <h1 className="font-['Orbitron'] text-white mb-3" style={{ fontSize: "40px", fontWeight: 900 }}>
+              GALERIA <span className="text-[#FFD700]">(ODŁOŻONA)</span>
             </h1>
-            <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
-              Najlepsze ujęcia z torów w całej Polsce.
+            <p className="text-[#9ca3af] max-w-2xl">
+              Zgodnie z uwagami przeglądu — rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
             </p>
           </div>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-full md:w-56 bg-[#1a1a1a] border-[#2a2a2a] text-white h-12">
+            <SelectTrigger className="w-full md:w-56 bg-[#121212] border-[#2a2a2a] text-white h-12">
               <SelectValue placeholder="Kategoria" />
             </SelectTrigger>
             <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">

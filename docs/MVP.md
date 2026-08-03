@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-02 09:21 (mapa z pinezką przy tworzeniu wydarzenia)
+**Ostatnia synchronizacja:** 2026-08-03 09:20 (uwagi przeglądu: filtry+3 widoki, kategorie, admin, formularze, galeria deferred)
 
 ---
 

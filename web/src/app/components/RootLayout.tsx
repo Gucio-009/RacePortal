@@ -88,10 +88,10 @@ export function RootLayout() {
             <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
               ARCHIWUM
             </NavLink>
-            <NavLink to="/galeria" className={navLinkClass} style={{ fontWeight: 600 }}>
-              GALERIA
+            <NavLink to="/galeria" className={navLinkClass} style={{ fontWeight: 600 }} title="Galeria odłożona na późniejszy etap">
+              GALERIA <span className="text-[#9ca3af] text-[10px]">(później)</span>
             </NavLink>
-            <NavLink to="/mapa" className={navLinkClass} style={{ fontWeight: 600 }}>
+            <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
               MAPA
             </NavLink>
 
