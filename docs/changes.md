@@ -436,4 +436,12 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-03 09:21 — FAQ przeglądu.*
+## 23. FAQ §4 — prostszy opis `.env.example` (2026-08-03, 09:25)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:25 | FAQ brzmiało jak opis żywej awarii | Jawny status „naprawione” + krótka historia | Recenzent mylił „przyczynę historyczną” ze stanem obecnym |
+
+---
+
+*Ostatnia aktualizacja: 2026-08-03 09:25 — FAQ §4 clarification.*

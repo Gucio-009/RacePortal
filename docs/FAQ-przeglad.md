@@ -49,15 +49,19 @@ E2E Playwright mobile wymaga tego preview — to zamierzone.
 
 ---
 
-## 4. `docker compose` pada na `env_file: ./backend/.env.example`
+## 4. Compose i `.env.example` — **naprawione**
 
-| Było | Jest |
-|------|------|
-| `.gitignore` miało `.env.*` → plik nie trafiał do git | Wyjątki `!.env.example` i `!backend/.env.example` |
-| Brak pliku przy clone | [`backend/.env.example`](../backend/.env.example) jest w repo |
+**Status:** zamknięte. Po `git pull` na `wojtek` plik jest w repo.
 
-Compose `api` nadal wskazuje `env_file: ./backend/.env.example`; wartości i tak nadpisuje sekcja `environment:` w `docker-compose.yml`.  
-Po `git pull` plik powinien być na dysku — **nie usuwaj** wpisu `env_file` bez synchronizacji z zespołem.
+**Co zgłaszano (kiedyś):**  
+`docker-compose.yml` wymaga pliku `backend/.env.example`. Reguła `.env.*` w `.gitignore` sprawiała, że Git **nie commitował** tego pliku. Autor miał go lokalnie → u niego działało. Po `git clone` pliku nie było → Compose padał z błędem „env file not found”.
+
+**Co zrobiono:**  
+- wyjątki w `.gitignore`: `!.env.example` i `!backend/.env.example`  
+- plik [`backend/.env.example`](../backend/.env.example) jest w Git  
+
+**Sprawdzenie:** `ls backend/.env.example` po clone/pull — plik musi być.  
+Compose nadal może mieć `env_file: ./backend/.env.example`; prawdziwe wartości i tak nadpisuje sekcja `environment:` w Compose.
 
 ---
 
