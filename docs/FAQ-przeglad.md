@@ -49,7 +49,7 @@ E2E Playwright mobile wymaga tego preview — to zamierzone.
 
 ---
 
-## 4. Compose i `.env.example` — **naprawione**
+## 4. Compose i `.env.example`
 
 **Status:** zamknięte. Po `git pull` na `wojtek` plik jest w repo.
 
