@@ -18,6 +18,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 | Plik | Opis |
 |------|------|
 | [`FAQ-przeglad.md`](./FAQ-przeglad.md) | **FAQ dla recenzentów** — seed, MySQL, Expo, `.env`, konta (czytaj najpierw) |
+| [`mobile.md`](./mobile.md) | **Aplikacja mobilna** — zmiany, efekty, parity, chronologia Expo |
 | [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
 | [`changes.md`](./changes.md) | Chronologia prac |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |

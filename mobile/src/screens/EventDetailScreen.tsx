@@ -8,41 +8,66 @@ import {
   ActivityIndicator,
   Pressable,
   Alert,
+  Linking,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { api, ApiError } from "../api/client";
-import type { ApiEvent } from "../api/types";
+import type { ApiEvent, Car } from "../api/types";
 import { DEFAULT_IMAGE } from "../api/types";
+import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
-import type { RootStackParamList } from "../../App";
+import type { EventsStackParamList, MoreStackParamList } from "../navigation/types";
 
-type Props = NativeStackScreenProps<RootStackParamList, "EventDetail">;
+type Props =
+  | NativeStackScreenProps<EventsStackParamList, "EventDetail">
+  | NativeStackScreenProps<MoreStackParamList, "EventDetail">;
 
 export function EventDetailScreen({ route }: Props) {
   const { id } = route.params;
+  const { user } = useAuth();
   const [event, setEvent] = useState<ApiEvent | null>(null);
+  const [cars, setCars] = useState<Car[]>([]);
+  const [carId, setCarId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [registering, setRegistering] = useState(false);
 
   useEffect(() => {
-    api
-      .get<ApiEvent>(`/api/events/${id}`)
-      .then(setEvent)
+    Promise.all([
+      api.get<ApiEvent>(`/api/events/${id}`),
+      user ? api.get<Car[]>("/api/garage").catch(() => [] as Car[]) : Promise.resolve([] as Car[]),
+    ])
+      .then(([ev, garage]) => {
+        setEvent(ev);
+        setCars(garage);
+        setCarId(garage[0]?.id ?? null);
+      })
       .catch(() => setEvent(null))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, user]);
 
   const register = async () => {
     if (!event) return;
+    if (!user) {
+      Alert.alert("Logowanie", "Zaloguj się, żeby zapisać się na wydarzenie.");
+      return;
+    }
     setRegistering(true);
     try {
-      await api.post("/api/registrations", { eventId: event.id });
+      await api.post("/api/registrations", {
+        eventId: event.id,
+        carId: carId || undefined,
+      });
       Alert.alert("OK", "Zgłoszenie wysłane");
     } catch (e) {
       Alert.alert("Błąd", e instanceof ApiError ? e.message : "Nie udało się zgłosić");
     } finally {
       setRegistering(false);
     }
+  };
+
+  const openMaps = () => {
+    if (!event?.lat || !event?.lng) return;
+    Linking.openURL(`http://maps.apple.com/?ll=${event.lat},${event.lng}&q=${encodeURIComponent(event.track)}`);
   };
 
   if (loading) {
@@ -73,7 +98,38 @@ export function EventDetailScreen({ route }: Props) {
         <Text style={styles.meta}>
           {event.track}, {event.city}
         </Text>
+        {event.paid ? (
+          <Text style={styles.meta}>
+            Wpisowe: {event.entryFee != null ? `${event.entryFee} PLN` : "płatne"}
+          </Text>
+        ) : (
+          <Text style={styles.meta}>Wstęp / start darmowy</Text>
+        )}
         <Text style={styles.desc}>{event.description}</Text>
+
+        {cars.length > 0 ? (
+          <View style={{ marginTop: 16, gap: 8 }}>
+            <Text style={styles.section}>Auto z garażu</Text>
+            {cars.map((car) => (
+              <Pressable
+                key={car.id}
+                style={[styles.carChip, carId === car.id && styles.carChipOn]}
+                onPress={() => setCarId(car.id)}
+              >
+                <Text style={styles.carText}>
+                  {car.make} {car.model}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
+        {event.lat && event.lng ? (
+          <Pressable style={styles.mapBtn} onPress={openMaps}>
+            <Text style={styles.mapBtnText}>Otwórz w Mapach</Text>
+          </Pressable>
+        ) : null}
+
         <Pressable style={styles.btn} onPress={register} disabled={registering}>
           {registering ? (
             <ActivityIndicator color="#121212" />
@@ -96,8 +152,26 @@ const styles = StyleSheet.create({
   meta: { color: colors.muted, fontSize: 14 },
   desc: { color: colors.muted, marginTop: 12, lineHeight: 22 },
   muted: { color: colors.muted },
+  section: { color: colors.text, fontWeight: "800" },
+  carChip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 10,
+  },
+  carChipOn: { borderColor: colors.gold },
+  carText: { color: colors.text },
+  mapBtn: {
+    marginTop: 12,
+    borderWidth: 1,
+    borderColor: colors.gold,
+    borderRadius: 10,
+    paddingVertical: 12,
+    alignItems: "center",
+  },
+  mapBtnText: { color: colors.gold, fontWeight: "700" },
   btn: {
-    marginTop: 24,
+    marginTop: 16,
     backgroundColor: colors.gold,
     borderRadius: 10,
     paddingVertical: 16,

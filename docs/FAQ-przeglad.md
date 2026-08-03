@@ -34,7 +34,9 @@ Błąd „connection refused” w przeglądarce na `http://localhost:3307` **nie
 
 ---
 
-## 3. Expo Web `:8082` „nie działa”
+## 3. Expo Web `:8082` / Expo Go „nie działa”
+
+### Expo poza Compose
 
 Expo **nie jest usługą Docker Compose**. Po `docker compose up` port 8082 będzie pusty, dopóki nie uruchomisz mobilki osobno:
 
@@ -44,8 +46,19 @@ npm install
 npx expo start --web --port 8082
 ```
 
-Szczegóły: [`mobile/README.md`](../mobile/README.md).  
-E2E Playwright mobile wymaga tego preview — to zamierzone.
+### Expo Go: *Project is incompatible with this version of Expo Go*
+
+Projekt używa **Expo SDK 57**. Expo Go z App Store / Play często jest **starsze** → nie otworzy projektu.
+
+| System | Co robić |
+|--------|----------|
+| **macOS** | Xcode → iOS Simulator → `npm start` → **`i`** |
+| **Windows** | Android Studio (emulator) → `npm start` → **`a`**, albo Expo web `:8082` |
+| Telefon | Ta sama Wi‑Fi + `EXPO_PUBLIC_API_URL=http://IP_PC:4000` — **tylko** jeśli Expo Go obsługuje SDK 57 |
+
+Pełna instrukcja Mac/Windows: [`mobile/README.md`](../mobile/README.md).  
+Historia / efekty: [`mobile.md`](./mobile.md).  
+E2E Playwright mobile wymaga preview web `:8082` — to zamierzone.
 
 ---
 
@@ -111,6 +124,7 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Edycja wydarzenia | Panel organizatora → **Edytuj** (PATCH API) |
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
 | Galeria | Świadomie **odłożona** (nav: „później”) — nie jest luką MVP do domknięcia teraz |
+| Mobile Expo | Parity z webem (taby Eventy/Moje/Garaż/Więcej) — zob. [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
 | Upload plików (grafika/załączniki) | Nadal URL / poza prostym MVP (Specyfikacja Formularzy — etap późniejszy dla binariów) |
 
 ---

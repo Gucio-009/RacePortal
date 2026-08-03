@@ -6,7 +6,7 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 
 - Frontend: `web/` — Vite + React + Tailwind + shadcn/ui, font Orbitron, accent `#FFD700`, dark UI
 - Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation
-- Mobile: `mobile/` — Expo 57 (login, events, rejestracja)
+- Mobile: `mobile/` — Expo 57 (parity z webem: eventy, garaż, panele); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Docker Compose: `web`, `api`, `mysql`, `mailhog` (Mailpit), `backup`
 - Testy: JUnit/MockMvc/Testcontainers (API), Vitest (mobile unit), Playwright E2E (web + Expo web)
@@ -58,7 +58,8 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 
 **Źródło prawdy dla recenzentów:** [`FAQ-przeglad.md`](./FAQ-przeglad.md) (seed, MySQL TCP, Expo poza Compose, `.env.example`).
 
-Krótko: seed = `DataInitializer` przy starcie API; MySQL `:3307` ≠ HTTP; Expo `:8082` ręcznie z `mobile/`.
+Krótko: seed = `DataInitializer` przy starcie API; MySQL `:3307` ≠ HTTP; Expo `:8082` ręcznie z `mobile/`.  
+Mobile Mac/Windows + Expo Go vs SDK 57: [`mobile/README.md`](../mobile/README.md), [`mobile.md`](./mobile.md).
 
 ## Konta deweloperskie (seed)
 

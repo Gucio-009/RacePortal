@@ -8,6 +8,7 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -15,31 +16,42 @@ import { api } from "../api/client";
 import type { ApiEvent, PaginatedEvents } from "../api/types";
 import { DEFAULT_IMAGE } from "../api/types";
 import { useAuth } from "../context/AuthContext";
+import { ScreenHeader, GhostButton } from "../components/ui";
 import { colors } from "../theme/colors";
-import type { RootStackParamList } from "../../App";
+import type { EventsStackParamList } from "../navigation/types";
 
 export function EventsScreen() {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
   const { user, logout } = useAuth();
   const [items, setItems] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [q, setQ] = useState("");
+  const [paid, setPaid] = useState<"all" | "true" | "false">("all");
+  const [category, setCategory] = useState("");
 
-  const load = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    setError(null);
-    try {
-      const res = await api.get<PaginatedEvents>("/api/events?limit=30");
-      setItems(res.items);
-    } catch {
-      setError("Nie udało się pobrać wydarzeń. Czy API działa?");
-      setItems([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      setError(null);
+      try {
+        const params = new URLSearchParams({ limit: "40", page: "1" });
+        if (q.trim()) params.set("q", q.trim());
+        if (paid !== "all") params.set("paid", paid);
+        if (category.trim()) params.set("category", category.trim());
+        const res = await api.get<PaginatedEvents>(`/api/events?${params}`);
+        setItems(res.items);
+      } catch {
+        setError("Nie udało się pobrać wydarzeń. Czy API działa?");
+        setItems([]);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [q, paid, category],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -50,16 +62,48 @@ export function EventsScreen() {
 
   return (
     <View style={styles.root}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>
-            WYDARZENIA <Text style={styles.gold}>•</Text>
-          </Text>
-          <Text style={styles.user}>{user?.username ?? "Gość"}</Text>
+      <ScreenHeader
+        title="WYDARZENIA"
+        subtitle={user?.username ?? "Gość"}
+        right={user ? <GhostButton label="Wyloguj" onPress={logout} /> : null}
+      />
+
+      <View style={styles.filters}>
+        <TextInput
+          style={styles.search}
+          placeholder="Szukaj…"
+          placeholderTextColor={colors.muted}
+          value={q}
+          onChangeText={setQ}
+          onSubmitEditing={() => load()}
+          returnKeyType="search"
+        />
+        <View style={styles.chips}>
+          {(
+            [
+              ["all", "Wszystkie"],
+              ["false", "Darmowe"],
+              ["true", "Płatne"],
+            ] as const
+          ).map(([value, label]) => (
+            <Pressable
+              key={value}
+              style={[styles.chip, paid === value && styles.chipOn]}
+              onPress={() => setPaid(value)}
+            >
+              <Text style={[styles.chipText, paid === value && styles.chipTextOn]}>{label}</Text>
+            </Pressable>
+          ))}
         </View>
-        <Pressable onPress={logout} style={styles.logout}>
-          <Text style={styles.logoutText}>Wyloguj</Text>
-        </Pressable>
+        <TextInput
+          style={styles.search}
+          placeholder="Kategoria (np. Drift)"
+          placeholderTextColor={colors.muted}
+          value={category}
+          onChangeText={setCategory}
+          onSubmitEditing={() => load()}
+        />
+        <GhostButton label="Filtruj" onPress={() => load()} />
       </View>
 
       {loading ? (
@@ -91,6 +135,7 @@ export function EventsScreen() {
                 </Text>
                 <Text style={styles.meta}>
                   {item.city}, {item.voivodeship}
+                  {item.paid ? " · płatne" : " · darmowe"}
                 </Text>
               </View>
             </Pressable>
@@ -103,28 +148,27 @@ export function EventsScreen() {
 
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
-  header: {
-    paddingTop: 56,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+  filters: { padding: 12, gap: 8, borderBottomWidth: 1, borderBottomColor: colors.border },
+  search: {
     backgroundColor: colors.card,
-  },
-  title: { color: colors.text, fontSize: 22, fontWeight: "900", letterSpacing: 1 },
-  gold: { color: colors.gold },
-  user: { color: colors.muted, marginTop: 2, fontSize: 13 },
-  logout: {
     borderWidth: 1,
-    borderColor: colors.gold,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    borderColor: colors.border,
     borderRadius: 8,
+    color: colors.text,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
   },
-  logoutText: { color: colors.gold, fontWeight: "700", fontSize: 12 },
+  chips: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  chipOn: { borderColor: colors.gold, backgroundColor: "#2a2500" },
+  chipText: { color: colors.muted, fontSize: 12, fontWeight: "700" },
+  chipTextOn: { color: colors.gold },
   card: {
     backgroundColor: colors.card,
     borderRadius: 12,

@@ -10,9 +10,11 @@ const TOKEN_KEY = "raceportal_token";
 
 export class ApiError extends Error {
   status: number;
-  constructor(status: number, message: string) {
+  details?: Record<string, string>;
+  constructor(status: number, message: string, details?: Record<string, string>) {
     super(message);
     this.status = status;
+    this.details = details;
   }
 }
 
@@ -43,6 +45,15 @@ export async function setToken(token: string | null): Promise<void> {
   }
 }
 
+function formatApiError(error?: string, details?: Record<string, string>): string {
+  const base = error || "Żądanie nie powiodło się";
+  if (!details || Object.keys(details).length === 0) return base;
+  const fields = Object.entries(details)
+    .map(([field, msg]) => `${field}: ${msg}`)
+    .join("; ");
+  return `${base} (${fields})`;
+}
+
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = await getToken();
   const headers: Record<string, string> = { Accept: "application/json" };
@@ -62,7 +73,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   if (res.status === 204) return undefined as T;
 
-  let data: { error?: string; message?: string } = {};
+  let data: { error?: string; message?: string; details?: Record<string, string> } = {};
   try {
     data = await res.json();
   } catch {
@@ -70,7 +81,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   if (!res.ok) {
-    throw new ApiError(res.status, data.error || data.message || "Żądanie nie powiodło się");
+    throw new ApiError(res.status, formatApiError(data.error || data.message, data.details), data.details);
   }
   return data as T;
 }
@@ -78,4 +89,6 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
+  delete: (path: string) => request<void>("DELETE", path),
 };

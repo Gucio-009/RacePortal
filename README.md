@@ -79,13 +79,16 @@ docker compose down
 
 ## Aplikacja mobilna
 
+Pełna instrukcja (**macOS** = iOS Simulator / **Windows** = Android Emulator lub Expo web):  
+[`mobile/README.md`](./mobile/README.md) · historia: [`docs/mobile.md`](./docs/mobile.md)
+
 ```bash
 docker compose up -d
 cd mobile && npm install && npm start
+# Mac: klawisz i   |   Windows: klawisz a   |   web: npx expo start --web --port 8082
 ```
 
-Expo web (także pod E2E): `npx expo start --web --port 8082`  
-Szczegóły: [`mobile/README.md`](./mobile/README.md)
+**Uwaga SDK 57:** Expo Go ze sklepu często jest za stare → błąd *incompatible*. Na Macu użyj Simulatora (`i`), na Windowsie emulatora Androida (`a`).
 
 ---
 

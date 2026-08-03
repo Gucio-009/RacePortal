@@ -8,11 +8,16 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useAuth } from "../context/AuthContext";
 import { colors } from "../theme/colors";
+import type { AuthStackParamList } from "../navigation/types";
 
-export function LoginScreen() {
+type Props = NativeStackScreenProps<AuthStackParamList, "Login">;
+
+export function LoginScreen({ navigation }: Props) {
   const { login } = useAuth();
   const [email, setEmail] = useState("test@wp.pl");
   const [password, setPassword] = useState("test123");
@@ -32,48 +37,52 @@ export function LoginScreen() {
       style={styles.root}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-      <Text style={styles.brand}>
-        RACE<Text style={styles.gold}>PORTAL</Text>
-      </Text>
-      <Text style={styles.sub}>Uproszczona wersja mobilna</Text>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <Text style={styles.brand}>
+          RACE<Text style={styles.gold}>PORTAL</Text>
+        </Text>
+        <Text style={styles.sub}>Uproszczona wersja mobilna</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.label}>Email</Text>
-        <TextInput
-          style={styles.input}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-          placeholderTextColor={colors.muted}
-          placeholder="email@example.com"
-        />
-        <Text style={styles.label}>Hasło</Text>
-        <TextInput
-          style={styles.input}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          placeholderTextColor={colors.muted}
-          placeholder="••••••••"
-        />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
-        <Pressable style={styles.btn} onPress={onSubmit} disabled={busy}>
-          {busy ? <ActivityIndicator color="#121212" /> : <Text style={styles.btnText}>ZALOGUJ</Text>}
-        </Pressable>
-        <Text style={styles.hint}>Demo: test@wp.pl / test123</Text>
-      </View>
+        <View style={styles.card}>
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+            placeholderTextColor={colors.muted}
+            placeholder="email@example.com"
+          />
+          <Text style={styles.label}>Hasło</Text>
+          <TextInput
+            style={styles.input}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            placeholderTextColor={colors.muted}
+            placeholder="••••••••"
+          />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Pressable style={styles.btn} onPress={onSubmit} disabled={busy}>
+            {busy ? <ActivityIndicator color="#121212" /> : <Text style={styles.btnText}>ZALOGUJ</Text>}
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate("ForgotPassword")}>
+            <Text style={styles.link}>Nie pamiętam hasła</Text>
+          </Pressable>
+          <Pressable onPress={() => navigation.navigate("Register")}>
+            <Text style={styles.link}>Załóż konto</Text>
+          </Pressable>
+          <Text style={styles.hint}>Demo: test@wp.pl / test123</Text>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: colors.bg,
-    justifyContent: "center",
-    padding: 24,
-  },
+  root: { flex: 1, backgroundColor: colors.bg },
+  scroll: { flexGrow: 1, justifyContent: "center", padding: 24 },
   brand: {
     color: colors.text,
     fontSize: 36,
@@ -112,4 +121,5 @@ const styles = StyleSheet.create({
   btnText: { color: "#121212", fontWeight: "800", letterSpacing: 1 },
   error: { color: colors.danger, fontSize: 13 },
   hint: { color: colors.muted, fontSize: 12, textAlign: "center", marginTop: 8 },
+  link: { color: colors.gold, textAlign: "center", fontWeight: "600", marginTop: 4 },
 });

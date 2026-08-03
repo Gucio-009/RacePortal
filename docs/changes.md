@@ -444,4 +444,33 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-03 09:25 — FAQ §4 clarification.*
+---
+
+## 24. Mobile Expo — parity z webem + instrukcja iOS Simulator (2026-08-03, 10:30)
+
+**Kontekst / argument:** mobile miało tylko login + listę/detal. Web ma pełny zestaw funkcji. Brak Xcode na maszynie deweloperskiej blokował emulator iOS.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 10:30 | 3 ekrany (login/events/detail) | Taby: Eventy / Moje / Garaż / Więcej + rejestracja, reset, konto, ustawienia, admin, organizator, archiwum, wniosek org. | Ten sam API co web |
+| 10:30 | README: „później garaż/admin” | [`mobile/README.md`](../mobile/README.md) — instalacja Xcode + tabela parity | Recenzent/dev wie jak odpalić `i` |
+
+---
+
+## 25. Dokument `docs/mobile.md` — zmiany i efekty mobile (2026-08-03, 10:35)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 10:35 | Historia mobile rozproszona (changes §9/§24, README) | Kanoniczny [`docs/mobile.md`](./mobile.md) + linki z docs/README i mobile/README | Jeden opis „co zrobiliśmy i jaki efekt” pod dyplom/odbiór |
+
+---
+
+## 26. Instrukcja mobile Mac/Windows + Expo Go vs SDK 57 (2026-08-03, 10:55)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 10:55 | README głównie pod Mac/Xcode; Expo Go sugerowane bez caveatów | [`mobile/README.md`](../mobile/README.md) — sekcje macOS / Windows; FAQ §3 o *incompatible Expo Go* | SDK 57 ≠ sklepowa Expo Go; Windows bez iOS Simulatora |
+
+---
+
+*Ostatnia aktualizacja: 2026-08-03 10:55 — mobile Mac/Windows docs.*
