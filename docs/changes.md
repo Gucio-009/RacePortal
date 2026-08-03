@@ -501,4 +501,17 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 29. Shared types, Organizer split, markers API, e-mail UI (2026-08-03, 17:10)
+
+**Kontekst / argument:** dryf web↔mobile, monolityczny panel org., mapa/kalendarz obcinane przez `limit≤50` mimo klienta `200`, pole e-mail sugerowało zmianę bez API.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 17:10 | Duplikaty typów w web + mobile | `packages/api-types` + re-exporty | Jedno źródło prawdy |
+| 17:10 | `OrganizerPanelPage` ~1031 LOC | Orchestrator + `components/organizer/*` | Łatwiejszy review |
+| 17:10 | Mapa/kalendarz przez `/api/events?limit=200` (klamp 50) | `GET /api/events/markers` (pełny filtr, cap 5000) | Pełne pokrycie widoków |
+| 17:10 | E-mail disabled w formularzu + komunikat | Usunięte z formularza; meta przy awatarze | Bez fałszywej UX zmiany |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

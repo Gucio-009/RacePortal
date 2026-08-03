@@ -5,7 +5,6 @@ import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { Link } from "react-router";
-import type { ApiEvent } from "../lib/types";
 import { eventImage } from "../lib/types";
 
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -91,7 +90,14 @@ export function EventsMapView({
   );
 }
 
-export function eventToMarker(event: ApiEvent): MapMarker | null {
+export function eventToMarker(event: {
+  id: string;
+  name: string;
+  track: string;
+  city: string;
+  lat?: number | null;
+  lng?: number | null;
+}): MapMarker | null {
   if (event.lat == null || event.lng == null) return null;
   return {
     id: event.id,

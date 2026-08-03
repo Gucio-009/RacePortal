@@ -1,6 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
-  }
+    "strict": true,
+    "paths": {
+      "@raceportal/api-types": ["../packages/api-types/src/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx", "../packages/api-types/src/**/*.ts"]
 }

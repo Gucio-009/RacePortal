@@ -11,6 +11,7 @@ Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/
 | [`web/`](./web/) | Aplikacja webowa (Vite + React) |
 | [`backend/`](./backend/) | API (Spring Boot + MySQL + JWT) |
 | [`mobile/`](./mobile/) | Aplikacja mobilna (Expo) |
+| [`packages/api-types/`](./packages/api-types/) | Wspólne typy i helpers API (web + mobile) |
 | [`docs/`](./docs/) | Dokumentacja projektu i dyplomu |
 | [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
 | [`scripts/`](./scripts/) | Backup DB + uruchamianie testów |

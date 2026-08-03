@@ -63,6 +63,30 @@ public final class EventDtos {
     ) {
     }
 
+    /** Slim payload for map/calendar — no pagination cap of the list endpoint. */
+    public record EventMarkerResponse(
+            String id,
+            String name,
+            String category,
+            String date,
+            String dateLabel,
+            String time,
+            String track,
+            String city,
+            Double lat,
+            Double lng,
+            boolean paid,
+            java.math.BigDecimal entryFee,
+            String imageUrl
+    ) {
+    }
+
+    public record EventMarkersResponse(
+            long total,
+            List<EventMarkerResponse> items
+    ) {
+    }
+
     public record EventCreateRequest(
             @NotBlank @Size(min = 3, max = 120) String name,
             @NotBlank @Size(min = 10, max = 5000) String description,

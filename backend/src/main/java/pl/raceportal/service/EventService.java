@@ -16,6 +16,8 @@ import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
 import pl.raceportal.dto.EventDtos.EventCreateRequest;
 import pl.raceportal.dto.EventDtos.EventListResponse;
+import pl.raceportal.dto.EventDtos.EventMarkerResponse;
+import pl.raceportal.dto.EventDtos.EventMarkersResponse;
 import pl.raceportal.dto.EventDtos.EventResponse;
 import pl.raceportal.dto.EventDtos.EventUpdateRequest;
 import pl.raceportal.dto.EventDtos.OrganizerRef;
@@ -81,7 +83,74 @@ public class EventService {
         }
         final String matchCarClass = carClass;
 
-        Specification<Event> spec = (root, query, cb) -> {
+        Specification<Event> spec = buildListSpec(q, category, city, voivodeship, track, from, to,
+                archive, statusParam, paidFilter, startOfToday, currentUser);
+
+        Sort sort = Sort.by(archive ? Sort.Direction.DESC : Sort.Direction.ASC, "date");
+        // When filtering by car, fetch a wider page then filter in memory (category match is fuzzy).
+        int fetchLimit = matchCarClass != null ? Math.min(200, limit * 10) : limit;
+        var pageResult = eventRepository.findAll(spec, PageRequest.of(page - 1, fetchLimit, sort));
+
+        List<EventResponse> items = pageResult.getContent().stream()
+                .filter(e -> matchCarClass == null || CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                .limit(limit)
+                .map(this::serialize)
+                .toList();
+
+        long total = matchCarClass != null
+                ? eventRepository.findAll(spec).stream()
+                    .filter(e -> CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                    .count()
+                : pageResult.getTotalElements();
+        long totalPages = Math.max(1, (long) Math.ceil(total / (double) limit));
+
+        return new EventListResponse(page, limit, total, totalPages, items);
+    }
+
+    /**
+     * Full filter set for map/calendar (slim DTO, no list-page cap).
+     * Includes events without GPS — map view filters client-side.
+     */
+    @Transactional(readOnly = true)
+    public EventMarkersResponse listMarkers(String q, String category, String city,
+                                             String voivodeship, String track, String dateFrom, String dateTo,
+                                             boolean archive, String statusParam, String paidParam, String carId,
+                                             UserPrincipal currentUser) {
+        Boolean paidFilter = parsePaidFilter(paidParam);
+        LocalDate from = parseFilterDate(dateFrom);
+        LocalDate to = parseFilterDate(dateTo);
+        LocalDate startOfToday = LocalDate.now();
+
+        String carClass = null;
+        if (carId != null && !carId.isBlank() && currentUser != null) {
+            carClass = carRepository.findByIdAndUser_Id(carId, currentUser.getId())
+                    .map(Car::getClassName)
+                    .orElse(null);
+        }
+        final String matchCarClass = carClass;
+
+        Specification<Event> spec = buildListSpec(q, category, city, voivodeship, track, from, to,
+                archive, statusParam, paidFilter, startOfToday, currentUser);
+
+        Sort sort = Sort.by(archive ? Sort.Direction.DESC : Sort.Direction.ASC, "date");
+        List<Event> all = eventRepository.findAll(spec, sort);
+
+        List<EventMarkerResponse> items = all.stream()
+                .filter(e -> matchCarClass == null || CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                .limit(MARKERS_MAX)
+                .map(this::serializeMarker)
+                .toList();
+
+        return new EventMarkersResponse(items.size(), items);
+    }
+
+    private static final int MARKERS_MAX = 5000;
+
+    private Specification<Event> buildListSpec(String q, String category, String city, String voivodeship,
+                                                String track, LocalDate from, LocalDate to, boolean archive,
+                                                String statusParam, Boolean paidFilter, LocalDate startOfToday,
+                                                UserPrincipal currentUser) {
+        return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (currentUser != null && currentUser.getRole() == Role.ADMIN && statusParam != null && !statusParam.isBlank()) {
@@ -135,26 +204,24 @@ public class EventService {
 
             return cb.and(predicates.toArray(new Predicate[0]));
         };
+    }
 
-        Sort sort = Sort.by(archive ? Sort.Direction.DESC : Sort.Direction.ASC, "date");
-        // When filtering by car, fetch a wider page then filter in memory (category match is fuzzy).
-        int fetchLimit = matchCarClass != null ? Math.min(200, limit * 10) : limit;
-        var pageResult = eventRepository.findAll(spec, PageRequest.of(page - 1, fetchLimit, sort));
-
-        List<EventResponse> items = pageResult.getContent().stream()
-                .filter(e -> matchCarClass == null || CategoryMatcher.matches(matchCarClass, e.getCategory()))
-                .limit(limit)
-                .map(this::serialize)
-                .toList();
-
-        long total = matchCarClass != null
-                ? eventRepository.findAll(spec).stream()
-                    .filter(e -> CategoryMatcher.matches(matchCarClass, e.getCategory()))
-                    .count()
-                : pageResult.getTotalElements();
-        long totalPages = Math.max(1, (long) Math.ceil(total / (double) limit));
-
-        return new EventListResponse(page, limit, total, totalPages, items);
+    private EventMarkerResponse serializeMarker(Event event) {
+        return new EventMarkerResponse(
+                event.getId(),
+                event.getName(),
+                event.getCategory(),
+                event.getDate().atStartOfDay(ZoneOffset.UTC).toInstant().toString(),
+                event.getDate().format(POLISH_DATE_FORMATTER).toUpperCase(POLISH_LOCALE),
+                event.getTime(),
+                event.getTrack(),
+                event.getCity(),
+                event.getLat(),
+                event.getLng(),
+                event.isPaid(),
+                event.getEntryFee(),
+                event.getImageUrl()
+        );
     }
 
     private static LocalDate parseFilterDate(String value) {

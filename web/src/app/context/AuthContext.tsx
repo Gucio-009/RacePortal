@@ -31,7 +31,6 @@ interface AuthContextType {
   logout: () => void;
   updateProfile: (data: {
     username?: string;
-    email?: string;
     avatar?: string;
     firstName?: string;
     lastName?: string;
@@ -182,7 +181,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const updateProfile = async (data: {
     username?: string;
-    email?: string;
     avatar?: string;
     firstName?: string;
     lastName?: string;

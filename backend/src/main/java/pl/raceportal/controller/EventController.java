@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pl.raceportal.dto.EventDtos.EventCreateRequest;
 import pl.raceportal.dto.EventDtos.EventListResponse;
+import pl.raceportal.dto.EventDtos.EventMarkersResponse;
 import pl.raceportal.dto.EventDtos.EventResponse;
 import pl.raceportal.dto.EventDtos.EventUpdateRequest;
 import pl.raceportal.security.UserPrincipal;
@@ -52,6 +53,26 @@ public class EventController {
         boolean archiveFlag = "1".equals(archive);
         return ResponseEntity.ok(
                 eventService.list(page, limit, q, category, city, voivodeship, track, dateFrom, dateTo,
+                        archiveFlag, status, paid, carId, currentUser));
+    }
+
+    @GetMapping("/markers")
+    public ResponseEntity<EventMarkersResponse> markers(
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String voivodeship,
+            @RequestParam(required = false) String track,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
+            @RequestParam(required = false, defaultValue = "0") String archive,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String paid,
+            @RequestParam(required = false) String carId,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        boolean archiveFlag = "1".equals(archive);
+        return ResponseEntity.ok(
+                eventService.listMarkers(q, category, city, voivodeship, track, dateFrom, dateTo,
                         archiveFlag, status, paid, carId, currentUser));
     }
 

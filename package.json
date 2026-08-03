@@ -3,6 +3,11 @@
   "private": true,
   "version": "0.0.1",
   "description": "RacePortal monorepo — web, API, mobile, tests",
+  "workspaces": [
+    "web",
+    "mobile",
+    "packages/*"
+  ],
   "scripts": {
     "dev:web": "npm --prefix web run dev",
     "build:web": "npm --prefix web run build",

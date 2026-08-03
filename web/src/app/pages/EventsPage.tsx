@@ -14,13 +14,37 @@ import { PaidEventBadge } from "../components/PaidEventBadge";
 import { EventsMapView, eventToMarker } from "../components/EventsMapView";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
-import type { ApiEvent, Car, PaginatedEvents } from "../lib/types";
+import type { Car, EventMarker, EventMarkersResponse, PaginatedEvents } from "../lib/types";
 import { eventImage } from "../lib/types";
 import { EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import { VOIVODESHIPS, TRACK_PRESETS } from "../lib/eventFormPresets";
 import "react-day-picker/dist/style.css";
 
 type ViewMode = "list" | "map" | "calendar";
+
+function buildFilterParams(opts: {
+  query: string;
+  category: string;
+  paidFilter: string;
+  voivodeship: string;
+  city: string;
+  track: string;
+  dateFrom: string;
+  dateTo: string;
+  carId: string;
+}): URLSearchParams {
+  const params = new URLSearchParams();
+  if (opts.query.trim()) params.set("q", opts.query.trim());
+  if (opts.category !== "all") params.set("category", opts.category);
+  if (opts.paidFilter !== "all") params.set("paid", opts.paidFilter);
+  if (opts.voivodeship !== "all") params.set("voivodeship", opts.voivodeship);
+  if (opts.city.trim()) params.set("city", opts.city.trim());
+  if (opts.track !== "all") params.set("track", opts.track);
+  if (opts.dateFrom) params.set("dateFrom", opts.dateFrom);
+  if (opts.dateTo) params.set("dateTo", opts.dateTo);
+  if (opts.carId !== "all") params.set("carId", opts.carId);
+  return params;
+}
 
 export function EventsPage() {
   const { isAuthenticated } = useAuth();
@@ -37,6 +61,7 @@ export function EventsPage() {
   const [cars, setCars] = useState<Car[]>([]);
   const [page, setPage] = useState(1);
   const [data, setData] = useState<PaginatedEvents | null>(null);
+  const [overview, setOverview] = useState<EventMarker[]>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
@@ -50,39 +75,46 @@ export function EventsPage() {
     api.get<Car[]>("/api/garage").then(setCars).catch(() => setCars([]));
   }, [isAuthenticated]);
 
-  // Lista: paginacja 12. Mapa/kalendarz: większy limit, zawsze page=1 (żeby nie „gubić” eventów).
-  const limit = view === "list" ? 12 : 200;
-  const fetchPage = view === "list" ? page : 1;
+  const filterKey = { query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId };
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true);
       setLoadError(null);
-      const params = new URLSearchParams({ page: String(fetchPage), limit: String(limit) });
-      if (query.trim()) params.set("q", query.trim());
-      if (category !== "all") params.set("category", category);
-      if (paidFilter !== "all") params.set("paid", paidFilter);
-      if (voivodeship !== "all") params.set("voivodeship", voivodeship);
-      if (city.trim()) params.set("city", city.trim());
-      if (track !== "all") params.set("track", track);
-      if (dateFrom) params.set("dateFrom", dateFrom);
-      if (dateTo) params.set("dateTo", dateTo);
-      if (carId !== "all") params.set("carId", carId);
+      const params = buildFilterParams(filterKey);
 
-      api
-        .get<PaginatedEvents>(`/api/events?${params}`)
-        .then((res) => {
-          setData(res);
-          setLoadError(null);
-        })
-        .catch(() => {
-          setData(null);
-          setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
-        })
-        .finally(() => setLoading(false));
+      if (view === "list") {
+        params.set("page", String(page));
+        params.set("limit", "12");
+        api
+          .get<PaginatedEvents>(`/api/events?${params}`)
+          .then((res) => {
+            setData(res);
+            setOverview([]);
+            setLoadError(null);
+          })
+          .catch(() => {
+            setData(null);
+            setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+          })
+          .finally(() => setLoading(false));
+      } else {
+        api
+          .get<EventMarkersResponse>(`/api/events/markers?${params}`)
+          .then((res) => {
+            setOverview(res.items);
+            setData(null);
+            setLoadError(null);
+          })
+          .catch(() => {
+            setOverview([]);
+            setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+          })
+          .finally(() => setLoading(false));
+      }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, fetchPage, limit, view]);
+  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, page, view]);
 
   useEffect(() => {
     setPage(1);
@@ -90,12 +122,12 @@ export function EventsPage() {
 
   const items = data?.items ?? [];
   const markers = useMemo(
-    () => items.map(eventToMarker).filter((m): m is NonNullable<typeof m> => m !== null),
-    [items],
+    () => overview.map(eventToMarker).filter((m): m is NonNullable<typeof m> => m !== null),
+    [overview],
   );
 
   const eventDates = useMemo(() => {
-    return items
+    return overview
       .map((e) => {
         try {
           return parseISO(e.date.slice(0, 10));
@@ -104,18 +136,18 @@ export function EventsPage() {
         }
       })
       .filter((d): d is Date => d !== null);
-  }, [items]);
+  }, [overview]);
 
   const dayEvents = useMemo(() => {
     if (!selectedDay) return [];
-    return items.filter((e) => {
+    return overview.filter((e) => {
       try {
         return isSameDay(parseISO(e.date.slice(0, 10)), selectedDay);
       } catch {
         return false;
       }
     });
-  }, [items, selectedDay]);
+  }, [overview, selectedDay]);
 
   const cities = useMemo(
     () => Array.from(new Set(TRACK_PRESETS.map((t) => t.city))).sort((a, b) => a.localeCompare(b, "pl")),

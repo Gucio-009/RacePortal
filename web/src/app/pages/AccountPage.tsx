@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { KeyRound, Loader2, Mail, Shield, User, Phone, IdCard } from "lucide-react";
+import { KeyRound, Loader2, Shield, User, Phone, IdCard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Badge } from "../components/ui/badge";
@@ -14,7 +14,6 @@ import { toast } from "sonner";
 export function AccountPage() {
   const { user, updateProfile, changePassword } = useAuth();
   const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
   const [avatar, setAvatar] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -30,7 +29,6 @@ export function AccountPage() {
 
   useEffect(() => {
     setUsername(user?.username ?? "");
-    setEmail(user?.email ?? "");
     setAvatar(user?.avatar ?? "");
     setFirstName(user?.firstName ?? "");
     setLastName(user?.lastName ?? "");
@@ -96,7 +94,7 @@ export function AccountPage() {
             <h1 className="font-['Orbitron'] text-white mb-2" style={{ fontSize: "36px", fontWeight: 900 }}>
               DANE KONTA
             </h1>
-            <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło. E-mail jest tylko do odczytu.</p>
+            <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło.</p>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[#FFD700]">
@@ -105,10 +103,15 @@ export function AccountPage() {
                 {user?.username?.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>
-            <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
-              <Shield className="w-3 h-3 mr-1" />
-              {roleLabel}
-            </Badge>
+            <div className="space-y-1">
+              <Badge className="bg-[#FFD700] text-[#121212]" style={{ fontWeight: 700 }}>
+                <Shield className="w-3 h-3 mr-1" />
+                {roleLabel}
+              </Badge>
+              {user?.email ? (
+                <p className="text-[#9ca3af] text-sm">{user.email}</p>
+              ) : null}
+            </div>
           </div>
         </div>
 
@@ -128,20 +131,6 @@ export function AccountPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-white flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-[#FFD700]" />
-                  E-mail
-                </Label>
-                <Input
-                  type="email"
-                  value={email}
-                  readOnly
-                  disabled
-                  className="bg-[#121212] border-[#2a2a2a] text-[#9ca3af]"
-                />
-                <p className="text-xs text-[#6b7280]">Zmiana e-maila nie jest jeszcze obsługiwana przez API.</p>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">

@@ -17,8 +17,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@raceportal/api-types": ["../packages/api-types/src/index.ts"]
     }
   },
-  "include": ["src"]
+  "include": ["src", "../packages/api-types/src"]
 }

@@ -52,6 +52,7 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 - Nie dodawać mocków localStorage auth z powrotem, o ile użytkownik tego nie zażąda
 - Design: trzymaj się istniejącego dark/gold looku; nie wprowadzaj domyślnych „AI purple” motywów
 - Google OAuth: prawdziwy Sign-In gdy ustawione `GOOGLE_OAUTH_CLIENT_ID` + `VITE_GOOGLE_CLIENT_ID` (ten sam Client ID); bez kluczy przycisk się nie pokazuje. Facebook/Apple — nie (wymagają osobnych app ID)
+- Typy API / carMatch / kategorie: źródło prawdy w `packages/api-types` (web i mobile re-eksportują)
 - Po dodaniu / zmianie ścieżek krytycznych uzupełnij testy (JUnit API lub Playwright) i odśwież wyniki w `docs/testy/wyniki/`
 
 ## Seed / Compose / porty
