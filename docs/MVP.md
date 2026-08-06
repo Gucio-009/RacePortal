@@ -210,6 +210,7 @@ npm run test:api && npm run test:mobile-unit && npx playwright test
 | Plik | Rola |
 |------|------|
 | [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy, §11 = struktura repo) |
+| [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | Alternatywy stacku (`Pomysł (alt)` w kodzie) |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testowe |
 | [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt API Spring **20/20 PASS** |
 | [`../README.md`](../README.md) | Szybki start + testy |

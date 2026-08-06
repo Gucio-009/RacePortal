@@ -18,6 +18,18 @@ import pl.raceportal.web.ApiException;
 
 import java.util.List;
 
+/**
+ * Operacje z perspektywy organizatora: wniosek o rolę oraz lista własnych wydarzeń.
+ * <p>
+ * Rola w architekturze: most między użytkownikiem USER a panelem organizatora.
+ * Zatwierdzanie wniosków leży w {@code AdminService}. Technologie: Spring, JPA, transakcje.
+ * </p>
+ * Reguły: ORGANIZER/ADMIN nie składa wniosku ponownie; maksymalnie jeden PENDING wniosek;
+ * admin widzi wszystkie wydarzenia, organizator — tylko swoje.
+ * <p>
+ * Pomysł (alt): CQRS — osobne read-modele dla listy wydarzeń organizatora.
+ * </p>
+ */
 @Service
 public class OrganizerService {
 
@@ -35,6 +47,9 @@ public class OrganizerService {
         this.eventService = eventService;
     }
 
+    /**
+     * Składa wniosek o rolę ORGANIZER (status PENDING) — wymaga zalogowanego USER.
+     */
     @Transactional
     public OrganizerApplicationResponse apply(UserPrincipal currentUser, ApplyRequest request) {
         if (currentUser.getRole() == Role.ORGANIZER || currentUser.getRole() == Role.ADMIN) {
@@ -63,6 +78,9 @@ public class OrganizerService {
                 application.getUpdatedAt().toString(), userRef);
     }
 
+    /**
+     * Lista wydarzeń: ADMIN = wszystkie; ORGANIZER = tylko {@code organizer_id = ja}.
+     */
     @Transactional(readOnly = true)
     public List<EventResponse> events(UserPrincipal currentUser) {
         var events = currentUser.getRole() == Role.ADMIN

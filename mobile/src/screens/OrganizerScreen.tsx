@@ -1,3 +1,11 @@
+/**
+ * Panel organizatora — CRUD eventów + zarządzanie zgłoszeniami.
+ *
+ * Rola w architekturze: gate ORGANIZER|ADMIN; API `/api/organizer/events`,
+ * tworzenie/edycja `/api/events`, statusy zgłoszeń. Nowe eventy czekają na admina.
+ *
+ * Pomysł (alt): kreator wielokrokowy; mapa toru z OSRM jak na webie; Flutter admin lite.
+ */
 import { useCallback, useState } from "react";
 import {
   View,

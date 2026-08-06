@@ -1,3 +1,15 @@
+/**
+ * GaragePage — CRUD pojazdów użytkownika (garaż).
+ *
+ * Cel: auta używane przy zgłoszeniach (klasa/kategoria, OC/PT, klatka, rejestracja).
+ * Wzorce: fetch `/api/garage` on mount, Dialog create/edit, PATCH/POST/DELETE z JWT
+ * (`raceportal_token`), `buildPayload` normalizuje stringi → liczby/undefined.
+ * Auth: wymaga zalogowania (AuthGate). Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link `/garaz` → SPA try_files.
+ *
+ * Pomysł (alt): TanStack Query mutations; upload zdjęć do S3; Zod schema formularza;
+ * shared types z packages/api-types.
+ */
 import { useEffect, useState } from "react";
 import { Car, Plus, Trash2, Loader2, Pencil } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -62,6 +74,7 @@ function carToForm(car: GarageCar) {
   };
 }
 
+/** Mapuje stan formularza na body API (puste pola → undefined). */
 function buildPayload(form: typeof emptyForm) {
   return {
     make: form.make.trim(),
@@ -130,6 +143,7 @@ export function GaragePage() {
     setDialogOpen(true);
   };
 
+  /** POST nowe / PATCH istniejące — potem reload listy. */
   const handleSave = async () => {
     if (!form.make.trim() || !form.model.trim()) {
       toast.error("Marka i model są wymagane");

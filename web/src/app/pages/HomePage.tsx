@@ -1,3 +1,14 @@
+/**
+ * HomePage — landing RACEPORTAL (hero + teaser wydarzeń + sekcja O nas).
+ *
+ * Cel: pierwsza strona dla gości — CTA rejestracja / kalendarz, podgląd 6 wydarzeń.
+ * Wzorce: fetch on mount `/api/events?limit=6`, React Router Link, pełnoekranowy hero.
+ * Auth: publiczna (bez JWT). Theme: `--race-accent`, `font-display` (Oxanium) w hero.
+ * Docker/nginx: `/` to index.html; kotwica `#o-nas` działa client-side.
+ *
+ * Pomysł (alt): Next.js App Router RSC + ISR listy; CMS hero; Framer Motion;
+ * A/B CTA w edge config.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Calendar, MapPin, ChevronRight } from "lucide-react";
@@ -14,6 +25,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Teaser nadchodzących wydarzeń na hero landing.
   useEffect(() => {
     setLoading(true);
     setLoadError(null);

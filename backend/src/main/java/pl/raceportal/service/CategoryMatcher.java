@@ -5,9 +5,23 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-/** Matches garage car className to event category (same idea as web carMatch.ts). */
+/**
+ * Dopasowanie klasy samochodu z garażu do kategorii wydarzenia.
+ * <p>
+ * Rola w architekturze: logika współdzielona z frontendem ({@code carMatch.ts}) —
+ * przy zgłoszeniu sprawdza, czy pojazd kwalifikuje się do imprezy.
+ * Technologie: czysta Java (bez Spring) — normalizacja Unicode + mapa aliasów PL/EN.
+ * </p>
+ * Reguły: porównanie znormalizowanych stringów, potem aliasy (drift/rally/…),
+ * na końcu contains w obie strony.
+ * <p>
+ * Pomysł (alt): wspólna biblioteka npm+JVM (np. shared JSON rules); taksonomia
+ * kategorii w DB zamiast hardcoded mapy.
+ * </p>
+ */
 public final class CategoryMatcher {
 
+    /** Kanoniczna kategoria → zbiór aliasów (PL/EN, warianty pisowni). */
     private static final Map<String, Set<String>> ALIASES = Map.ofEntries(
             Map.entry("drift", Set.of("drift", "drifting", "drifter", "drift trening", "drift amatorskie", "drift pro")),
             Map.entry("rally", Set.of("rally", "rajd", "rajdy", "rallysprint", "kjs", "superoes", "super sprint",
@@ -24,6 +38,12 @@ public final class CategoryMatcher {
     private CategoryMatcher() {
     }
 
+    /**
+     * Czy klasa auta pasuje do kategorii wydarzenia (po normalizacji i aliasach).
+     *
+     * @param carClass      {@code Car.className}
+     * @param eventCategory {@code Event.category}
+     */
     public static boolean matches(String carClass, String eventCategory) {
         if (carClass == null || carClass.isBlank() || eventCategory == null || eventCategory.isBlank()) {
             return false;
@@ -41,6 +61,7 @@ public final class CategoryMatcher {
         return carN.contains(eventN) || eventN.contains(carN);
     }
 
+    /** Zwraca klucz kanoniczny aliasu lub {@code null}. */
     private static String aliasKey(String normalized) {
         for (var entry : ALIASES.entrySet()) {
             for (String a : entry.getValue()) {
@@ -53,6 +74,7 @@ public final class CategoryMatcher {
         return null;
     }
 
+    /** Lowercase, usunięcie diakrytyków, tylko alfanumeryczne + spacje. */
     private static String normalize(String value) {
         String n = Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "")

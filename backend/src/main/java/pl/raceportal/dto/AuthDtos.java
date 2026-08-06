@@ -4,11 +4,20 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+/**
+ * Kontrakty DTO warstwy auth (request/response) — synchronizowane z pakietem {@code api-types}.
+ * <p>
+ * Rola w architekturze: walidowane body dla {@code AuthController}; brak logiki biznesowej.
+ * Technologie: Jakarta Bean Validation, Jackson (records).
+ * </p>
+ * Pomysł (alt): MapStruct User↔UserDto; OpenAPI generator zamiast ręcznych recordów.
+ */
 public final class AuthDtos {
 
     private AuthDtos() {
     }
 
+    /** Rejestracja kierowcy — pola profilu opcjonalne (prawo jazdy B / PZM). */
     public record RegisterRequest(
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
@@ -21,6 +30,7 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Rejestracja z wnioskiem o rolę organizatora ({@code company} wymagane). */
     public record RegisterOrganizerRequest(
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
@@ -30,6 +40,7 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Odpowiedź po rejestracji — bez JWT, wymaga weryfikacji e-mail. */
     public record RegisterResponse(
             boolean requiresVerification,
             String email,
@@ -54,6 +65,7 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Google ID Token z frontendu (Sign-In / One Tap). */
     public record GoogleLoginRequest(
             @NotBlank @Size(min = 20, max = 4096) String idToken
     ) {
@@ -86,6 +98,7 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Publiczny profil użytkownika zwracany z JWT. */
     public record UserDto(
             String id,
             String email,
@@ -101,6 +114,7 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Sukces logowania / verify / OAuth — Bearer token + user. */
     public record AuthResponse(
             String token,
             UserDto user

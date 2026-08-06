@@ -26,6 +26,19 @@ import pl.raceportal.web.ApiException;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Panel administratora: statystyki, role użytkowników, moderacja wydarzeń i wniosków organizatora.
+ * <p>
+ * Rola w architekturze: RBAC {@code ROLE_ADMIN} — kontroler wymaga JWT admina.
+ * Zmiana statusu wydarzenia invaliduje cache listy; APPROVE wniosku ustawia rolę ORGANIZER.
+ * Technologie: Spring Cache, JPA, Spring Mail.
+ * </p>
+ * Reguły: nie można odebrać sobie roli ADMIN; musi zostać ≥1 admin;
+ * wniosek organizatora tylko APPROVED/REJECTED.
+ * <p>
+ * Pomysł (alt): audit log zmian ról/statusów; Keycloak Admin API zamiast własnego panelu.
+ * </p>
+ */
 @Service
 public class AdminService {
 
@@ -68,6 +81,10 @@ public class AdminService {
                 .toList();
     }
 
+    /**
+     * Zmiana roli użytkownika z zabezpieczeniami przed usunięciem ostatniego admina
+     * oraz self-demotion. Wysyła mail z nową rolą.
+     */
     @Transactional
     public UserAdminResponse updateUserRole(String userId, RoleUpdateRequest request, UserPrincipal currentUser) {
         Role role;
@@ -107,6 +124,10 @@ public class AdminService {
                 .toList();
     }
 
+    /**
+     * Moderacja statusu wydarzenia (APPROVED/REJECTED/…); czyści cache {@code events};
+     * powiadamia organizatora mailem.
+     */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
     public EventResponse updateEventStatus(String eventId, EventStatusUpdateRequest request) {
@@ -138,6 +159,9 @@ public class AdminService {
                 .toList();
     }
 
+    /**
+     * Decyzja o wniosku organizatora: APPROVED → {@link Role#ORGANIZER}; REJECTED bez zmiany roli.
+     */
     @Transactional
     public OrganizerApplicationResponse updateOrganizerApplicationStatus(String appId, String statusValue) {
         ApplicationStatus status;

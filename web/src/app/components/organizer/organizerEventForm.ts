@@ -1,3 +1,20 @@
+/**
+ * organizerEventForm — stan formularza wydarzenia + mapowanie ApiEvent ↔ FormState.
+ *
+ * `emptyForm` — domyślne wartości nowego wydarzenia (godzina 10:00, zgłoszenia ON…).
+ * `OTHER` (`__other__` z presets) — sentinel „Inne…” w Selectach (kategoria, tor, godzina…).
+ *
+ * applyTrackPreset: wybór toru z TRACK_PRESETS wypełnia city / województwo / lat / lng;
+ * wybór OTHER czyści lokalizację (użytkownik uzupełnia ręcznie + mapa).
+ *
+ * eventToForm: przy edycji rozpoznaje, czy wartość jest w liście presetów —
+ * jeśli nie, ustawia Select na OTHER i trzyma custom w *Other / imageCustom.
+ *
+ * Typy domenowe: `ApiEvent` z `@raceportal/api-types` (przez lib/types).
+ *
+ * Pomysł (alt): Zod schema dla walidacji przed POST; draft auto-save.
+ */
+
 import type { ApiEvent } from "../../lib/types";
 import { ALL_EVENT_CATEGORIES } from "../../lib/eventCategories";
 import {
@@ -8,10 +25,12 @@ import {
   ENTRY_FEE_PRESETS,
 } from "../../lib/eventFormPresets";
 
+/** ApiEvent + opcjonalny licznik zgłoszeń z odpowiedzi Spring (`_count`). */
 export interface OrganizerEvent extends ApiEvent {
   _count?: { registrations: number };
 }
 
+/** Domyślny stan pustego formularza „Nowe wydarzenie”. */
 export const emptyForm = {
   name: "",
   description: "",
@@ -50,6 +69,10 @@ export const emptyForm = {
 
 export type FormState = typeof emptyForm;
 
+/**
+ * Po wyborze toru z listy: wypełnij lokalizację z presetu.
+ * OTHER → wyczyść city/coords (ręczne uzupełnienie + LocationMapPicker).
+ */
 export function applyTrackPreset(prev: FormState, trackName: string): FormState {
   if (trackName === OTHER) {
     return { ...prev, trackKey: OTHER, city: "", cityOther: "", voivodeship: "", lat: "", lng: "" };
@@ -70,6 +93,10 @@ export function applyTrackPreset(prev: FormState, trackName: string): FormState 
   };
 }
 
+/**
+ * Mapuje istniejące ApiEvent → FormState pod edycję.
+ * Wartości spoza list presetów trafiają do pól *Other / imageCustom / entryFeeOther.
+ */
 export function eventToForm(event: ApiEvent): FormState {
   const categoryInList = ALL_EVENT_CATEGORIES.includes(event.category);
   const trackPreset = TRACK_PRESETS.find((t) => t.track === event.track);

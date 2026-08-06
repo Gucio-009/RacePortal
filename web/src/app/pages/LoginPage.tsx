@@ -1,3 +1,18 @@
+/**
+ * LoginPage — formularz logowania email/hasło + opcjonalnie Google OAuth.
+ *
+ * Cel: wejście użytkownika do konta; po sukcesie redirect na `/dashboard`.
+ * Wzorce: React Router (`useNavigate`, `Link`), AuthContext (`login`, `loginWithGoogle`),
+ * toast (sonner), kontrolowany formularz.
+ * Auth/JWT: AuthContext po sukcesie zapisuje JWT w localStorage pod `raceportal_token`
+ * (TOKEN_KEY w lib/api.ts) i dołącza go do kolejnych requestów API.
+ * Google: przycisk widoczny tylko gdy `isGoogleClientConfigured()` (VITE client id);
+ * idToken z GIS → backend wymienia na własny JWT.
+ * Theme: `--race-accent`, `font-display` (Oxanium) w nagłówku.
+ * Docker/nginx: deep link `/login` wymaga fallback SPA (try_files → index.html).
+ *
+ * Pomysł (alt): Next.js Auth.js / Better Auth; TanStack Form; osobna strona OAuth callback.
+ */
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -16,8 +31,10 @@ export function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  // Google GIS tylko gdy skonfigurowany client id w env.
   const googleEnabled = isGoogleClientConfigured();
 
+  /** Logowanie hasłem → JWT w AuthContext → dashboard. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -37,6 +54,7 @@ export function LoginPage() {
     }
   };
 
+  /** Credential Google (idToken) → AuthContext.loginWithGoogle → ten sam JWT flow. */
   const handleGoogle = useCallback(
     async (idToken: string) => {
       setIsLoading(true);

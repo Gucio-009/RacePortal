@@ -1,3 +1,20 @@
+/**
+ * SettingsPage — lokalne preferencje UI użytkownika (kokpit).
+ *
+ * Cel: pozwala kierowcy / organizatorowi / adminowi ustawić powiadomienia (demo),
+ * akcent kolorystyczny, tryb pit-stop (minimalne animacje) oraz flair zespołu.
+ * Ustawienia żyją wyłącznie w przeglądarce — nie idą na backend.
+ *
+ * Wzorce: React useState/useEffect, AuthContext (tylko odczyt user.role),
+ * localStorage pod kluczem `raceportal_settings`, CSS variables na <html>.
+ * Theme: `--race-accent` (kolor marki), `font-display` (Oxanium przez CSS),
+ * `data-accent` / `data-pit-stop` na documentElement; pit-stop ustawia `--race-motion`.
+ * Auth: strona zakłada zalogowanego usera (gate w routerze); JWT nie jest tu czytany.
+ * Docker/nginx: SPA — deep link `/settings` wymaga try_files → index.html.
+ *
+ * Pomysł (alt): Next.js App Router + cookies/server prefs; Zustand/persisted store;
+ * TanStack Query niepotrzebny (brak API); sync ustawień z backendem /api/users/me/settings.
+ */
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import {
@@ -33,14 +50,17 @@ type UserSettings = {
   teamFlair: string;
 };
 
+/** Klucz localStorage — wspólny z ewentualnym bootstrapem w RootLayout. */
 const STORAGE_KEY = "raceportal_settings";
 
+/** Paleta akcentów mapowana na hex → `--race-accent`. */
 const ACCENTS: Record<AccentTheme, { label: string; color: string; desc: string }> = {
   gold: { label: "Złoty tor", color: "#FFD700", desc: "Klasyczny look RACEPORTAL" },
   redline: { label: "Redline", color: "#FF3B3B", desc: "Agresywny akcent wyścigowy" },
   ice: { label: "Ice cold", color: "#7DD3FC", desc: "Chłodny, nocny pit-lane" },
 };
 
+/** Odczyt + merge z defaultami (odporność na uszkodzony JSON). */
 function loadSettings(): UserSettings {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -62,6 +82,13 @@ function defaultSettings(): UserSettings {
   };
 }
 
+/**
+ * applyUserSettings — stosuje preferencje do DOM (globalny motyw SPA).
+ * - `--race-accent`: kolor używany w Tailwind jako `text-[var(--race-accent)]` itd.
+ * - `data-accent` / `data-pit-stop`: haki CSS (Oxanium/font-display zostają w klasach).
+ * - `--race-motion: 0.01ms` w pit-stop: „wyłącza” animacje przez prawie-zerowy czas.
+ * Eksportowane, by inne miejsca (np. App bootstrap) mogły przywrócić motyw po reloadzie.
+ */
 export function applyUserSettings(settings: UserSettings) {
   const accent = ACCENTS[settings.accent]?.color ?? "#FFD700";
   const root = document.documentElement;
@@ -81,6 +108,7 @@ export function SettingsPage() {
   const [ready, setReady] = useState(false);
   const [teamDraft, setTeamDraft] = useState("");
 
+  // Hydratacja z localStorage po mount (unikamy SSR/hydration mismatch — tu Vite SPA).
   useEffect(() => {
     const loaded = loadSettings();
     setSettings(loaded);
@@ -89,6 +117,7 @@ export function SettingsPage() {
     setReady(true);
   }, []);
 
+  /** Zapis do state + localStorage + natychmiastowe zastosowanie CSS vars. */
   const persist = (next: UserSettings, message?: string) => {
     setSettings(next);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
@@ -99,6 +128,7 @@ export function SettingsPage() {
   const toggle = (key: keyof UserSettings, message: string) => {
     const next = { ...settings, [key]: !settings[key] } as UserSettings;
     persist(next, message);
+    // Demo dźwięku UI — Web Audio API (nie backend).
     if (key === "soundFx" && next.soundFx) {
       try {
         const ctx = new AudioContext();
@@ -118,6 +148,7 @@ export function SettingsPage() {
 
   const setAccent = (accent: AccentTheme) => {
     persist({ ...settings, accent }, `Akcent: ${ACCENTS[accent].label}`);
+    // Confetti pomijane w trybie pit-stop (mniej ruchu).
     if (settings.pitStopMode) return;
     confetti({
       particleCount: 48,

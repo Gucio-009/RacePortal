@@ -18,6 +18,21 @@ import jakarta.persistence.UniqueConstraint;
 
 import java.time.Instant;
 
+/**
+ * Encja zgłoszenia zawodnika na wydarzenie.
+ * <p>
+ * Rola w architekturze: łączy {@link User}, {@link Event} i opcjonalnie {@link Car};
+ * unikalność (user + event) gwarantuje jedno aktywne zgłoszenie na imprezę.
+ * Logika statusów i płatności żyje w {@code RegistrationService} / {@code OrganizerService}.
+ * Technologie: JPA/Hibernate, MySQL; Spring Mail (powiadomienia o zmianie statusu).
+ * </p>
+ * Reguły płatności: po ACCEPTED ustawiane jest {@code paymentDueAt};
+ * {@code paymentProofUrl} to dowód przelewu; po weryfikacji status → CONFIRMED.
+ * <p>
+ * Pomysł (alt): bramka płatności (Stripe/PayU) zamiast ręcznego dowodu przelewu;
+ * outbox + kolejka do maili.
+ * </p>
+ */
 @Entity
 @Table(name = "registrations",
         uniqueConstraints = @UniqueConstraint(name = "uq_registration_user_event", columnNames = {"user_id", "event_id"}),
@@ -31,14 +46,17 @@ public class Registration {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    /** Zawodnik składający zgłoszenie. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /** Wydarzenie docelowe. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "event_id", nullable = false)
     private Event event;
 
+    /** Pojazd z garażu — może być wymagany przy tworzeniu zgłoszenia. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "car_id")
     private Car car;
@@ -47,15 +65,19 @@ public class Registration {
     @Column(nullable = false, length = 20)
     private RegistrationStatus status = RegistrationStatus.PENDING;
 
+    /** Notatka zawodnika do organizatora. */
     @Column(length = 500)
     private String note;
 
+    /** Komentarz organizatora (np. powód odrzucenia / uwagi). */
     @Column(name = "organizer_comment", length = 500)
     private String organizerComment;
 
+    /** URL dowodu płatności (przelew) — wymagany przy wydarzeniach płatnych. */
     @Column(name = "payment_proof_url", length = 500)
     private String paymentProofUrl;
 
+    /** Termin dostarczenia / weryfikacji płatności (po ACCEPTED). */
     @Column(name = "payment_due_at")
     private Instant paymentDueAt;
 

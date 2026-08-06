@@ -1,15 +1,25 @@
+/**
+ * PaidEventBadge — widoczny marker „Płatne” (+ opcjonalna kwota wpisowego).
+ *
+ * Renderuje się tylko gdy `event.paid === true`.
+ * Warianty: `overlay` (absolutnie na zdjęciu karty) vs `inline` (w tekście szczegółów).
+ * Kolor z `--race-accent` (gradient złoty) — spójny z motywem RacePortal.
+ *
+ * Pomysł (alt): osobny badge „Wymaga przelewu” gdy status ACCEPTED bez proof.
+ */
+
 import { Banknote } from "lucide-react";
 import type { ApiEvent } from "../lib/types";
 import { formatEntryFee } from "../lib/types";
 
 type Props = {
   event: Pick<ApiEvent, "paid" | "entryFee">;
-  /** Overlay on image (list cards) vs inline badge */
+  /** Overlay na zdjęciu (karty listy) vs badge inline w treści */
   variant?: "overlay" | "inline";
   className?: string;
 };
 
-/** Visible “Płatne” marker with optional entry fee. */
+/** Widoczny marker „Płatne” z opcjonalną kwotą wpisowego. */
 export function PaidEventBadge({ event, variant = "inline", className = "" }: Props) {
   if (!event.paid) return null;
 

@@ -1,3 +1,9 @@
+/**
+ * NavigationMenu — komponent shadcn/ui (Radix UI + CVA + Tailwind).
+ * Wygenerowany / wzorowany na shadcn; wariantami steruje class-variance-authority.
+ * Pomysł (alt): własny design system albo MUI / Chakra zamiast Radix+CVA.
+ */
+
 import * as React from "react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { cva } from "class-variance-authority";

@@ -12,6 +12,17 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Publiczny endpoint health-check API i bazy MySQL.
+ * <p>
+ * Rola w architekturze: monitoring / load balancer / Docker healthcheck —
+ * bez JWT ({@code SecurityConfig} permitAll). Technologie: Spring Web, JDBC DataSource.
+ * </p>
+ * Zwraca {@code ok} (200) gdy DB odpowiada, {@code degraded} (503) gdy połączenie pada.
+ * <p>
+ * Pomysł (alt): Spring Boot Actuator ({@code /actuator/health}) z gotowymi indicatorami.
+ * </p>
+ */
 @RestController
 @RequestMapping("/api/health")
 public class HealthController {
@@ -22,6 +33,7 @@ public class HealthController {
         this.dataSource = dataSource;
     }
 
+    /** Sprawdza żywotność JDBC (timeout 2s) i buduje JSON statusu. */
     @GetMapping
     public ResponseEntity<Map<String, Object>> health() {
         boolean dbUp = isDatabaseUp();

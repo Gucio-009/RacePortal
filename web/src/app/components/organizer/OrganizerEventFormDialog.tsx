@@ -1,3 +1,19 @@
+/**
+ * OrganizerEventFormDialog — dialog tworzenia / edycji wydarzenia (panel org.).
+ *
+ * Wzorzec UX: większość pól z Select (presety) + wartość specjalna `OTHER` („Inne…”)
+ * na własne stringi. Presety: `eventFormPresets.ts` + kategorie z `eventCategories.ts`.
+ *
+ * Tor preset → `applyTrackPreset` wypełnia city / województwo / lat / lng.
+ * Mapa: `LocationMapPicker` montowany tylko gdy `open` (invalidateSize w pickerze).
+ * Płatne: wpisowe, IBAN, termin wpłaty, darmowa anulacja — widoczne przy `form.paid`.
+ * Wymagania kierowcy (PJ, PZM, OC…) — tylko gdy `acceptRegistrations`.
+ *
+ * Stan formularza trzymany w rodzicu (`OrganizerPanelPage`); tu tylko UI + setForm.
+ *
+ * Pomysł (alt): multi-step wizard; draft lokalny w localStorage przed POST.
+ */
+
 import type { Dispatch, SetStateAction } from "react";
 import { MapPin } from "lucide-react";
 import { Button } from "../ui/button";
@@ -25,6 +41,7 @@ import { applyTrackPreset, type FormState } from "./organizerEventForm";
 interface OrganizerEventFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** null = tworzenie; string = edycja istniejącego eventId */
   editingId: string | null;
   form: FormState;
   setForm: Dispatch<SetStateAction<FormState>>;
@@ -260,6 +277,7 @@ export function OrganizerEventFormDialog({
             </Select>
           </div>
 
+          {/* Mapa tylko przy open — unika Leaflet w ukrytym dialogu (zerowy size). */}
           <div className="space-y-2 sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Label className="flex items-center gap-2">
@@ -419,6 +437,7 @@ export function OrganizerEventFormDialog({
             />
           </div>
 
+          {/* Płatne: flow ACCEPTED → proof → CONFIRMED (patrz OrganizerRegistrationsList). */}
           <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
             <div>
               <Label className="text-white">Wydarzenie płatne</Label>

@@ -1,3 +1,11 @@
+/**
+ * Wniosek „Zostań organizatorem” (`POST /api/organizer/apply`).
+ *
+ * Rola w architekturze: dla roli USER (RequireAuth w App); ORGANIZER/ADMIN
+ * widzą komunikat że już mają uprawnienia. Admin rozpatruje w AdminScreen.
+ *
+ * Pomysł (alt): upload dokumentów firmy; weryfikacja NIP.
+ */
 import { useState } from "react";
 import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
 import { api, ApiError } from "../api/client";

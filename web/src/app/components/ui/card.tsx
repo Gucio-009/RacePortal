@@ -1,3 +1,9 @@
+/**
+ * Card — karta treści shadcn/ui (Tailwind).
+ * Wygenerowany / wzorowany na shadcn; wariantami steruje class-variance-authority.
+ * Pomysł (alt): własny design system albo MUI / Chakra zamiast Radix+CVA.
+ */
+
 import * as React from "react";
 
 import { cn } from "./utils";

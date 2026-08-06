@@ -1,3 +1,16 @@
+/**
+ * RegisterPage — rejestracja konta + weryfikacja e-mail kodem 6-cyfrowym.
+ *
+ * Cel: utworzenie konta kierowcy (USER) z danymi profilu / licencji; opcjonalnie Google.
+ * Wzorce: dwuetapowy UI (formularz → ekran kodu gdy `requiresVerification`),
+ * AuthContext (`register`, `verifyEmail`, `resendCode`, `loginWithGoogle`), React Router.
+ * Auth/JWT: po aktywacji AuthContext zapisuje JWT w `raceportal_token` (jak LoginPage).
+ * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
+ * Theme: `--race-accent`, `font-display`; Mailpit wspomniany w UI (dev :8025).
+ * Docker/nginx: `/register` jako deep link SPA — nginx try_files.
+ *
+ * Pomysł (alt): magic-link zamiast kodu; Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
+ */
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -11,6 +24,7 @@ import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
 
+/** Reguły siły hasła zsynchronizowane z komunikatami UI / oczekiwaniami API. */
 function isStrongPassword(password: string): boolean {
   return (
     password.length >= 8 &&
@@ -34,6 +48,7 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu.
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const { register, verifyEmail, resendCode, loginWithGoogle } = useAuth();
@@ -77,6 +92,7 @@ export function RegisterPage() {
         toast.error(result.message || "Nie udało się utworzyć konta");
         return;
       }
+      // Etap 2: kod e-mail zamiast od razu JWT.
       if ("requiresVerification" in result && result.requiresVerification) {
         setPendingEmail(result.email);
         toast.success(result.message || "Kod weryfikacyjny wysłany na e-mail");
@@ -91,6 +107,7 @@ export function RegisterPage() {
     }
   };
 
+  /** Potwierdzenie kodu → JWT w AuthContext → dashboard. */
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pendingEmail) return;
@@ -124,6 +141,7 @@ export function RegisterPage() {
     }
   };
 
+  /** Google wymaga wcześniejszej akceptacji regulaminu (checkbox). */
   const handleGoogle = useCallback(
     async (idToken: string) => {
       if (!acceptTerms) {

@@ -1,8 +1,18 @@
+/**
+ * AvatarPicker — wybór awatara z galerii presetów albo inicjałów (puste `value`).
+ *
+ * Presety: `AVATAR_PRESETS` z `@raceportal/api-types` (przez `lib/types`).
+ * Zaznaczenie: border + ring w `--race-accent` (zmienny z Ustawień).
+ * Puste `value` → awatar z inicjałów (`userInitials`); to domyślny stan profilu.
+ *
+ * Pomysł (alt): upload własnego pliku (S3/MinIO) zamiast wyłącznie URL-i presetów.
+ */
+
 import { AVATAR_PRESETS, userInitials } from "../lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { cn } from "./ui/utils";
 
-/** Pick from curated gallery or clear to initials (default). */
+/** Wybór z kuratorowanej galerii albo powrót do inicjałów (domyślnie). */
 export function AvatarPicker({
   value,
   onChange,
@@ -25,6 +35,7 @@ export function AvatarPicker({
         Domyślnie awatar z inicjałów. Wybierz gotowy styl albo wróć do inicjałów.
       </p>
       <div className="flex flex-wrap gap-3">
+        {/* Puste value = inicjały; onChange("") czyści URL awatara po stronie API */}
         <button
           type="button"
           onClick={() => onChange("")}

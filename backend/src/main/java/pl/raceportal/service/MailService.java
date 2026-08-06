@@ -8,6 +8,16 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+/**
+ * Wysyłka wiadomości e-mail (HTML) przez Spring Mail.
+ * <p>
+ * Rola w architekturze: powiadomienia transakcyjne — weryfikacja konta, reset hasła,
+ * zmiany statusu zgłoszenia. Wywołania są „soft-fail”: błąd SMTP nie psuje requestu HTTP.
+ * Technologie: Spring Boot Mail ({@link JavaMailSender}), SMTP (MySQL nie dotyczy).
+ * </p>
+ * Pomysł (alt): kolejka (RabbitMQ/SQS) + worker mailowy; SendGrid/Mailgun zamiast SMTP;
+ * outbox pattern w DB.
+ */
 @Service
 public class MailService {
 
@@ -22,7 +32,12 @@ public class MailService {
     }
 
     /**
-     * Fails soft: mail delivery problems must never break the request that triggered them.
+     * Wysyła mail HTML. Błędy dostawy są logowane, ale nie propagowane —
+     * nie mogą przerwać rejestracji / zmiany statusu zgłoszenia.
+     *
+     * @param to      adres odbiorcy
+     * @param subject temat
+     * @param html    treść HTML
      */
     public void send(String to, String subject, String html) {
         try {

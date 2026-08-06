@@ -24,6 +24,16 @@ import pl.raceportal.service.EventService;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST API katalogu wydarzeń (publiczne GET + chronione mutacje).
+ * <p>
+ * Rola w architekturze: główny entrypoint SPA — lista z filtrami, markery mapy,
+ * meta kategorii, szczegóły; tworzenie/edycja/anulowanie dla ORGANIZER/ADMIN.
+ * Technologie: Spring Web, JWT (opcjonalny na GET — wpływa na filtry status),
+ * JPA Specification, CategoryMatcher (param {@code carId}).
+ * </p>
+ * Pomysł (alt): GraphQL dla złożonych filtrów; OpenAPI generator kontraktu.
+ */
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -34,6 +44,10 @@ public class EventController {
         this.eventService = eventService;
     }
 
+    /**
+     * Stronicowana lista z filtrami (q, category, city, voivodeship, track, daty,
+     * archive, status, paid, carId). Publiczne; JWT opcjonalne.
+     */
     @GetMapping
     public ResponseEntity<EventListResponse> list(
             @RequestParam(defaultValue = "1") int page,
@@ -56,6 +70,7 @@ public class EventController {
                         archiveFlag, status, paid, carId, currentUser));
     }
 
+    /** Slim DTO markerów dla mapy/kalendarza (te same filtry, bez paginacji strony). */
     @GetMapping("/markers")
     public ResponseEntity<EventMarkersResponse> markers(
             @RequestParam(required = false) String q,
@@ -76,22 +91,26 @@ public class EventController {
                         archiveFlag, status, paid, carId, currentUser));
     }
 
+    /** Słownik kategorii (słownik + wartości z DB). */
     @GetMapping("/meta/categories")
     public ResponseEntity<List<String>> categories() {
         return ResponseEntity.ok(eventService.categories());
     }
 
+    /** Grupy kategorii do UI filtrów (Rajdy / Wyścigi / Drift / Inne). */
     @GetMapping("/meta/category-groups")
     public ResponseEntity<List<Map<String, Object>>> categoryGroups() {
         return ResponseEntity.ok(eventService.categoryGroups());
     }
 
+    /** Szczegóły — nieopublikowane tylko dla właściciela/admina. */
     @GetMapping("/{id}")
     public ResponseEntity<EventResponse> getById(@PathVariable String id,
                                                   @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(eventService.getById(id, currentUser));
     }
 
+    /** Tworzenie: ORGANIZER → PENDING, ADMIN → APPROVED. */
     @PostMapping
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<EventResponse> create(@Valid @RequestBody EventCreateRequest request,
@@ -99,6 +118,7 @@ public class EventController {
         return ResponseEntity.status(HttpStatus.CREATED).body(eventService.create(request, currentUser));
     }
 
+    /** Edycja (ownership); organizator wraca do PENDING. */
     @PatchMapping("/{id}")
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<EventResponse> update(@PathVariable String id,
@@ -107,6 +127,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.update(id, request, currentUser));
     }
 
+    /** Anulowanie wydarzenia + kaskadowe CANCELED zgłoszeń. */
     @PostMapping("/{id}/cancel")
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<EventResponse> cancel(@PathVariable String id,

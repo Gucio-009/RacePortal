@@ -13,6 +13,17 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Filtr HTTP: odczytuje nagłówek {@code Authorization: Bearer &lt;jwt&gt;}
+ * i ustawia autentyczację w {@link SecurityContextHolder}.
+ * <p>
+ * Rola w architekturze: most między JWT a Spring Security — działa przed
+ * {@code UsernamePasswordAuthenticationFilter}. Nieprawidłowy token czyści kontekst
+ * (request idzie dalej; chronione endpointy zwrócą 401).
+ * Technologie: Spring Security, JJWT.
+ * </p>
+ * Pomysł (alt): Spring OAuth2 Resource Server ({@code jwt} decoder) zamiast własnego filtra.
+ */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
@@ -24,6 +35,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         this.jwtService = jwtService;
     }
 
+    /**
+     * Jeśli jest Bearer token — parsuje claims i ustawia {@link UserPrincipal};
+     * przy błędzie JWT czyści kontekst i kontynuuje łańcuch.
+     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                      @NonNull HttpServletResponse response,

@@ -26,9 +26,26 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 
+/**
+ * Serwis uwierzytelniania i zarządzania kontem użytkownika.
+ * <p>
+ * Rola w architekturze: rejestracja (kierowca / organizator), weryfikacja e-mail,
+ * logowanie lokalne i Google OAuth, profil ({@code /me}), zmiana hasła, forgot-password.
+ * Po sukcesie wydaje JWT przez {@link JwtService}.
+ * Technologie: Spring Security (BCrypt), JWT, Spring Mail, Google OAuth ID Token, JPA/MySQL.
+ * </p>
+ * Reguły kluczowe: konto lokalne startuje niezweryfikowane (kod 6-cyfrowy, TTL 15 min);
+ * login wymaga {@code emailVerified}; rejestracja organizatora tworzy też wniosek PENDING
+ * (rola ORGANIZER dopiero po akceptacji admina); Google — find-or-create, email już verified.
+ * <p>
+ * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu kodów weryfikacyjnych;
+ * pełny flow resetu hasła z tokenem zamiast MVP maila.
+ * </p>
+ */
 @Service
 public class AuthService {
 
+    /** Czas ważności kodu weryfikacyjnego e-mail (minuty). */
     private static final int VERIFICATION_CODE_TTL_MINUTES = 15;
 
     private final UserRepository userRepository;
@@ -50,7 +67,10 @@ public class AuthService {
         this.googleIdTokenService = googleIdTokenService;
     }
 
-    /** Diagram "Proces Rejestracji (kierowca/użytkownik)": account is created unverified and a code is mailed. */
+    /**
+     * Rejestracja kierowcy (diagram „Proces Rejestracji”): konto USER niezweryfikowane + mail z kodem.
+     * Nie wydaje JWT — klient musi wywołać {@link #verifyEmail}.
+     */
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
         User user = createUnverifiedUser(request.username(), request.email(), request.password(), Role.USER);
@@ -63,10 +83,9 @@ public class AuthService {
     }
 
     /**
-     * Diagram "Proces rejestracji (organizator)": account + pending organizer
-     * application are created together; the ORGANIZER role is granted only
-     * after admin approval of the application (see AdminService), and only
-     * once the email has been verified.
+     * Rejestracja organizatora: konto USER + wniosek {@link ApplicationStatus#PENDING}.
+     * Rola ORGANIZER nadawana dopiero po akceptacji admina ({@code AdminService}),
+     * po wcześniejszej weryfikacji e-mail.
      */
     @Transactional
     public RegisterResponse registerOrganizer(RegisterOrganizerRequest request) {
@@ -87,7 +106,10 @@ public class AuthService {
                         "organizatora oczekuje na akceptację administratora.");
     }
 
-    /** POST /api/auth/verify-email: confirms the code and issues a JWT, same as login. */
+    /**
+     * Potwierdza kod weryfikacyjny i wydaje JWT (jak po loginie).
+     * Jeśli konto już zweryfikowane — tylko loguje (idempotentnie).
+     */
     @Transactional
     public AuthResponse verifyEmail(String email, String code) {
         User user = userRepository.findByEmailIgnoreCase(email)
@@ -109,7 +131,10 @@ public class AuthService {
         return new AuthResponse(token, toUserDto(user));
     }
 
-    /** POST /api/auth/resend-code: soft-fails like forgot-password to avoid leaking which emails exist. */
+    /**
+     * Ponowna wysyłka kodu — soft-fail (brak błędu gdy email nie istnieje),
+     * żeby nie ujawniać, które adresy są w bazie.
+     */
     @Transactional
     public void resendCode(String email) {
         userRepository.findByEmailIgnoreCase(email)
@@ -117,6 +142,9 @@ public class AuthService {
                 .ifPresent(this::sendVerificationCode);
     }
 
+    /**
+     * Logowanie email+hasło: BCrypt match, wymaga zweryfikowanego e-mail, zwraca JWT.
+     */
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailIgnoreCase(request.email())
@@ -180,6 +208,7 @@ public class AuthService {
         return new AuthResponse(token, toUserDto(user));
     }
 
+    /** Generuje unikalny username z nazwy Google lub lokalnej części emaila. */
     private String uniqueUsernameFrom(String email, String name) {
         String base;
         if (name != null && !name.isBlank()) {
@@ -241,6 +270,10 @@ public class AuthService {
         userRepository.save(user);
     }
 
+    /**
+     * MVP resetu hasła: mail informacyjny (bez tokenu resetującego).
+     * Soft-fail — nie ujawnia istnienia konta.
+     */
     @Transactional(readOnly = true)
     public void forgotPassword(String email) {
         userRepository.findByEmailIgnoreCase(email).ifPresent(user ->
@@ -249,6 +282,7 @@ public class AuthService {
                                 "<p>W wersji MVP skontaktuj się z administratorem lub zaloguj hasłem testowym.</p>"));
     }
 
+    /** Tworzy użytkownika z {@code emailVerified=false} i zahashowanym hasłem. */
     private User createUnverifiedUser(String username, String rawEmail, String rawPassword, Role role) {
         String email = rawEmail.toLowerCase();
         if (userRepository.existsByEmailIgnoreCase(email)) {
@@ -265,6 +299,7 @@ public class AuthService {
         return userRepository.save(user);
     }
 
+    /** Generuje 6-cyfrowy kod, zapisuje TTL i wysyła mail HTML. */
     private void sendVerificationCode(User user) {
         String code = String.format("%06d", random.nextInt(1_000_000));
         user.setEmailVerificationCode(code);

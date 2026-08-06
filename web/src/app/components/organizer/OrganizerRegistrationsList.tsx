@@ -1,3 +1,17 @@
+/**
+ * OrganizerRegistrationsList — obsługa zgłoszeń kierowców do wybranego wydarzenia.
+ *
+ * Maszyna stanów rejestracji (backend):
+ * - Bezpłatne: PENDING → CONFIRMED | CANCELED
+ * - Płatne:    PENDING → ACCEPTED (akceptacja) → CONFIRMED (po proof przelewu) | CANCELED
+ *
+ * Przycisk „Akceptuj” vs „Potwierdź” zależy od `selectedEvent.paid`.
+ * „Potwierdź wpłatę” wymaga `paymentProofUrl` (disabled bez dowodu).
+ * Komentarz organizatora: lokalny state `comments[regId]` → wysyłany w `onUpdateStatus`.
+ *
+ * Pomysł (alt): bulk accept; powiadomienie e-mail przy zmianie statusu (już częściowo w API).
+ */
+
 import type { Dispatch, SetStateAction } from "react";
 import { Check, X } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
@@ -11,6 +25,7 @@ import type { OrganizerEvent } from "./organizerEventForm";
 interface OrganizerRegistrationsListProps {
   registrations: Registration[];
   selectedEvent: OrganizerEvent | undefined;
+  /** Lokalne szkice komentarzy per registrationId (przed zapisem statusu). */
   comments: Record<string, string>;
   setComments: Dispatch<SetStateAction<Record<string, string>>>;
   onUpdateStatus: (id: string, status: RegistrationStatus) => void;
@@ -67,6 +82,7 @@ export function OrganizerRegistrationsList({
                   onChange={(e) => setComments((prev) => ({ ...prev, [reg.id]: e.target.value }))}
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
+                {/* PENDING: płatne → ACCEPTED; bezpłatne → od razu CONFIRMED */}
                 {reg.status === "PENDING" && (
                   <div className="flex gap-2">
                     <Button
@@ -89,6 +105,7 @@ export function OrganizerRegistrationsList({
                     </Button>
                   </div>
                 )}
+                {/* ACCEPTED (tylko płatne): czekamy na proof → CONFIRMED */}
                 {reg.status === "ACCEPTED" && (
                   <div className="flex gap-2">
                     <Button

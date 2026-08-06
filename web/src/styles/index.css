@@ -1,3 +1,12 @@
+/**
+ * index.css — punkt wejścia styli SPA (importowany z main.tsx).
+ *
+ * Kolejność ma znaczenie:
+ * 1. fonts.css — dokumentacja fontów (ładowanie z index.html)
+ * 2. tailwind.css — Tailwind v4 + skan źródeł
+ * 3. theme.css — tokeny RacePortal (--race-accent, Oxanium, @theme inline)
+ */
+
 @import './fonts.css';
 @import './tailwind.css';
 @import './theme.css';

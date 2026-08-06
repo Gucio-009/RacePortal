@@ -1,3 +1,9 @@
+/**
+ * Form — formularze shadcn/ui z react-hook-form (+ wzorzec walidacji zod).
+ * Wygenerowany / wzorowany na shadcn; pola wiązane przez Controller / FormField.
+ * Pomysł (alt): Formik, React Final Form albo natywne formularze bez RHF.
+ */
+
 "use client";
 
 import * as React from "react";

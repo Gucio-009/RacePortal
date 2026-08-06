@@ -1,3 +1,17 @@
+/**
+ * EventDetailPage — szczegóły wydarzenia + zgłoszenie + mapa/trasa.
+ *
+ * Cel: opis wydarzenia, status, wpisowe; zalogowany user może wysłać Registration
+ * z wybranym autem z garażu (partitionCarsForEvent — proponowane vs pozostałe).
+ * Wzorce: useParams(`id`), fetch `/api/events/:id`, geolocation + POST `/api/maps/route`,
+ * EventsMapView z polyline trasy.
+ * Auth: publiczny odczyt; zapis wymaga JWT (`raceportal_token`); redirect do `/login`.
+ * Deep link `/wydarzenia/:id` — krytyczne dla nginx SPA (try_files → index.html).
+ * Theme: `--race-accent`, `font-display`.
+ *
+ * Pomysł (alt): TanStack Query; Google Directions zamiast własnego /api/maps/route;
+ * Next.js generateStaticParams dla SEO; optimistic registration.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2 } from "lucide-react";
@@ -38,6 +52,7 @@ export function EventDetailPage() {
   const [routeLoading, setRouteLoading] = useState(false);
   const [route, setRoute] = useState<RouteResult | null>(null);
 
+  // Fetch szczegółów po zmianie :id (deep link / nawigacja).
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -56,6 +71,7 @@ export function EventDetailPage() {
       .catch(() => setCars([]));
   }, [isAuthenticated]);
 
+  // Podział aut: dopasowane do kategorii wydarzenia vs reszta garażu.
   const { recommended, other } = useMemo(
     () => partitionCarsForEvent(cars, event?.category ?? ""),
     [cars, event?.category],
@@ -65,6 +81,7 @@ export function EventDetailPage() {
     setCarId("none");
   }, [event?.id]);
 
+  // Domyślnie pierwsze proponowane auto.
   useEffect(() => {
     if (carId !== "none") return;
     if (recommended.length > 0) {
@@ -95,6 +112,7 @@ export function EventDetailPage() {
     }
   };
 
+  /** Geolokalizacja przeglądarki → backend wylicza trasę (polyline + dystans). */
   const handleRoute = () => {
     if (!event?.lat || !event?.lng) {
       toast.error("Brak współrzędnych wydarzenia");
@@ -152,6 +170,7 @@ export function EventDetailPage() {
     );
   }
 
+  // Marker na mapie tylko gdy wydarzenie ma lat/lng.
   const mapMarkers =
     event.lat != null && event.lng != null
       ? [{ id: event.id, lat: event.lat, lng: event.lng, title: event.name, subtitle: event.track }]

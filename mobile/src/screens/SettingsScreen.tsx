@@ -1,3 +1,14 @@
+/**
+ * Ustawienia lokalne aplikacji (preferencje UX) — nie synchro z API.
+ *
+ * Rola w architekturze: ten sam wzorzec storage co token —
+ * SecureStore na natywnym, localStorage na Expo web. Klucz `raceportal_settings`.
+ *
+ * SecureStore vs localStorage: patrz `src/api/client.ts` — na web SecureStore
+ * nie działa, więc fallback do localStorage (spójne z E2E Expo web).
+ *
+ * Pomysł (alt): AsyncStorage dla ustawień nie-tajnych; sync preferencji na backend.
+ */
 import { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
@@ -26,6 +37,7 @@ const defaults: Settings = {
 
 async function loadSettings(): Promise<Settings> {
   try {
+    // Web: localStorage; natywnie: SecureStore (Keychain / EncryptedSharedPreferences).
     if (Platform.OS === "web" && typeof localStorage !== "undefined") {
       const raw = localStorage.getItem(KEY);
       return raw ? { ...defaults, ...JSON.parse(raw) } : defaults;

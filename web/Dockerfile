@@ -1,3 +1,16 @@
+#
+# web/Dockerfile — obraz frontendu RacePortal (Vite/React → nginx).
+#
+# Multi-stage:
+#   1) build (node:22-alpine) — npm ci, build Vite. Context = root repo, bo Vite
+#      aliasuje @raceportal/api-types z packages/api-types (wspólne typy/helpery).
+#   2) serve (nginx:1.27-alpine) — statyczny dist + web/nginx.conf (SPA fallback).
+#
+# Build-args: VITE_API_URL, VITE_GOOGLE_CLIENT_ID (wstrzykiwane przy `docker compose build`).
+# Host mapuje :8081→80 (patrz docker-compose.yml).
+#
+# Pomysł (alt): osobny stage preview z `vite preview` zamiast nginx; albo CDN (S3+CloudFront).
+#
 # Build (context: repo root — needs packages/api-types for Vite alias)
 FROM node:22-alpine AS build
 WORKDIR /app

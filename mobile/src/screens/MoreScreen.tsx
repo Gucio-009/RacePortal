@@ -1,3 +1,12 @@
+/**
+ * Hub „Więcej” — menu nawigacji do konta, paneli ról, archiwum, legal.
+ *
+ * Rola w architekturze: soft role gates w UI (pokazuje Admin tylko ADMIN,
+ * Organizer dla ORGANIZER|ADMIN, „Zostań organizatorem” dla USER).
+ * Twarde gate’y są w App.tsx (RequireAuth) na docelowych ekranach.
+ *
+ * Pomysł (alt): drawer zamiast zakładki; deep links do paneli.
+ */
 import { View, Text, StyleSheet, Pressable, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";

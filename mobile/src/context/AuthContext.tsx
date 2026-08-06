@@ -1,3 +1,15 @@
+/**
+ * Kontekst autentykacji (sesja JWT) dla całej aplikacji Expo.
+ *
+ * Rola w architekturze: po starcie odczytuje token (SecureStore / localStorage),
+ * wywołuje `/api/auth/me`, udostępnia login/register/verify/logout ekranom.
+ * Odpowiednik AuthContext / AuthGate po stronie web.
+ *
+ * Technologie: React Context, klient API mobile, magazyn tokenu z `client.ts`.
+ *
+ * Pomysł (alt): Redux/Zustand + persist; Auth0 / Firebase Auth SDK;
+ * Flutter `Provider`/`Riverpod` + secure storage.
+ */
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api, ApiError, setToken, getToken } from "../api/client";
 import type { User } from "../api/types";

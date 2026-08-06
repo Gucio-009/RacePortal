@@ -1,3 +1,9 @@
+/**
+ * Sonner — toast notifications shadcn/ui (biblioteka sonner + next-themes).
+ * Wygenerowany / wzorowany na shadcn; Toaster renderuje powiadomienia toast.
+ * Pomysł (alt): react-hot-toast, Radix Toast albo własny system powiadomień.
+ */
+
 "use client";
 
 import { useTheme } from "next-themes";

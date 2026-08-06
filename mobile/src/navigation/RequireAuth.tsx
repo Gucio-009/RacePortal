@@ -1,3 +1,16 @@
+/**
+ * Brama RBAC dla ekranów chronionych (odpowiednik web AuthGate).
+ *
+ * Rola w architekturze: role gate — wymaga zalogowanego użytkownika,
+ * opcjonalnie sprawdza `roles` (np. ADMIN, ORGANIZER). Bez sesji → nawigacja
+ * do modala Login; złą rolą → reset do Main + komunikat „Brak uprawnień”.
+ * Używane w `App.tsx` przez wrapper `Gate` wokół Dashboard/Garaż/Konto/Admin/Org.
+ *
+ * Technologie: React Navigation (`navigate` / `CommonActions.reset`), AuthContext.
+ *
+ * Pomysł (alt): Expo Router `Stack.Protected` / layout guards;
+ * Flutter `GoRouter` redirect; osobny stack auth bez zagnieżdżania Gate.
+ */
 import { useEffect, useState, type ReactNode } from "react";
 import { ActivityIndicator, View, StyleSheet, Text, Pressable } from "react-native";
 import { CommonActions, useNavigation } from "@react-navigation/native";
@@ -7,7 +20,7 @@ import type { UserRole } from "../api/types";
 import type { RootStackParamList } from "./types";
 import { colors } from "../theme/colors";
 
-/** Mirror web AuthGate: require login and optional roles. */
+/** Odpowiednik web AuthGate: wymaga logowania i opcjonalnie ról. */
 export function RequireAuth({
   roles,
   children,

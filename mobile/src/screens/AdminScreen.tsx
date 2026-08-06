@@ -1,3 +1,12 @@
+/**
+ * Panel administratora — statystyki, eventy, aplikacje org., role użytkowników.
+ *
+ * Rola w architekturze: twardy role gate RequireAuth roles={ADMIN} w App.tsx
+ * + lokalny check `user.role !== "ADMIN"`. Endpointy `/api/admin/*`.
+ * Self-demote zablokowany w UI (nie zmieniaj swojej roli).
+ *
+ * Pomysł (alt): osobna web-only konsola admina; audit log zmian ról.
+ */
 import { useCallback, useState } from "react";
 import {
   View,

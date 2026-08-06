@@ -1,3 +1,15 @@
+/**
+ * GalleryPage — tymczasowy podgląd zdjęć wydarzeń (galeria ODŁOŻONA / „później”).
+ *
+ * Cel: zgodnie z review — pełna galeria odroczona; tu prosty grid imageUrl z API
+ * (nadchodzące + archiwum), filtr kategorii, dialog lightbox.
+ * Wzorce: Promise.all dwóch list `/api/events`, deduplikacja Map po id, Select filtra.
+ * Auth: publiczna (bez JWT). Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link `/galeria` → SPA fallback.
+ *
+ * Pomysł (alt): dedykowane `/api/gallery` + CDN; Next.js Image; lightbox biblioteka;
+ * pełna galeria dopiero w kolejnej iteracji produktu.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
@@ -23,6 +35,7 @@ export function GalleryPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Później: osobne API galerii; dziś reuse imageUrl z wydarzeń.
   useEffect(() => {
     const toItems = (events: ApiEvent[]): GalleryItem[] =>
       events

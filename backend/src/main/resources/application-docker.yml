@@ -1,3 +1,11 @@
+#
+# application-docker.yml — profil `docker` (kontener api w Compose).
+#
+# Nadpisuje hosty: MySQL = hostname usługi `mysql`, SMTP = `mailhog` (Mailpit).
+# Reszta (JWT, seed, CORS) idzie z env w docker-compose.yml.
+#
+# Pomysł (alt): ConfigMap/Secrets w K8s zamiast pliku profilu; Spring Cloud Config.
+#
 spring:
   datasource:
     url: ${DATABASE_URL:jdbc:mysql://mysql:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}

@@ -1,3 +1,19 @@
+/**
+ * RootLayout — szkielet SPA: sticky header + `<Outlet />` + footer.
+ *
+ * React Router: layout route w `routes.tsx` (`Component: RootLayout`);
+ * dzieci (HomePage, EventsPage, …) renderują się w `<Outlet />`.
+ * NavLink podświetla aktywny link kolorem `--race-accent` (theme.css / ustawienia).
+ *
+ * Auth: `useAuth()` — JWT w localStorage (`raceportal_token`); menu konta i linki
+ * zależą od roli USER / ORGANIZER / ADMIN.
+ *
+ * Docker/nginx: deep linki (`/wydarzenia/123`) obsługuje SPA fallback — ten layout
+ * ładuje się zawsze po wejściu w dowolną ścieżkę frontendową.
+ *
+ * Pomysł (alt): osobny layout dla paneli org/admin albo sidebar zamiast top-nav.
+ */
+
 import { Outlet, Link, useNavigate, NavLink } from "react-router";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
@@ -18,6 +34,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { userInitials } from "../lib/types";
 
+/** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `${isActive ? "text-[var(--race-accent)]" : "text-[#9ca3af] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
 
@@ -33,6 +50,7 @@ export function RootLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
+  // Zamykanie menu konta: klik poza + Escape (bez zewnętrznej biblioteki popover).
   useEffect(() => {
     if (!menuOpen) return;
     const onDoc = (e: MouseEvent) => {
@@ -54,6 +72,7 @@ export function RootLayout() {
     navigate(path);
   };
 
+  /** Wylogowanie: czyści JWT (AuthContext) + toast + confetti w kolorze akcentu. */
   const handleLogout = () => {
     setMenuOpen(false);
     logout();
@@ -79,6 +98,7 @@ export function RootLayout() {
     <div className="min-h-screen bg-[#121212]">
       <header className="border-b border-[#2a2a2a] bg-[#1a1a1a] sticky top-0 z-50">
         <nav className="container mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          {/* Brand: font-display = Oxanium (--font-family-display w theme.css) */}
           <Link to="/" className="flex items-center gap-3 shrink-0">
             <Flag className="w-8 h-8 text-[var(--race-accent)]" />
             <span className="font-display tracking-wider" style={{ fontSize: "24px", fontWeight: 800 }}>
@@ -93,9 +113,11 @@ export function RootLayout() {
             <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
               ARCHIWUM
             </NavLink>
+            {/* Galeria świadomie odłożona — patrz Guidelines.md */}
             <NavLink to="/galeria" className={navLinkClass} style={{ fontWeight: 600 }} title="Galeria odłożona na późniejszy etap">
               GALERIA <span className="text-[#9ca3af] text-[10px]">(później)</span>
             </NavLink>
+            {/* MAPA = alias UX → ta sama lista wydarzeń (mapa jest na EventsPage) */}
             <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
               MAPA
             </NavLink>
@@ -242,6 +264,7 @@ export function RootLayout() {
         </nav>
       </header>
 
+      {/* Główna treść tras potomnych (React Router Outlet) */}
       <main>
         <Outlet />
       </main>

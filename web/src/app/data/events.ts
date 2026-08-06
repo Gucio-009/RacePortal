@@ -1,3 +1,15 @@
+/**
+ * data/events.ts — lokalne mocki / seed UI (wydarzenia, wyniki, galeria).
+ *
+ * Historycznie: dane demo przed pełnym API. Część stron może nadal importować
+ * `events` / `results` / `gallery` jako fallback lub content marketingowy.
+ * Produkcyjna lista eventów idzie z backendu (`/api/events`) — typy w lib/types (ApiEvent).
+ *
+ * Statusy tu są po polsku (`Potwierdzone`…) — inne niż enum API (PUBLISHED / …).
+ *
+ * Pomysł (alt): usunąć po pełnej migracji na API; albo przenieść do Storybook fixtures.
+ */
+
 export interface RaceEvent {
   id: number;
   image: string;
@@ -236,6 +248,7 @@ export const gallery: GalleryItem[] = [
   },
 ];
 
+/** Lookup mocka po id — legacy; preferuj API dla żywych danych. */
 export function getEventById(id: number) {
   return events.find((event) => event.id === id);
 }

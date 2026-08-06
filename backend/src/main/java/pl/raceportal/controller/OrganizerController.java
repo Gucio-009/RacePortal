@@ -18,6 +18,15 @@ import pl.raceportal.service.OrganizerService;
 
 import java.util.List;
 
+/**
+ * REST API ścieżki organizatora: wniosek o rolę oraz lista wydarzeń.
+ * <p>
+ * Rola w architekturze: {@code /apply} dla zalogowanego USER; {@code /events}
+ * tylko dla ORGANIZER/ADMIN (RBAC). Logika w {@link OrganizerService}.
+ * Technologie: Spring Security method security, Bean Validation.
+ * </p>
+ * Pomysł (alt): osobny BFF dla panelu organizatora.
+ */
 @RestController
 @RequestMapping("/api/organizer")
 public class OrganizerController {
@@ -28,6 +37,7 @@ public class OrganizerController {
         this.organizerService = organizerService;
     }
 
+    /** Składa wniosek o rolę ORGANIZER (status PENDING). */
     @PostMapping("/apply")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<OrganizerApplicationResponse> apply(@AuthenticationPrincipal UserPrincipal currentUser,
@@ -35,6 +45,7 @@ public class OrganizerController {
         return ResponseEntity.status(HttpStatus.CREATED).body(organizerService.apply(currentUser, request));
     }
 
+    /** Wydarzenia organizatora (admin widzi wszystkie). */
     @GetMapping("/events")
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<List<EventResponse>> events(@AuthenticationPrincipal UserPrincipal currentUser) {

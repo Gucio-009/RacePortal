@@ -20,6 +20,22 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 
+/**
+ * Encja wydarzenia motorsportowego (tor / impreza).
+ * <p>
+ * Rola w architekturze: centralny agregat domeny — filtrowany publicznie
+ * ({@code EventService}), tworzony przez organizatora, moderowany przez admina.
+ * Współrzędne {@code lat}/{@code lng} służą mapom i routingowi OSRM.
+ * Technologie: JPA/Hibernate, MySQL; indeksy pod status+data, kategorię, miasto.
+ * </p>
+ * Reguły biznesowe: status startuje zwykle jako PENDING (moderacja);
+ * wydarzenia płatne mają {@code entryFee}, {@code bankAccount}, deadline płatności;
+ * flagi {@code require*} ograniczają zgłoszenia (prawo jazdy, PZM, OC, PT, klatka, rejestracja pojazdu).
+ * <p>
+ * Pomysł (alt): Elasticsearch do wyszukiwania wydarzeń; PostGIS zamiast prostych lat/lng;
+ * OpenAPI generator dla DTO z tej encji.
+ * </p>
+ */
 @Entity
 @Table(name = "events", indexes = {
         @Index(name = "idx_events_status_date", columnList = "status,date"),
@@ -41,12 +57,15 @@ public class Event {
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;
 
+    /** Kategoria sportowa (np. drift, time attack) — używana w {@code CategoryMatcher}. */
     @Column(nullable = false, length = 60)
     private String category;
 
+    /** Data rozpoczęcia wydarzenia. */
     @Column(nullable = false)
     private LocalDate date;
 
+    /** Godzina startu w formacie tekstowym (np. {@code 09:00}). */
     @Column(nullable = false, length = 10)
     private String time;
 
@@ -56,6 +75,7 @@ public class Event {
     @Column(name = "end_time", length = 10)
     private String endTime;
 
+    /** Nazwa toru / obiektu. */
     @Column(nullable = false, length = 120)
     private String track;
 
@@ -65,62 +85,80 @@ public class Event {
     @Column(nullable = false, length = 80)
     private String city;
 
+    /** Województwo — filtr lokalizacji. */
     @Column(nullable = false, length = 80)
     private String voivodeship;
 
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    /** Szerokość geograficzna — mapa / OSRM. */
     private Double lat;
 
+    /** Długość geograficzna — mapa / OSRM. */
     private Double lng;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private EventStatus status = EventStatus.PENDING;
 
+    /** Czy wydarzenie jest płatne dla zawodników. */
     @Column(nullable = false)
     private boolean paid = false;
 
+    /** Opłata startowa (gdy {@code paid=true}). */
     @Column(name = "entry_fee", precision = 10, scale = 2)
     private BigDecimal entryFee;
 
+    /** Numer konta do przelewu (wydarzenia płatne). */
     @Column(name = "bank_account", length = 60)
     private String bankAccount;
 
+    /** Ile godzin od ACCEPTED ma zawodnik na dostarczenie dowodu płatności. */
     @Column(name = "payment_deadline_hours", nullable = false)
     private Integer paymentDeadlineHours = 72;
 
+    /** Liczba dni przed startem na bezpłatne anulowanie zgłoszenia. */
     @Column(name = "free_cancel_days", nullable = false)
     private Integer freeCancelDays = 7;
 
+    /** Czy organizator aktualnie przyjmuje nowe zgłoszenia. */
     @Column(name = "accept_registrations", nullable = false)
     private boolean acceptRegistrations = true;
 
+    /** Opcjonalna opłata dla widzów (informacyjna). */
     @Column(name = "spectator_fee", precision = 10, scale = 2)
     private BigDecimal spectatorFee;
 
+    /** Link zewnętrzny (regulamin, bilety itd.). */
     @Column(name = "external_url", length = 500)
     private String externalUrl;
 
+    /** Wymaga prawa jazdy B u zawodnika. */
     @Column(name = "require_driving_license", nullable = false)
     private boolean requireDrivingLicense = false;
 
+    /** Wymaga licencji PZM. */
     @Column(name = "require_pzm_license", nullable = false)
     private boolean requirePzmLicense = false;
 
+    /** Wymaga OC na pojeździe. */
     @Column(name = "require_oc", nullable = false)
     private boolean requireOc = false;
 
+    /** Wymaga przeglądu technicznego (PT). */
     @Column(name = "require_pt", nullable = false)
     private boolean requirePt = false;
 
+    /** Wymaga klatki bezpieczeństwa. */
     @Column(name = "require_cage", nullable = false)
     private boolean requireCage = false;
 
+    /** Wymaga pojazdu zarejestrowanego. */
     @Column(name = "require_registered", nullable = false)
     private boolean requireRegistered = false;
 
+    /** Organizator wydarzenia (rola ORGANIZER / ADMIN). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organizer_id")
     private User organizer;

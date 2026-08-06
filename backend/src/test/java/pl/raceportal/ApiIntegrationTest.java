@@ -31,12 +31,26 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Testy integracyjne API RacePortal na prawdziwej bazie MySQL.
+ * <p>
+ * Rola w architekturze testów: end-to-end przez MockMvc — auth, wydarzenia, zgłoszenia,
+ * garaż, RBAC. Preferuje Testcontainers ({@code mysql:8.0}); alternatywnie
+ * zewnętrzne {@code TEST_DB_URL} / {@code TEST_DB_USER} / {@code TEST_DB_PASSWORD}.
+ * Pomijane gdy brak Dockera i braku zewnętrznej DB ({@code @EnabledIf}).
+ * </p>
+ * Technologie: Spring Boot Test, MockMvc, Testcontainers MySQL, JUnit 5, profil {@code test}.
+ * <p>
+ * Pomysł (alt): RestAssured; Testcontainers + shared container (Ryuk); WireMock dla OSRM/Mail.
+ * </p>
+ */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @EnabledIf("pl.raceportal.ApiIntegrationTest#dockerOrExternalDbAvailable")
 class ApiIntegrationTest {
 
+    /** Czy używać zewnętrznej DB zamiast Testcontainers. */
     private static final boolean USE_EXTERNAL_DB = System.getenv("TEST_DB_URL") != null
             && !System.getenv("TEST_DB_URL").isBlank();
 
@@ -52,11 +66,13 @@ class ApiIntegrationTest {
         }
     }
 
+    /** Warunek uruchomienia klasy — Docker lub skonfigurowana zewnętrzna baza. */
     @SuppressWarnings("unused")
     static boolean dockerOrExternalDbAvailable() {
         return USE_EXTERNAL_DB || DockerClientFactory.instance().isDockerAvailable();
     }
 
+    /** Podłącza datasource Spring do kontenera / env vars. */
     @DynamicPropertySource
     static void datasourceProperties(DynamicPropertyRegistry registry) {
         if (USE_EXTERNAL_DB) {
@@ -92,6 +108,7 @@ class ApiIntegrationTest {
         return node.get("token").asText();
     }
 
+    /** Healthcheck publiczny — status ok + db up. */
     @Test
     void health_returnsOkWithDatabaseUp() throws Exception {
         mockMvc.perform(get("/api/health"))
@@ -101,6 +118,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.db", is("up")));
     }
 
+    /** Seed: admin, organizer i kierowca mogą się zalogować. */
     @Test
     void login_worksForAllThreeSeededRoles() throws Exception {
         String adminToken = login("admin@raceportal.pl", "admin123");
@@ -159,6 +177,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.details", notNullValue()));
     }
 
+    /** Flow rejestracji lokalnej: register → verify-email → JWT. */
     @Test
     void register_thenVerifyEmail_returnsToken() throws Exception {
         String email = "nowy.kierowca@example.com";
@@ -199,6 +218,10 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(org.hamcrest.Matchers.greaterThanOrEqualTo(2))));
     }
 
+    /**
+     * Reguła garażu: przy otwartym zgłoszeniu nie wolno zmienić make/model/class,
+     * ale inne pola (np. plate) są dozwolone.
+     */
     @Test
     void garage_update_blockedByOpenRegistration_thenAllowedForNonConflictingFields() throws Exception {
         String token = login("test@wp.pl", "test123");
@@ -248,6 +271,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.plate", is("PO 22222")));
     }
 
+    /** Anulowanie zgłoszenia przez kierowcę → status CANCELED. */
     @Test
     void driver_cancelRegistration_setsCanceledStatus() throws Exception {
         String token = login("test@wp.pl", "test123");
@@ -283,6 +307,9 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.status", is("CANCELED")));
     }
 
+    /**
+     * Flow płatny: PENDING → ACCEPTED (org) → payment-proof (kierowca) → CONFIRMED (org).
+     */
     @Test
     void paidRegistration_acceptedThenPaymentProofThenConfirmed() throws Exception {
         String driverToken = login("test@wp.pl", "test123");
@@ -329,6 +356,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.status", is("CONFIRMED")));
     }
 
+    /** Anulowanie wydarzenia kaskadowo ustawia otwarte zgłoszenia na CANCELED. */
     @Test
     void event_cancel_cancelsOpenRegistrations() throws Exception {
         String orgToken = login("org@raceportal.pl", "org123");
@@ -375,6 +403,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$[?(@.id == '" + regId + "')].status", contains("CANCELED")));
     }
 
+    /** RBAC: zwykły USER nie wchodzi na /api/admin. */
     @Test
     void admin_endpoint_forbiddenForRegularUser() throws Exception {
         String token = login("test@wp.pl", "test123");
@@ -383,6 +412,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
 
+    /** RBAC: ADMIN ma dostęp do /api/admin/stats. */
     @Test
     void admin_endpoint_allowedForAdmin() throws Exception {
         String token = login("admin@raceportal.pl", "admin123");

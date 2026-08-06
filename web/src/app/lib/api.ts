@@ -1,4 +1,20 @@
+/**
+ * api.ts — cienki klient HTTP do backendu Spring Boot.
+ *
+ * Baza URL: `import.meta.env.VITE_API_URL` (Vite); puste = relative `/api/...`
+ * (proxy dev albo same-origin za nginx w Docker).
+ *
+ * Auth: Bearer JWT z localStorage (`raceportal_token` / TOKEN_KEY).
+ * getToken / setToken — używane przez AuthContext.persistAuth.
+ *
+ * ApiError: status + message (+ opcjonalne details walidacji Bean Validation).
+ * 204 No Content → `undefined` (DELETE bez body).
+ *
+ * Pomysł (alt): axios / ky; interceptor 401 → auto-logout; OpenAPI generated client.
+ */
+
 const API_URL = import.meta.env.VITE_API_URL || "";
+/** Klucz JWT w localStorage — ten sam kontrakt co mobile / Guidelines.md. */
 export const TOKEN_KEY = "raceportal_token";
 
 export class ApiError extends Error {
@@ -22,6 +38,7 @@ export function setToken(token: string | null) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
+/** Składa czytelny komunikat z `error` + mapy `details` (pola formularza). */
 function formatApiError(error?: string, details?: Record<string, string>): string {
   const base = error || "Żądanie nie powiodło się";
   if (!details || Object.keys(details).length === 0) return base;
@@ -58,7 +75,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   try {
     data = await res.json();
   } catch {
-    // empty body
+    // puste body (np. niektóre błędy proxy)
   }
 
   if (!res.ok) {

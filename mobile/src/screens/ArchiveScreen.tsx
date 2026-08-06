@@ -1,3 +1,11 @@
+/**
+ * Archiwum / wyniki — zakończone wydarzenia (`/api/events?archive=1`).
+ *
+ * Rola w architekturze: publiczna lista w More stack; paginacja; tap → EventDetail.
+ * `ResultsScreen` to cienki alias z innym tytułem (parity z webem).
+ *
+ * Pomysł (alt): osobne API wyników zawodów; PDF protokołów.
+ */
 import { useCallback, useState } from "react";
 import {
   View,

@@ -1,6 +1,17 @@
 /**
- * ~500 unit tests for @raceportal/api-types — shared domain helpers
- * (car match, categories, avatars, status/fee/date labels).
+ * ~500 testów jednostkowych dla @raceportal/api-types — wspólne helpery domenowe
+ * (dopasowanie auta do kategorii, kategorie, awatary, etykiety statusów/opłat/dat).
+ *
+ * Technologia: Vitest (environment: node, konfiguracja w vitest.config.ts).
+ * Przypadki budowane proceduralnie w buildCases() — każdy ma id U001… i osobny `it()`,
+ * żeby raport JSON/Markdown w docs/testy/wyniki/ miał pełną listę (≥500).
+ *
+ * Zakres krytyczny carMatch: tożsamość, casing, spacje, diakrytyki PL (w tym ł),
+ * aliasy (exact-first), macierz klas vs sondy, partition/formatCarLabel.
+ *
+ * Uruchomienie: `npm run test:unit` lub `scripts/run-unit-500.sh` (z raportem MD).
+ *
+ * Pomysł (alt): property-based testing (fast-check) zamiast ręcznej macierzy par.
  */
 import { describe, expect, it } from "vitest";
 import {
@@ -28,8 +39,10 @@ import {
   type RegistrationStatus,
 } from "../src/index";
 
+/** Pojedynczy przypadek testowy z czytelnym id do raportu. */
 type Case = { id: string; run: () => void };
 
+/** Minimalny fabrykant Car — uzupełnia pola wymagane przez interfejs. */
 function car(partial: Partial<Car> & Pick<Car, "id" | "make" | "model">): Car {
   return {
     userId: "u1",
@@ -39,7 +52,7 @@ function car(partial: Partial<Car> & Pick<Car, "id" | "make" | "model">): Car {
   };
 }
 
-/** Build ≥500 discrete cases covering real domain rules. */
+/** Buduje ≥500 dyskretnych przypadków pokrywających reguły domenowe. */
 function buildCases(): Case[] {
   const cases: Case[] = [];
   let n = 0;
@@ -48,7 +61,7 @@ function buildCases(): Case[] {
     cases.push({ id: `U${String(n).padStart(3, "0")}: ${name}`, run });
   };
 
-  // --- Categories invariants ---
+  // --- Inwarianty kategorii (grupy, unikalność, wykluczenie „Inne” z klas aut) ---
   add("EVENT_CATEGORY_GROUPS is non-empty", () => {
     expect(EVENT_CATEGORY_GROUPS.length).toBeGreaterThan(0);
   });
@@ -78,7 +91,7 @@ function buildCases(): Case[] {
     }
   }
 
-  // --- Identity + casing/spacing/diacritics for every car class ---
+  // --- Tożsamość + casing/spacing dla każdej klasy auta ---
   for (const klass of CAR_CLASS_OPTIONS) {
     add(`car class matches itself: ${klass}`, () => {
       expect(carMatchesEventCategory(klass, klass)).toBe(true);
@@ -97,7 +110,7 @@ function buildCases(): Case[] {
     });
   }
 
-  // Diacritic / alias samples (Polish + legacy names)
+  // Próbki diakrytyków / aliasów (PL + legacy) — w tym długodystans z „ł”
   const aliasPairs: [string, string, boolean][] = [
     ["Drift", "drifting", true],
     ["Drift", "Drift trening", true],
@@ -142,14 +155,14 @@ function buildCases(): Case[] {
     });
   }
 
-  // Edge empties
+  // Puste / whitespace className → false
   for (const bad of [null, undefined, "", "  ", "\t"] as const) {
     add(`empty carClass rejected: ${JSON.stringify(bad)}`, () => {
       expect(carMatchesEventCategory(bad as never, "Drift")).toBe(false);
     });
   }
 
-  // Cross-matrix: every car class vs Drift / GT Racing / Rally / Endurance (positive when same family)
+  // Macierz: każda klasa vs sondy rodzin (wynik boolean; self → true)
   const probes = ["Drift", "GT Racing", "Rally", "Endurance", "Time Attack", "Track Day", "MPWS", "Inne"];
   for (const klass of CAR_CLASS_OPTIONS) {
     for (const probe of probes) {
@@ -161,7 +174,7 @@ function buildCases(): Case[] {
     }
   }
 
-  // --- formatCarLabel / partition ---
+  // --- formatCarLabel / partitionCarsForEvent ---
   const sampleCars = CAR_CLASS_OPTIONS.slice(0, 12).map((className, i) =>
     car({
       id: `c${i}`,
@@ -208,7 +221,7 @@ function buildCases(): Case[] {
     expect(other).toEqual([]);
   });
 
-  // --- Avatars ---
+  // --- Awatary (12 presetów Dicebear, findAvatarPreset, userInitials) ---
   add("AVATAR_PRESETS has 12 entries", () => {
     expect(AVATAR_PRESETS.length).toBe(12);
   });
@@ -254,7 +267,7 @@ function buildCases(): Case[] {
     });
   }
 
-  // --- Status / registration helpers ---
+  // --- Statusy wydarzeń / zgłoszeń ---
   const eventStatuses: EventStatus[] = [
     "DRAFT",
     "PENDING",
@@ -297,7 +310,7 @@ function buildCases(): Case[] {
     });
   }
 
-  // --- Fees / images / dates ---
+  // --- Opłaty / obrazy / daty ---
   const nullFees = [null, undefined, Number.NaN] as const;
   for (const fee of nullFees) {
     add(`formatEntryFee nullish ${String(fee)}`, () => {
@@ -314,7 +327,7 @@ function buildCases(): Case[] {
     });
   }
 
-  // Extra fee smoke values (each is its own assertion unit)
+  // Extra smoke wartości opłat (każda = osobny unit)
   for (let i = 1; i <= 40; i++) {
     const fee = i * 25;
     add(`formatEntryFee smoke ${fee}`, () => {
@@ -360,7 +373,7 @@ function buildCases(): Case[] {
     expect(eventDateLabel({})).toBe("");
   });
 
-  // Pad to ≥500 with systematic normalization / substring cases per category
+  // Dopełnienie do ≥500: mixed-case + substring per kategoria
   for (const klass of ALL_EVENT_CATEGORIES) {
     add(`normalize match mixed case spaced: ${klass}`, () => {
       const weird = klass
@@ -370,7 +383,7 @@ function buildCases(): Case[] {
       expect(carMatchesEventCategory(` ${weird} `, klass)).toBe(true);
     });
     add(`self-includes match for ${klass}`, () => {
-      // Full string always matches; substring path only when long enough to stay unambiguous
+      // Pełny string zawsze pasuje; substring tylko gdy wystarczająco długi
       expect(carMatchesEventCategory(klass, klass)).toBe(true);
       if (klass.length >= 5) {
         const stem = klass.slice(0, Math.floor(klass.length * 0.7));
@@ -379,7 +392,7 @@ function buildCases(): Case[] {
     });
   }
 
-  // Guarantee floor of 500 — residual property checks over ordered pairs of car classes
+  // Gwarancja floor 500 — pary klas (ścieżka substring może być asymetryczna by design)
   let pairIdx = 0;
   outer: for (let i = 0; i < CAR_CLASS_OPTIONS.length; i++) {
     for (let j = 0; j < CAR_CLASS_OPTIONS.length; j++) {
@@ -391,7 +404,7 @@ function buildCases(): Case[] {
         const r = carMatchesEventCategory(a, b);
         expect(typeof r).toBe("boolean");
         if (a === b) expect(r).toBe(true);
-        // symmetry for exact / alias path (substring path may be asymmetric by design)
+        // symetria dla exact / alias (substring może być asymetryczny)
         if (a === b) expect(carMatchesEventCategory(b, a)).toBe(true);
       });
     }

@@ -21,6 +21,15 @@ import pl.raceportal.service.RegistrationService;
 
 import java.util.List;
 
+/**
+ * REST API zgłoszeń na wydarzenia (kierowca + organizator).
+ * <p>
+ * Rola w architekturze: endpointy flow dyplomowego — tworzenie, decyzja statusu,
+ * anulowanie, dowód płatności. Wymaga JWT; lista/status — ORGANIZER/ADMIN + ownership w serwisie.
+ * Technologie: Spring Security RBAC, Bean Validation, JPA, Mail.
+ * </p>
+ * Pomysł (alt): WebSocket powiadomień o zmianie statusu; Stripe Checkout zamiast proof URL.
+ */
 @RestController
 @RequestMapping("/api/registrations")
 @PreAuthorize("isAuthenticated()")
@@ -32,17 +41,20 @@ public class RegistrationController {
         this.registrationService = registrationService;
     }
 
+    /** Historia zgłoszeń zalogowanego kierowcy. */
     @GetMapping("/mine")
     public ResponseEntity<List<RegistrationResponse>> mine(@AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(registrationService.mine(currentUser.getId()));
     }
 
+    /** Nowe zgłoszenie / upsert PENDING na wydarzenie APPROVED. */
     @PostMapping
     public ResponseEntity<RegistrationResponse> create(@AuthenticationPrincipal UserPrincipal currentUser,
                                                          @Valid @RequestBody RegistrationCreateRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(registrationService.create(currentUser.getId(), request));
     }
 
+    /** Lista zgłoszeń na wydarzenie — organizator-właściciel lub admin. */
     @GetMapping("/event/{eventId}")
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<List<RegistrationResponse>> forEvent(@PathVariable String eventId,
@@ -50,6 +62,10 @@ public class RegistrationController {
         return ResponseEntity.ok(registrationService.listForEvent(eventId, currentUser));
     }
 
+    /**
+     * Decyzja organizatora o statusie (ACCEPTED/CONFIRMED/CANCELED + aliasy).
+     * Reguły płatności egzekwowane w serwisie.
+     */
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
     public ResponseEntity<RegistrationResponse> updateStatus(@PathVariable String id,
@@ -59,12 +75,14 @@ public class RegistrationController {
                 registrationService.updateStatus(id, request.status(), request.comment(), currentUser));
     }
 
+    /** Rezygnacja kierowcy → CANCELED (+ ewentualna wzmianka o zwrocie). */
     @PostMapping("/{id}/cancel")
     public ResponseEntity<RegistrationResponse> cancel(@PathVariable String id,
                                                         @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(registrationService.cancelByDriver(id, currentUser.getId()));
     }
 
+    /** Dołączenie URL dowodu przelewu (tylko ACCEPTED + wydarzenie płatne). */
     @PostMapping("/{id}/payment-proof")
     public ResponseEntity<RegistrationResponse> attachPaymentProof(@PathVariable String id,
                                                                     @Valid @RequestBody PaymentProofRequest request,

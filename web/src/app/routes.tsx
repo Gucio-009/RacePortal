@@ -1,3 +1,20 @@
+/**
+ * routes.tsx — drzewo tras React Router v7 (`createBrowserRouter`).
+ *
+ * Layout: `RootLayout` na `/` z `<Outlet />` dla dzieci.
+ * AuthGate: czeka na bootstrap JWT (`AuthContext.isLoading`), potem
+ * przekierowuje niezalogowanych na `/login`; opcjonalnie filtruje po `roles`
+ * (ADMIN, ORGANIZER) — niedopasowana rola → `/`.
+ *
+ * Chronione wrappery: Dashboard, Garage, Account, Settings, Admin, Organizer.
+ * Catch-all `*` → Navigate `/` (SPA; nginx i tak serwuje index.html dla deep linków).
+ * Alias `/mapa` → `/wydarzenia` (mapa jest widokiem na liście eventów).
+ *
+ * Docker/nginx: try_files $uri /index.html — bez tego odświeżenie `/organizer` = 404.
+ *
+ * Pomysł (alt): lazy() + Suspense per route; loadery danych (RR loaders) zamiast fetch w pages.
+ */
+
 import { createBrowserRouter, Navigate, useNavigate } from "react-router";
 import { useEffect, ReactNode } from "react";
 import { RootLayout } from "./components/RootLayout";
@@ -22,6 +39,10 @@ import { useAuth } from "./context/AuthContext";
 import type { UserRole } from "./lib/types";
 import { Loader2 } from "lucide-react";
 
+/**
+ * Brama auth: spinner podczas bootstrapu `/api/auth/me`, potem redirect lub children.
+ * `roles` — opcjonalna biała lista ról (np. tylko ADMIN).
+ */
 function AuthGate({
   children,
   roles,
@@ -129,6 +150,7 @@ export const router = createBrowserRouter([
       { path: "mapa", element: <Navigate to="/wydarzenia" replace /> },
       { path: "terms", Component: TermsPage },
       { path: "privacy", Component: PrivacyPage },
+      // SPA catch-all — nieznane ścieżki → home (nginx i tak serwuje index.html)
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },

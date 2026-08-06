@@ -22,10 +22,12 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`review-2026-08-03.md`](./review-2026-08-03.md) | **Code review** web+mobile + wyniki testów (2026-08-03) |
 | [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
 | [`changes.md`](./changes.md) | Chronologia prac |
+| [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | **Alt-technologie** — dziś vs pomysły (JWT→Keycloak, Next.js, Redis…) |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
 | [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |
 | [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatnie wyniki testów |
+| [`testy/wyniki/unit-500-wyniki.md`](./testy/wyniki/unit-500-wyniki.md) | 599 unit `@raceportal/api-types` |
 
 Root repozytorium zawiera tylko [`README.md`](../README.md) (szybki start) oraz konfigurację monorepo / Docker Compose.
 

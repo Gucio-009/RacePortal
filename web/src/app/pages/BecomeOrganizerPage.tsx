@@ -1,3 +1,13 @@
+/**
+ * BecomeOrganizerPage — wniosek USER → ORGANIZER (rozpatrywany w AdminPanel).
+ *
+ * Cel: zalogowany kierowca wysyła firmę + opis doświadczenia; admin zatwierdza.
+ * Wzorce: formularz POST `/api/organizer/apply` z JWT; redirect do login jeśli brak sesji.
+ * Auth: wymaga `isAuthenticated` (toast + navigate); API też egzekwuje JWT.
+ * Theme: `--race-accent`, `font-display`. Docker/nginx: deep link → SPA try_files.
+ *
+ * Pomysł (alt): multi-step wizard; upload dokumentów; TanStack Form; status wniosku w dashboardzie.
+ */
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -19,6 +29,7 @@ export function BecomeOrganizerPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Gate po stronie UI — token i tak jest wymagany przez API.
     if (!isAuthenticated) {
       toast.info("Zaloguj się, aby wysłać wniosek");
       navigate("/login");

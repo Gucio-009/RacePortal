@@ -8,14 +8,26 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * DTO wydarzeń: odpowiedzi listy/szczegółów, markery mapy, create/update requesty.
+ * <p>
+ * Rola w architekturze: kontrakt REST {@code EventController} ↔ frontend ({@code api-types}).
+ * Pola {@code require*} opisują wymogi zgłoszenia; {@code paid}/{@code entryFee}/{@code bankAccount}
+ * — reguły płatności.
+ * Technologie: Bean Validation, Jackson records.
+ * </p>
+ * Pomysł (alt): MapStruct; OpenAPI generator; osobne read/write modele CQRS.
+ */
 public final class EventDtos {
 
     private EventDtos() {
     }
 
+    /** Skrót organizatora w odpowiedzi wydarzenia. */
     public record OrganizerRef(String id, String username) {
     }
 
+    /** Pełna reprezentacja wydarzenia dla klienta SPA. */
     public record EventResponse(
             String id,
             String name,
@@ -54,6 +66,7 @@ public final class EventDtos {
     ) {
     }
 
+    /** Stronicowana odpowiedź listy wydarzeń. */
     public record EventListResponse(
             int page,
             int limit,
@@ -63,7 +76,7 @@ public final class EventDtos {
     ) {
     }
 
-    /** Slim payload for map/calendar — no pagination cap of the list endpoint. */
+    /** Lekki payload pod mapę/kalendarz — bez limitu strony listy. */
     public record EventMarkerResponse(
             String id,
             String name,
@@ -81,12 +94,17 @@ public final class EventDtos {
     ) {
     }
 
+    /** Opakowanie listy markerów mapy. */
     public record EventMarkersResponse(
             long total,
             List<EventMarkerResponse> items
     ) {
     }
 
+    /**
+     * Tworzenie wydarzenia — pola płatności i wymogów {@code require*} opcjonalne;
+     * {@code paid=true} wymaga sensownego {@code entryFee}/{@code bankAccount} (walidacja w serwisie/UI).
+     */
     public record EventCreateRequest(
             @NotBlank @Size(min = 3, max = 120) String name,
             @NotBlank @Size(min = 10, max = 5000) String description,
@@ -119,6 +137,7 @@ public final class EventDtos {
     ) {
     }
 
+    /** Częściowa aktualizacja wydarzenia (null = bez zmiany). */
     public record EventUpdateRequest(
             String name,
             String description,

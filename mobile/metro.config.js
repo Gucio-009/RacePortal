@@ -1,3 +1,16 @@
+/**
+ * Konfiguracja Metro bundlera dla monorepo RacePortal.
+ *
+ * Rola w architekturze: Metro (bundler React Native / Expo) musi widzieć
+ * współdzielony pakiet `@raceportal/api-types` spoza `mobile/` — stąd
+ * `watchFolders`, alias `extraNodeModules` oraz custom `resolveRequest`.
+ * Bez tego import typów/domeny z web+backend kontraktu JSON by nie działał.
+ *
+ * Technologie: Expo Metro (`expo/metro-config`), Node path.
+ *
+ * Pomysł (alt): osobny build `api-types` do `dist/` + npm link;
+ * Turborepo/Nx z workspace packages; React Native CLI + własny metro.config.
+ */
 const { getDefaultConfig } = require("expo/metro-config");
 const path = require("path");
 

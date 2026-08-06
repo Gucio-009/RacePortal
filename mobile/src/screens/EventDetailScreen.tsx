@@ -1,3 +1,12 @@
+/**
+ * Szczegóły wydarzenia + zapis na start (`POST /api/registrations`).
+ *
+ * Rola w architekturze: wspólny ekran w Events stack i More stack (param `id`).
+ * Dobór auta z garażu przez `partitionCarsForEvent`; mapy przez Linking.
+ * Wymaga logowania do zapisu (Alert jeśli gość).
+ *
+ * Pomysł (alt): płatności in-app (Stripe); share sheet; push przypomnienia startu.
+ */
 import { useEffect, useState } from "react";
 import {
   View,

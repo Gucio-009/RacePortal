@@ -1,3 +1,16 @@
+/**
+ * OrganizerEventList — lista wydarzeń w panelu organizatora.
+ *
+ * Props z `OrganizerPanelPage`: events + loading/error + callbacki edycji / zgłoszeń / anulacji.
+ * Statusy: `eventStatusLabel` (PL); badge „Płatne” gdy `event.paid`.
+ * Anuluj ukryte dla CANCELLED / ARCHIVED (już nieaktywne).
+ * Licznik zgłoszeń: `_count.registrations` (Spring) lub `registrationsCount`.
+ *
+ * Akcent UI: `--race-accent` (theme / ustawienia użytkownika).
+ *
+ * Pomysł (alt): tabela z sortowaniem zamiast kart; infinite scroll przy wielu eventach.
+ */
+
 import { Calendar, Users, Loader2, Ban, Pencil } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -85,6 +98,7 @@ export function OrganizerEventList({
               >
                 Zobacz zgłoszenia
               </Button>
+              {/* Anulacja tylko dla aktywnych — CANCELLED/ARCHIVED bez akcji */}
               {event.status !== "CANCELLED" && event.status !== "ARCHIVED" && (
                 <Button
                   variant="outline"

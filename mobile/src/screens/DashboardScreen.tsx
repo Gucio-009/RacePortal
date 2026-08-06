@@ -1,3 +1,11 @@
+/**
+ * Tab „Moje” — zgłoszenia użytkownika (dashboard).
+ *
+ * Rola w architekturze: chroniony RequireAuth; `/api/registrations/mine` + skrót do garażu.
+ * Anulowanie zgłoszeń, upload URL dowodu płatności dla ACCEPTED + paid.
+ *
+ * Pomysł (alt): push statusów zgłoszenia; kamera → upload pliku zamiast URL.
+ */
 import { useCallback, useState } from "react";
 import {
   View,

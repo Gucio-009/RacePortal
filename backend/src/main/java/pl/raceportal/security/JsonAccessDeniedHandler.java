@@ -12,6 +12,14 @@ import pl.raceportal.web.ErrorResponse;
 
 import java.io.IOException;
 
+/**
+ * Handler odmowy dostępu (użytkownik zalogowany, ale bez wymaganej roli) — JSON 403.
+ * <p>
+ * Rola w architekturze: spójny format błędów RBAC z resztą API ({@link ErrorResponse}).
+ * Technologie: Spring Security, Jackson.
+ * </p>
+ * Pomysł (alt): Problem Details (RFC 7807) z polem {@code type} wskazującym brak roli.
+ */
 @Component
 public class JsonAccessDeniedHandler implements AccessDeniedHandler {
 
@@ -21,6 +29,7 @@ public class JsonAccessDeniedHandler implements AccessDeniedHandler {
         this.objectMapper = objectMapper;
     }
 
+    /** Odpowiedź 403 z komunikatem „Brak uprawnień”. */
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
                         AccessDeniedException accessDeniedException) throws IOException, ServletException {

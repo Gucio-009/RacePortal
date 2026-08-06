@@ -1,3 +1,14 @@
+/**
+ * Wspólne komponenty UI (nagłówek, pola, przyciski, toggle, stany puste/błąd).
+ *
+ * Rola w architekturze: cienka warstwa prezentacji React Native —
+ * StyleSheet + Pressable zamiast HTML; reużywane na ekranach auth, garażu, admina.
+ *
+ * Technologie: React Native primitives (View, Text, TextInput, Switch).
+ *
+ * Pomysł (alt): NativeWind / Tamagui / React Native Paper;
+ * Flutter Material/Cupertino widgets; design system z Figma Code Connect.
+ */
 import type { ReactNode } from "react";
 import {
   View,

@@ -580,4 +580,17 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 36. Komentarze PL w kodzie + rejestr alt-tech (2026-08-06, 14:55)
+
+**Kontekst / argument:** dokumentacja dyplomowa wymaga wyjaśnienia technologii i logiki backendu w kodzie; alternatywy mają być zapisane, nie tylko „w głowie”.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 14:55 | Skąpe / angielskie komentarze | JavaDoc/TS/headers PL w backend, web, mobile, api-types, scripts, yml, nginx, Docker | Czytelność dla obrony |
+| 14:55 | Alt-technologie rozproszone | [`docs/pomysly-technologiczne.md`](./pomysly-technologiczne.md) + `Pomysł (alt):` w plikach | Jedno miejsce na decyzje „dziś vs później” |
+
+**Zakres (bez zmiany zachowania runtime):** ~54 Java, ~91 web/src, ~31 mobile, api-types, skrypty, compose, Dockerfiles, Playwright config, application*.yml, nginx, vite.
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

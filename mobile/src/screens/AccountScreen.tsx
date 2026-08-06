@@ -1,3 +1,11 @@
+/**
+ * Profil użytkownika — edycja `/api/auth/me` + zmiana hasła.
+ *
+ * Rola w architekturze: ekran za RequireAuth (Gate w App); awatary z presetów
+ * lub inicjały. Aktualizuje AuthContext przez `setUser` / `refreshMe`.
+ *
+ * Pomysł (alt): upload własnego awatara; 2FA.
+ */
 import { useState } from "react";
 import {
   View,

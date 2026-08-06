@@ -1,3 +1,14 @@
+/**
+ * ArchivePage — lista zakończonych / zarchiwizowanych wydarzeń.
+ *
+ * Cel: przegląd przeszłych sezonów z paginacją; link do szczegółów.
+ * Wzorce: fetch `/api/events?archive=1&page=&limit=12` przy zmianie `page`.
+ * Auth: publiczna. Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link `/archiwum` → SPA try_files.
+ * Używana też przez ResultsPage jako tymczasowy stub wyników.
+ *
+ * Pomysł (alt): TanStack Query; filtry sezon/kategoria; Next.js ISR archiwum SEO.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Calendar, MapPin, ChevronRight, ChevronLeft } from "lucide-react";
@@ -15,6 +26,7 @@ export function ArchivePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
+  // Paginacja serwerowa — przeładowanie przy zmianie strony.
   useEffect(() => {
     setLoading(true);
     setLoadError(null);

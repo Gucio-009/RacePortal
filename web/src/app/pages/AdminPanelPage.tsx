@@ -1,3 +1,17 @@
+/**
+ * AdminPanelPage — panel roli ADMIN (AuthGate roles=["ADMIN"]).
+ *
+ * Cel: przegląd statystyk, akceptacja/odrzucanie wydarzeń, zmiana ról użytkowników,
+ * rozpatrywanie wniosków „zostań organizatorem”.
+ * Wzorce: Promise.all na mount (stats, users, pending events, applications),
+ * Tabs + mutate przez api.patch z JWT (`raceportal_token`).
+ * Auth: tylko ADMIN; własnej roli nie można zmienić (disabled Select gdy me.id === user.id).
+ * Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link panelu admina → SPA try_files.
+ *
+ * Pomysł (alt): TanStack Query + optimistic updates; osobny admin shell; RBAC UI generator;
+ * Next.js App Router z middleware ochrony roli.
+ */
 import { useEffect, useState } from "react";
 import { Users, Calendar, ClipboardList, Shield, Loader2, Check, X, Archive } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -23,6 +37,7 @@ export function AdminPanelPage() {
   const [applications, setApplications] = useState<OrganizerApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
+  /** Równoległe załadowanie całego kokpitu admina. */
   const loadAll = async () => {
     setLoading(true);
     try {
@@ -47,6 +62,7 @@ export function AdminPanelPage() {
     loadAll();
   }, []);
 
+  /** APPROVED / REJECTED / ARCHIVED — usuwa pozycję z listy pending. */
   const updateEventStatus = async (id: string, status: string) => {
     try {
       await api.patch(`/api/admin/events/${id}/status`, { status });
@@ -58,6 +74,7 @@ export function AdminPanelPage() {
     }
   };
 
+  /** Zmiana roli USER / ORGANIZER / ADMIN (nie dla własnego konta w UI). */
   const updateUserRole = async (id: string, role: string) => {
     try {
       const updated = await api.patch<AdminUser>(`/api/admin/users/${id}/role`, { role });

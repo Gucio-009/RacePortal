@@ -1,3 +1,11 @@
+/**
+ * Tab „Garaż” — CRUD aut zawodnika (`/api/garage`).
+ *
+ * Rola w architekturze: chroniony RequireAuth; Modal z formularzem (RN Modal,
+ * nie osobny stack). Auta używane przy zapisie na event i filtrze carId na liście.
+ *
+ * Pomysł (alt): zdjęcia aut (expo-image-picker); sync z VIN API.
+ */
 import { useCallback, useState } from "react";
 import {
   View,

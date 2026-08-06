@@ -39,12 +39,28 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Serwis wydarzeń: listy z filtrami, markery mapy, CRUD organizatora, anulowanie.
+ * <p>
+ * Rola w architekturze: publiczne API katalogu imprez + panel organizatora.
+ * Filtry budowane przez JPA Specification; dopasowanie pojazdu przez {@link CategoryMatcher}.
+ * Technologie: Spring Data JPA (Specification, paging), Spring Cache, Mail, MySQL.
+ * </p>
+ * Widoczność: publicznie APPROVED z datą ≥ dziś (lub archiwum); ORGANIZER/ADMIN
+ * widzą także PENDING/inne własne. Tworzenie: ORGANIZER → PENDING, ADMIN → APPROVED.
+ * Edycja przez organizatora wraca do PENDING (ponowna moderacja).
+ * <p>
+ * Pomysł (alt): Elasticsearch; Redis cache odpowiedzi list; MapStruct do DTO;
+ * PostGIS do filtrów geo.
+ * </p>
+ */
 @Service
 public class EventService {
 
     private static final DateTimeFormatter POLISH_DATE_FORMATTER =
             DateTimeFormatter.ofPattern("d MMMM yyyy", new Locale("pl", "PL"));
     private static final Locale POLISH_LOCALE = Locale.forLanguageTag("pl-PL");
+    /** Statusy zgłoszeń anulowane przy CANCELLED wydarzenia. */
     private static final List<RegistrationStatus> CANCELABLE_ON_EVENT_CANCEL = List.of(
             RegistrationStatus.PENDING, RegistrationStatus.ACCEPTED, RegistrationStatus.CONFIRMED);
 
@@ -63,6 +79,10 @@ public class EventService {
         this.mailService = mailService;
     }
 
+    /**
+     * Stronicowana lista wydarzeń z filtrami (q, kategoria, miasto, województwo, tor,
+     * zakres dat, archive, paid, status dla admin/org, carId → CategoryMatcher).
+     */
     @Transactional(readOnly = true)
     public EventListResponse list(int pageParam, int limitParam, String q, String category, String city,
                                    String voivodeship, String track, String dateFrom, String dateTo,
@@ -108,8 +128,8 @@ public class EventService {
     }
 
     /**
-     * Full filter set for map/calendar (slim DTO, no list-page cap).
-     * Includes events without GPS — map view filters client-side.
+     * Pełny zestaw filtrów dla mapy/kalendarza (slim DTO, bez limitu strony listy).
+     * Wydarzenia bez GPS też wracają — mapa filtruje po stronie klienta.
      */
     @Transactional(readOnly = true)
     public EventMarkersResponse listMarkers(String q, String category, String city,
@@ -146,6 +166,10 @@ public class EventService {
 
     private static final int MARKERS_MAX = 5000;
 
+    /**
+     * Buduje Specification filtrów: status (publiczny / archive / admin / mine),
+     * wyszukiwanie tekstowe, lokalizacja, daty, płatność.
+     */
     private Specification<Event> buildListSpec(String q, String category, String city, String voivodeship,
                                                 String track, LocalDate from, LocalDate to, boolean archive,
                                                 String statusParam, Boolean paidFilter, LocalDate startOfToday,
@@ -284,6 +308,10 @@ public class EventService {
         );
     }
 
+    /**
+     * Szczegóły wydarzenia: PENDING/REJECTED widoczne tylko dla właściciela/admina
+     * (inaczej 404 — nie ujawnia istnienia nieopublikowanych).
+     */
     @Transactional(readOnly = true)
     public EventResponse getById(String id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id)
@@ -300,6 +328,10 @@ public class EventService {
         return serialize(event);
     }
 
+    /**
+     * Tworzenie wydarzenia: ORGANIZER → status PENDING (moderacja);
+     * ADMIN → od razu APPROVED. Invaliduje cache list.
+     */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
     public EventResponse create(EventCreateRequest request, UserPrincipal currentUser) {
@@ -335,6 +367,10 @@ public class EventService {
         return serialize(event);
     }
 
+    /**
+     * Aktualizacja wydarzenia (ownership RBAC). Edycja przez ORGANIZER
+     * ustawia ponownie PENDING; powiadamia zgłoszonych zawodników mailem.
+     */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
     public EventResponse update(String id, EventUpdateRequest request, UserPrincipal currentUser) {
@@ -392,10 +428,8 @@ public class EventService {
     }
 
     /**
-     * Diagram "Proces anulowania wydarzenia (organizator)": the organizer (or an
-     * admin) cancels the whole event, every open registration is forced to
-     * CANCELED, and every affected driver is emailed — mentioning a refund by
-     * the organizer when the event was paid.
+     * Anulowanie całego wydarzenia (diagram „Proces anulowania wydarzenia”):
+     * status CANCELLED, otwarte zgłoszenia → CANCELED, maile do zawodników (+ wzmianka o zwrocie).
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)

@@ -19,6 +19,24 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Konfiguracja Spring Security dla API RacePortal (stateless JWT).
+ * <p>
+ * Rola w architekturze: definiuje łańcuch filtrów, publiczne vs chronione endpointy,
+ * CORS oraz handlerów błędów auth/RBAC. Metody kontrolerów mogą dodatkowo używać
+ * {@code @PreAuthorize} dzięki {@link EnableMethodSecurity}.
+ * </p>
+ * Technologie: Spring Security, JWT ({@link JwtAuthFilter}), BCrypt, CORS.
+ * <p>
+ * Reguły dostępu (skrót):
+ * <ul>
+ *   <li>publiczne: health, login/register/OAuth/verify, GET wydarzeń, POST trasy map;</li>
+ *   <li>pozostałe: wymagają ważnego Bearer JWT.</li>
+ * </ul>
+ * Pomysł (alt): Keycloak / OAuth2 Resource Server zamiast własnego filtra JWT;
+ * Redis do blacklisty tokenów przy wylogowaniu.
+ * </p>
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -28,6 +46,7 @@ public class SecurityConfig {
     private final JsonAuthEntryPoint jsonAuthEntryPoint;
     private final JsonAccessDeniedHandler jsonAccessDeniedHandler;
 
+    /** Dozwolone originy frontendu (CSV lub {@code *}) z konfiguracji. */
     @Value("${app.cors.origin:*}")
     private String corsOrigin;
 
@@ -39,11 +58,16 @@ public class SecurityConfig {
         this.jsonAccessDeniedHandler = jsonAccessDeniedHandler;
     }
 
+    /** Encoder haseł — BCrypt używany przy rejestracji i logowaniu lokalnym. */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * Buduje łańcuch filtrów: bez CSRF (API tokenowe), sesja STATELESS,
+     * JWT przed UsernamePasswordAuthenticationFilter, mapowanie ścieżek publicznych.
+     */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -68,6 +92,10 @@ public class SecurityConfig {
         return http.build();
     }
 
+    /**
+     * Konfiguracja CORS z {@code app.cors.origin} — wspiera listę originów lub wildcard.
+     * Credentials włączone (cookies/Authorization z przeglądarki SPA).
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();

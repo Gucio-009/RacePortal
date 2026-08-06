@@ -1,3 +1,15 @@
+/**
+ * DashboardPage — kokpit zalogowanego użytkownika (zgłoszenia + skrót garażu + profil).
+ *
+ * Cel: przegląd własnych Registration, anulowanie, dołączanie proof płatności,
+ * szybka edycja username/avatar przez AuthContext.updateProfile.
+ * Wzorce: fetch on mount `/api/registrations/mine` + `/api/garage`, JWT w api client
+ * (`raceportal_token`), Dialog edycji profilu, badge roli (USER/ORGANIZER/ADMIN).
+ * Auth: wymaga zalogowania (AuthGate w routerze). Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: `/dashboard` deep link → SPA try_files.
+ *
+ * Pomysł (alt): TanStack Query; osobne widgety; push notyfikacje; Next.js authenticated RSC.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -31,6 +43,7 @@ export function DashboardPage() {
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
+  // URL potwierdzeń przelewu per registration id (lokalny draft przed POST).
   const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
 
   const reloadRegistrations = () =>
@@ -51,6 +64,7 @@ export function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
+  /** Otwarte zgłoszenia na przyszłe APPROVED wydarzenia. */
   const upcomingRegistrations = registrations.filter(
     (r) =>
       r.event &&
@@ -69,6 +83,7 @@ export function DashboardPage() {
     }
   };
 
+  /** Dołącza URL dowodu wpłaty (płatne wydarzenia). */
   const attachProof = async (id: string) => {
     const url = (proofUrls[id] || "").trim();
     if (!url) {

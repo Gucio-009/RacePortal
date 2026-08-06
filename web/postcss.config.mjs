@@ -1,15 +1,9 @@
 /**
- * PostCSS Configuration
+ * postcss.config.mjs — celowo prawie puste.
  *
- * Tailwind CSS v4 (via @tailwindcss/vite) automatically sets up all required
- * PostCSS plugins — you do NOT need to include `tailwindcss` or `autoprefixer` here.
+ * Tailwind CSS v4 idzie przez `@tailwindcss/vite` w vite.config.ts;
+ * tu NIE dodajemy `tailwindcss` / `autoprefixer` (byłoby duplikatem).
  *
- * This file only exists for adding additional PostCSS plugins, if needed.
- * For example:
- *
- * import postcssNested from 'postcss-nested'
- * export default { plugins: [postcssNested()] }
- *
- * Otherwise, you can leave this file empty.
+ * Pomysł (alt): wrócić do PostCSS pipeline (Tailwind v3) albo Lightning CSS.
  */
 export default {}

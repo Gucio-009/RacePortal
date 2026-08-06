@@ -11,6 +11,14 @@ import org.junit.jupiter.api.Test;
 import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
 
+/**
+ * Testy jednostkowe {@link JwtService} — generowanie, parsowanie claims i błędy tokenu.
+ * <p>
+ * Rola w architekturze testów: izolowana weryfikacja warstwy JWT bez Spring kontekstu.
+ * Technologie: JUnit 5, JJWT.
+ * </p>
+ * Pomysł (alt): property-based tests (jqwik) na round-trip tokenów.
+ */
 class JwtServiceTest {
 
   private JwtService jwtService;
@@ -20,6 +28,7 @@ class JwtServiceTest {
     jwtService = new JwtService("unit-test-secret-value-please-change", 7);
   }
 
+  /** Round-trip: User → token → claims → UserPrincipal z rolą ADMIN. */
   @Test
   void generateAndParseClaims() {
     User user = new User();
@@ -41,6 +50,7 @@ class JwtServiceTest {
     assertEquals("user-1", principal.getId());
   }
 
+  /** Niepoprawny string JWT musi rzucić {@link JwtException}. */
   @Test
   void invalidTokenThrows() {
     assertThrows(JwtException.class, () -> jwtService.parseClaims("not.a.jwt"));

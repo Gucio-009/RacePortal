@@ -1,3 +1,9 @@
+/**
+ * Alert — komponent alertu shadcn/ui (CVA + Tailwind).
+ * Wygenerowany / wzorowany na shadcn; wariantami steruje class-variance-authority.
+ * Pomysł (alt): własny design system albo MUI / Chakra zamiast Radix+CVA.
+ */
+
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 

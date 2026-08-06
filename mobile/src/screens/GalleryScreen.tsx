@@ -1,3 +1,10 @@
+/**
+ * Placeholder galerii (świadomie odłożony — parity z webem).
+ *
+ * Rola w architekturze: ekran w More stack; brak uploadu w MVP mobile.
+ *
+ * Pomysł (alt): expo-image-picker + CDN; albumy per event; Flutter photo_manager.
+ */
 import { View, Text, StyleSheet } from "react-native";
 import { colors } from "../theme/colors";
 

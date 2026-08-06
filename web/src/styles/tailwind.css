@@ -1,3 +1,15 @@
+/**
+ * tailwind.css — Tailwind CSS v4 (CSS-first config).
+ *
+ * `@import 'tailwindcss' source(none)` — nie skanuj node_modules domyślnie.
+ * `@source '../**/*.{js,ts,jsx,tsx}'` — klasy tylko z kodu web/src.
+ * tw-animate-css — animacje używane przez shadcn (dialog, accordion…).
+ *
+ * Tokeny designu (kolory, fonty): theme.css → `@theme inline`.
+ *
+ * Pomysł (alt): klasik Tailwind v3 + tailwind.config.js.
+ */
+
 @import 'tailwindcss' source(none);
 @source '../**/*.{js,ts,jsx,tsx}';
 

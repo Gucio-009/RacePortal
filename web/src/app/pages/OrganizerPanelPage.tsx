@@ -1,3 +1,17 @@
+/**
+ * OrganizerPanelPage — panel roli ORGANIZER (oraz ADMIN przez AuthGate).
+ *
+ * Cel: CRUD wydarzeń organizatora + zarządzanie statusami zgłoszeń kierowców.
+ * Wzorce: fetch on mount (`/api/organizer/events`), Tabs (wydarzenia / zgłoszenia),
+ * dialog formularza (komponenty organizer/*), api.patch/post z JWT z `raceportal_token`.
+ * Auth: route gated AuthGate roles=["ORGANIZER","ADMIN"] w routes.tsx; API też egzekwuje rolę.
+ * Presety OTHER → własne wartości kategorii/toru/miasta/czasu przed wysyłką payloadu.
+ * Theme: `--race-accent`, `font-display` w nagłówku.
+ * Docker/nginx: deep link `/organizer` (lub ścieżka z routera) → SPA fallback.
+ *
+ * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod; Next.js RSC + server actions;
+ * osobny mikrofrontend panelu organizatora.
+ */
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -27,10 +41,12 @@ export function OrganizerPanelPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
+  // Komentarze per zgłoszenie — wysyłane przy zmianie statusu.
   const [comments, setComments] = useState<Record<string, string>>({});
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
 
+  // Rozwiązanie presetów „Inne…” przed zapisem do API.
   const resolvedCategory =
     form.category === OTHER ? form.categoryOther.trim() : form.category.trim();
   const resolvedTrack =
@@ -60,6 +76,7 @@ export function OrganizerPanelPage() {
     loadEvents();
   }, []);
 
+  /** Pobiera zgłoszenia wybranego wydarzenia i przełącza tab. */
   const loadRegistrations = async (eventId: string) => {
     setSelectedEventId(eventId);
     setActiveTab("registrations");
@@ -84,6 +101,7 @@ export function OrganizerPanelPage() {
     setCreateOpen(true);
   };
 
+  /** Create (POST) lub update (PATCH) — nowe wydarzenie czeka na akceptację admina. */
   const handleSave = async () => {
     if (
       !form.name.trim() ||
@@ -169,6 +187,7 @@ export function OrganizerPanelPage() {
     }
   };
 
+  /** Anulowanie wydarzenia po stronie organizatora — kasuje otwarte zgłoszenia na backendzie. */
   const cancelEvent = async (eventId: string) => {
     if (!confirm("Na pewno anulować wydarzenie? Wszystkie otwarte zgłoszenia zostaną anulowane.")) {
       return;

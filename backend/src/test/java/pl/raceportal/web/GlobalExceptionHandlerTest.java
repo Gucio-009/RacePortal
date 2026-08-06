@@ -9,6 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 
+/**
+ * Testy jednostkowe mapowania wyjątków w {@link GlobalExceptionHandler}.
+ * <p>
+ * Rola w architekturze testów: gwarantuje spójne kody HTTP i komunikaty PL
+ * dla ApiException, 403, 401 i catch-all 500.
+ * Technologie: JUnit 5, Spring HttpStatus (bez pełnego kontekstu MVC).
+ * </p>
+ * Pomysł (alt): {@code @WebMvcTest} z MockMvc dla pełnego łańcucha serializacji JSON.
+ */
 class GlobalExceptionHandlerTest {
 
   private final GlobalExceptionHandler handler = new GlobalExceptionHandler();

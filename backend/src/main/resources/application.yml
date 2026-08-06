@@ -1,3 +1,18 @@
+#
+# application.yml — domyślna konfiguracja Spring Boot (profil default / lokalny).
+#
+# Technologie: Spring Boot 3, Spring Data JPA + Hibernate, HikariCP, Caffeine cache,
+# JavaMailSender, własny JWT (app.jwt.*), opcjonalnie Google OAuth client-id.
+#
+# Kluczowe decyzje:
+#   - open-in-view: false — brak lazy-load poza transakcją (bezpieczniejsze API).
+#   - ddl-auto: update — wygodne na MVP; w prod lepiej migrate (Flyway/Liquibase).
+#   - cache events (Caffeine 20s) — przyspiesza listę; unieważniane przy zapisach.
+#   - SEED_ENABLED — DataInitializer (konta demo, wydarzenia, auta).
+#
+# Pomysł (alt): PostgreSQL zamiast MySQL; Redis zamiast Caffeine (wiele instancji API);
+# Keycloak/Auth0 zamiast własnego JWT; Vault/SOPS na sekrety zamiast env w compose.
+#
 server:
   port: ${PORT:4000}
   error:
@@ -11,6 +26,7 @@ spring:
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:default}
   datasource:
+    # Lokalnie: MySQL na 3306; w Docker Compose nadpisywane w application-docker.yml / env.
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
     username: ${DATABASE_USERNAME:raceportal}
     password: ${DATABASE_PASSWORD:raceportal}
@@ -28,6 +44,7 @@ spring:
           time_zone: UTC
     show-sql: false
   mail:
+    # Dev: Mailpit/Mailhog na :1025 (UI :8025). Prod: prawdziwy SMTP + STARTTLS.
     host: ${SMTP_HOST:localhost}
     port: ${SMTP_PORT:1025}
     username: ${SMTP_USERNAME:}
@@ -49,6 +66,7 @@ spring:
 
 app:
   cors:
+    # W compose: lista originów web (8081) + Vite (5173) + Expo web (8082).
     origin: ${CORS_ORIGIN:*}
   jwt:
     secret: ${JWT_SECRET:raceportal-dev-secret-change-me}
@@ -56,9 +74,11 @@ app:
   mail:
     from: ${SMTP_FROM:RACEPORTAL <noreply@raceportal.local>}
   maps:
+    # Opcjonalnie Google Directions; bez klucza MapsService używa OSRM publicznego.
     google-api-key: ${GOOGLE_MAPS_API_KEY:}
   oauth:
     google:
+      # Puste = endpoint Google wyłączony / zwraca błąd konfiguracji.
       client-id: ${GOOGLE_OAUTH_CLIENT_ID:}
   seed:
     enabled: ${SEED_ENABLED:true}

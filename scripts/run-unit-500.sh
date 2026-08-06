@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
-# Uruchamia ≥500 testów jednostkowych @raceportal/api-types i zapisuje wyniki do docs/testy/wyniki/
+#
+# run-unit-500.sh — uruchamia ≥500 testów jednostkowych @raceportal/api-types
+# i zapisuje wyniki do docs/testy/wyniki/.
+#
+# Po co: jeden skrypt „kliknij i masz raport” — Vitest JSON + log + Markdown
+# (unit-500-wyniki.md) z tabelą PASS/FAIL, listą przypadków i zakresem (carMatch,
+# aliasy/ł, kategorie, awatary, statusy, opłaty). Używane przez npm run test:unit:report.
+#
+# Artefakty:
+#   - unit-500-raw.json  — surowy reporter Vitest
+#   - unit-500.log       — stdout/stderr uruchomienia
+#   - unit-500-wyniki.md — czytelne podsumowanie dla docs/review
+#
+# Exit code: 0 tylko gdy Vitest OK i brak failed assertions.
+#
+# Pomysł (alt): publikacja raportu jako artifact CI zamiast commitowania wyników.
+#
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/docs/testy/wyniki"
@@ -16,6 +32,7 @@ npx vitest run --reporter=default --reporter=json --outputFile.json="$RAW" >"$LO
 export CODE=$?
 set -e
 
+# Generuje Markdown z JSON Vitest (node inline — bez dodatkowych zależności).
 node <<'NODE'
 const fs = require("fs");
 const rawPath = process.env.RAW;

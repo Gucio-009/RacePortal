@@ -1,3 +1,21 @@
+/**
+ * AuthContext — sesja użytkownika oparta o JWT RacePortal.
+ *
+ * Token: klucz `raceportal_token` w localStorage (`lib/api` TOKEN_KEY).
+ * Bootstrap przy mount: jeśli jest token → GET `/api/auth/me`; błąd → wyczyszczenie sesji.
+ * persistAuth(user, token): ustawia state + zapis/usunięcie JWT.
+ *
+ * Login: POST `/api/auth/login` → { token, user }.
+ * Register: może zwrócić `requiresVerification` (kod e-mail) zanim wyda JWT.
+ * Google: `loginWithGoogle(idToken)` → POST `/api/auth/oauth/google` (wymiana idToken GSI
+ * na JWT RacePortal) — patrz GoogleSignInButton.
+ *
+ * isAuthenticated = !!user (nie sam fakt posiadania tokena — dopiero po udanym /me lub loginie).
+ * AuthGate w routes.tsx czeka na `isLoading` zanim zdecyduje o redirect.
+ *
+ * Pomysł (alt): httpOnly cookie zamiast localStorage; refresh token / sliding session.
+ */
+
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { api, setToken, getToken, ApiError } from "../lib/api";
 import type { User } from "../lib/types";
@@ -60,12 +78,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  /** Zapis sesji: user w React state + JWT w localStorage (lub clear przy null). */
   const persistAuth = useCallback((nextUser: User | null, token?: string) => {
     setUser(nextUser);
     if (token) setToken(token);
     if (!nextUser) setToken(null);
   }, []);
 
+  // Bootstrap: odtwórz sesję z raceportal_token → /api/auth/me
   useEffect(() => {
     const bootstrap = async () => {
       if (!getToken()) {
@@ -126,6 +146,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         pzmLicense: profile?.pzmLicense?.trim() || undefined,
       });
 
+      // Ścieżka z weryfikacją e-mail (MailHog w Docker) — JWT dopiero po verifyEmail
       if (res.requiresVerification) {
         return {
           ok: true,
@@ -166,6 +187,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  /** Wymiana Google idToken (GSI credential) na JWT RacePortal. */
   const loginWithGoogle = async (idToken: string) => {
     try {
       const res = await api.post<{ token: string; user: User }>("/api/auth/oauth/google", { idToken });

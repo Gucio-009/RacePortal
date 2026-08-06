@@ -21,6 +21,15 @@ import pl.raceportal.service.GarageService;
 
 import java.util.List;
 
+/**
+ * REST API garażu — pojazdy zalogowanego użytkownika.
+ * <p>
+ * Rola w architekturze: cienki kontroler; ownership wymuszany w {@link GarageService}
+ * przez userId z JWT. Cała klasa wymaga autentyczacji.
+ * Technologie: Spring Security {@code @PreAuthorize}, Bean Validation, JPA.
+ * </p>
+ * Pomysł (alt): OpenAPI + wygenerowany klient; upload zdjęć do S3 zamiast URL.
+ */
 @RestController
 @RequestMapping("/api/garage")
 @PreAuthorize("isAuthenticated()")
@@ -43,6 +52,7 @@ public class GarageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(garageService.create(currentUser.getId(), request));
     }
 
+    /** Edycja z regułami blokady przy otwartych zgłoszeniach. */
     @PatchMapping("/{id}")
     public ResponseEntity<CarResponse> update(@AuthenticationPrincipal UserPrincipal currentUser,
                                                @PathVariable String id,
@@ -50,6 +60,7 @@ public class GarageController {
         return ResponseEntity.ok(garageService.update(currentUser.getId(), id, request));
     }
 
+    /** Usunięcie zablokowane przy PENDING/ACCEPTED/CONFIRMED. */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@AuthenticationPrincipal UserPrincipal currentUser, @PathVariable String id) {
         garageService.delete(currentUser.getId(), id);

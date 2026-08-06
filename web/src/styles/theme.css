@@ -1,3 +1,20 @@
+/**
+ * theme.css — design tokens RacePortal + most do Tailwind v4 (`@theme inline`).
+ *
+ * Kluczowe zmienne:
+ * - `--race-accent` — domyślnie złoty #FFD700; nadpisywany z Ustawień (accent)
+ * - `--font-family-display` — Oxanium (nagłówki, brand); primary = Montserrat
+ * - `--race-motion` — bazowy timing animacji UI
+ *
+ * `html[data-pit-stop="on"]` — tryb „pit-stop” z Ustawień: prawie zeruje
+ * animation/transition (dostępność / mniej ruchu). Ustawiane w applyUserSettings.
+ *
+ * `@theme inline` — mapuje CSS vars na utility Tailwind (bg-background, font-display…).
+ * `.dark` — wariant shadcn (app jest dark-first; klasa opcjonalna).
+ *
+ * Pomysł (alt): CSS Modules per page; design tokens w JSON → Style Dictionary.
+ */
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -46,7 +63,7 @@
   --sidebar-ring: var(--race-accent);
 }
 
-/* Preferencje z Ustawień → akcent + tryb pit-stop */
+/* Preferencje z Ustawień → akcent + tryb pit-stop (minimalny ruch) */
 html[data-pit-stop="on"] *,
 html[data-pit-stop="on"] *::before,
 html[data-pit-stop="on"] *::after {
@@ -93,6 +110,7 @@ html[data-pit-stop="on"] *::after {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
+/* Most CSS vars → utility Tailwind v4 (font-display, bg-primary, …) */
 @theme inline {
   --font-sans: var(--font-family-primary);
   --font-display: var(--font-family-display);
@@ -151,9 +169,9 @@ html[data-pit-stop="on"] *::after {
   }
 
   /**
-  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
-  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
-  */
+   * Domyślna typografia HTML (h1–h4, p, label, button, input).
+   * W @layer base — utility Tailwind (text-sm, text-lg…) nadpisują te reguły.
+   */
 
   html {
     font-size: var(--font-size);

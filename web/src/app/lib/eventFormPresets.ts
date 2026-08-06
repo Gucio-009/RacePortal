@@ -1,5 +1,18 @@
-/** Presets for click-friendly organizer event creation. */
+/**
+ * eventFormPresets.ts — gotowe opcje klikalne dla formularza organizatora.
+ *
+ * Cel UX: większość pól z listy (tor, godzina, wpisowe, zdjęcie) zamiast ręcznego wpisywania.
+ * Sentinel `OTHER` (`__other__`) — „Inne…” → dodatkowe pole tekstowe w dialogu.
+ *
+ * TRACK_PRESETS: popularne tory PL + lat/lng → auto-pin na LocationMapPicker.
+ * DEMO_BANK_ACCOUNT: przykładowy IBAN do demo płatnych eventów (nie produkcja).
+ *
+ * Używane przez: OrganizerEventFormDialog, organizerEventForm (applyTrackPreset / eventToForm).
+ *
+ * Pomysł (alt): presety z API / CMS; geokodowanie zamiast hardcodowanych coords.
+ */
 
+/** Sentinel Select „Inne…” — nie jest prawdziwą wartością domenową. */
 export const OTHER = "__other__";
 
 export const VOIVODESHIPS = [
@@ -29,7 +42,7 @@ export type TrackPreset = {
   lng: number;
 };
 
-/** Popular PL tracks — selecting one fills city / voivodeship / coords. */
+/** Popularne tory PL — wybór wypełnia miasto / województwo / współrzędne. */
 export const TRACK_PRESETS: TrackPreset[] = [
   { track: "Tor Poznań", city: "Poznań", voivodeship: "Wielkopolskie", lat: 52.3312, lng: 16.8491 },
   { track: "Autodrom Pomorze Pszczółki", city: "Pszczółki", voivodeship: "Pomorskie", lat: 54.1985, lng: 18.5986 },
@@ -111,4 +124,5 @@ export const FREE_CANCEL_OPTIONS = [
   { value: "30", label: "30 dni przed" },
 ] as const;
 
+/** Przykładowe konto do demo płatnych wydarzeń (nie używać w produkcji). */
 export const DEMO_BANK_ACCOUNT = "PL61 1090 1014 0000 0712 1981 2874";

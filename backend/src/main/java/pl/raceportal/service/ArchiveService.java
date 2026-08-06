@@ -15,7 +15,19 @@ import pl.raceportal.repository.EventRepository;
 import java.time.LocalDate;
 import java.util.List;
 
-/** Marks past APPROVED events as ARCHIVED so listings stay clean, on startup and daily. */
+/**
+ * Automatyczna archiwizacja minionych wydarzeń APPROVED → ARCHIVED.
+ * <p>
+ * Rola w architekturze: utrzymanie czystości list publicznych — uruchamiane
+ * przy starcie aplikacji oraz codziennie o północy (cron). Czyści cache {@code events}.
+ * Technologie: Spring Scheduling, Spring Cache, JPA, transakcje.
+ * </p>
+ * Reguła: wydarzenie APPROVED z {@code date} przed dzisiejszą datą → ARCHIVED.
+ * <p>
+ * Pomysł (alt): job w Quartz / Kubernetes CronJob; zapytanie SQL UPDATE zamiast
+ * ładowania wszystkich wydarzeń do pamięci.
+ * </p>
+ */
 @Service
 public class ArchiveService {
 
@@ -27,16 +39,23 @@ public class ArchiveService {
         this.eventRepository = eventRepository;
     }
 
+    /** Archiwizacja zaraz po starcie kontekstu Spring. */
     @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
         archivePastEvents();
     }
 
+    /** Codzienny job o 00:00. */
     @Scheduled(cron = "0 0 0 * * *")
     public void onSchedule() {
         archivePastEvents();
     }
 
+    /**
+     * Znajduje APPROVED z datą w przeszłości, ustawia ARCHIVED, invaliduje cache listy.
+     *
+     * @return liczba zarchiwizowanych wydarzeń
+     */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
     public int archivePastEvents() {

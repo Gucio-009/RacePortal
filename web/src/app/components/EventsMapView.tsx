@@ -1,3 +1,18 @@
+/**
+ * EventsMapView — mapa Leaflet (react-leaflet) z markerami wydarzeń.
+ *
+ * Stack: Leaflet + dark tiles CARTO (`dark_all`). CSS Leaflet importowany w `main.tsx`.
+ *
+ * Ikony Vite: domyślne URL-e Leaflet (`marker-icon.png`) nie działają z bundlerem —
+ * importujemy PNG-i i `L.Icon.Default.mergeOptions`, żeby pinezki były widoczne.
+ *
+ * Domyślny center `[52.0, 19.0]` zoom 6 ≈ cała Polska (gdy brak punktów / przed FitBounds).
+ * FitBounds: dopasowuje widok do markerów + opcjonalnej polilinii (trasa).
+ * Polyline: kolor `var(--race-accent)` — spójny z motywem / ustawieniami akcentu.
+ *
+ * Pomysł (alt): Mapbox GL / Google Maps; clustering przy dużej liczbie eventów.
+ */
+
 import { useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from "react-leaflet";
 import L from "leaflet";
@@ -7,6 +22,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { Link } from "react-router";
 import { eventImage } from "../lib/types";
 
+// Vite: popraw ścieżki ikon (Leaflet domyślnie szuka względnych URL-i z CSS).
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon,
@@ -32,6 +48,7 @@ interface EventsMapViewProps {
   height?: string;
 }
 
+/** Dopasowanie widoku do punktów — 1 punkt = zoom 12, wiele = fitBounds z paddingiem. */
 function FitBounds({ markers, polyline }: { markers: MapMarker[]; polyline?: [number, number][] }) {
   const map = useMap();
 
@@ -54,7 +71,7 @@ function FitBounds({ markers, polyline }: { markers: MapMarker[]; polyline?: [nu
 export function EventsMapView({
   markers,
   polyline,
-  center = [52.0, 19.0],
+  center = [52.0, 19.0], // centrum Polski
   zoom = 6,
   className = "",
   height = "500px",
@@ -90,6 +107,7 @@ export function EventsMapView({
   );
 }
 
+/** Mapuje ApiEvent → MapMarker; null gdy brak współrzędnych (event bez pinezki). */
 export function eventToMarker(event: {
   id: string;
   name: string;

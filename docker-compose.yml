@@ -1,3 +1,21 @@
+#
+# docker-compose.yml — lokalny stack RacePortal (dev / demo).
+#
+# Usługi:
+#   mysql     — MySQL 8.4, baza `raceportal`, port hosta 3307→3306 (unika kolizji z lokalnym MySQL).
+#   mailhog   — Mailpit (UI :8025, SMTP :1025) do podglądu maili bez prawdziwego SMTP.
+#   api       — Spring Boot (backend/Dockerfile), profil `docker`, seed włączony, JWT/CORS pod web+mobile.
+#   web       — Vite build + nginx (web/Dockerfile, context = root repo — potrzebny packages/api-types).
+#   backup    — pętla scripts/backup.sh co 24h → volume raceportal_backups.
+#
+# Dlaczego osobno od testów: JUnit/create-drop celuje w `raceportal_test` (patrz scripts/test-api.sh),
+# żeby nie wycierać tej bazy Compose z seedem.
+#
+# Porty (host): API 4000, web 8081, MySQL 3307, Mailpit 8025/1025.
+#
+# Pomysł (alt): docker-compose.override.yml pod produkcję (bez SEED_ENABLED, secrets z vault);
+# albo profile compose (dev/test/prod) zamiast jednego pliku.
+#
 services:
   mysql:
     image: mysql:8.4

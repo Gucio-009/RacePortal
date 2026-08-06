@@ -18,6 +18,19 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
+/**
+ * Encja wniosku o nadanie roli organizatora.
+ * <p>
+ * Rola w architekturze: most między użytkownikiem USER a rolą ORGANIZER —
+ * admin przegląda wnioski w {@code AdminService} i po APPROVED zmienia
+ * {@link User#getRole()}. Technologie: JPA, MySQL, Spring Security (RBAC).
+ * </p>
+ * Reguły: jeden aktywny przepływ wniosku na użytkownika (logika w serwisie);
+ * status niezależny od {@link RegistrationStatus}.
+ * <p>
+ * Pomysł (alt): Keycloak groups + admin console zamiast własnej tabeli wniosków.
+ * </p>
+ */
 @Entity
 @Table(name = "organizer_applications", indexes = {
         @Index(name = "idx_org_apps_status", columnList = "status"),
@@ -29,13 +42,16 @@ public class OrganizerApplication {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    /** Wnioskujący użytkownik (zwykle Role.USER). */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    /** Nazwa firmy / zespołu organizacyjnego. */
     @Column(nullable = false, length = 120)
     private String company;
 
+    /** Uzasadnienie / opis doświadczenia. */
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;

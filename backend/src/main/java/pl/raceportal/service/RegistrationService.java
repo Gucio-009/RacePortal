@@ -28,6 +28,21 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Serwis zgłoszeń zawodników na wydarzenia — statusy, płatności, anulowanie.
+ * <p>
+ * Rola w architekturze: rdzeń reguł biznesowych dyplomu (Statusy zgłoszenia):
+ * tworzenie zgłoszenia, decyzja organizatora, dowód płatności, rezygnacja kierowcy.
+ * Technologie: Spring, JPA/MySQL, Spring Cache (evict listy wydarzeń), Mail.
+ * </p>
+ * Przepływ płatny: PENDING → ACCEPTED (+{@code paymentDueAt}) → dowód → CONFIRMED;
+ * darmowy: PENDING → CONFIRMED. Alias {@code APPROVED} mapowany „smart” wg {@code event.paid}.
+ * RBAC: lista/zmiana statusu — organizator-właściciel lub ADMIN; anulowanie/proof — właściciel zgłoszenia.
+ * <p>
+ * Pomysł (alt): maszyna stanów Spring State Machine; bramka PayU/Stripe zamiast ręcznego dowodu;
+ * outbox do maili.
+ * </p>
+ */
 @Service
 public class RegistrationService {
 
@@ -59,9 +74,9 @@ public class RegistrationService {
     }
 
     /**
-     * Diagram "Proces tworzenia zgłoszenia (kierowca)": the event must be
-     * accepting registrations and approved; if a car is picked, an obvious
-     * class/category mismatch fails the automatic validation step.
+     * Tworzenie zgłoszenia (diagram „Proces tworzenia zgłoszenia”): wydarzenie APPROVED
+     * i otwarte na zgłoszenia; opcjonalne auto — walidacja klasy vs kategorii (dokładne equalsIgnoreCase).
+     * Upsert po (user, event): resetuje status na PENDING.
      */
     @Transactional
     public RegistrationResponse create(String userId, RegistrationCreateRequest request) {
@@ -110,6 +125,9 @@ public class RegistrationService {
         return serialize(registration, true, false);
     }
 
+    /**
+     * Lista zgłoszeń na wydarzenie — tylko organizator-właściciel lub ADMIN (RBAC).
+     */
     @Transactional(readOnly = true)
     public List<RegistrationResponse> listForEvent(String eventId, UserPrincipal currentUser) {
         Event event = eventRepository.findById(eventId)
@@ -126,12 +144,10 @@ public class RegistrationService {
     }
 
     /**
-     * Organizer decision from the "Proces weryfikacji zgłoszeń" diagrams. Free
-     * events go PENDING -&gt; CONFIRMED/CANCELED directly; paid events go
-     * PENDING -&gt; ACCEPTED/CANCELED first, then ACCEPTED -&gt; CONFIRMED only once
-     * a payment proof is attached (ACCEPTED can still be CANCELED without proof).
-     * "APPROVED" is accepted as an alias and smart-resolved based on event.paid
-     * and the registration's current status.
+     * Decyzja organizatora (diagram „Proces weryfikacji zgłoszeń”).
+     * Darmowe: PENDING → CONFIRMED/CANCELED; płatne: PENDING → ACCEPTED/CANCELED,
+     * potem ACCEPTED → CONFIRMED tylko z dowodem płatności.
+     * Alias {@code APPROVED} rozwiązywany wg {@code event.paid} i bieżącego statusu.
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
@@ -165,10 +181,9 @@ public class RegistrationService {
     }
 
     /**
-     * Diagram "Proces anulowania zgłoszenia (kierowca)": the driver can always
-     * end up CANCELED. If the registration was already paid (CONFIRMED on a
-     * paid event) and the organizer's free-cancel window has not passed, the
-     * email mentions that the organizer will issue a refund.
+     * Anulowanie przez kierowcę (diagram „Proces anulowania zgłoszenia”).
+     * Przy CONFIRMED na płatnym wydarzeniu w oknie {@code freeCancelDays}
+     * mail wspomina o zwrocie przez organizatora.
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
@@ -206,9 +221,9 @@ public class RegistrationService {
     }
 
     /**
-     * Diagram "Proces opłacania zgłoszenia (kierowca)": once ACCEPTED on a paid
-     * event, the driver attaches proof of the bank transfer for the organizer
-     * to verify (a separate {@link #updateStatus} call moves it to CONFIRMED).
+     * Dołączenie dowodu przelewu (diagram „Proces opłacania zgłoszenia”):
+     * tylko ACCEPTED + wydarzenie płatne; potwierdzenie CONFIRMED robi organizator
+     * przez {@link #updateStatus}.
      */
     @Transactional
     public RegistrationResponse attachPaymentProof(String id, String userId, String paymentProofUrl) {
@@ -231,6 +246,10 @@ public class RegistrationService {
         return serialize(registration, true, false);
     }
 
+    /**
+     * Mapuje surowy status z API (w tym legacy APPROVED/CANCELLED/REJECTED)
+     * na docelowy {@link RegistrationStatus} z uwzględnieniem płatności.
+     */
     private RegistrationStatus resolveTargetStatus(String rawStatus, boolean eventPaid, RegistrationStatus current) {
         if (rawStatus == null || rawStatus.isBlank()) {
             throw ApiException.badRequest("Nieprawidłowy status");
@@ -256,6 +275,9 @@ public class RegistrationService {
         };
     }
 
+    /**
+     * Waliduje dozwolone przejścia maszyny stanów; CONFIRMED z ACCEPTED wymaga dowodu płatności.
+     */
     private void validateTransition(RegistrationStatus from, RegistrationStatus to, Registration registration,
                                      Event event) {
         if (from == RegistrationStatus.CANCELED || from == RegistrationStatus.CONFIRMED) {

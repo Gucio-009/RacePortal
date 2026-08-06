@@ -1,3 +1,16 @@
+/**
+ * Lista wydarzeń — filtry, tryby Lista / Kalendarz / Mapa.
+ *
+ * Rola w architekturze: główny ekran publiczny (tab Eventy). Query do
+ * `/api/events` (lista) lub `/api/events/markers` (kalendarz/mapa) z tymi samymi
+ * filtrami co web: q, paid, category, województwo, miasto, tor, daty, carId (garaż).
+ * Mapa: lista markerów + deep-link do Apple Maps / geo: (Leaflet WebView opcjonalnie później).
+ *
+ * Technologie: FlatList, useFocusEffect, React Navigation, EventsCalendarView.
+ *
+ * Pomysł (alt): react-native-maps / Mapbox; Expo Router search params;
+ * Flutter ListView + google_maps_flutter.
+ */
 import { useCallback, useMemo, useState } from "react";
 import {
   View,
@@ -28,6 +41,7 @@ import type { EventsStackParamList, RootStackParamList } from "../navigation/typ
 type ViewMode = "list" | "calendar" | "map";
 type PaidFilter = "all" | "true" | "false";
 
+/** Buduje query string filtrów zgodny z backendem Spring. */
 function buildParams(opts: {
   q: string;
   paid: PaidFilter;

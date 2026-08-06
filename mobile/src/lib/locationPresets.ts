@@ -1,3 +1,13 @@
+/**
+ * Presety lokalizacji pod filtry listy wydarzeń (województwa, miasta, tory).
+ *
+ * Rola w architekturze: wspólne chipy filtrów z webem (organizator / lista eventów);
+ * współrzędne torów wspierają widok „Mapa” (deep-link do natywnych map).
+ *
+ * Pomysł (alt): słownik lokalizacji z API / CMS zamiast hardcodu;
+ * React Native Maps / Mapbox z pinami zamiast listy + Linking.
+ */
+
 /** Shared location presets for filters (aligned with web organizer presets). */
 
 export const VOIVODESHIPS = [

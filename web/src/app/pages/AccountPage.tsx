@@ -1,3 +1,15 @@
+/**
+ * AccountPage — pełna edycja danych konta i zmiana hasła.
+ *
+ * Cel: profil kierowcy (imię, telefon, prawo jazdy B, PZM), awatar, username;
+ * osobna sekcja changePassword przez AuthContext.
+ * Wzorce: sync formularza z `user` w useEffect, JWT w wywołaniach AuthContext
+ * (`raceportal_token`), badge roli.
+ * Auth: wymaga zalogowania. Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link `/konto` (lub ścieżka z routera) → SPA fallback.
+ *
+ * Pomysł (alt): React Hook Form + Zod; osobny endpoint PATCH /me; 2FA; Next.js.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { KeyRound, Loader2, Shield, User, Phone, IdCard } from "lucide-react";
@@ -29,6 +41,7 @@ export function AccountPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
 
+  // Hydratacja formularza gdy AuthContext dostarczy / odświeży usera.
   useEffect(() => {
     setUsername(user?.username ?? "");
     setAvatar(user?.avatar ?? "");
@@ -65,6 +78,7 @@ export function AccountPage() {
     }
   };
 
+  /** Zmiana hasła — wymaga aktualnego hasła (nie OAuth-only flow). */
   const savePassword = async () => {
     if (newPassword.length < 6) {
       toast.error("Nowe hasło musi mieć min. 6 znaków");

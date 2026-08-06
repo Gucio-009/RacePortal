@@ -22,6 +22,15 @@ import pl.raceportal.service.AdminService;
 
 import java.util.List;
 
+/**
+ * Panel administracyjny REST — wyłącznie {@code ROLE_ADMIN}.
+ * <p>
+ * Rola w architekturze: moderacja użytkowników, wydarzeń PENDING oraz wniosków organizatora.
+ * Cała klasa chroniona {@code @PreAuthorize("hasRole('ADMIN')")}.
+ * Technologie: Spring Security RBAC, JWT, Mail (przez serwis).
+ * </p>
+ * Pomysł (alt): osobna aplikacja admin (SPA) + audit trail; Keycloak Admin Console.
+ */
 @RestController
 @RequestMapping("/api/admin")
 @PreAuthorize("hasRole('ADMIN')")
@@ -43,6 +52,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.listUsers());
     }
 
+    /** Zmiana roli użytkownika z zabezpieczeniami self-demotion / last-admin. */
     @PatchMapping("/users/{id}/role")
     public ResponseEntity<UserAdminResponse> updateUserRole(@PathVariable String id,
                                                              @Valid @RequestBody RoleUpdateRequest request,
@@ -50,11 +60,13 @@ public class AdminController {
         return ResponseEntity.ok(adminService.updateUserRole(id, request, currentUser));
     }
 
+    /** Kolejka wydarzeń oczekujących na moderację. */
     @GetMapping("/events/pending")
     public ResponseEntity<List<EventResponse>> pendingEvents() {
         return ResponseEntity.ok(adminService.pendingEvents());
     }
 
+    /** Zatwierdzenie / odrzucenie / inna zmiana statusu wydarzenia. */
     @PatchMapping("/events/{id}/status")
     public ResponseEntity<EventResponse> updateEventStatus(@PathVariable String id,
                                                             @Valid @RequestBody EventStatusUpdateRequest request) {
@@ -66,6 +78,7 @@ public class AdminController {
         return ResponseEntity.ok(adminService.organizerApplications());
     }
 
+    /** APPROVED → nadanie roli ORGANIZER; REJECTED bez zmiany roli. */
     @PatchMapping("/organizer-applications/{id}")
     public ResponseEntity<OrganizerApplicationResponse> updateOrganizerApplication(
             @PathVariable String id, @Valid @RequestBody OrganizerApplicationStatusUpdateRequest request) {

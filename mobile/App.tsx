@@ -1,3 +1,18 @@
+/**
+ * Główny komponent aplikacji RacePortal (Expo + React Native).
+ *
+ * Rola w architekturze: składa drzewo nawigacji i auth —
+ * AuthProvider → NavigationContainer → Root stack (Main tabs + modale Login/Register).
+ * Taby: Eventy (stack lista/detal), Moje, Garaż, Więcej (stack z panelami ról).
+ * Role gates: `Gate` / `RequireAuth` — Dashboard/Garaż/Konto wymagają login;
+ * Admin tylko ADMIN; Organizer ORGANIZER|ADMIN.
+ *
+ * Stack: Expo SDK 57, React Navigation (native-stack + bottom-tabs), dark/gold theme.
+ * To nie jest Expo Router (`app/`) — klasyczny entry `App.tsx` + `index.ts`.
+ *
+ * Pomysł (alt): Expo Router (file-based); Flutter + go_router;
+ * React Native CLI bez Expo; osobne natywne aplikacje Swift/Kotlin.
+ */
 import { ActivityIndicator, View, StyleSheet, Text } from "react-native";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -54,6 +69,7 @@ const stackScreenOptions = {
   headerTitleStyle: { color: colors.text, fontWeight: "800" as const },
 };
 
+/** Skrót role gate — opcjonalna lista ról (RBAC) dla ekranu. */
 function Gate({ roles, children }: { roles?: UserRole[]; children: ReactNode }) {
   return <RequireAuth roles={roles}>{children}</RequireAuth>;
 }

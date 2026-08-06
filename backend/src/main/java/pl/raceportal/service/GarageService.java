@@ -16,9 +16,23 @@ import pl.raceportal.web.ApiException;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Serwis garażu — CRUD pojazdów użytkownika z regułami powiązań ze zgłoszeniami.
+ * <p>
+ * Rola w architekturze: izolacja ownership (userId z JWT); dane techniczne auta
+ * używane przy walidacji wymogów wydarzenia i {@link CategoryMatcher}.
+ * Technologie: Spring, JPA/MySQL.
+ * </p>
+ * Reguły: przy otwartym zgłoszeniu (PENDING/ACCEPTED/CONFIRMED) nie wolno zmieniać
+ * make/model/className ani usuwać auta.
+ * <p>
+ * Pomysł (alt): soft-delete; event sourcing historii zmian pojazdu.
+ * </p>
+ */
 @Service
 public class GarageService {
 
+    /** Statusy zgłoszeń blokujące krytyczne edycje / usunięcie auta. */
     private static final List<RegistrationStatus> OPEN_STATUSES =
             List.of(RegistrationStatus.PENDING, RegistrationStatus.ACCEPTED, RegistrationStatus.CONFIRMED);
 
@@ -60,9 +74,8 @@ public class GarageService {
     }
 
     /**
-     * Diagram "Proces edytowania auta z garażu": changes that would affect an
-     * open registration (make/model/class) are refused outright while the car
-     * has a PENDING/ACCEPTED/CONFIRMED registration attached.
+     * Edycja auta (diagram „Proces edytowania auta z garażu”):
+     * zmiana marki/modelu/klasy przy otwartym zgłoszeniu jest odrzucana.
      */
     @Transactional
     public CarResponse update(String userId, String carId, CarUpdateRequest request) {
@@ -92,7 +105,10 @@ public class GarageService {
         return serialize(car);
     }
 
-    /** Diagram "Proces usuwania auta z garażu": any open registration blocks deletion entirely. */
+    /**
+     * Usuwanie auta (diagram „Proces usuwania auta z garażu”):
+     * dowolne otwarte zgłoszenie całkowicie blokuje delete.
+     */
     @Transactional
     public void delete(String userId, String carId) {
         Car car = carRepository.findByIdAndUser_Id(carId, userId)

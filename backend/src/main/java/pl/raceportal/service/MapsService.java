@@ -19,6 +19,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Proxy do publicznego API OSRM — wytyczanie trasy dojazdu na tor.
+ * <p>
+ * Rola w architekturze: backend ukrywa CORS/rate-limit OSRM przed frontendem;
+ * endpoint map jest publiczny (bez JWT). Technologie: Java HttpClient, Jackson,
+ * OSRM ({@code router.project-osrm.org}).
+ * </p>
+ * Odpowiedź: dystans, czas, polyline (współrzędne [lat,lng] dla Leaflet).
+ * <p>
+ * Pomysł (alt): Google Directions / Mapbox Directions; self-hosted OSRM;
+ * cache tras w Redis.
+ * </p>
+ */
 @Service
 public class MapsService {
 
@@ -33,6 +46,10 @@ public class MapsService {
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Wywołuje OSRM driving route między dwoma punktami (lng,lat).
+     * Przy błędzie sieci lub {@code code != Ok} rzuca {@link ApiException#badGateway}.
+     */
     public RouteResponse route(RouteRequest request) {
         String url = String.format(Locale.ROOT,
                 "https://router.project-osrm.org/route/v1/driving/%s,%s;%s,%s?overview=full&geometries=geojson",
@@ -63,6 +80,7 @@ public class MapsService {
         double distanceMeters = route.path("distance").asDouble();
         double durationSeconds = route.path("duration").asDouble();
 
+        // OSRM zwraca [lng,lat]; frontend map oczekuje [lat,lng]
         List<double[]> polyline = new ArrayList<>();
         for (JsonNode coord : route.path("geometry").path("coordinates")) {
             double lng = coord.get(0).asDouble();

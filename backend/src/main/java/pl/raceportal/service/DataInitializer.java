@@ -19,11 +19,26 @@ import pl.raceportal.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/** Seeds demo users, cars and events so the app is usable right after startup. */
+/**
+ * Seed danych demo przy starcie aplikacji ({@link CommandLineRunner}).
+ * <p>
+ * Rola w architekturze: ułatwia lokalny rozwój i demo — konta admin/org/kierowca,
+ * wydarzenia (APPROVED/PENDING/ARCHIVED), płatne imprezy oraz garaż z autami per kategoria.
+ * Sterowane flagą {@code app.seed.enabled} (domyślnie true).
+ * Technologie: Spring Boot, JPA/MySQL, BCrypt.
+ * </p>
+ * Reguły: pełny seed tylko gdy brak admina; płatne wydarzenia i auta garażu
+ * są upsertowane idempotentnie po nazwie / marka+model.
+ * <p>
+ * Pomysł (alt): Liquibase/Flyway data migrations; osobny profil {@code demo}
+ * zamiast seedu w produkcji; Testcontainers fixtures w testach zamiast wspólnego seedu.
+ * </p>
+ */
 @Component
 public class DataInitializer implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(DataInitializer.class);
+    /** Demo IBAN używany przy płatnych wydarzeniach seed. */
     private static final String DEMO_BANK = "PL61 1090 1014 0000 0712 1981 2874";
 
     private final UserRepository userRepository;
@@ -42,6 +57,10 @@ public class DataInitializer implements CommandLineRunner {
         this.seedEnabled = seedEnabled;
     }
 
+    /**
+     * Punkt wejścia seedu: fresh seed użytkowników+wydarzeń (jeśli brak admina),
+     * potem zawsze ensure płatnych wydarzeń i garażu testowego.
+     */
     @Override
     @Transactional
     public void run(String... args) {
@@ -61,6 +80,7 @@ public class DataInitializer implements CommandLineRunner {
         ensureDemoGarageCars();
     }
 
+    /** Pierwszy seed: admin, organizator, kierowca + zestaw wydarzeń w różnych statusach. */
     private void seedFresh() {
         User admin = createUser("admin@raceportal.pl", "Administrator", "admin123", Role.ADMIN);
         User organizer = createUser("org@raceportal.pl", "Organizator", "org123", Role.ORGANIZER);
@@ -100,6 +120,10 @@ public class DataInitializer implements CommandLineRunner {
                 admin.getEmail(), organizer.getEmail(), driver.getEmail());
     }
 
+    /**
+     * Idempotentnie tworzy/aktualizuje płatne wydarzenia APPROVED
+     * (do testów flow ACCEPTED + dowód przelewu).
+     */
     private void ensurePaidDemoEvents() {
         User organizer = userRepository.findByEmailIgnoreCase("org@raceportal.pl").orElse(null);
         if (organizer == null) {
@@ -139,6 +163,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Paid demo events ensured (paid APPROVED upcoming present)");
     }
 
+    /** Upsert płatnego wydarzenia po nazwie (findFirstByNameIgnoreCase). */
     private void upsertPaid(User organizer, String name, String description, String category, LocalDate date,
                              String time, String track, String city, String voivodeship, String imageUrl,
                              double lat, double lng, BigDecimal entryFee) {
@@ -167,6 +192,10 @@ public class DataInitializer implements CommandLineRunner {
         log.info("{} paid event: {}", created ? "Created" : "Updated", name);
     }
 
+    /**
+     * Zapewnia kierowcy test@wp.pl po jednym aucie na główną kategorię
+     * (dopasowanie CategoryMatcher przy filtrze carId).
+     */
     private void ensureDemoGarageCars() {
         User driver = userRepository.findByEmailIgnoreCase("test@wp.pl").orElse(null);
         if (driver == null) {

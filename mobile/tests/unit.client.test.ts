@@ -1,3 +1,11 @@
+/**
+ * Unit testy klienta API mobile (URL + storage tokenu) bez runtime Expo.
+ *
+ * Rola w architekturze: mock Platform + SecureStore; na web weryfikuje localStorage.
+ * Uzupełnia E2E Playwright (Expo web :8082).
+ *
+ * Pomysł (alt): testy Detox/Maestro na emulatorze; kontrakt Pact z backendem.
+ */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Minimal unit tests for mobile API helpers (bez Expo runtime)

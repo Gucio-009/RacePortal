@@ -1,3 +1,16 @@
+/**
+ * EventsPage — publiczny kalendarz wydarzeń (lista / mapa / DayPicker).
+ *
+ * Cel: wyszukiwanie i przeglądanie nadchodzących wydarzeń z bogatymi filtrami.
+ * Wzorce: debounce 300ms na filtry, paginacja listy (`/api/events`), markery
+ * (`/api/events/markers`) dla mapy i kalendarza, EventsMapView (Leaflet/OSM),
+ * DayPicker + date-fns (locale pl). Opcjonalny filtr garażu gdy JWT obecny.
+ * Auth: publiczna; filtr `carId` tylko gdy `isAuthenticated` (fetch `/api/garage`).
+ * Theme: `--race-accent`, `font-display`; deep links `/wydarzenia` → nginx SPA.
+ *
+ * Pomysł (alt): TanStack Query + URL searchParams jako source of truth; Mapbox;
+ * Next.js App Router z SSR listy; Algolia/Meilisearch do wyszukiwania.
+ */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
 import { Calendar as CalendarIcon, MapPin, Search, ChevronRight, ChevronLeft, List, Map } from "lucide-react";
@@ -22,6 +35,7 @@ import "react-day-picker/dist/style.css";
 
 type ViewMode = "list" | "map" | "calendar";
 
+/** Buduje query string filtrów współdzielony przez listę i markery. */
 function buildFilterParams(opts: {
   query: string;
   category: string;
@@ -67,6 +81,7 @@ export function EventsPage() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
 
+  // Auta z garażu — tylko dla zalogowanych (filtr dopasowania carId).
   useEffect(() => {
     if (!isAuthenticated) {
       setCars([]);
@@ -77,6 +92,7 @@ export function EventsPage() {
 
   const filterKey = { query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId };
 
+  // Debounce filtrów: lista = paginacja, mapa/kalendarz = markery overview.
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(true);
@@ -116,6 +132,7 @@ export function EventsPage() {
     return () => clearTimeout(timer);
   }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, page, view]);
 
+  // Reset strony przy zmianie filtrów / widoku.
   useEffect(() => {
     setPage(1);
   }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, view]);
@@ -138,6 +155,7 @@ export function EventsPage() {
       .filter((d): d is Date => d !== null);
   }, [overview]);
 
+  /** Wydarzenia wybranego dnia w widoku kalendarza. */
   const dayEvents = useMemo(() => {
     if (!selectedDay) return [];
     return overview.filter((e) => {

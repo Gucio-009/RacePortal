@@ -1,3 +1,11 @@
+/**
+ * Rejestracja konta + opcjonalna weryfikacja e-mail (kod).
+ *
+ * Rola w architekturze: dwuetapowy flow form → verify (gdy API wymaga),
+ * te same reguły hasła co backend. Po verify token trafia do magazynu jak przy loginie.
+ *
+ * Pomysł (alt): magic link zamiast kodu; Sign in with Apple / Google.
+ */
 import { useState } from "react";
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Pressable } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";

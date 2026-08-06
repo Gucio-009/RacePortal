@@ -1,3 +1,9 @@
+/**
+ * Chart — wrapper wykresów shadcn/ui nad Recharts (Tailwind).
+ * Wygenerowany / wzorowany na shadcn; stylowanie serii przez tokeny motywu.
+ * Pomysł (alt): Chart.js, Victory albo własny wrapper SVG zamiast Recharts.
+ */
+
 "use client";
 
 import * as React from "react";

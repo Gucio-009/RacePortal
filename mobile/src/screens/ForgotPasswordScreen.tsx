@@ -1,3 +1,11 @@
+/**
+ * Reset hasła — wysyłka instrukcji na e-mail (`POST /api/auth/forgot-password`).
+ *
+ * Rola w architekturze: modal auth bez sesji; nie ujawnia, czy konto istnieje
+ * (komunikat generyczny po sukcesie). Dalszy flow resetu jak na webie (mail).
+ *
+ * Pomysł (alt): deep link z tokenem resetu otwierający ekran w aplikacji (Expo Linking).
+ */
 import { useState } from "react";
 import { View, Text, StyleSheet, KeyboardAvoidingView, Platform, ScrollView, Pressable } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";

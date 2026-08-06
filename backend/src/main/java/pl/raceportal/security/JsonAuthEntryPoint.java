@@ -12,6 +12,15 @@ import pl.raceportal.web.ErrorResponse;
 
 import java.io.IOException;
 
+/**
+ * Entry point dla nieautoryzowanych żądań (brak / nieważny JWT) — zwraca JSON 401.
+ * <p>
+ * Rola w architekturze: zamiast domyślnego redirectu do formularza logowania
+ * (nieadekwatnego dla SPA/API) zwraca {@link ErrorResponse}.
+ * Technologie: Spring Security, Jackson.
+ * </p>
+ * Pomysł (alt): RFC 7807 Problem Details ({@code application/problem+json}).
+ */
 @Component
 public class JsonAuthEntryPoint implements AuthenticationEntryPoint {
 
@@ -21,6 +30,7 @@ public class JsonAuthEntryPoint implements AuthenticationEntryPoint {
         this.objectMapper = objectMapper;
     }
 
+    /** Odpowiedź 401 z komunikatem „Brak autoryzacji”. */
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                           AuthenticationException authException) throws IOException, ServletException {

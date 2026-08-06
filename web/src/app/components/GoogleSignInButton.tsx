@@ -1,3 +1,19 @@
+/**
+ * GoogleSignInButton — oficjalny przycisk Google Identity Services (GSI).
+ *
+ * Wymaga `VITE_GOOGLE_CLIENT_ID` (ten sam Client ID co `GOOGLE_OAUTH_CLIENT_ID` w API).
+ * Bez env → `null` (przycisk niewidoczny; `isGoogleClientConfigured()` = false).
+ *
+ * Przepływ: GSI zwraca `credential` (idToken JWT) → rodzic woła
+ * `loginWithGoogle(idToken)` → backend `/api/auth/oauth/google` wymienia na JWT RacePortal
+ * (`raceportal_token` w localStorage via AuthContext.persistAuth).
+ *
+ * Skrypt GSI ładujemy raz (`accounts.google.com/gsi/client`); refs callbacków unikają
+ * przeładowania przycisku przy każdej zmianie propsów.
+ *
+ * Pomysł (alt): One Tap / FedCM; Facebook/Apple — osobne app ID (celowo nie w MVP).
+ */
+
 import { useEffect, useRef } from "react";
 
 declare global {
@@ -23,6 +39,7 @@ declare global {
 
 const GSI_SRC = "https://accounts.google.com/gsi/client";
 
+/** Lazy-load skryptu GSI — współdzielony między mountami (sprawdza istniejący <script>). */
 function loadGsiScript(): Promise<void> {
   if (window.google?.accounts?.id) return Promise.resolve();
   const existing = document.querySelector<HTMLScriptElement>(`script[src="${GSI_SRC}"]`);
@@ -43,6 +60,7 @@ function loadGsiScript(): Promise<void> {
   });
 }
 
+/** Czy frontend ma Client ID — LoginPage może ukryć sekcję Google. */
 export function isGoogleClientConfigured(): boolean {
   return Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim());
 }
@@ -58,6 +76,7 @@ export function GoogleSignInButton({
   disabled?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  // Refs: GSI trzyma stary callback z initialize — unikamy stale closure bez re-renderButton.
   const onCredentialRef = useRef(onCredential);
   const onErrorRef = useRef(onError);
   onCredentialRef.current = onCredential;
@@ -76,6 +95,7 @@ export function GoogleSignInButton({
         window.google.accounts.id.initialize({
           client_id: clientId,
           callback: (response) => {
+            // response.credential = Google idToken → wymiana na JWT RacePortal w AuthContext
             void Promise.resolve(onCredentialRef.current(response.credential)).catch((e) => {
               onErrorRef.current?.(e instanceof Error ? e.message : "Błąd logowania Google");
             });

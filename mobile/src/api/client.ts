@@ -1,3 +1,24 @@
+/**
+ * Klient HTTP API RacePortal dla aplikacji mobilnej (Expo / React Native).
+ *
+ * Rola w architekturze: jedyny punkt wyjścia do Spring Boot (`/api/*`) —
+ * dokłada Bearer JWT, mapuje błędy na `ApiError`, trzyma token w bezpiecznym
+ * magazynie (natywnie) lub `localStorage` (Expo web).
+ *
+ * SecureStore vs localStorage:
+ * - iOS/Android: `expo-secure-store` (Keychain / EncryptedSharedPreferences) —
+ *   token nie trafia do zwykłego AsyncStorage.
+ * - web (`Platform.OS === "web"`): SecureStore nie jest dostępne → `localStorage`
+ *   (jak w aplikacji webowej; wystarczające do Expo web / E2E, nie jest Keychain).
+ *
+ * URL API: `EXPO_PUBLIC_API_URL` albo domyślnie `127.0.0.1:4000` (iOS/web)
+ * / `10.0.2.2:4000` (emulator Android = host maszyny).
+ *
+ * Technologie: fetch, expo-secure-store, React Native Platform.
+ *
+ * Pomysł (alt): axios + interceptory; React Query/SWR nad tym klientem;
+ * Flutter `dio` + `flutter_secure_storage`; RN CLI bez Expo + `react-native-keychain`.
+ */
 import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 
@@ -22,6 +43,7 @@ const isWeb = Platform.OS === "web";
 
 export async function getToken(): Promise<string | null> {
   try {
+    // Expo web: SecureStore niedostępne — ten sam klucz co w webzie (localStorage).
     if (isWeb && typeof localStorage !== "undefined") {
       return localStorage.getItem(TOKEN_KEY);
     }
@@ -54,6 +76,7 @@ function formatApiError(error?: string, details?: Record<string, string>): strin
   return `${base} (${fields})`;
 }
 
+/** Wspólne wywołanie REST — Authorization: Bearer gdy token obecny. */
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
   const token = await getToken();
   const headers: Record<string, string> = { Accept: "application/json" };

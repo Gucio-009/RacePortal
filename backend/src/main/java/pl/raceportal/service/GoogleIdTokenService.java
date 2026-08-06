@@ -13,6 +13,21 @@ import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
 
+/**
+ * Weryfikacja Google ID Token (Sign-In with Google / One Tap).
+ * <p>
+ * Rola w architekturze: warstwa OAuth — {@code AuthService} przekazuje idToken
+ * z frontendu; po sukcesie tworzy/loguje użytkownika i wystawia własne JWT.
+ * Technologie: Google API Client ({@link GoogleIdTokenVerifier}), Spring Boot config
+ * ({@code app.oauth.google.client-id}).
+ * </p>
+ * Reguły: wymaga skonfigurowanego Client ID; email z tokenu musi być verified.
+ * Gdy Client ID pusty — OAuth wyłączony (503 przy próbie użycia).
+ * <p>
+ * Pomysł (alt): Spring Security OAuth2 Client (authorization code flow) zamiast
+ * weryfikacji idToken po stronie API; Keycloak jako broker Google.
+ * </p>
+ */
 @Component
 public class GoogleIdTokenService {
 
@@ -30,10 +45,16 @@ public class GoogleIdTokenService {
         }
     }
 
+    /** Czy Google OAuth jest skonfigurowany (Client ID obecny). */
     public boolean isConfigured() {
         return verifier != null;
     }
 
+    /**
+     * Weryfikuje podpis i audience idToken; wymaga zweryfikowanego emaila Google.
+     *
+     * @return payload z email / sub / name / picture
+     */
     public GoogleIdToken.Payload verify(String idTokenString) {
         if (verifier == null) {
             throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE,

@@ -17,6 +17,20 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 
+/**
+ * Serwis wystawiania i weryfikacji tokenów JWT (JJWT).
+ * <p>
+ * Rola w architekturze: po udanym logowaniu / OAuth generuje Bearer token;
+ * {@link JwtAuthFilter} parsuje claims i buduje {@link UserPrincipal}.
+ * Technologie: JJWT (HMAC-SHA), Spring Boot ({@code app.jwt.secret}, expiration).
+ * </p>
+ * Claims: {@code id}, {@code email}, {@code username}, {@code role} — rola trafia
+ * do authorities jako {@code ROLE_*}. Sekret jest hashowany SHA-256 do klucza HMAC.
+ * <p>
+ * Pomysł (alt): Keycloak / Spring Authorization Server; refresh tokens w Redis;
+ * asymetryczne RS256 zamiast HMAC.
+ * </p>
+ */
 @Service
 public class JwtService {
 
@@ -29,6 +43,7 @@ public class JwtService {
         this.expirationMillis = Duration.ofDays(expirationDays).toMillis();
     }
 
+    /** Normalizuje sekret konfiguracyjny do 256-bitowego klucza HMAC. */
     private static byte[] sha256(String value) {
         try {
             return MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
@@ -37,6 +52,9 @@ public class JwtService {
         }
     }
 
+    /**
+     * Generuje podpisany JWT dla zalogowanego użytkownika (subject = id użytkownika).
+     */
     public String generateToken(User user) {
         Instant now = Instant.now();
         return Jwts.builder()
@@ -51,6 +69,9 @@ public class JwtService {
                 .compact();
     }
 
+    /**
+     * Weryfikuje podpis i ważność tokenu; rzuca {@link JwtException} przy błędzie.
+     */
     public Claims parseClaims(String token) throws JwtException {
         return Jwts.parser()
                 .verifyWith(key)
@@ -59,6 +80,10 @@ public class JwtService {
                 .getPayload();
     }
 
+    /**
+     * Mapuje claims JWT na {@link UserPrincipal} używany w SecurityContext
+     * (bez passwordHash — nie jest potrzebny w filtrze).
+     */
     public UserPrincipal toPrincipal(Claims claims) {
         String id = claims.get("id", String.class);
         String email = claims.get("email", String.class);

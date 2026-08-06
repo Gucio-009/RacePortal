@@ -1,10 +1,31 @@
+/**
+ * Dopasowanie klasy auta (garaż) do kategorii wydarzenia.
+ *
+ * Używane przy zapisie na event: UI dzieli auta na „rekomendowane” vs „pozostałe”
+ * (partitionCarsForEvent), żeby zawodnik łatwiej wybrał auto zgodne z dyscypliną.
+ *
+ * Logika aliasów:
+ * 1) Normalizacja PL — trim, lower-case, zamiana „ł”→„l” (ł nie rozkłada się przez NFD),
+ *    potem NFD + usunięcie znaków diakrytycznych, zostawienie a-z0-9 i spacji.
+ * 2) aliasKeyFor — NAJPIERW dokładne trafienie aliasu (po normalizacji), dopiero potem
+ *    „alias zawarty w wartości” (najdłuższy alias ≥3 znaków). Kierunek tylko
+ *    normalized.includes(alias), nie odwrotnie — żeby „racing” nie wpadało w „gt racing”.
+ * 3) carMatchesEventCategory — równość znormalizowana, wspólny klucz aliasu, na końcu
+ *    wzajemne includes (ścieżka substring, może być asymetryczna).
+ *
+ * Pomysł (alt): mapa kanonicznych ID kategorii z backendu zamiast string-matchingu;
+ * albo Fuse.js / fuzzy search — tu celowo deterministyczne reguły bez zależności.
+ */
 import type { Car } from "./types";
 import { CAR_CLASS_OPTIONS } from "./eventCategories";
 
-/** @deprecated use CAR_CLASS_OPTIONS — kept for imports */
+/** @deprecated użyj CAR_CLASS_OPTIONS — zostawione dla starych importów. */
 export const CAR_CATEGORIES = CAR_CLASS_OPTIONS;
 
-/** Alias groups so legacy class names still match event categories. */
+/**
+ * Grupy aliasów: klucz kanoniczny → warianty legacy / PL / skróty.
+ * Dzięki temu np. „KJS” i „Rajd” trafiają w tę samą rodzinę co „rally”.
+ */
 const CATEGORY_ALIASES: Record<string, string[]> = {
   drift: ["drift", "drifting", "drifter", "drift trening", "drift amatorskie", "drift pro"],
   "gt racing": ["gt racing", "gt", "gt4", "gt3", "cup", "gtr"],
@@ -16,6 +37,10 @@ const CATEGORY_ALIASES: Record<string, string[]> = {
   mpws: ["mpws"],
 };
 
+/**
+ * Normalizacja pod porównania: case-insensitive, bez PL diakrytyków.
+ * Uwaga: „ł” mapujemy ręcznie przed NFD — Unicode NFD nie rozkłada ł na l+combining.
+ */
 function normalize(value: string): string {
   return value
     .trim()
@@ -28,6 +53,10 @@ function normalize(value: string): string {
     .replace(/\s+/g, " ");
 }
 
+/**
+ * Zwraca klucz kanoniczny z CATEGORY_ALIASES albo null.
+ * Kolejność: (1) exact match aliasu, (2) najdłuższy alias ⊆ wartość (≥3 znaki).
+ */
 function aliasKeyFor(normalized: string): string | null {
   // 1) dokładne trafienie aliasu (po normalizacji PL)
   for (const [key, aliases] of Object.entries(CATEGORY_ALIASES)) {
@@ -48,6 +77,10 @@ function aliasKeyFor(normalized: string): string | null {
   return best?.key ?? null;
 }
 
+/**
+ * Czy klasa auta pasuje do kategorii wydarzenia (dokładnie / alias / substring).
+ * Puste / whitespace → false.
+ */
 export function carMatchesEventCategory(
   carClass: string | null | undefined,
   eventCategory: string | null | undefined,
@@ -64,12 +97,20 @@ export function carMatchesEventCategory(
   return carN.includes(eventN) || eventN.includes(carN);
 }
 
+/**
+ * Dzieli listę aut garażu na rekomendowane (pasują do kategorii) i pozostałe.
+ * Kolejność w tablicach wejściowych jest zachowana w obu wynikach.
+ */
 export function partitionCarsForEvent(cars: Car[], eventCategory: string) {
   const recommended = cars.filter((c) => carMatchesEventCategory(c.className, eventCategory));
   const other = cars.filter((c) => !carMatchesEventCategory(c.className, eventCategory));
   return { recommended, other };
 }
 
+/**
+ * Etykieta selecta auta: „Make Model (year) · class”.
+ * recommended=true dokłada gwiazdkę ★ na początku (UI „polecane”).
+ */
 export function formatCarLabel(car: Car, recommended = false): string {
   const base = `${car.make} ${car.model}${car.year ? ` (${car.year})` : ""}`;
   const klass = car.className ? ` · ${car.className}` : "";

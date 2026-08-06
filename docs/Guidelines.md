@@ -4,12 +4,14 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 
 ## Stack
 
-- Frontend: `web/` — Vite + React + Tailwind + shadcn/ui, font Orbitron, accent `#FFD700`, dark UI
-- Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation
+- Frontend: `web/` — Vite + React + Tailwind v4 + shadcn/ui, font display **Oxanium** (PL), accent `var(--race-accent)`, dark UI
+- Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation (+ opcjonalnie Google OAuth)
 - Mobile: `mobile/` — Expo 57 (parity z webem: eventy, garaż, panele); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
+- Shared: `packages/api-types` — typy + carMatch/avatary/kategorie (Vitest ≥500)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Docker Compose: `web`, `api`, `mysql`, `mailhog` (Mailpit), `backup`
-- Testy: JUnit/MockMvc/Testcontainers (API), Vitest (mobile unit), Playwright E2E (web + Expo web)
+- Testy: JUnit/MockMvc/Testcontainers (API), Vitest (api-types + mobile), Playwright E2E
+- Alt-technologie: [`docs/pomysly-technologiczne.md`](./pomysly-technologiczne.md)
 - App lokalnie: http://127.0.0.1:8081/ (nie 8080)
 
 ## Dokumentacja — obowiązek aktualizacji
@@ -18,8 +20,14 @@ Przy każdej istotnej zmianie aktualizuj:
 
 1. **`docs/MVP.md`** — format porównania (poniżej)
 2. **`docs/changes.md`** — chronologia / co doszło (**z godziną**, nie samym dniem)
-3. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
-4. **`docs/testy/TESTY.md`** + **`docs/testy/wyniki/podsumowanie.md`** — gdy zmienia się zestaw lub wynik testów
+3. **`docs/pomysly-technologiczne.md`** — gdy pojawia się nowa decyzja stack / alt
+4. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
+5. **`docs/testy/TESTY.md`** + wyniki w `docs/testy/wyniki/` — gdy zmienia się zestaw lub wynik testów
+
+### Komentarze w kodzie
+
+- Język komentarzy: **polski** (JavaDoc / nagłówki plików TS/TSX / YAML).
+- Przy sensownej alternatywie technologicznej: znacznik **`Pomysł (alt): …`** + wpis w `pomysly-technologiczne.md`.
 
 ### `changes.md` — format historii (obowiązkowy)
 

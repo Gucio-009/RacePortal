@@ -1,3 +1,10 @@
+/**
+ * Regulamin / polityka prywatności (param `kind` w nawigacji).
+ *
+ * Rola w architekturze: skrócona treść legal na mobile; pełna wersja na web.
+ *
+ * Pomysł (alt): WebView z `/terms` i `/privacy`; MD z CMS.
+ */
 import { ScrollView, Text, StyleSheet } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { colors } from "../theme/colors";

@@ -1,1 +1,12 @@
+/**
+ * fonts.css — dokumentacja ładowania fontów (bez @font-face tutaj).
+ *
+ * Montserrat (UI) + Oxanium (display / nagłówki z latin-ext) ładujemy z Google Fonts
+ * w `index.html` (preconnect + stylesheet) — szybszy first paint niż CSS @import.
+ * Mapowanie: --font-family-primary / --font-family-display w theme.css;
+ * Tailwind: `font-sans` / `font-display` przez `@theme inline`.
+ *
+ * Pomysł (alt): self-host woff2 w /public/fonts (RODO / offline Docker).
+ */
+
 /* Fonty ładujemy z index.html (preconnect + stylesheet) — tu tylko komentarz dla czytelności. */

@@ -16,6 +16,21 @@ import jakarta.persistence.Table;
 
 import java.time.Instant;
 
+/**
+ * Encja samochodu w garażu użytkownika.
+ * <p>
+ * Rola w architekturze: profil pojazdu powiązany z {@link User}; wybierany przy
+ * zgłoszeniu na wydarzenie ({@link Registration#getCar()}). Parametry techniczne
+ * (moc, napęd, klatka, OC/PT) służą walidacji wymogów wydarzenia i dopasowaniu kategorii
+ * ({@code CategoryMatcher}).
+ * Technologie: JPA/Hibernate, MySQL.
+ * </p>
+ * Reguły: auto należy do jednego użytkownika; flagi bezpieczeństwa/ubezpieczeń
+ * muszą spełniać {@code Event.require*} przy rejestracji.
+ * <p>
+ * Pomysł (alt): osobny mikroserwis „garage”; MapStruct dla Car ↔ GarageDto.
+ * </p>
+ */
 @Entity
 @Table(name = "cars", indexes = {
         @Index(name = "idx_cars_user_id", columnList = "user_id")
@@ -26,6 +41,7 @@ public class Car {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
+    /** Właściciel pojazdu. */
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -38,6 +54,7 @@ public class Car {
 
     private Integer year;
 
+    /** Klasa / kategoria pojazdu (np. Street, Pro) — input do CategoryMatcher. */
     @Column(name = "class_name", length = 60)
     private String className;
 
@@ -47,6 +64,7 @@ public class Car {
     @Column(name = "image_url", length = 500)
     private String imageUrl;
 
+    /** Typ napędu (np. RWD, AWD, FWD). */
     @Column(name = "drive_type", length = 10)
     private String driveType;
 
@@ -59,21 +77,27 @@ public class Car {
     @Column(name = "weight_kg")
     private Integer weightKg;
 
+    /** Czy pojazd jest zarejestrowany — wymóg {@code Event.requireRegistered}. */
     @Column(nullable = false)
     private boolean registered = true;
 
+    /** Rodzaj rejestracji (np. zwykła, zabytkowa, wyścigowa). */
     @Column(name = "registration_type", length = 20)
     private String registrationType;
 
+    /** Numer KSS (książka sportowa samochodu) — jeśli dotyczy. */
     @Column(name = "kss_number", length = 40)
     private String kssNumber;
 
+    /** Klatka bezpieczeństwa — wymóg {@code Event.requireCage}. */
     @Column(name = "has_roll_cage", nullable = false)
     private boolean hasRollCage = false;
 
+    /** Polisa OC — wymóg {@code Event.requireOc}. */
     @Column(name = "has_oc", nullable = false)
     private boolean hasOc = false;
 
+    /** Przegląd techniczny — wymóg {@code Event.requirePt}. */
     @Column(name = "has_pt", nullable = false)
     private boolean hasPt = false;
 

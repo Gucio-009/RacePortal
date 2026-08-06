@@ -1,3 +1,15 @@
+/**
+ * Widok kalendarza miesięcznego dla wydarzeń (markery z `/api/events/markers`).
+ *
+ * Rola w architekturze: jeden z trzech trybów listy eventów (lista / kalendarz / mapa)
+ * w `EventsScreen` — siatka Pn–Nd, dni ze złotym tłem = eventy, tap → lista dnia.
+ * Logika lokalna (bez zewnętrznej lib kalendarza), tydzień zaczyna się od poniedziałku.
+ *
+ * Technologie: React Native View/Pressable, `EventMarker` z api-types.
+ *
+ * Pomysł (alt): `react-native-calendars` / FullCalendar WebView;
+ * Flutter `table_calendar`; synchro z Google Calendar.
+ */
 import { useMemo, useState } from "react";
 import { View, Text, Pressable, StyleSheet } from "react-native";
 import type { EventMarker } from "../api/types";
@@ -13,7 +25,7 @@ function daysInMonth(d: Date) {
   return new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
 }
 
-/** Monday-based weekday index 0..6 */
+/** Indeks dnia tygodnia 0..6 z poniedziałkiem jako 0. */
 function mondayIndex(date: Date) {
   return (date.getDay() + 6) % 7;
 }

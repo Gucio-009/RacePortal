@@ -1,3 +1,9 @@
+/**
+ * Table — tabela shadcn/ui (Tailwind).
+ * Wygenerowany / wzorowany na shadcn; wariantami steruje class-variance-authority.
+ * Pomysł (alt): własny design system albo MUI / Chakra zamiast Radix+CVA.
+ */
+
 "use client";
 
 import * as React from "react";

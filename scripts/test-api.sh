@@ -1,6 +1,21 @@
 #!/usr/bin/env bash
-# Uruchamia testy API (JUnit + MockMvc). Preferuje lokalny Java+./mvnw + Testcontainers;
-# bez Javy używa kontenera Maven podłączonego do sieci Compose (MySQL).
+#
+# test-api.sh — uruchamia testy API backendu (JUnit + MockMvc / Spring Boot).
+#
+# Po co: szybka weryfikacja warstwy REST bez ręcznego curlowania. Preferuje lokalny
+# Java + ./mvnw (Testcontainers może sam podnieść MySQL). Gdy na hoście nie ma Javy
+# (np. czyste środowisko Docker-only), odpala Maven w kontenerze podpiętym do sieci
+# Compose, żeby trafić w serwis `mysql`.
+#
+# WAŻNE — baza raceportal_test:
+# Testy Hibernate często używają create-drop / ddl-auto. Gdyby celowały w główną
+# bazę Compose (`raceportal`), wyczyściłyby dane deweloperskie (seed). Dlatego
+# tworzymy osobną DB `raceportal_test` i ustawiamy TEST_DB_URL na nią.
+#
+# Wymagania (ścieżka Docker): `docker compose up -d mysql` (sieć raceportal*default).
+#
+# Pomysł (alt): zawsze Testcontainers na hoście; albo osobny docker-compose.test.yml.
+#
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT/backend"

@@ -1,3 +1,9 @@
+/**
+ * useIsMobile — hook breakpointu mobilnego (domyślnie 768px).
+ * Wzorowany na shadcn/ui; śledzi matchMedia i resize okna.
+ * Pomysł (alt): CSS container queries albo biblioteka typu usehooks-ts.
+ */
+
 import * as React from "react";
 
 const MOBILE_BREAKPOINT = 768;

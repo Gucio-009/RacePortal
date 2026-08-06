@@ -1,4 +1,15 @@
-/** Curated avatar gallery — pick by id; empty/null avatar means UI initials. */
+/**
+ * Kuratorowana galeria awatarów użytkownika.
+ *
+ * Zamiast dowolnych URL-i od użytkownika (XSS / hotlink) — stałe ID presetów
+ * z Dicebear (SVG). Pusty/null avatar w profilu = UI pokazuje inicjały (userInitials).
+ *
+ * Style Dicebear: avataaars, bottts, lorelei, notionists, shapes — różne seed-y
+ * RacePortal* dają powtarzalne twarze/roboty bez lokalnych assetów.
+ *
+ * Pomysł (alt): własne pliki w /public/avatars lub upload do S3 z walidacją MIME;
+ * albo Gravatar po hashu e-maila.
+ */
 
 export type AvatarPreset = {
   id: string;
@@ -6,7 +17,7 @@ export type AvatarPreset = {
   url: string;
 };
 
-/** Stable Dicebear seeds (no user-typed URLs). */
+/** Stabilne seedy Dicebear (bez URL-i wpisywanych przez użytkownika). */
 export const AVATAR_PRESETS: AvatarPreset[] = [
   {
     id: "racer",
@@ -70,12 +81,16 @@ export const AVATAR_PRESETS: AvatarPreset[] = [
   },
 ];
 
+/** Szuka presetu po dokładnym URL (to zapisujemy w polu user.avatar). */
 export function findAvatarPreset(url: string | null | undefined): AvatarPreset | undefined {
   if (!url) return undefined;
   return AVATAR_PRESETS.find((p) => p.url === url);
 }
 
-/** Default display: initials from name or username (when avatar is empty). */
+/**
+ * Domyślny wyświetlany tekst: inicjały z imienia+nazwiska, inaczej 2 znaki imienia
+ * lub username; brak danych → „?”.
+ */
 export function userInitials(user: {
   username?: string | null;
   firstName?: string | null;

@@ -1,6 +1,17 @@
+/**
+ * LegalPages — statyczne strony prawne: Regulamin (`TermsPage`) i Polityka prywatności (`PrivacyPage`).
+ *
+ * Cel: teksty akceptowane przy rejestracji (linki z RegisterPage); informacja o JWT w przeglądarce.
+ * Wzorce: wspólny `LegalLayout`, React Router Link, brak fetch/API.
+ * Auth: publiczne. Theme: `--race-accent`, `font-display` w tytule.
+ * Docker/nginx: deep links `/terms`, `/privacy` wymagają SPA try_files → index.html.
+ *
+ * Pomysł (alt): MDX / CMS treści prawnych; wersjonowanie regulaminu; Next.js markdown pages.
+ */
 import { Link } from "react-router";
 import { Button } from "../components/ui/button";
 
+/** Wspólna ramka layoutu dla dokumentów prawnych. */
 function LegalLayout({
   title,
   children,
@@ -33,6 +44,7 @@ function LegalLayout({
   );
 }
 
+/** Regulamin serwisu — akceptowany checkboxem przy rejestracji. */
 export function TermsPage() {
   return (
     <LegalLayout title="REGULAMIN">
@@ -65,6 +77,7 @@ export function TermsPage() {
   );
 }
 
+/** Polityka prywatności — m.in. zakres danych i JWT w localStorage. */
 export function PrivacyPage() {
   return (
     <LegalLayout title="POLITYKA PRYWATNOŚCI">

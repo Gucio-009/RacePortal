@@ -1,3 +1,14 @@
+/**
+ * Ekran logowania (modal Root stack).
+ *
+ * Rola w architekturze: zbiera email/hasło → AuthContext.login → JWT w SecureStore/localStorage.
+ * Po sukcesie wraca (`goBack`) lub nawiguje do Main. Linki do Register / ForgotPassword.
+ *
+ * Technologie: KeyboardAvoidingView (iOS padding), React Navigation modals.
+ *
+ * Pomysł (alt): biometria + refresh token; OAuth Google jak na webie;
+ * Flutter Form + `flutter_secure_storage`.
+ */
 import { useState } from "react";
 import {
   View,

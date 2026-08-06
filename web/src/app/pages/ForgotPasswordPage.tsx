@@ -1,3 +1,15 @@
+/**
+ * ForgotPasswordPage — prośba o link / instrukcję resetu hasła.
+ *
+ * Cel: użytkownik podaje e-mail; AuthContext.forgotPassword woła API (bez ujawniania
+ * czy konto istnieje — komunikat zawsze „sprawdź skrzynkę” po sukcesie ok).
+ * Wzorce: kontrolowany formularz, toast, Link do `/login`.
+ * Auth: publiczna; nie ustawia JWT. Theme: `--race-accent`, `font-display`.
+ * Docker/nginx: deep link `/forgot-password` → SPA try_files.
+ *
+ * Pomysł (alt): token w URL `/reset-password?token=` na tej samej stronie;
+ * Auth.js email provider; rate-limit UI + CAPTCHA.
+ */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
@@ -13,6 +25,7 @@ export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { forgotPassword } = useAuth();
 
+  /** Wywołanie resetu — backend wysyła mail (Mailpit w dev). */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

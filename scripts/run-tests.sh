@@ -1,5 +1,15 @@
 #!/usr/bin/env bash
-# Uruchamia pełny zestaw testów RacePortal i zapisuje wyniki pod docs/testy/wyniki/
+#
+# run-tests.sh — pełny zestaw testów RacePortal + zbiorcze podsumowanie Markdown.
+#
+# Po co: jeden entrypoint QA — API (JUnit), unit mobile (Vitest), E2E (Playwright
+# web + Expo preview). Zapisuje logi i docs/testy/wyniki/podsumowanie.md z werdyktem.
+#
+# Zakłada działające serwisy (preflight curl na :4000 API, :8081 web, :8082 mobile).
+# Bloki fail nie przerywają od razu — zbieramy statusy, exit na końcu.
+#
+# Pomysł (alt): orchestracja przez npm-run-all / turbo pipeline w CI zamiast jednego basha.
+#
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/docs/testy/wyniki"
@@ -20,6 +30,7 @@ section () {
   echo "" | tee -a "$SUMMARY"
 }
 
+# Uruchamia komendę, dopisuje PASS/FAIL + ogon loga do podsumowania.
 run_block () {
   local name="$1"
   local logfile="$2"
@@ -39,7 +50,7 @@ run_block () {
   echo "Log: \`$logfile\`" >> "$SUMMARY"
 }
 
-# Preflight
+# Preflight — czy stack Compose/dev jest w ogóle dostępny
 section "Preflight środowiska"
 {
   echo "- API: $(curl -s http://127.0.0.1:4000/api/health || echo DOWN)"
