@@ -44,12 +44,13 @@ Testy automatyczne mają:
       /------\
      / Integr.\   Spring MockMvc + Testcontainers MySQL
     /----------\
-   /   Unit     \ Vitest — logika klienta mobile (token / API_URL)
+   /   Unit     \ Vitest — api-types (≥500) + mobile (token / API_URL)
   /--------------\
 ```
 
 | Poziom | Narzędzie | Lokalizacja | Co sprawdza |
 |--------|-----------|-------------|-------------|
+| Unit | Vitest | `packages/api-types/tests/` | car match, kategorie, awatary, statusy, opłaty, daty (**599** przypadków) |
 | Unit | Vitest | `mobile/tests/` | storage tokenu, URL API |
 | Integration | JUnit 5 + MockMvc + Testcontainers | `backend/src/test/` | health, login seed, walidacja błędów, lista events |
 | E2E | Playwright | `tests/e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
@@ -168,6 +169,7 @@ Skrypt zapisuje:
 | Plik | Zawartość |
 |------|-----------|
 | `docs/testy/wyniki/podsumowanie.md` | werdykt + skrót logów |
+| `docs/testy/wyniki/unit-500-wyniki.md` | **599** unit `@raceportal/api-types` — pełna lista PASS/FAIL |
 | `docs/testy/wyniki/api-surefire.log` | log Maven Surefire (API) |
 | `docs/testy/wyniki/mobile-unit.log` | log unit mobile |
 | `docs/testy/wyniki/playwright.log` | log E2E |
@@ -183,6 +185,8 @@ npm run test:api
 # równoważnie: cd backend && ./mvnw test   # wymaga Java 21 + Docker
 
 # Unit mobile
+npm run test:unit              # ≥500 unit api-types
+npm run test:unit:report       # to samo + docs/testy/wyniki/unit-500-wyniki.md
 npm run test:mobile-unit
 
 # E2E web

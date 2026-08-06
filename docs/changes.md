@@ -569,4 +569,15 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
+## 35. 500+ testów jednostkowych api-types + raport (2026-08-06, 14:53)
+
+**Kontekst / argument:** potrzeba szerokiego unit coverage logiki współdzielonej + osobnego pliku wyników.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 14:53 | ~2 unit mobile | **599** Vitest na `@raceportal/api-types`; `docs/testy/wyniki/unit-500-wyniki.md` | Dowód jakości + dyplom |
+| 14:53 | `ł` psuło match kategorii; „racing” wpadało w „gt racing” | Normalizacja `ł→l` + exact-first alias | Poprawne dopasowanie auta do kategorii |
+
+---
+
 *Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*

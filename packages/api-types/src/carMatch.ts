@@ -20,6 +20,7 @@ function normalize(value: string): string {
   return value
     .trim()
     .toLowerCase()
+    .replace(/ł/g, "l") // ł nie rozkłada się przez NFD
     .normalize("NFD")
     .replace(/\p{M}/gu, "")
     .replace(/[^a-z0-9]+/g, " ")
@@ -28,12 +29,23 @@ function normalize(value: string): string {
 }
 
 function aliasKeyFor(normalized: string): string | null {
+  // 1) dokładne trafienie aliasu (po normalizacji PL)
   for (const [key, aliases] of Object.entries(CATEGORY_ALIASES)) {
-    if (aliases.some((a) => a === normalized || normalized.includes(a) || a.includes(normalized))) {
-      return key;
+    for (const raw of aliases) {
+      if (normalize(raw) === normalized) return key;
     }
   }
-  return null;
+  // 2) alias zawarty w wartości (nie odwrotnie — „racing” nie wpada w „gt racing”)
+  let best: { key: string; len: number } | null = null;
+  for (const [key, aliases] of Object.entries(CATEGORY_ALIASES)) {
+    for (const raw of aliases) {
+      const a = normalize(raw);
+      if (a.length >= 3 && normalized.includes(a)) {
+        if (!best || a.length > best.len) best = { key, len: a.length };
+      }
+    }
+  }
+  return best?.key ?? null;
 }
 
 export function carMatchesEventCategory(
