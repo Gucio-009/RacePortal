@@ -78,7 +78,8 @@ export function EventDetailScreen({ route }: Props) {
 
   const openMaps = () => {
     if (!event?.lat || !event?.lng) return;
-    Linking.openURL(`http://maps.apple.com/?ll=${event.lat},${event.lng}&q=${encodeURIComponent(event.track)}`);
+    const q = encodeURIComponent(`${event.track}, ${event.city} ${event.lat},${event.lng}`);
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${q}`);
   };
 
   if (loading) {
@@ -161,7 +162,7 @@ export function EventDetailScreen({ route }: Props) {
 
         {event.lat && event.lng ? (
           <Pressable style={styles.mapBtn} onPress={openMaps}>
-            <Text style={styles.mapBtnText}>Otwórz w Mapach</Text>
+            <Text style={styles.mapBtnText}>Otwórz w Google Maps</Text>
           </Pressable>
         ) : null}
 

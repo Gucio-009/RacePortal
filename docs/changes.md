@@ -608,4 +608,19 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-12 09:37 — audit CLAUDE.md + walidacje i testy.*
+## 38. Uwagi mobile: mapy Google + filtry + edycja auta + layout (2026-08-12)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:55 | Link mapy `geo:`/Apple Maps bywał niedziałający i niespójny | Deep-link map w mobile przełączony na `https://www.google.com/maps/search/?api=1&query=...` (lista + detal eventu) | Jeden stabilny format URL na iOS/Android/web i zgodnie z wymaganiem „Google Maps” |
+| 09:55 | Brak szybkiego resetu filtrów; „Więcej filtrów” zostawało otwarte po zmianie zakładki | Dodany przycisk `Wyczyść filtry`; po zmianie zakładki i po `Zastosuj filtry` sekcja filtrów zwija się | Krótsza ścieżka UX i mniej bałaganu na ekranie |
+| 09:55 | Województwa były w poziomym scrollerze | Województwa renderowane jako `wrap` (wiele wierszy, bez przewijania w bok) | Lepsza czytelność i trafienie palcem na telefonach |
+| 09:55 | „Edytuj auto”: czyszczenie pól tekstowych nie zapisywało się; akcja `Anuluj` była wizualnie mniejsza niż `Zapisz` | PATCH z edycji wysyła puste stringi jawnie (backend czyści przez `blankToNull`); przycisk `ANULUJ` ma taką samą wysokość i szerokość jak `ZAPISZ` | Można realnie usuwać wartości i zachować spójny układ CTA |
+| 09:55 | Pola liczbowe auta przyjmowały dowolne znaki; rok miał sztywny dolny limit 1950 | Front filtruje wpisy do cyfr (`rok/KM/pojemność/masa`), a backend obniżył `@Min(year)` do **1886** | Lepsza walidacja formularza + zgodność z uwagą o ograniczeniu roku |
+| 09:55 | Górny offset nagłówków był stały (`paddingTop: 56`) i różnie wyglądał na różnych urządzeniach | `ScreenHeader` korzysta z `safe-area insets`; Settings ma także `paddingBottom` od safe area + opis pola „Akcent” | Stabilniejszy layout na iPhone/tablet i jaśniejsze znaczenie ustawienia |
+
+**Weryfikacja:** `npm --prefix mobile run test` + `npm run test:api` → **PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-12 09:55 — uwagi mobile (mapy/filtry/edycja/layout).*

@@ -17,6 +17,7 @@ import {
   Alert,
   Modal,
   ScrollView,
+  Pressable,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { api, ApiError } from "../api/client";
@@ -43,6 +44,10 @@ const emptyForm = {
   hasPt: false,
   modifications: "",
 };
+
+function digitsOnly(value: string) {
+  return value.replace(/[^\d]/g, "");
+}
 
 export function GarageScreen() {
   const { user } = useAuth();
@@ -110,24 +115,44 @@ export function GarageScreen() {
       Alert.alert("Walidacja", "Marka i model są wymagane");
       return;
     }
-    const payload = {
-      make: form.make.trim(),
-      model: form.model.trim(),
-      year: form.year ? Number(form.year) : undefined,
-      className: form.className.trim() || undefined,
-      plate: form.plate.trim() || undefined,
-      driveType: form.driveType.trim() || undefined,
-      powerHp: form.powerHp ? Number(form.powerHp) : undefined,
-      engineCc: form.engineCc ? Number(form.engineCc) : undefined,
-      weightKg: form.weightKg ? Number(form.weightKg) : undefined,
-      registered: form.registered,
-      registrationType: form.registered ? form.registrationType || undefined : undefined,
-      kssNumber: form.registered ? form.kssNumber || undefined : undefined,
-      hasRollCage: form.hasRollCage,
-      hasOc: form.hasOc,
-      hasPt: form.hasPt,
-      modifications: form.modifications.trim() || undefined,
-    };
+    const payload = editingId
+      ? {
+          // W trybie edycji wysyłamy puste stringi jawnie, żeby backend mógł wyczyścić pola tekstowe.
+          make: form.make.trim(),
+          model: form.model.trim(),
+          year: form.year ? Number(form.year) : undefined,
+          className: form.className.trim(),
+          plate: form.plate.trim(),
+          driveType: form.driveType.trim(),
+          powerHp: form.powerHp ? Number(form.powerHp) : undefined,
+          engineCc: form.engineCc ? Number(form.engineCc) : undefined,
+          weightKg: form.weightKg ? Number(form.weightKg) : undefined,
+          registered: form.registered,
+          registrationType: form.registered ? form.registrationType.trim() : "",
+          kssNumber: form.registered ? form.kssNumber.trim() : "",
+          hasRollCage: form.hasRollCage,
+          hasOc: form.hasOc,
+          hasPt: form.hasPt,
+          modifications: form.modifications.trim(),
+        }
+      : {
+          make: form.make.trim(),
+          model: form.model.trim(),
+          year: form.year ? Number(form.year) : undefined,
+          className: form.className.trim() || undefined,
+          plate: form.plate.trim() || undefined,
+          driveType: form.driveType.trim() || undefined,
+          powerHp: form.powerHp ? Number(form.powerHp) : undefined,
+          engineCc: form.engineCc ? Number(form.engineCc) : undefined,
+          weightKg: form.weightKg ? Number(form.weightKg) : undefined,
+          registered: form.registered,
+          registrationType: form.registered ? form.registrationType || undefined : undefined,
+          kssNumber: form.registered ? form.kssNumber || undefined : undefined,
+          hasRollCage: form.hasRollCage,
+          hasOc: form.hasOc,
+          hasPt: form.hasPt,
+          modifications: form.modifications.trim() || undefined,
+        };
     setBusy(true);
     try {
       if (editingId) await api.patch(`/api/garage/${editingId}`, payload);
@@ -210,13 +235,13 @@ export function GarageScreen() {
           <Text style={styles.modalTitle}>{editingId ? "Edytuj auto" : "Nowe auto"}</Text>
           <Field label="Marka *" value={form.make} onChangeText={(make) => setForm((f) => ({ ...f, make }))} />
           <Field label="Model *" value={form.model} onChangeText={(model) => setForm((f) => ({ ...f, model }))} />
-          <Field label="Rok" keyboardType="number-pad" value={form.year} onChangeText={(year) => setForm((f) => ({ ...f, year }))} />
+          <Field label="Rok" keyboardType="number-pad" value={form.year} onChangeText={(year) => setForm((f) => ({ ...f, year: digitsOnly(year) }))} />
           <Field label="Klasa" value={form.className} onChangeText={(className) => setForm((f) => ({ ...f, className }))} />
           <Field label="Rejestracja" value={form.plate} onChangeText={(plate) => setForm((f) => ({ ...f, plate }))} />
           <Field label="Napęd (FWD/RWD/AWD)" value={form.driveType} onChangeText={(driveType) => setForm((f) => ({ ...f, driveType }))} />
-          <Field label="KM" keyboardType="number-pad" value={form.powerHp} onChangeText={(powerHp) => setForm((f) => ({ ...f, powerHp }))} />
-          <Field label="Pojemność cm³" keyboardType="number-pad" value={form.engineCc} onChangeText={(engineCc) => setForm((f) => ({ ...f, engineCc }))} />
-          <Field label="Masa kg" keyboardType="number-pad" value={form.weightKg} onChangeText={(weightKg) => setForm((f) => ({ ...f, weightKg }))} />
+          <Field label="KM" keyboardType="number-pad" value={form.powerHp} onChangeText={(powerHp) => setForm((f) => ({ ...f, powerHp: digitsOnly(powerHp) }))} />
+          <Field label="Pojemność cm³" keyboardType="number-pad" value={form.engineCc} onChangeText={(engineCc) => setForm((f) => ({ ...f, engineCc: digitsOnly(engineCc) }))} />
+          <Field label="Masa kg" keyboardType="number-pad" value={form.weightKg} onChangeText={(weightKg) => setForm((f) => ({ ...f, weightKg: digitsOnly(weightKg) }))} />
           <ToggleRow label="Zarejestrowany" value={form.registered} onChange={(registered) => setForm((f) => ({ ...f, registered }))} />
           {form.registered ? (
             <>
@@ -229,7 +254,9 @@ export function GarageScreen() {
           <ToggleRow label="PT" value={form.hasPt} onChange={(hasPt) => setForm((f) => ({ ...f, hasPt }))} />
           <Field label="Modyfikacje" multiline value={form.modifications} onChangeText={(modifications) => setForm((f) => ({ ...f, modifications }))} />
           <PrimaryButton label="ZAPISZ" onPress={save} busy={busy} />
-          <GhostButton label="Anuluj" onPress={() => setModal(false)} />
+          <Pressable style={styles.cancelBtn} onPress={() => setModal(false)}>
+            <Text style={styles.cancelBtnText}>ANULUJ</Text>
+          </Pressable>
         </ScrollView>
       </Modal>
     </View>
@@ -252,4 +279,14 @@ const styles = StyleSheet.create({
   row: { flexDirection: "row", gap: 10, marginTop: 8 },
   modal: { flex: 1, backgroundColor: colors.bg },
   modalTitle: { color: colors.text, fontSize: 22, fontWeight: "900", marginBottom: 12, marginTop: 40 },
+  cancelBtn: {
+    marginTop: 10,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+  },
+  cancelBtnText: { color: colors.text, fontWeight: "800", letterSpacing: 1 },
 });

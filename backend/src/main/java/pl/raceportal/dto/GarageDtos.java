@@ -52,7 +52,7 @@ public final class GarageDtos {
     public record CarCreateRequest(
             @NotBlank @Size(min = 1, max = 60) String make,
             @NotBlank @Size(min = 1, max = 60) String model,
-            @Min(1950) @Max(2100) Integer year,
+            @Min(1886) @Max(2100) Integer year,
             @Size(max = 60) String className,
             @Size(max = 20) String plate,
             String imageUrl,
@@ -76,7 +76,7 @@ public final class GarageDtos {
     public record CarUpdateRequest(
             @Size(min = 1, max = 60) String make,
             @Size(min = 1, max = 60) String model,
-            @Min(1950) @Max(2100) Integer year,
+            @Min(1886) @Max(2100) Integer year,
             @Size(max = 60) String className,
             @Size(max = 20) String plate,
             String imageUrl,

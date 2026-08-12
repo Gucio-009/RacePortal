@@ -14,6 +14,7 @@ import { View, Text, StyleSheet, ScrollView, Pressable, Alert, Platform } from "
 import * as SecureStore from "expo-secure-store";
 import { ToggleRow, PrimaryButton } from "../components/ui";
 import { colors } from "../theme/colors";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const KEY = "raceportal_settings";
 
@@ -59,6 +60,7 @@ async function saveSettings(s: Settings) {
 }
 
 export function SettingsScreen() {
+  const insets = useSafeAreaInsets();
   const [s, setS] = useState<Settings>(defaults);
 
   useEffect(() => {
@@ -71,8 +73,9 @@ export function SettingsScreen() {
   };
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={{ padding: 16 }}>
+    <ScrollView style={styles.root} contentContainerStyle={{ padding: 16, paddingBottom: 24 + insets.bottom }}>
       <Text style={styles.title}>Ustawienia</Text>
+      <Text style={styles.helper}>Akcent zmienia kolor wyróżników w aplikacji.</Text>
       <ToggleRow label="Alerty e-mail" value={s.emailAlerts} onChange={(emailAlerts) => setS((x) => ({ ...x, emailAlerts }))} />
       <ToggleRow label="Przypomnienia startu" value={s.startReminders} onChange={(startReminders) => setS((x) => ({ ...x, startReminders }))} />
       <ToggleRow label="Dźwięki" value={s.soundFx} onChange={(soundFx) => setS((x) => ({ ...x, soundFx }))} />
@@ -97,6 +100,7 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   title: { color: colors.text, fontSize: 22, fontWeight: "900", marginBottom: 12 },
+  helper: { color: colors.muted, marginBottom: 8 },
   label: { color: colors.muted, marginTop: 16, marginBottom: 8, fontWeight: "700" },
   row: { flexDirection: "row", gap: 8, marginBottom: 16 },
   chip: {

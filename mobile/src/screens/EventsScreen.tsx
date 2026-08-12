@@ -24,7 +24,6 @@ import {
   TextInput,
   ScrollView,
   Linking,
-  Platform,
 } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -67,18 +66,16 @@ function buildParams(opts: {
 }
 
 function openMaps(lat: number, lng: number, label: string) {
-  const q = encodeURIComponent(label);
-  const url =
-    Platform.OS === "ios"
-      ? `http://maps.apple.com/?ll=${lat},${lng}&q=${q}`
-      : `geo:${lat},${lng}?q=${lat},${lng}(${q})`;
+  const q = encodeURIComponent(`${label} ${lat},${lng}`);
+  // Uniwersalny deep link (Android/iOS/web) – otwiera Google Maps.
+  const url = `https://www.google.com/maps/search/?api=1&query=${q}`;
   void Linking.openURL(url);
 }
 
 export function EventsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
   const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const [view, setView] = useState<ViewMode>("list");
   const [items, setItems] = useState<ApiEvent[]>([]);
@@ -156,17 +153,25 @@ export function EventsScreen() {
 
   const goDetail = (id: string) => navigation.navigate("EventDetail", { id });
 
+  const resetFilters = () => {
+    setQ("");
+    setPaid("all");
+    setCategory("");
+    setVoivodeship("");
+    setCity("");
+    setTrack("");
+    setDateFrom("");
+    setDateTo("");
+    setCarId("");
+  };
+
   return (
     <View style={styles.root}>
       <ScreenHeader
         title="WYDARZENIA"
         subtitle={user?.username ?? "Gość"}
         right={
-          user ? (
-            <GhostButton label="Wyloguj" onPress={logout} />
-          ) : (
-            <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} />
-          )
+          !user ? <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} /> : undefined
         }
       />
 
@@ -181,7 +186,10 @@ export function EventsScreen() {
           <Pressable
             key={id}
             style={[styles.viewTab, view === id && styles.viewTabOn]}
-            onPress={() => setView(id)}
+            onPress={() => {
+              setView(id);
+              setMoreFilters(false);
+            }}
           >
             <Text style={[styles.viewTabText, view === id && styles.viewTabTextOn]}>{label}</Text>
           </Pressable>
@@ -241,7 +249,7 @@ export function EventsScreen() {
 
         {moreFilters ? (
           <View style={styles.moreBox}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
+            <View style={styles.wrapChips}>
               <Pressable
                 style={[styles.chip, !voivodeship && styles.chipOn]}
                 onPress={() => setVoivodeship("")}
@@ -257,7 +265,7 @@ export function EventsScreen() {
                   <Text style={[styles.chipText, voivodeship === v && styles.chipTextOn]}>{v}</Text>
                 </Pressable>
               ))}
-            </ScrollView>
+            </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
               <Pressable style={[styles.chip, !city && styles.chipOn]} onPress={() => setCity("")}>
                 <Text style={[styles.chipText, !city && styles.chipTextOn]}>Miasto wszystkie</Text>
@@ -324,7 +332,16 @@ export function EventsScreen() {
           </View>
         ) : null}
 
-        <GhostButton label="Zastosuj filtry" onPress={() => load()} />
+        <View style={styles.filterActions}>
+          <GhostButton label="Wyczyść filtry" onPress={resetFilters} />
+          <GhostButton
+            label="Zastosuj filtry"
+            onPress={() => {
+              setMoreFilters(false);
+              load();
+            }}
+          />
+        </View>
       </View>
 
       {loading ? (
@@ -430,6 +447,8 @@ const styles = StyleSheet.create({
   dateRow: { flexDirection: "row", gap: 8 },
   dateInput: { flex: 1 },
   chips: { flexDirection: "row", gap: 8, alignItems: "center", paddingVertical: 2 },
+  wrapChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  filterActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },
   chip: {
     borderWidth: 1,
     borderColor: colors.border,

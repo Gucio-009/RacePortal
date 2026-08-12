@@ -21,6 +21,7 @@ import {
   type TextInputProps,
   type ViewStyle,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
 
 export function ScreenHeader({
@@ -32,8 +33,9 @@ export function ScreenHeader({
   subtitle?: string;
   right?: ReactNode;
 }) {
+  const insets = useSafeAreaInsets();
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: Math.max(insets.top + 12, 20) }]}>
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>
           {title} <Text style={styles.gold}>•</Text>
@@ -136,7 +138,6 @@ export function ErrorText({ text }: { text: string }) {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 56,
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
