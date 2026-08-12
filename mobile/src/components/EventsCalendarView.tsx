@@ -135,7 +135,7 @@ export function EventsCalendarView({
       <Text style={styles.hint}>
         {selected
           ? selected.toLocaleDateString("pl-PL", { day: "numeric", month: "long", year: "numeric" })
-          : "Wybierz dzień ze złotym tłem"}
+          : "Wybierz dzień w kalendarzu"}
       </Text>
 
       {dayEvents.map((e) => (

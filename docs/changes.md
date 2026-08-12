@@ -640,3 +640,21 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 ---
 
 *Ostatnia aktualizacja: 2026-08-12 10:00 — batch 2 (Moje/walidacje/Expo Go).*
+
+---
+
+## 40. Uwagi mobile: batch 3 (date picker + mail diagnostyka + UX rejestracji) (2026-08-12)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 10:10 | Daty filtrów w Eventach były zwykłym tekstem `YYYY-MM-DD` | Filtry `Od/Do` mają natywny date picker (`@react-native-community/datetimepicker`) + szybkie „Wyczyść daty” | Mniej błędów wpisu i szybsza obsługa na telefonie |
+| 10:10 | Komunikat „Wybierz dzień ze złotym tłem” wyglądał jak tekst testowy | Neutralny komunikat: „Wybierz dzień w kalendarzu” | Lepsza czytelność produkcyjna UI |
+| 10:10 | Rejestracja/weryfikacja kodu miała słabą informację zwrotną, czy kod faktycznie wysłano | `RegisterScreen` pokazuje komunikaty informacyjne po `register` i `resend-code` | Użytkownik wie, co się stało, zamiast „ciszy” po kliknięciu |
+| 10:10 | Trudna diagnostyka „mail nie działa”, bo API health nie pokazywał stanu SMTP | `GET /api/health` zwraca dodatkowe pole `smtp: up/down` (status HTTP nadal zależy od DB jak wcześniej) | Szybka diagnoza środowiska bez ruszania logów |
+| 10:10 | Expo Go / LAN + mail bywały mylone z błędem logiki auth | Potwierdzono w testach/logach: flow auth działa, a brak maila wynika z niedostępnego SMTP (`Connection refused`) | Rozdzielenie problemu domenowego od problemu środowiska |
+
+**Weryfikacja:** `npm --prefix mobile run test` + `npm run test:api` → **PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-12 10:10 — batch 3 (date picker/mail/verify UX).*

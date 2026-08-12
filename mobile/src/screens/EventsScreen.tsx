@@ -24,7 +24,9 @@ import {
   TextInput,
   ScrollView,
   Linking,
+  Platform,
 } from "react-native";
+import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { api } from "../api/client";
@@ -39,6 +41,7 @@ import type { EventsStackParamList, RootStackParamList } from "../navigation/typ
 
 type ViewMode = "list" | "calendar" | "map";
 type PaidFilter = "all" | "true" | "false";
+type DatePickerTarget = "from" | "to" | null;
 
 /** Buduje query string filtrów zgodny z backendem Spring. */
 function buildParams(opts: {
@@ -72,6 +75,10 @@ function openMaps(lat: number, lng: number, label: string) {
   void Linking.openURL(url);
 }
 
+function formatDate(value: Date) {
+  return value.toISOString().slice(0, 10);
+}
+
 export function EventsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
   const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -95,6 +102,7 @@ export function EventsScreen() {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [carId, setCarId] = useState("");
+  const [datePickerTarget, setDatePickerTarget] = useState<DatePickerTarget>(null);
 
   const filterKey = { q, paid, category, voivodeship, city, track, dateFrom, dateTo, carId };
 
@@ -163,6 +171,23 @@ export function EventsScreen() {
     setDateFrom("");
     setDateTo("");
     setCarId("");
+  };
+
+  const currentPickerDate = useMemo(() => {
+    const value = datePickerTarget === "to" ? dateTo : dateFrom;
+    if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      const parsed = new Date(`${value}T12:00:00`);
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    return new Date();
+  }, [dateFrom, datePickerTarget, dateTo]);
+
+  const onDatePicked = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    if (Platform.OS === "android") setDatePickerTarget(null);
+    if (event.type !== "set" || !selectedDate || !datePickerTarget) return;
+    const value = formatDate(selectedDate);
+    if (datePickerTarget === "from") setDateFrom(value);
+    if (datePickerTarget === "to") setDateTo(value);
   };
 
   return (
@@ -295,21 +320,34 @@ export function EventsScreen() {
               ))}
             </ScrollView>
             <View style={styles.dateRow}>
-              <TextInput
-                style={[styles.search, styles.dateInput]}
-                placeholder="Od (YYYY-MM-DD)"
-                placeholderTextColor={colors.muted}
-                value={dateFrom}
-                onChangeText={setDateFrom}
-              />
-              <TextInput
-                style={[styles.search, styles.dateInput]}
-                placeholder="Do (YYYY-MM-DD)"
-                placeholderTextColor={colors.muted}
-                value={dateTo}
-                onChangeText={setDateTo}
-              />
+              <Pressable style={[styles.search, styles.dateInput]} onPress={() => setDatePickerTarget("from")}>
+                <Text style={dateFrom ? styles.dateText : styles.datePlaceholder}>
+                  {dateFrom || "Od (wybierz datę)"}
+                </Text>
+              </Pressable>
+              <Pressable style={[styles.search, styles.dateInput]} onPress={() => setDatePickerTarget("to")}>
+                <Text style={dateTo ? styles.dateText : styles.datePlaceholder}>
+                  {dateTo || "Do (wybierz datę)"}
+                </Text>
+              </Pressable>
             </View>
+            {(datePickerTarget && Platform.OS === "android") || (datePickerTarget && Platform.OS === "ios") ? (
+              <DateTimePicker
+                value={currentPickerDate}
+                mode="date"
+                display={Platform.OS === "ios" ? "inline" : "default"}
+                onChange={onDatePicked}
+              />
+            ) : null}
+            {(dateFrom || dateTo) && (
+              <GhostButton
+                label="Wyczyść daty"
+                onPress={() => {
+                  setDateFrom("");
+                  setDateTo("");
+                }}
+              />
+            )}
             {user ? (
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
                 <Pressable style={[styles.chip, !carId && styles.chipOn]} onPress={() => setCarId("")}>
@@ -446,6 +484,8 @@ const styles = StyleSheet.create({
   },
   dateRow: { flexDirection: "row", gap: 8 },
   dateInput: { flex: 1 },
+  datePlaceholder: { color: colors.muted },
+  dateText: { color: colors.text },
   chips: { flexDirection: "row", gap: 8, alignItems: "center", paddingVertical: 2 },
   wrapChips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   filterActions: { flexDirection: "row", gap: 8, justifyContent: "flex-end" },

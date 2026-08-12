@@ -30,10 +30,12 @@ export function RegisterScreen({ navigation }: Props) {
   const [pzm, setPzm] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const onRegister = async () => {
     setError(null);
+    setInfo(null);
     if (password !== confirm) {
       setError("Hasła muszą być takie same");
       return;
@@ -59,6 +61,7 @@ export function RegisterScreen({ navigation }: Props) {
       return;
     }
     if (res.requiresVerification) {
+      setInfo(res.message || "Kod został wysłany. Sprawdź skrzynkę (lub Mailpit lokalnie).");
       setStep("verify");
       return;
     }
@@ -67,6 +70,7 @@ export function RegisterScreen({ navigation }: Props) {
   const onVerify = async () => {
     setBusy(true);
     setError(null);
+    setInfo(null);
     const res = await verifyEmail(email.trim(), code.trim());
     setBusy(false);
     if (!res.ok) setError(res.message || "Błędny kod");
@@ -88,6 +92,7 @@ export function RegisterScreen({ navigation }: Props) {
             <ToggleRow label="Prawo jazdy kat. B" value={hasLicense} onChange={setHasLicense} />
             {hasLicense ? <Field label="Licencja PZM (opcjonalnie)" value={pzm} onChangeText={setPzm} /> : null}
             {error ? <ErrorText text={error} /> : null}
+            {info ? <Text style={styles.info}>{info}</Text> : null}
             <PrimaryButton label="ZAŁÓŻ KONTO" onPress={onRegister} busy={busy} />
             <Pressable onPress={() => navigation.navigate("Login")}>
               <Text style={styles.link}>Mam już konto</Text>
@@ -98,14 +103,17 @@ export function RegisterScreen({ navigation }: Props) {
             <Text style={styles.hint}>Wpisz kod z e-maila ({email})</Text>
             <Field label="Kod weryfikacyjny" value={code} onChangeText={setCode} keyboardType="number-pad" />
             {error ? <ErrorText text={error} /> : null}
+            {info ? <Text style={styles.info}>{info}</Text> : null}
             <PrimaryButton label="POTWIERDŹ" onPress={onVerify} busy={busy} />
             <PrimaryButton
               label="Wyślij kod ponownie"
               onPress={async () => {
                 setBusy(true);
+                setError(null);
                 const r = await resendCode(email.trim());
                 setBusy(false);
                 if (!r.ok) setError(r.message || "Błąd");
+                else setInfo(r.message || "Kod wysłany ponownie.");
               }}
               busy={busy}
               style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.gold }}
@@ -130,4 +138,5 @@ const styles = StyleSheet.create({
   },
   link: { color: colors.gold, textAlign: "center", marginTop: 12, fontWeight: "600" },
   hint: { color: colors.muted, marginBottom: 8 },
+  info: { color: colors.gold, marginBottom: 8, fontSize: 13 },
 });
