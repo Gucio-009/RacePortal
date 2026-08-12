@@ -122,9 +122,7 @@ export function DashboardScreen() {
           renderItem={({ item }) => (
             <Pressable
               style={styles.card}
-              onPress={() => {
-                if (item.event?.id) navigation.navigate("EventsTab");
-              }}
+              onPress={() => navigation.navigate("EventsTab")}
               onLongPress={() => {
                 if (isOpenRegistration(item.status)) {
                   Alert.alert("Anulować zgłoszenie?", "Ta operacja jest nieodwracalna.", [

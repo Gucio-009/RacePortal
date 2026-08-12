@@ -4,7 +4,7 @@
  * Rola w architekturze: główny ekran publiczny (tab Eventy). Query do
  * `/api/events` (lista) lub `/api/events/markers` (kalendarz/mapa) z tymi samymi
  * filtrami co web: q, paid, category, województwo, miasto, tor, daty, carId (garaż).
- * Mapa: lista markerów + deep-link do Apple Maps / geo: (Leaflet WebView opcjonalnie później).
+ * Mapa: lista markerów + deep-link do Google Maps.
  *
  * Technologie: FlatList, useFocusEffect, React Navigation, EventsCalendarView.
  *
@@ -331,7 +331,7 @@ export function EventsScreen() {
                 </Text>
               </Pressable>
             </View>
-            {(datePickerTarget && Platform.OS === "android") || (datePickerTarget && Platform.OS === "ios") ? (
+            {datePickerTarget && (Platform.OS === "android" || Platform.OS === "ios") ? (
               <DateTimePicker
                 value={currentPickerDate}
                 mode="date"
