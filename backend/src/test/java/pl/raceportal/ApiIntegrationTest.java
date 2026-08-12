@@ -356,6 +356,102 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.status", is("CONFIRMED")));
     }
 
+    /** Alias kategorii: auto KJS powinno pasować do eventu Rally. */
+    @Test
+    void registration_acceptsCategoryAliasBetweenCarAndEvent() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        String driverToken = login("test@wp.pl", "test123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Rally alias test",
+                "Event testowy dla dopasowania aliasów kategorii.",
+                "Rally", "2026-12-15", "10:00", null, null, "Tor Alias", "Aliasowo", "Mazowieckie",
+                null, null, null, false, null, null, null, null, true,
+                null, null, null, null, null, null));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        String approveBody = objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"));
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(approveBody))
+                .andExpect(status().isOk());
+
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Subaru", "Impreza", 2018, "KJS", "WA 12345", null));
+        String carResponse = mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String carId = objectMapper.readTree(carResponse).get("id").asText();
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(eventId, carId, null));
+        mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status", is("PENDING")));
+    }
+
+    /** Wymóg OC: event z requireOc=true odrzuca auto bez OC. */
+    @Test
+    void registration_rejectsCarWithoutOcWhenEventRequiresOc() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        String driverToken = login("test@wp.pl", "test123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "OC required test",
+                "Event testowy dla walidacji wymogu OC.",
+                "Track Day", "2026-12-20", "09:00", null, null, "Tor OC", "Poznań", "Wielkopolskie",
+                null, null, null, false, null, null, null, null, true,
+                null, null, true, null, null, null));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        String approveBody = objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"));
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(approveBody))
+                .andExpect(status().isOk());
+
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Honda", "Civic", 2017, "Track Day", "PO 44556", null));
+        String carResponse = mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String carId = objectMapper.readTree(carResponse).get("id").asText();
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(eventId, carId, null));
+        mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("OC")));
+    }
+
     /** Anulowanie wydarzenia kaskadowo ustawia otwarte zgłoszenia na CANCELED. */
     @Test
     void event_cancel_cancelsOpenRegistrations() throws Exception {
@@ -366,8 +462,9 @@ class ApiIntegrationTest {
         String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
                 "Testowy Trackday do anulowania",
                 "Wydarzenie testowe tworzone przez test integracyjny w celu weryfikacji anulowania.",
-                "Track Day", "2026-12-01", "10:00", "Tor Testowy", "Testowo", "Testowe",
-                null, null, null, false, null, null, null, null, true));
+                "Track Day", "2026-12-01", "10:00", null, null, "Tor Testowy", "Testowo", "Testowe",
+                null, null, null, false, null, null, null, null, true,
+                null, null, null, null, null, null));
         String eventResponse = mockMvc.perform(post("/api/events")
                         .header("Authorization", "Bearer " + orgToken)
                         .contentType("application/json")
@@ -452,8 +549,11 @@ class ApiIntegrationTest {
     }
 
     private record EventCreatePayload(String name, String description, String category, String date, String time,
-                                       String track, String city, String voivodeship, String imageUrl, Double lat,
-                                       Double lng, boolean paid, BigDecimal entryFee, String bankAccount,
-                                       Integer paymentDeadlineHours, Integer freeCancelDays, Boolean acceptRegistrations) {
+                                      String endDate, String endTime, String track, String city, String voivodeship,
+                                      String imageUrl, Double lat, Double lng, boolean paid, BigDecimal entryFee,
+                                      String bankAccount, Integer paymentDeadlineHours, Integer freeCancelDays,
+                                      Boolean acceptRegistrations, BigDecimal spectatorFee, String externalUrl,
+                                      Boolean requireOc, Boolean requirePt, Boolean requireCage,
+                                      Boolean requireRegistered) {
     }
 }

@@ -15,8 +15,8 @@
  * Pomysł (alt): lazy() + Suspense per route; loadery danych (RR loaders) zamiast fetch w pages.
  */
 
-import { createBrowserRouter, Navigate, useNavigate } from "react-router";
-import { useEffect, ReactNode } from "react";
+import { createBrowserRouter, Navigate } from "react-router";
+import { ReactNode } from "react";
 import { RootLayout } from "./components/RootLayout";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -51,18 +51,6 @@ function AuthGate({
   roles?: UserRole[];
 }) {
   const { isAuthenticated, user, isLoading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isLoading) return;
-    if (!isAuthenticated) {
-      navigate("/login", { replace: true });
-      return;
-    }
-    if (roles && user && !roles.includes(user.role)) {
-      navigate("/", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, user, roles, navigate]);
 
   if (isLoading) {
     return (
@@ -72,8 +60,8 @@ function AuthGate({
     );
   }
 
-  if (!isAuthenticated) return null;
-  if (roles && user && !roles.includes(user.role)) return null;
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
   return <>{children}</>;
 }
@@ -126,6 +114,14 @@ function ProtectedSettings() {
   );
 }
 
+function ProtectedBecomeOrganizer() {
+  return (
+    <AuthGate>
+      <BecomeOrganizerPage />
+    </AuthGate>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -141,7 +137,7 @@ export const router = createBrowserRouter([
       { path: "garaz", Component: ProtectedGarage },
       { path: "admin", Component: ProtectedAdmin },
       { path: "organizer", Component: ProtectedOrganizer },
-      { path: "zostan-organizatorem", Component: BecomeOrganizerPage },
+      { path: "zostan-organizatorem", Component: ProtectedBecomeOrganizer },
       { path: "wydarzenia", Component: EventsPage },
       { path: "wydarzenia/:id", Component: EventDetailPage },
       { path: "wyniki", Component: ResultsPage },

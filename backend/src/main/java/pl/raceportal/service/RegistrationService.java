@@ -75,7 +75,7 @@ public class RegistrationService {
 
     /**
      * Tworzenie zgłoszenia (diagram „Proces tworzenia zgłoszenia”): wydarzenie APPROVED
-     * i otwarte na zgłoszenia; opcjonalne auto — walidacja klasy vs kategorii (dokładne equalsIgnoreCase).
+     * i otwarte na zgłoszenia; opcjonalne auto — walidacja klasy vs kategorii (CategoryMatcher).
      * Upsert po (user, event): resetuje status na PENDING.
      */
     @Transactional
@@ -95,7 +95,7 @@ public class RegistrationService {
 
             if (car.getClassName() != null && !car.getClassName().isBlank()
                     && event.getCategory() != null && !event.getCategory().isBlank()
-                    && !car.getClassName().equalsIgnoreCase(event.getCategory())) {
+                    && !CategoryMatcher.matches(car.getClassName(), event.getCategory())) {
                 throw ApiException.badRequest(
                         "Klasa wybranego auta (" + car.getClassName() + ") nie pasuje do kategorii wydarzenia (" +
                                 event.getCategory() + ")");
@@ -104,6 +104,8 @@ public class RegistrationService {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+
+        validateEventRequirements(event, user, car);
 
         Registration registration = registrationRepository.findByUser_IdAndEvent_Id(userId, event.getId())
                 .orElseGet(Registration::new);
@@ -309,6 +311,34 @@ public class RegistrationService {
         mailService.send(registration.getUser().getEmail(), "Status zgłoszenia: " + event.getName(),
                 "<p>Status Twojego zgłoszenia na <strong>" + event.getName() + "</strong>: <strong>" +
                         status + "</strong>.</p>" + bankNote);
+    }
+
+    /**
+     * Minimalna walidacja wymogów wydarzenia po stronie backendu.
+     * Spójna reguła biznesowa: jeśli event ma aktywny wymóg, zgłoszenie bez spełnienia warunku jest odrzucane.
+     */
+    private void validateEventRequirements(Event event, User user, Car car) {
+        if (event.isRequireDrivingLicense() && !user.isHasDrivingLicenseB()) {
+            throw ApiException.badRequest("To wydarzenie wymaga prawa jazdy kategorii B");
+        }
+        if (event.isRequirePzmLicense() && (user.getPzmLicense() == null || user.getPzmLicense().isBlank())) {
+            throw ApiException.badRequest("To wydarzenie wymaga licencji PZM");
+        }
+        if ((event.isRequireOc() || event.isRequirePt() || event.isRequireCage() || event.isRequireRegistered()) && car == null) {
+            throw ApiException.badRequest("To wydarzenie wymaga wyboru auta spełniającego warunki techniczne");
+        }
+        if (event.isRequireOc() && car != null && !car.isHasOc()) {
+            throw ApiException.badRequest("Wybrane auto nie ma ważnego OC");
+        }
+        if (event.isRequirePt() && car != null && !car.isHasPt()) {
+            throw ApiException.badRequest("Wybrane auto nie ma ważnego przeglądu technicznego");
+        }
+        if (event.isRequireCage() && car != null && !car.isHasRollCage()) {
+            throw ApiException.badRequest("Wybrane auto nie ma wymaganej klatki bezpieczeństwa");
+        }
+        if (event.isRequireRegistered() && car != null && !car.isRegistered()) {
+            throw ApiException.badRequest("Wybrane auto nie jest zarejestrowane");
+        }
     }
 
     private RegistrationResponse serialize(Registration registration, boolean includeEvent, boolean includeUser) {

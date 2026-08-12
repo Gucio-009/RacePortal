@@ -593,4 +593,19 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-03 16:40 — code review + testy.*
+## 37. Audit wg CLAUDE.md: uproszczenia guardów + twarde walidacje rejestracji (2026-08-12, 09:37)
+
+**Kontekst / argument:** duży audit jakości pod zasady `CLAUDE.md` (prostota, chirurgiczne zmiany, cele testowalne) wskazał miejsca, gdzie frontend i backend miały niespójną lub zbyt luźną logikę biznesową.
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 09:37 | `AuthGate` w web robił redirect imperatywnie (`useEffect + navigate`) i renderował `null` | Guard deklaratywny (`<Navigate />`), plus `/zostan-organizatorem` pod auth | Mniej stanów pośrednich/flicker i prostsza logika |
+| 09:37 | Rejestracja auta: `equalsIgnoreCase` kategorii + brak egzekwowania `require*` | `CategoryMatcher.matches(...)` + walidacje wymagań eventu (`prawo jazdy`, `PZM`, `OC/PT/klatka/rejestracja`) | Spójność z shared logic i realne reguły domenowe |
+| 09:37 | Java `CategoryMatcher` inaczej niż TS (`ł`, alias contains) | Normalizacja `ł→l`, alias exact-first, contains tylko w jedną stronę | Koniec rozjazdu backend vs frontend (`racing` ≠ `gt racing`) |
+| 09:37 | Brak testów integracyjnych na alias i require-OC | Dodane testy API: alias `KJS ↔ Rally` oraz odrzucenie auta bez OC przy `requireOc=true` | Weryfikowalny cel i ochrona przed regresją |
+
+**Weryfikacja:** `npm --prefix web run build` + `npm run test:api` → **BUILD SUCCESS**, API tests **24/24 PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-12 09:37 — audit CLAUDE.md + walidacje i testy.*

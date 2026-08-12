@@ -63,20 +63,34 @@ public final class CategoryMatcher {
 
     /** Zwraca klucz kanoniczny aliasu lub {@code null}. */
     private static String aliasKey(String normalized) {
+        // 1) Najpierw exact match aliasu (eliminuje fałszywe trafienia).
         for (var entry : ALIASES.entrySet()) {
             for (String a : entry.getValue()) {
                 String an = normalize(a);
-                if (an.equals(normalized) || normalized.contains(an) || an.contains(normalized)) {
+                if (an.equals(normalized)) {
                     return entry.getKey();
                 }
             }
         }
-        return null;
+        // 2) Potem contains tylko w jedną stronę (value zawiera alias),
+        // żeby "racing" nie wpadało w "gt racing".
+        String bestKey = null;
+        int bestLen = -1;
+        for (var entry : ALIASES.entrySet()) {
+            for (String a : entry.getValue()) {
+                String an = normalize(a);
+                if (an.length() >= 3 && normalized.contains(an) && an.length() > bestLen) {
+                    bestKey = entry.getKey();
+                    bestLen = an.length();
+                }
+            }
+        }
+        return bestKey;
     }
 
     /** Lowercase, usunięcie diakrytyków, tylko alfanumeryczne + spacje. */
     private static String normalize(String value) {
-        String n = Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT), Normalizer.Form.NFD)
+        String n = Normalizer.normalize(value.trim().toLowerCase(Locale.ROOT).replace("ł", "l"), Normalizer.Form.NFD)
                 .replaceAll("\\p{M}+", "")
                 .replaceAll("[^a-z0-9]+", " ")
                 .trim()
