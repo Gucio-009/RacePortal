@@ -32,6 +32,7 @@ describe("Mobile — logika API URL / token storage (unit)", () => {
 
   it("TC-MOB-U01: setToken/getToken na web używa localStorage", async () => {
     vi.doMock("react-native", () => ({ Platform: { OS: "web" } }));
+    vi.doMock("expo-constants", () => ({ default: { expoConfig: {} } }));
     vi.doMock("expo-secure-store", () => ({
       getItemAsync: vi.fn(),
       setItemAsync: vi.fn(),
@@ -45,14 +46,27 @@ describe("Mobile — logika API URL / token storage (unit)", () => {
     expect(await getToken()).toBeNull();
   });
 
-  it("TC-MOB-U02: API_URL na iOS/web wskazuje 127.0.0.1:4000", async () => {
+  it("TC-MOB-U02: API_URL ma port API i fallback localhost", async () => {
     vi.doMock("react-native", () => ({ Platform: { OS: "ios" } }));
+    vi.doMock("expo-constants", () => ({ default: { expoConfig: {} } }));
     vi.doMock("expo-secure-store", () => ({
       getItemAsync: vi.fn(),
       setItemAsync: vi.fn(),
       deleteItemAsync: vi.fn(),
     }));
     const { API_URL } = await import("../src/api/client");
-    expect(API_URL).toContain("4000");
+    expect(API_URL).toBe("http://127.0.0.1:4000");
+  });
+
+  it("TC-MOB-U03: Expo Go host ustawia API_URL na IP hosta", async () => {
+    vi.doMock("react-native", () => ({ Platform: { OS: "ios" } }));
+    vi.doMock("expo-constants", () => ({ default: { expoConfig: { hostUri: "192.168.1.77:8081" } } }));
+    vi.doMock("expo-secure-store", () => ({
+      getItemAsync: vi.fn(),
+      setItemAsync: vi.fn(),
+      deleteItemAsync: vi.fn(),
+    }));
+    const { API_URL } = await import("../src/api/client");
+    expect(API_URL).toBe("http://192.168.1.77:4000");
   });
 });

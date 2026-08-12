@@ -623,4 +623,20 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-08-12 09:55 — uwagi mobile (mapy/filtry/edycja/layout).*
+## 39. Uwagi mobile: batch 2 (Moje + walidacje formularza + Expo Go host) (2026-08-12)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 10:00 | W „Moje” widoczny status „Anulowane” i osobny przycisk `Anuluj zgłoszenie` | Ukrycie zgłoszeń `CANCELED`; anulowanie aktywnego zgłoszenia przeniesione pod długie przytrzymanie karty (`onLongPress`) | Mniej szumu na liście i prostszy, mobilny UX bez dodatkowego CTA w każdym wierszu |
+| 10:00 | Użytkownicy odruchowo klikali kartę, ale karta była pasywna | Karta zgłoszenia jest klikalna; dodana wskazówka „Przytrzymaj kartę, aby anulować” | Spójność z oczekiwanym zachowaniem listy i mniejsza liczba przypadkowych kliknięć przycisku |
+| 10:00 | „Wyloguj” był w nagłówkach zakładek | `Wyloguj` przeniesiony na dół zakładki `Więcej` | Zgodnie z uwagą funkcjonalną i konwencją mobilną |
+| 10:00 | Formularz auta miał słabą czytelność wymagań i brak liczników limitu | `Field` wspiera `required` z czerwonym `*`, błędy, helpery i licznik `x/maxLength`; `Garage` używa limitów zgodnych z backend DTO | Lepsza walidacja wejścia i czytelniejsze formularze |
+| 10:00 | `Napęd` i `Typ` były zwykłym polem tekstowym | `Napęd` (`FWD/RWD/AWD`) i `Typ` (`cywilne/sportowe`) jako listy wyboru (chips) | Mniej literówek i bardziej przewidywalne dane w API |
+| 10:00 | Expo Go na fizycznym telefonie często trafiało w `127.0.0.1` | `API_URL` próbuje wykryć host z `expoConfig.hostUri` (`expo-constants`) i użyć `http://<LAN_IP>:4000` | Konfiguracja działa bez ręcznego grzebania w env przy typowym uruchomieniu Expo Go |
+| 10:00 | Testy unit mobile obejmowały tylko fallback URL | Dodany test `TC-MOB-U03` dla wykrycia hosta Expo Go | Weryfikowalny cel i ochrona przed regresją konfiguracji |
+
+**Weryfikacja:** `npm --prefix mobile run test` + `npm run test:api` → **PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-08-12 10:00 — batch 2 (Moje/walidacje/Expo Go).*

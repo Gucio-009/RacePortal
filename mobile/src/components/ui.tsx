@@ -49,16 +49,35 @@ export function ScreenHeader({
 
 export function Field({
   label,
+  required,
+  error,
+  helper,
   ...props
-}: TextInputProps & { label: string }) {
+}: TextInputProps & { label: string; required?: boolean; error?: string; helper?: string }) {
+  const valueLength = typeof props.value === "string" ? props.value.length : 0;
   return (
     <View style={{ gap: 6, marginBottom: 10 }}>
-      <Text style={styles.label}>{label}</Text>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>
+          {label}
+          {required ? <Text style={styles.required}> *</Text> : null}
+        </Text>
+        {props.maxLength ? (
+          <Text style={styles.counter}>
+            {valueLength}/{props.maxLength}
+          </Text>
+        ) : null}
+      </View>
       <TextInput
         placeholderTextColor={colors.muted}
-        style={[styles.input, props.multiline ? { minHeight: 88, textAlignVertical: "top" } : null]}
+        style={[
+          styles.input,
+          props.multiline ? { minHeight: 88, textAlignVertical: "top" } : null,
+          error ? styles.inputError : null,
+        ]}
         {...props}
       />
+      {error ? <Text style={styles.error}>{error}</Text> : helper ? <Text style={styles.hint}>{helper}</Text> : null}
     </View>
   );
 }
@@ -151,7 +170,10 @@ const styles = StyleSheet.create({
   title: { color: colors.text, fontSize: 20, fontWeight: "900", letterSpacing: 1 },
   gold: { color: colors.gold },
   subtitle: { color: colors.muted, marginTop: 2, fontSize: 13 },
+  labelRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   label: { color: colors.muted, fontSize: 13, fontWeight: "600" },
+  required: { color: colors.danger, fontWeight: "900" },
+  counter: { color: colors.muted, fontSize: 12 },
   input: {
     backgroundColor: "#121212",
     borderWidth: 1,
@@ -161,6 +183,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 12,
   },
+  inputError: { borderColor: colors.danger },
   btn: {
     backgroundColor: colors.gold,
     borderRadius: 8,
@@ -187,6 +210,7 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   toggleLabel: { color: colors.text, flex: 1, paddingRight: 12 },
+  hint: { color: colors.muted, fontSize: 12 },
   empty: { color: colors.muted, textAlign: "center", marginTop: 40, paddingHorizontal: 24 },
   error: { color: colors.danger, fontSize: 13, marginVertical: 6 },
 });

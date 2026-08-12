@@ -33,11 +33,7 @@ export function MoreScreen() {
         title="WIĘCEJ"
         subtitle={user ? `${user.username} · ${user.role}` : "Gość"}
         right={
-          user ? (
-            <GhostButton label="Wyloguj" onPress={logout} />
-          ) : (
-            <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} />
-          )
+          !user ? <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} /> : undefined
         }
       />
       <ScrollView contentContainerStyle={{ padding: 16, gap: 8 }}>
@@ -59,6 +55,11 @@ export function MoreScreen() {
         ) : null}
         <Item label="Regulamin" onPress={() => navigation.navigate("Legal", { kind: "terms" })} />
         <Item label="Prywatność" onPress={() => navigation.navigate("Legal", { kind: "privacy" })} />
+        {user ? (
+          <Pressable style={styles.logoutBtn} onPress={logout}>
+            <Text style={styles.logoutText}>Wyloguj</Text>
+          </Pressable>
+        ) : null}
       </ScrollView>
     </View>
   );
@@ -78,4 +79,13 @@ const styles = StyleSheet.create({
   },
   itemText: { color: colors.text, fontWeight: "700", fontSize: 15 },
   chev: { color: colors.gold, fontWeight: "900" },
+  logoutBtn: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: colors.danger,
+    borderRadius: 12,
+    padding: 16,
+    alignItems: "center",
+  },
+  logoutText: { color: colors.danger, fontWeight: "800", fontSize: 15 },
 });

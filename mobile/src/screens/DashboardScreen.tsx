@@ -38,6 +38,7 @@ export function DashboardScreen() {
   const [error, setError] = useState<string | null>(null);
   const [proofFor, setProofFor] = useState<string | null>(null);
   const [proofUrl, setProofUrl] = useState("");
+  const visibleRegs = regs.filter((r) => r.status !== "CANCELED");
 
   const load = useCallback(async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -98,20 +99,20 @@ export function DashboardScreen() {
 
   return (
     <View style={styles.root}>
-      <ScreenHeader title="MOJE" subtitle={`${regs.length} zgłoszeń · ${cars.length} aut`} />
+      <ScreenHeader title="MOJE" subtitle={`${visibleRegs.length} zgłoszeń · ${cars.length} aut`} />
       {loading ? (
         <ActivityIndicator color={colors.gold} style={{ marginTop: 40 }} />
       ) : error ? (
         <ErrorText text={error} />
       ) : (
         <FlatList
-          data={regs}
+          data={visibleRegs}
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ padding: 16 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={colors.gold} />
           }
-          ListEmptyComponent={<EmptyState text="Brak zgłoszeń — zapisz się na wydarzenie." />}
+          ListEmptyComponent={<EmptyState text="Brak aktywnych zgłoszeń — zapisz się na wydarzenie." />}
           ListHeaderComponent={
             <Pressable style={styles.linkCard} onPress={() => navigation.navigate("GarageTab")}>
               <Text style={styles.linkTitle}>Garaż ({cars.length})</Text>
@@ -119,21 +120,32 @@ export function DashboardScreen() {
             </Pressable>
           }
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <Pressable
+              style={styles.card}
+              onPress={() => {
+                if (item.event?.id) navigation.navigate("EventsTab");
+              }}
+              onLongPress={() => {
+                if (isOpenRegistration(item.status)) {
+                  Alert.alert("Anulować zgłoszenie?", "Ta operacja jest nieodwracalna.", [
+                    { text: "Nie", style: "cancel" },
+                    { text: "Tak, anuluj", style: "destructive", onPress: () => cancel(item.id) },
+                  ]);
+                }
+              }}
+            >
               <Text style={styles.name}>{item.event?.name || item.eventId}</Text>
               <Text style={styles.meta}>{registrationStatusLabel(item.status)}</Text>
               {item.event?.paid ? <Text style={styles.meta}>Wydarzenie płatne</Text> : null}
               {isOpenRegistration(item.status) ? (
-                <Pressable style={styles.action} onPress={() => cancel(item.id)}>
-                  <Text style={styles.actionDanger}>Anuluj zgłoszenie</Text>
-                </Pressable>
+                <Text style={styles.actionDanger}>Przytrzymaj kartę, aby anulować zgłoszenie</Text>
               ) : null}
               {item.status === "ACCEPTED" && item.event?.paid && !item.paymentProofUrl ? (
                 <Pressable style={styles.action} onPress={() => setProofFor(item.id)}>
                   <Text style={styles.actionGold}>Dodaj dowód płatności</Text>
                 </Pressable>
               ) : null}
-            </View>
+            </Pressable>
           )}
           ListFooterComponent={
             proofFor ? (
@@ -171,7 +183,7 @@ const styles = StyleSheet.create({
   name: { color: colors.text, fontWeight: "800" },
   meta: { color: colors.muted, fontSize: 13 },
   action: { marginTop: 8 },
-  actionDanger: { color: colors.danger, fontWeight: "700" },
+  actionDanger: { color: colors.danger, fontWeight: "700", marginTop: 8 },
   actionGold: { color: colors.gold, fontWeight: "700" },
   linkCard: {
     backgroundColor: colors.card,

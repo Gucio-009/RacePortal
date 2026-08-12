@@ -20,12 +20,24 @@
  * Flutter `dio` + `flutter_secure_storage`; RN CLI bez Expo + `react-native-keychain`.
  */
 import * as SecureStore from "expo-secure-store";
+import Constants from "expo-constants";
 import { Platform } from "react-native";
 
-/** Domyślnie API Dockera. Na fizycznym telefonie ustaw EXPO_PUBLIC_API_URL=http://IP_KOMPUTERA:4000 */
-export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === "android" ? "http://10.0.2.2:4000" : "http://127.0.0.1:4000");
+function resolveExpoGoHost(): string | null {
+  const hostUri = Constants.expoConfig?.hostUri || "";
+  const host = hostUri.split(":")[0];
+  return host || null;
+}
+
+/** Domyślnie API Dockera; w Expo Go próbuje użyć IP hosta dev-serwera. */
+export const API_URL = (() => {
+  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+  const expoGoHost = resolveExpoGoHost();
+  if (expoGoHost && expoGoHost !== "localhost" && expoGoHost !== "127.0.0.1") {
+    return `http://${expoGoHost}:4000`;
+  }
+  return Platform.OS === "android" ? "http://10.0.2.2:4000" : "http://127.0.0.1:4000";
+})();
 
 const TOKEN_KEY = "raceportal_token";
 

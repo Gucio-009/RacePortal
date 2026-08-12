@@ -26,6 +26,9 @@ import { useAuth } from "../context/AuthContext";
 import { ScreenHeader, PrimaryButton, GhostButton, Field, ToggleRow, EmptyState, ErrorText } from "../components/ui";
 import { colors } from "../theme/colors";
 
+const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
+const REGISTRATION_TYPES = ["cywilne", "sportowe"] as const;
+
 const emptyForm = {
   make: "",
   model: "",
@@ -59,6 +62,7 @@ export function GarageScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
   const load = useCallback(async (refresh = false) => {
     if (refresh) setRefreshing(true);
@@ -84,6 +88,7 @@ export function GarageScreen() {
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setSubmitAttempted(false);
     setModal(true);
   };
 
@@ -107,12 +112,14 @@ export function GarageScreen() {
       hasPt: Boolean(car.hasPt),
       modifications: car.modifications || "",
     });
+    setSubmitAttempted(false);
     setModal(true);
   };
 
   const save = async () => {
+    setSubmitAttempted(true);
     if (!form.make.trim() || !form.model.trim()) {
-      Alert.alert("Walidacja", "Marka i model są wymagane");
+      Alert.alert("Walidacja", "Uzupełnij obowiązkowe pola");
       return;
     }
     const payload = editingId
@@ -233,26 +240,66 @@ export function GarageScreen() {
       <Modal visible={modal} animationType="slide">
         <ScrollView style={styles.modal} contentContainerStyle={{ padding: 20, paddingBottom: 60 }}>
           <Text style={styles.modalTitle}>{editingId ? "Edytuj auto" : "Nowe auto"}</Text>
-          <Field label="Marka *" value={form.make} onChangeText={(make) => setForm((f) => ({ ...f, make }))} />
-          <Field label="Model *" value={form.model} onChangeText={(model) => setForm((f) => ({ ...f, model }))} />
-          <Field label="Rok" keyboardType="number-pad" value={form.year} onChangeText={(year) => setForm((f) => ({ ...f, year: digitsOnly(year) }))} />
-          <Field label="Klasa" value={form.className} onChangeText={(className) => setForm((f) => ({ ...f, className }))} />
-          <Field label="Rejestracja" value={form.plate} onChangeText={(plate) => setForm((f) => ({ ...f, plate }))} />
-          <Field label="Napęd (FWD/RWD/AWD)" value={form.driveType} onChangeText={(driveType) => setForm((f) => ({ ...f, driveType }))} />
-          <Field label="KM" keyboardType="number-pad" value={form.powerHp} onChangeText={(powerHp) => setForm((f) => ({ ...f, powerHp: digitsOnly(powerHp) }))} />
-          <Field label="Pojemność cm³" keyboardType="number-pad" value={form.engineCc} onChangeText={(engineCc) => setForm((f) => ({ ...f, engineCc: digitsOnly(engineCc) }))} />
-          <Field label="Masa kg" keyboardType="number-pad" value={form.weightKg} onChangeText={(weightKg) => setForm((f) => ({ ...f, weightKg: digitsOnly(weightKg) }))} />
+          <Field
+            label="Marka"
+            required
+            maxLength={60}
+            value={form.make}
+            error={submitAttempted && !form.make.trim() ? "Pole wymagane" : undefined}
+            onChangeText={(make) => setForm((f) => ({ ...f, make }))}
+          />
+          <Field
+            label="Model"
+            required
+            maxLength={60}
+            value={form.model}
+            error={submitAttempted && !form.model.trim() ? "Pole wymagane" : undefined}
+            onChangeText={(model) => setForm((f) => ({ ...f, model }))}
+          />
+          <Field label="Rok" maxLength={4} keyboardType="number-pad" value={form.year} onChangeText={(year) => setForm((f) => ({ ...f, year: digitsOnly(year) }))} />
+          <Field label="Klasa" maxLength={60} value={form.className} onChangeText={(className) => setForm((f) => ({ ...f, className }))} />
+          <Field label="Rejestracja" maxLength={10} value={form.plate} onChangeText={(plate) => setForm((f) => ({ ...f, plate }))} />
+
+          <Text style={styles.selectLabel}>Napęd</Text>
+          <View style={styles.selectRow}>
+            {DRIVE_TYPES.map((driveType) => (
+              <Pressable
+                key={driveType}
+                style={[styles.selectChip, form.driveType === driveType && styles.selectChipOn]}
+                onPress={() => setForm((f) => ({ ...f, driveType }))}
+              >
+                <Text style={[styles.selectChipText, form.driveType === driveType && styles.selectChipTextOn]}>{driveType}</Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Field label="KM" maxLength={4} keyboardType="number-pad" value={form.powerHp} onChangeText={(powerHp) => setForm((f) => ({ ...f, powerHp: digitsOnly(powerHp) }))} />
+          <Field label="Pojemność cm³" maxLength={5} keyboardType="number-pad" value={form.engineCc} onChangeText={(engineCc) => setForm((f) => ({ ...f, engineCc: digitsOnly(engineCc) }))} />
+          <Field label="Masa kg" maxLength={5} keyboardType="number-pad" value={form.weightKg} onChangeText={(weightKg) => setForm((f) => ({ ...f, weightKg: digitsOnly(weightKg) }))} />
           <ToggleRow label="Zarejestrowany" value={form.registered} onChange={(registered) => setForm((f) => ({ ...f, registered }))} />
           {form.registered ? (
             <>
-              <Field label="Typ (cywilne/sportowe)" value={form.registrationType} onChangeText={(registrationType) => setForm((f) => ({ ...f, registrationType }))} />
-              <Field label="Nr KSS" value={form.kssNumber} onChangeText={(kssNumber) => setForm((f) => ({ ...f, kssNumber }))} />
+              <Text style={styles.selectLabel}>Typ</Text>
+              <View style={styles.selectRow}>
+                {REGISTRATION_TYPES.map((registrationType) => (
+                  <Pressable
+                    key={registrationType}
+                    style={[styles.selectChip, form.registrationType === registrationType && styles.selectChipOn]}
+                    onPress={() => setForm((f) => ({ ...f, registrationType }))}
+                  >
+                    <Text style={[styles.selectChipText, form.registrationType === registrationType && styles.selectChipTextOn]}>
+                      {registrationType}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+              <Field label="Nr KSS" maxLength={40} value={form.kssNumber} onChangeText={(kssNumber) => setForm((f) => ({ ...f, kssNumber }))} />
             </>
           ) : null}
           <ToggleRow label="Klatka" value={form.hasRollCage} onChange={(hasRollCage) => setForm((f) => ({ ...f, hasRollCage }))} />
           <ToggleRow label="OC" value={form.hasOc} onChange={(hasOc) => setForm((f) => ({ ...f, hasOc }))} />
           <ToggleRow label="PT" value={form.hasPt} onChange={(hasPt) => setForm((f) => ({ ...f, hasPt }))} />
-          <Field label="Modyfikacje" multiline value={form.modifications} onChangeText={(modifications) => setForm((f) => ({ ...f, modifications }))} />
+          <Field label="Modyfikacje" maxLength={500} multiline value={form.modifications} onChangeText={(modifications) => setForm((f) => ({ ...f, modifications }))} />
           <PrimaryButton label="ZAPISZ" onPress={save} busy={busy} />
           <Pressable style={styles.cancelBtn} onPress={() => setModal(false)}>
             <Text style={styles.cancelBtnText}>ANULUJ</Text>
@@ -289,4 +336,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   cancelBtnText: { color: colors.text, fontWeight: "800", letterSpacing: 1 },
+  selectLabel: { color: colors.muted, marginTop: 4, marginBottom: 6, fontSize: 13, fontWeight: "600" },
+  selectRow: { flexDirection: "row", gap: 8, marginBottom: 8, flexWrap: "wrap" },
+  selectChip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  selectChipOn: { borderColor: colors.gold, backgroundColor: "#2a2500" },
+  selectChipText: { color: colors.muted, fontWeight: "700", fontSize: 12 },
+  selectChipTextOn: { color: colors.gold },
 });
