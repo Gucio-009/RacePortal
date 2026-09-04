@@ -2,6 +2,7 @@ package pl.raceportal.service;
 
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -117,10 +118,9 @@ public class EventService {
                 .map(this::serialize)
                 .toList();
 
+        // Fuzzy CategoryMatcher nie da się w SQL Spec — dokładny total przez skan stronami (bez findAll całej tabeli).
         long total = matchCarClass != null
-                ? eventRepository.findAll(spec).stream()
-                    .filter(e -> CategoryMatcher.matches(matchCarClass, e.getCategory()))
-                    .count()
+                ? countMatchingCarClass(spec, sort, matchCarClass)
                 : pageResult.getTotalElements();
         long totalPages = Math.max(1, (long) Math.ceil(total / (double) limit));
 
@@ -272,6 +272,21 @@ public class EventService {
         return null;
     }
 
+    /** Dokładny count po fuzzy CategoryMatcher — skan Spec stronami (bez ładowania całej tabeli naraz). */
+    private long countMatchingCarClass(Specification<Event> spec, Sort sort, String matchCarClass) {
+        final int scanSize = 500;
+        long matched = 0;
+        int scanPage = 0;
+        Page<Event> scan;
+        do {
+            scan = eventRepository.findAll(spec, PageRequest.of(scanPage++, scanSize, sort));
+            matched += scan.getContent().stream()
+                    .filter(e -> CategoryMatcher.matches(matchCarClass, e.getCategory()))
+                    .count();
+        } while (scan.hasNext());
+        return matched;
+    }
+
     @Transactional(readOnly = true)
     public List<String> categories() {
         java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>(dictionaryCategories());
@@ -284,12 +299,7 @@ public class EventService {
 
     @Transactional(readOnly = true)
     public List<Map<String, Object>> categoryGroups() {
-        return List.of(
-                Map.of("group", "Rajdy", "items", List.of("Rajdy", "KJS", "RallySprint", "SuperOES", "Super Sprint", "RSMP", "SKJS", "HRSMP")),
-                Map.of("group", "Wyścigi", "items", List.of("Wyścigi górskie", "Rallycross", "Wrak race", "Time Attack", "Track Day", "Drag race", "Sprint", "GT Racing", "Endurance", "MPWS", "Racing")),
-                Map.of("group", "Drift", "items", List.of("Drift", "Drift trening", "Drift amatorskie", "Drift pro")),
-                Map.of("group", "Inne", "items", List.of("Inne"))
-        );
+        return categoryGroupsStatic();
     }
 
     private static List<String> dictionaryCategories() {

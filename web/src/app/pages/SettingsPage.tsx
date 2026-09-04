@@ -38,69 +38,15 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
-
-type AccentTheme = "gold" | "redline" | "ice";
-
-type UserSettings = {
-  emailAlerts: boolean;
-  startReminders: boolean;
-  soundFx: boolean;
-  pitStopMode: boolean;
-  accent: AccentTheme;
-  teamFlair: string;
-};
-
-/** Klucz localStorage — wspólny z ewentualnym bootstrapem w RootLayout. */
-const STORAGE_KEY = "raceportal_settings";
-
-/** Paleta akcentów mapowana na hex → `--race-accent`. */
-const ACCENTS: Record<AccentTheme, { label: string; color: string; desc: string }> = {
-  gold: { label: "Złoty tor", color: "#FFD700", desc: "Klasyczny look RACEPORTAL" },
-  redline: { label: "Redline", color: "#FF3B3B", desc: "Agresywny akcent wyścigowy" },
-  ice: { label: "Ice cold", color: "#7DD3FC", desc: "Chłodny, nocny pit-lane" },
-};
-
-/** Odczyt + merge z defaultami (odporność na uszkodzony JSON). */
-function loadSettings(): UserSettings {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { ...defaultSettings(), ...JSON.parse(raw) };
-  } catch {
-    /* ignore */
-  }
-  return defaultSettings();
-}
-
-function defaultSettings(): UserSettings {
-  return {
-    emailAlerts: true,
-    startReminders: true,
-    soundFx: false,
-    pitStopMode: false,
-    accent: "gold",
-    teamFlair: "",
-  };
-}
-
-/**
- * applyUserSettings — stosuje preferencje do DOM (globalny motyw SPA).
- * - `--race-accent`: kolor używany w Tailwind jako `text-[var(--race-accent)]` itd.
- * - `data-accent` / `data-pit-stop`: haki CSS (Oxanium/font-display zostają w klasach).
- * - `--race-motion: 0.01ms` w pit-stop: „wyłącza” animacje przez prawie-zerowy czas.
- * Eksportowane, by inne miejsca (np. App bootstrap) mogły przywrócić motyw po reloadzie.
- */
-export function applyUserSettings(settings: UserSettings) {
-  const accent = ACCENTS[settings.accent]?.color ?? "#FFD700";
-  const root = document.documentElement;
-  root.style.setProperty("--race-accent", accent);
-  root.dataset.accent = settings.accent;
-  root.dataset.pitStop = settings.pitStopMode ? "on" : "off";
-  if (settings.pitStopMode) {
-    root.style.setProperty("--race-motion", "0.01ms");
-  } else {
-    root.style.removeProperty("--race-motion");
-  }
-}
+import {
+  ACCENTS,
+  STORAGE_KEY,
+  applyUserSettings,
+  defaultSettings,
+  loadSettings,
+  type AccentTheme,
+  type UserSettings,
+} from "../lib/userSettings";
 
 export function SettingsPage() {
   const { user } = useAuth();

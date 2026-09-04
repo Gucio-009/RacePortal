@@ -17,36 +17,12 @@ import { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
-import { applyUserSettings } from "./pages/SettingsPage";
+import { applyUserSettings, loadSettings } from "./lib/userSettings";
 
-/**
- * Jednorazowy bootstrap preferencji UI z localStorage (Ustawienia).
- * Błąd JSON → bezpieczne domyślne (gold accent, bez pit-stop).
- */
+/** Jednorazowy bootstrap preferencji UI z localStorage (Ustawienia). */
 function SettingsBootstrap() {
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("raceportal_settings");
-      const parsed = raw ? JSON.parse(raw) : {};
-      applyUserSettings({
-        emailAlerts: true,
-        startReminders: true,
-        soundFx: false,
-        pitStopMode: false,
-        accent: "gold",
-        teamFlair: "",
-        ...parsed,
-      });
-    } catch {
-      applyUserSettings({
-        emailAlerts: true,
-        startReminders: true,
-        soundFx: false,
-        pitStopMode: false,
-        accent: "gold",
-        teamFlair: "",
-      });
-    }
+    applyUserSettings(loadSettings());
   }, []);
   return null;
 }

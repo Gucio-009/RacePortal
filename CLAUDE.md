@@ -97,5 +97,3 @@ być w `useMemo`; komponent renderowany w pętli bez potrzeby. Jedno zdanie na k
 ---
 
 **Te wytyczne działają, jeśli:** mniej niepotrzebnych zmian w różnicach, mniej przeróbek z powodu nadmiernego skomplikowania i pytania wyjaśniające pojawiają się przed wdrożeniem, a nie po błędach.
-
- mniej niepotrzebnych zmian, występuje mniej przepisywania kodu z powodu jego nadmiernego skomplikowania, a pytania doprecyzowujące pojawiają się przed implementacją, a nie po popełnieniu błędów.

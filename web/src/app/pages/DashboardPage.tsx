@@ -65,12 +65,13 @@ export function DashboardPage() {
   }, []);
 
   /** Otwarte zgłoszenia na przyszłe APPROVED wydarzenia. */
+  const now = new Date();
   const upcomingRegistrations = registrations.filter(
     (r) =>
       r.event &&
       r.event.status === "APPROVED" &&
       isOpenRegistration(r.status) &&
-      new Date(r.event.date) >= new Date(),
+      new Date(r.event.date) >= now,
   );
 
   const cancelRegistration = async (id: string) => {

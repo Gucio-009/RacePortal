@@ -658,3 +658,25 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 ---
 
 *Ostatnia aktualizacja: 2026-08-12 10:10 — batch 3 (date picker/mail/verify UX).*
+
+---
+
+## 41. Audit CLAUDE.md (v2): prostota + performance + warstwy (2026-09-04)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 13:10 | Martwy mock `web/src/app/data/events.ts` (~250 linii) bez importerów | Usunięty | CLAUDE §2 — mniej spekulatywnego/martwego kodu |
+| 13:10 | `EventService.categoryGroups()` duplikował `categoryGroupsStatic()` | Publiczna metoda deleguje do static | Jedno źródło słownika kategorii po stronie Javy |
+| 13:10 | Filtr `carId`: `findAll(spec)` ładował całą tabelę do pamięci przy `total` | Dokładny count skanem stronami (500) + fuzzy match | Performance — bez full-table load, bez zaniżonego `total` |
+| 13:10 | `DashboardPage`: `new Date()` w każdym przebiegu `.filter` | Jedna zmienna `now` przed filtrem | Performance w renderze |
+| 13:10 | `applyUserSettings` / storage żyły w `SettingsPage` (importowane z App) | Wydzielone do `web/src/app/lib/userSettings.ts` | Czystsza warstwa (page ≠ bootstrap lib) |
+| 13:15 | Test anulowania zgłoszenia brał dowolny Track Day z listy (czasem z `requireOc`) | Tworzy własny event bez `require*` + approve admin | Stabilny test, bez zależności od seedu/kolejności |
+| 13:20 | Test flow płatnego brał `findFirst(isPaid)` (seed GT Racing 2026-08-29 → ARCHIVED) | Tworzy własny płatny APPROVED w przyszłości | Stabilny wobec auto-archiwizacji |
+
+**Zgłoszone (CLAUDE §5 — bez cichego mega-splitu):** oversized `EventsPage` / `EventsScreen` / `RegisterPage` / `GaragePage` / `OrganizerEventFormDialog` — proponowane pliki: `useEventsFilters`, `EventsFilterBar`, `RegisterForm`+`VerifyEmailStep`, `GarageCarFormDialog`. Nieużywane shadcn UI (~32/48) — do osobnego PR czyszczącego.
+
+**Weryfikacja:** `npm --prefix web run build` + `npm run test:api` + `npm --prefix mobile run test` → **PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-09-04 13:15 — audit CLAUDE.md v2 (prostota/perf/warstwy).*
