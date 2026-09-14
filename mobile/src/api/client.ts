@@ -1,25 +1,9 @@
 /**
- * Klient HTTP API RacePortal dla aplikacji mobilnej (Expo / React Native).
+ * Klient HTTP API RacePortal — mobilka-wizytówka (tylko publiczne GET).
  *
- * Rola w architekturze: jedyny punkt wyjścia do Spring Boot (`/api/*`) —
- * dokłada Bearer JWT, mapuje błędy na `ApiError`, trzyma token w bezpiecznym
- * magazynie (natywnie) lub `localStorage` (Expo web).
- *
- * SecureStore vs localStorage:
- * - iOS/Android: `expo-secure-store` (Keychain / EncryptedSharedPreferences) —
- *   token nie trafia do zwykłego AsyncStorage.
- * - web (`Platform.OS === "web"`): SecureStore nie jest dostępne → `localStorage`
- *   (jak w aplikacji webowej; wystarczające do Expo web / E2E, nie jest Keychain).
- *
- * URL API: `EXPO_PUBLIC_API_URL` albo domyślnie `127.0.0.1:4000` (iOS/web)
- * / `10.0.2.2:4000` (emulator Android = host maszyny).
- *
- * Technologie: fetch, expo-secure-store, React Native Platform.
- *
- * Pomysł (alt): axios + interceptory; React Query/SWR nad tym klientem;
- * Flutter `dio` + `flutter_secure_storage`; RN CLI bez Expo + `react-native-keychain`.
+ * URL API: `EXPO_PUBLIC_API_URL` albo IP z Expo Go / localhost / 10.0.2.2 (Android).
+ * URL weba (CTA zapisu): `EXPO_PUBLIC_WEB_URL` (domyślnie http://127.0.0.1:8081).
  */
-import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 import { Platform } from "react-native";
 
@@ -39,7 +23,19 @@ export const API_URL = (() => {
   return Platform.OS === "android" ? "http://10.0.2.2:4000" : "http://127.0.0.1:4000";
 })();
 
-const TOKEN_KEY = "raceportal_token";
+/** Bazowy URL aplikacji webowej — CTA „Zapisz się na stronie”. */
+export const WEB_URL = (() => {
+  if (process.env.EXPO_PUBLIC_WEB_URL) return process.env.EXPO_PUBLIC_WEB_URL.replace(/\/$/, "");
+  const expoGoHost = resolveExpoGoHost();
+  if (expoGoHost && expoGoHost !== "localhost" && expoGoHost !== "127.0.0.1") {
+    return `http://${expoGoHost}:8081`;
+  }
+  return Platform.OS === "android" ? "http://10.0.2.2:8081" : "http://127.0.0.1:8081";
+})();
+
+export function webEventUrl(eventId: string): string {
+  return `${WEB_URL}/wydarzenia/${encodeURIComponent(eventId)}`;
+}
 
 export class ApiError extends Error {
   status: number;
@@ -48,34 +44,6 @@ export class ApiError extends Error {
     super(message);
     this.status = status;
     this.details = details;
-  }
-}
-
-const isWeb = Platform.OS === "web";
-
-export async function getToken(): Promise<string | null> {
-  try {
-    // Expo web: SecureStore niedostępne — ten sam klucz co w webzie (localStorage).
-    if (isWeb && typeof localStorage !== "undefined") {
-      return localStorage.getItem(TOKEN_KEY);
-    }
-    return await SecureStore.getItemAsync(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export async function setToken(token: string | null): Promise<void> {
-  try {
-    if (isWeb && typeof localStorage !== "undefined") {
-      if (token) localStorage.setItem(TOKEN_KEY, token);
-      else localStorage.removeItem(TOKEN_KEY);
-      return;
-    }
-    if (token) await SecureStore.setItemAsync(TOKEN_KEY, token);
-    else await SecureStore.deleteItemAsync(TOKEN_KEY);
-  } catch {
-    /* ignore storage errors */
   }
 }
 
@@ -88,12 +56,10 @@ function formatApiError(error?: string, details?: Record<string, string>): strin
   return `${base} (${fields})`;
 }
 
-/** Wspólne wywołanie REST — Authorization: Bearer gdy token obecny. */
+/** Publiczne GET/POST bez JWT (katalog wizytówki). */
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = await getToken();
   const headers: Record<string, string> = { Accept: "application/json" };
   if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (token) headers.Authorization = `Bearer ${token}`;
 
   let res: Response;
   try {
@@ -124,6 +90,4 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
-  patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
-  delete: (path: string) => request<void>("DELETE", path),
 };

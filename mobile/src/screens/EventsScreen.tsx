@@ -1,15 +1,8 @@
 /**
- * Lista wydarzeń — filtry, tryby Lista / Kalendarz / Mapa.
+ * Lista wydarzeń — filtry, tryby Lista / Kalendarz / Mapa (mobilka-wizytówka).
  *
- * Rola w architekturze: główny ekran publiczny (tab Eventy). Query do
- * `/api/events` (lista) lub `/api/events/markers` (kalendarz/mapa) z tymi samymi
- * filtrami co web: q, paid, category, województwo, miasto, tor, daty, carId (garaż).
- * Mapa: lista markerów + deep-link do Google Maps.
- *
- * Technologie: FlatList, useFocusEffect, React Navigation, EventsCalendarView.
- *
- * Pomysł (alt): react-native-maps / Mapbox; Expo Router search params;
- * Flutter ListView + google_maps_flutter.
+ * Publiczny katalog bez logowania. Query: `/api/events` lub `/api/events/markers`
+ * (q, paid, category, województwo, miasto, tor, daty).
  */
 import { useCallback, useMemo, useState } from "react";
 import {
@@ -30,14 +23,13 @@ import DateTimePicker, { type DateTimePickerEvent } from "@react-native-communit
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { api } from "../api/client";
-import type { ApiEvent, Car, EventMarker, EventMarkersResponse, PaginatedEvents } from "../api/types";
+import type { ApiEvent, EventMarker, EventMarkersResponse, PaginatedEvents } from "../api/types";
 import { DEFAULT_IMAGE, EVENT_CATEGORY_GROUPS } from "../api/types";
-import { useAuth } from "../context/AuthContext";
 import { ScreenHeader, GhostButton } from "../components/ui";
 import { EventsCalendarView } from "../components/EventsCalendarView";
 import { colors } from "../theme/colors";
 import { VOIVODESHIPS, TRACK_PRESETS, FILTER_CITIES } from "../lib/locationPresets";
-import type { EventsStackParamList, RootStackParamList } from "../navigation/types";
+import type { EventsStackParamList } from "../navigation/types";
 
 type ViewMode = "list" | "calendar" | "map";
 type PaidFilter = "all" | "true" | "false";
@@ -53,7 +45,6 @@ function buildParams(opts: {
   track: string;
   dateFrom: string;
   dateTo: string;
-  carId: string;
 }): URLSearchParams {
   const params = new URLSearchParams();
   if (opts.q.trim()) params.set("q", opts.q.trim());
@@ -64,7 +55,6 @@ function buildParams(opts: {
   if (opts.track) params.set("track", opts.track);
   if (opts.dateFrom.trim()) params.set("dateFrom", opts.dateFrom.trim());
   if (opts.dateTo.trim()) params.set("dateTo", opts.dateTo.trim());
-  if (opts.carId) params.set("carId", opts.carId);
   return params;
 }
 
@@ -81,13 +71,10 @@ function formatDate(value: Date) {
 
 export function EventsScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
-  const rootNav = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { user } = useAuth();
 
   const [view, setView] = useState<ViewMode>("list");
   const [items, setItems] = useState<ApiEvent[]>([]);
   const [overview, setOverview] = useState<EventMarker[]>([]);
-  const [cars, setCars] = useState<Car[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,10 +88,9 @@ export function EventsScreen() {
   const [track, setTrack] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
-  const [carId, setCarId] = useState("");
   const [datePickerTarget, setDatePickerTarget] = useState<DatePickerTarget>(null);
 
-  const filterKey = { q, paid, category, voivodeship, city, track, dateFrom, dateTo, carId };
+  const filterKey = { q, paid, category, voivodeship, city, track, dateFrom, dateTo };
 
   const load = useCallback(
     async (isRefresh = false) => {
@@ -133,20 +119,14 @@ export function EventsScreen() {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional filterKey fields
-    [q, paid, category, voivodeship, city, track, dateFrom, dateTo, carId, view],
+    [q, paid, category, voivodeship, city, track, dateFrom, dateTo, view],
   );
 
   useFocusEffect(
     useCallback(() => {
       setLoading(true);
       load();
-      if (user) {
-        api.get<Car[]>("/api/garage").then(setCars).catch(() => setCars([]));
-      } else {
-        setCars([]);
-        setCarId("");
-      }
-    }, [load, user]),
+    }, [load]),
   );
 
   const mapMarkers = useMemo(
@@ -170,7 +150,6 @@ export function EventsScreen() {
     setTrack("");
     setDateFrom("");
     setDateTo("");
-    setCarId("");
   };
 
   const currentPickerDate = useMemo(() => {
@@ -192,13 +171,7 @@ export function EventsScreen() {
 
   return (
     <View style={styles.root}>
-      <ScreenHeader
-        title="WYDARZENIA"
-        subtitle={user?.username ?? "Gość"}
-        right={
-          !user ? <GhostButton label="Zaloguj" onPress={() => rootNav.navigate("Login")} /> : undefined
-        }
-      />
+      <ScreenHeader title="WYDARZENIA" subtitle="Katalog wydarzeń · wizytówka" />
 
       <View style={styles.viewTabs}>
         {(
@@ -348,25 +321,6 @@ export function EventsScreen() {
                 }}
               />
             )}
-            {user ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
-                <Pressable style={[styles.chip, !carId && styles.chipOn]} onPress={() => setCarId("")}>
-                  <Text style={[styles.chipText, !carId && styles.chipTextOn]}>Bez filtra garażu</Text>
-                </Pressable>
-                {cars.map((car) => (
-                  <Pressable
-                    key={car.id}
-                    style={[styles.chip, carId === car.id && styles.chipOn]}
-                    onPress={() => setCarId(car.id)}
-                  >
-                    <Text style={[styles.chipText, carId === car.id && styles.chipTextOn]}>
-                      {car.make} {car.model}
-                      {car.className ? ` · ${car.className}` : ""}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            ) : null}
           </View>
         ) : null}
 

@@ -3,7 +3,7 @@
 Dokument zbiera **całą historię prac nad `mobile/`** (Expo), decyzje technologiczne, stan przed/po oraz efekty widoczne dla użytkownika i recenzenta.  
 Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronologia całego projektu: [`changes.md`](./changes.md).
 
-**Ostatnia aktualizacja:** 2026-09-14 (~18:50).
+**Ostatnia aktualizacja:** 2026-09-14 (~19:30).
 
 ---
 
@@ -12,11 +12,12 @@ Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronolog
 | Element | Opis |
 |---------|------|
 | Katalog | `mobile/` |
-| Rola | Klient mobilny (iOS / Android / podgląd web) tego samego API co `web/` |
-| Backend | Spring Boot `http://…:4000/api/*` (Compose) |
-| Nie jest w Docker Compose | Expo startuje osobno; port podglądu web **8082** |
+| Rola | **Wizytówka** — publiczny katalog wydarzeń (lista / mapa / kalendarz + detal); zapis i konta tylko na webie |
+| Backend | Spring Boot `http://…:4000/api/*` (Compose) — tylko publiczne GET |
+| CTA web | `EXPO_PUBLIC_WEB_URL` → `/wydarzenia/:id` (Compose web **8081**) |
+| Nie jest w Docker Compose | Expo startuje osobno; port podglądu Expo web **8082** |
 
-**Efekt:** jeden kontrakt JSON dla web i mobile — bez osobnego „mobile API”.
+**Efekt:** mobilka nie dubluje auth/garażu — katalog + deep-link do weba.
 
 ---
 
@@ -113,37 +114,37 @@ Szczegóły: [`review-2026-08-03.md`](./review-2026-08-03.md).
 
 ---
 
-## 4. Architektura (stan obecny)
+## 4. Architektura (stan obecny — wizytówka)
 
 ```
 mobile/
-  App.tsx                 # Auth vs MainTabs, theme
+  App.tsx                 # ThemeProvider + stack Eventy
   src/
-    api/client.ts         # fetch + JWT
-    api/types.ts          # User, Event, Car, Registration, Admin…
-    context/AuthContext.tsx
-    navigation/types.ts
-    components/ui.tsx     # wspólne Field / Button / Header
-    screens/              # ekrany parity
-    theme/colors.ts
+    api/client.ts         # publiczne GET + WEB_URL / webEventUrl
+    api/types.ts          # typy Event (katalog)
+    navigation/types.ts   # EventsStackParamList
+    components/ui.tsx
+    screens/EventsScreen.tsx
+    screens/EventDetailScreen.tsx
+    theme/
   tests/unit.client.test.ts
 ```
 
 | Warstwa | Technologia |
 |---------|-------------|
 | Runtime | Expo 57, RN 0.86, React 19 |
-| Nawigacja | `@react-navigation/native` + native-stack + **bottom-tabs** |
-| Auth storage | SecureStore / localStorage |
-| Testy | Vitest + Playwright (web preview) |
+| Nawigacja | `@react-navigation/native` + native-stack (tylko Eventy) |
+| Auth | brak — gość zawsze |
+| Testy | Vitest (API/WEB URL) + Playwright (katalog / detal / CTA) |
 
-**Adresy API (domyślne):**
+**Adresy (domyślne):**
 
-| Środowisko | Base URL |
-|------------|----------|
-| iOS Simulator | `http://127.0.0.1:4000` |
-| Android emulator | `http://10.0.2.2:4000` |
-| Expo web | `http://127.0.0.1:4000` |
-| Telefon fizyczny | `EXPO_PUBLIC_API_URL=http://LAN_IP:4000` |
+| Środowisko | API | WEB (CTA) |
+|------------|-----|-----------|
+| iOS Simulator | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
+| Android emulator | `http://10.0.2.2:4000` | `http://10.0.2.2:8081` |
+| Expo web | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
+| Telefon fizyczny | `EXPO_PUBLIC_API_URL` | `EXPO_PUBLIC_WEB_URL` |
 
 ---
 
@@ -151,61 +152,36 @@ mobile/
 
 | Funkcja web | Mobile | Uwagi |
 |-------------|--------|-------|
-| `/login` | Auth → Login | ✅ |
-| `/register` (+ verify) | Register | ✅ |
-| `/forgot-password` | ForgotPassword | ✅ |
-| `/wydarzenia` | Tab Eventy: lista / kalendarz / mapa + pełniejsze filtry | Mapa = lista GPS + deep-link Maps |
-| `/wydarzenia/:id` | EventDetail | ✅ + wybór auta |
-| `/dashboard` | Tab Moje (`RequireAuth`) | ✅ |
-| `/garaz` | Tab Garaż (`RequireAuth`) | ✅ |
-| `/konto` | Więcej → Konto (`RequireAuth`) | ✅ |
-| `/ustawienia` | Więcej → Ustawienia (`RequireAuth`) | Lokalnie (SecureStore / localStorage) |
-| `/wyniki`, `/archiwum` | Więcej | ✅ |
-| `/galeria` | Placeholder „później” | Świadomie jak web (odłożona) |
-| `/organizer` | Więcej → Organizator (`RequireAuth` ORGANIZER/ADMIN) | Formularz eventów uproszczony vs web presets |
-| `/admin` | Więcej → Admin (`RequireAuth` ADMIN) | ✅ |
-| `/zostan-organizatorem` | Więcej | ✅ |
-| `/terms`, `/privacy` | Legal | Skrót treści |
+| `/wydarzenia` | EventsList (lista / kalendarz / mapa) | Publiczne filtry |
+| `/wydarzenia/:id` | EventDetail + CTA Linking | Zapis tylko na webie |
+| Login / Moje / garaż / org / admin / legal | — | Świadomie poza mobilką |
 
 ---
 
-## 6. Konta demo (seed API)
+## 6. Konta demo
 
-| Email | Hasło | Do testów mobile |
-|-------|-------|------------------|
-| `test@wp.pl` | `test123` | Eventy, garaż, zgłoszenia |
-| `org@raceportal.pl` | `org123` | Panel organizatora |
-| `admin@raceportal.pl` | `admin123` | Panel admina |
-
-Wymagane: `docker compose up` + `SEED_ENABLED` / `DataInitializer` (szczegóły: [`FAQ-przeglad.md`](./FAQ-przeglad.md)).
+Konta seed (`test@wp.pl` itd.) służą **tylko webowi** — mobilka nie loguje.  
+Szczegóły: [`FAQ-przeglad.md`](./FAQ-przeglad.md).
 
 ---
 
-## 7. Co świadomie **nie** jest (jeszcze) w mobile
+## 7. Co świadomie **nie** jest w mobile
 
 | Temat | Powód |
 |-------|--------|
-| Galeria zdjęć (pełna) | **Świadomie odłożona** także na webie — nav „później” |
-| Leaflet WebView na mapie eventów | Jest kalendarz + lista lokalizacji z deep-link Maps; WebView opcjonalnie później |
-| Identyczny formularz org. jak web | Presety / mapa pickera uproszczone |
-| Wszystkie selecty/presety organizatora 1:1 z web | Formularz mobilny z kluczowymi polami API |
-| Upload plików (binaria) | Jak web — URL |
-| Push notifications | Poza obecnym zakresem |
-| Publikacja App Store / Play (EAS) | Dev / Expo Go na teraz |
+| Auth / garaż / Moje / role | Produkt = wizytówka; konwersja na webie |
+| Archiwum / wyniki / galeria | Wybrane A — tylko Eventy |
+| Push / store (EAS) | Poza zakresem |
 
 ---
 
 ## 8. Efekty pracy — podsumowanie „było → jest”
 
-| Obszar | Było | Jest |
-|--------|------|------|
-| Zakres produktu | Demo 3 ekranów | Klient z parity funkcji web |
-| Nawigacja | Jeden stack | Taby + auth + panele ról |
-| API client | get/post | + patch/delete + błędy pól |
-| Auth | Tylko login | Rejestracja, OTP, reset, profil, hasło |
-| Testy | Unit + E2E smoke | Nadal aktualne ścieżki login/lista/detal/wyloguj |
-| Docs | Krótki README | README Mac/Windows + [`mobile.md`](./mobile.md) + FAQ Expo Go/SDK 57 |
-| Emulator iOS | Niejasny / brak Xcode | Instrukcja Xcode + Simulator; Windows → Android/`web` |
+| Obszar | Było (parity) | Jest (wizytówka) |
+|--------|---------------|------------------|
+| Zakres | Taby Eventy/Moje/Garaż/Więcej + auth | Stack Eventy + CTA web |
+| API client | JWT + CRUD | Publiczne GET + `webEventUrl` |
+| Testy | Login / wylogowanie | Gość: lista / widoki / detal / CTA |
 
 ---
 
@@ -273,6 +249,13 @@ npm --prefix mobile test                        # unit
 - Profil: adres, Instagram, PZM niezależny; wniosek org. z `businessType`  
 
 Luki względem Spec (upload plików, wymagane imię/telefon itd.): [`spec-conformity.md`](./spec-conformity.md).
+
+### Etap H — Mobilka-wizytówka (2026-09-14)
+
+**Było:** feature parity (auth, Moje, garaż, Więcej, org/admin).  
+**Jest:** tylko stack Eventy; detal z CTA `Linking` → web `/wydarzenia/:id`; usunięte ekrany auth/ról i `AuthContext`.
+
+**Efekt:** katalog publiczny bez konta; konwersja zapisu na webie Compose `:8081`.
 
 ---
 

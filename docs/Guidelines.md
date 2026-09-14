@@ -6,7 +6,7 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 
 - Frontend: `web/` — Vite + React + Tailwind v4 + shadcn/ui, font display **Oxanium** (PL), accent `var(--race-accent)`, dark UI
 - Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation (+ opcjonalnie Google OAuth)
-- Mobile: `mobile/` — Expo 57 (parity z webem: eventy, garaż, panele); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
+- Mobile: `mobile/` — Expo 57 **wizytówka** (katalog Eventów + CTA na web; bez auth/garażu); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
 - Shared: `packages/api-types` — typy + carMatch/avatary/kategorie (Vitest ≥500)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)

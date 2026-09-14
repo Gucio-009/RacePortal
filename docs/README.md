@@ -8,7 +8,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 |---------|-----------|
 | `web/` | Aplikacja webowa (Vite/React) + Docker image frontendu |
 | `backend/` | API (Spring Boot + MySQL) |
-| `mobile/` | Aplikacja mobilna (Expo) |
+| `mobile/` | Mobilka-wizytówka (Expo) — Eventy + CTA web |
 | `docs/` | Dokumentacja projektu i dyplomu |
 | `tests/e2e/` | Testy E2E Playwright (web + mobile Expo) |
 | `scripts/` | Skrypty (backup, uruchomienie testów) |
@@ -19,7 +19,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 |------|------|
 | [`FAQ-przeglad.md`](./FAQ-przeglad.md) | **FAQ dla recenzentów** — seed, MySQL, Expo, `.env`, konta (czytaj najpierw) |
 | [`spec-conformity.md`](./spec-conformity.md) | **Specyfikacja Formularzy vs kod** — tabela luk (Blocker/Major/Minor) |
-| [`mobile.md`](./mobile.md) | **Aplikacja mobilna** — zmiany, efekty, parity, chronologia Expo |
+| [`mobile.md`](./mobile.md) | **Aplikacja mobilna** — wizytówka (Eventy + CTA web), chronologia Expo |
 | [`review-2026-08-03.md`](./review-2026-08-03.md) | **Code review** web+mobile + wyniki testów (2026-08-03) |
 | [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
 | [`changes.md`](./changes.md) | Chronologia prac |

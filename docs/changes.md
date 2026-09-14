@@ -243,7 +243,7 @@ npx playwright test            # E2E web + mobile
 
 - Funkcje 1–11: pokryte głównie testami API + E2E web (auth, wydarzenia, garaż, RBAC admin/org).  
 - #12 mapa, #14 archiwum: E2E web.  
-- #15 mobile: unit + E2E Expo web (login, lista, detal, zapis, wylogowanie).  
+- #15 mobile: unit + E2E Expo web (wizytówka: gość, lista, detal, CTA na web).  
 - #11 maile: poza automatami (weryfikacja Mailpit ręcznie).  
 - Brak formalnego testu obciążenia 10k/50 RPS (pozostaje w lukach MVP).
 
@@ -702,4 +702,22 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 ---
 
 *Ostatnia aktualizacja: 2026-09-14 18:50 — docs + gap Spec formularzy.*
+
+---
+
+## 43. Mobilka-wizytówka (tylko Eventy + CTA web) (2026-09-14)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 19:20 | Mobile = parity z webem (auth, Moje, garaż, Więcej, org/admin) | Stack Eventy (lista/mapa/kalendarz + detal); CTA `Linking` → `WEB_URL/wydarzenia/:id` | Produkt mobilny = katalog; konwersja na webie |
+| 19:20 | JWT / SecureStore / AuthContext / RequireAuth | Publiczny client GET + `webEventUrl`; usunięte ekrany auth/ról | Mniej powierzchni, brak fałszywej parity |
+| 19:20 | Unit: token storage; E2E: login/wylogowanie | Unit: API_URL / WEB_URL; E2E: gość lista/detal/CTA | Testy zgodne z wizytówką |
+
+**Docs:** `README.md`, `mobile/README.md`, `docs/mobile.md`, `MVP.md` (#15), `FAQ-przeglad.md`, `Guidelines.md`, `docs/README.md`, `docs/testy/TESTY.md`.
+
+**Weryfikacja:** `npm --prefix mobile run test` → **3/3 PASS**.
+
+---
+
+*Ostatnia aktualizacja: 2026-09-14 19:25 — mobilka-wizytówka + docs + push.*
 

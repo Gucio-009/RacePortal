@@ -10,7 +10,7 @@ Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/
 |---------|------|
 | [`web/`](./web/) | Aplikacja webowa (Vite + React) |
 | [`backend/`](./backend/) | API (Spring Boot + MySQL + JWT) |
-| [`mobile/`](./mobile/) | Aplikacja mobilna (Expo) |
+| [`mobile/`](./mobile/) | Mobilka-wizytówka (Expo) — katalog Eventów + CTA na web |
 | [`packages/api-types/`](./packages/api-types/) | Wspólne typy i helpers API (web + mobile) |
 | [`docs/`](./docs/) | Dokumentacja projektu i dyplomu |
 | [`tests/e2e/`](./tests/e2e/) | Testy E2E Playwright |
@@ -80,7 +80,9 @@ docker compose down
 
 ---
 
-## Aplikacja mobilna
+## Aplikacja mobilna (wizytówka)
+
+Expo to **katalog publiczny** (lista / mapa / kalendarz + detal). Logowanie, garaż i zapis na event — wyłącznie na webie; z detalu CTA otwiera `http://…:8081/wydarzenia/:id`.
 
 Pełna instrukcja (**macOS** = iOS Simulator / **Windows** = Android Emulator lub Expo web):  
 [`mobile/README.md`](./mobile/README.md) · historia: [`docs/mobile.md`](./docs/mobile.md)
@@ -89,6 +91,7 @@ Pełna instrukcja (**macOS** = iOS Simulator / **Windows** = Android Emulator lu
 docker compose up -d
 cd mobile && npm install && npm start
 # Mac: klawisz i   |   Windows: klawisz a   |   web: npx expo start --web --port 8082
+# Telefon (LAN): EXPO_PUBLIC_API_URL=…:4000 EXPO_PUBLIC_WEB_URL=…:8081 npm start
 ```
 
 **Uwaga SDK 57:** Expo Go ze sklepu często jest za stare → błąd *incompatible*. Na Macu użyj Simulatora (`i`), na Windowsie emulatora Androida (`a`).

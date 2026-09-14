@@ -1,8 +1,8 @@
 # Wyniki testów automatycznych — RacePortal
 
-**Data uruchomienia:** 2026-09-14 (~18:50 lokalnie)  
+**Data uruchomienia:** 2026-09-14 (~19:25 lokalnie)  
 **Branch:** `wojtek`  
-**Kontekst:** weryfikacja po §42 (formularze / clear-on-edit / ThemeContext) + aktualizacja docs.
+**Kontekst:** §43 mobilka-wizytówka (unit API/WEB URL; E2E gość/lista/detal/CTA).
 
 ## Preflight
 
@@ -27,7 +27,7 @@ Ostatni znany PASS w historii: **24/24** (po stabilizacji testów anulowania / p
 
 ## 2. Mobile unit (Vitest)
 
-**Status: PASS — 3 / 3**
+**Status: PASS — 3 / 3** (API_URL / WEB_URL / Expo host — wizytówka)
 
 ```bash
 npm --prefix mobile run test

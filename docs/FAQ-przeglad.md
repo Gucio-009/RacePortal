@@ -78,7 +78,7 @@ Compose nadal może mieć `env_file: ./backend/.env.example`; prawdziwe wartośc
 
 ---
 
-## 5. Konta demo (logowanie)
+## 5. Konta demo (logowanie — tylko web)
 
 | Rola | Email | Hasło |
 |------|-------|-------|
@@ -86,7 +86,9 @@ Compose nadal może mieć `env_file: ./backend/.env.example`; prawdziwe wartośc
 | Organizator | `org@raceportal.pl` | `org123` |
 | Kierowca | `test@wp.pl` | `test123` |
 
-URL: http://127.0.0.1:8081/login
+URL: http://127.0.0.1:8081/login  
+
+**Mobile** nie ma logowania — katalog Eventów + CTA „Zapisz się na stronie” otwiera web.
 
 ---
 
@@ -124,7 +126,7 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Edycja wydarzenia | Panel organizatora → **Edytuj** (PATCH API) |
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
 | Galeria | Świadomie **odłożona** (nav: „później”) — nie jest luką MVP do domknięcia teraz |
-| Mobile Expo | Parity z webem (taby Eventy/Moje/Garaż/Więcej) — zob. [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
+| Mobile Expo | **Wizytówka** — tylko Eventy + CTA „Zapisz się na stronie” (web); bez logowania w app — [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
 | Upload plików (grafika/załączniki) | Nadal URL (nie multipart) — świadomy gap vs Spec → [`spec-conformity.md`](./spec-conformity.md) |
 | Specyfikacja Formularzy | Pełna tabela zgodności: [`spec-conformity.md`](./spec-conformity.md) (imię/telefon wymagane w Spec, opcjonalne w UI itd.) |
 

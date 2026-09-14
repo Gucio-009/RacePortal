@@ -12,7 +12,7 @@ Testy automatyczne mają:
 
 1. potwierdzić poprawność **API backendu** (integracja z bazą i regułami RBAC),  
 2. zweryfikować kluczowe ścieżki **aplikacji webowej** (UI + backend),  
-3. zweryfikować **uproszczoną aplikację mobilną** (Expo) — ekran logowania, lista wydarzeń, szczegóły,  
+3. zweryfikować **mobilkę-wizytówkę** (Expo) — katalog wydarzeń, szczegóły, CTA do weba,  
 4. dostarczyć **powtarzalne dowody** (logi, raporty HTML/JSON/JUnit) do dokumentacji dyplomowej.
 
 ### Zakres funkcjonalny pokryty testami
@@ -44,14 +44,14 @@ Testy automatyczne mają:
       /------\
      / Integr.\   Spring MockMvc + Testcontainers MySQL
     /----------\
-   /   Unit     \ Vitest — api-types (≥500) + mobile (token / API_URL)
+   /   Unit     \ Vitest — api-types (≥500) + mobile (API_URL / WEB_URL)
   /--------------\
 ```
 
 | Poziom | Narzędzie | Lokalizacja | Co sprawdza |
 |--------|-----------|-------------|-------------|
 | Unit | Vitest | `packages/api-types/tests/` | car match, kategorie, awatary, statusy, opłaty, daty (**599** przypadków) |
-| Unit | Vitest | `mobile/tests/` | storage tokenu, URL API |
+| Unit | Vitest | `mobile/tests/` | URL API / WEB, `webEventUrl` |
 | Integration | JUnit 5 + MockMvc + Testcontainers | `backend/src/test/` | health, login seed, walidacja błędów, lista events |
 | E2E | Playwright | `tests/e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
 
@@ -140,18 +140,18 @@ Projekty Playwright: **chromium-desktop** oraz **chromium-mobile** (Pixel 7) —
 
 | ID | Opis |
 |----|------|
-| TC-MOB-01 | Ekran logowania |
-| TC-MOB-02 | Login → lista wydarzeń |
-| TC-MOB-03 | Błędne hasło |
-| TC-MOB-04 | Szczegóły + „ZAPISZ SIĘ” |
-| TC-MOB-05 | Wylogowanie |
+| TC-MOB-01 | Gość — katalog bez logowania |
+| TC-MOB-02 | Lista wydarzeń z API |
+| TC-MOB-03 | Zakładki Lista / Kalendarz / Mapa |
+| TC-MOB-04 | Szczegóły + CTA „ZAPISZ SIĘ NA STRONIE” |
 
 ### 4.4. Mobile unit (`mobile/tests/unit.client.test.ts`)
 
 | ID | Opis |
 |----|------|
-| TC-MOB-U01 | Token w `localStorage` na web |
+| TC-MOB-U01 | `WEB_URL` / `webEventUrl` |
 | TC-MOB-U02 | Domyślny `API_URL` zawiera port 4000 |
+| TC-MOB-U03 | Expo Go host → API + WEB na IP LAN |
 
 ---
 

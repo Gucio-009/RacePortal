@@ -97,7 +97,7 @@ Logowanie: http://127.0.0.1:8081/login
 | 12 | Mapa | Leaflet `/mapa` + mobile markery | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
-| 15 | Aplikacja mobilna | Expo: eventy/filtry/mapa/kalendarz, Moje, garaż, org/admin, ustawienia (akcent) | **OK** (parity funkcjonalna; store/PWA poza zakresem) |
+| 15 | Aplikacja mobilna | Expo **wizytówka**: katalog Eventy (lista/mapa/kalendarz + detal) + CTA zapisu na web; bez auth/garażu w app | **OK** (store/PWA poza zakresem) |
 
 ---
 
@@ -122,7 +122,7 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] 12 Mapa wydarzeń (Leaflet)  
 - [~] 13 Trasa (OSRM; Google opcjonalnie)  
 - [x] 14 Archiwum  
-- [x] 15 Mobile — Expo parity (`mobile/`: auth, eventy, filtry, mapa/kalendarz, Moje, garaż, org/admin); brak store/PWA  
+- [x] 15 Mobile — Expo wizytówka (`mobile/`: eventy, filtry, mapa/kalendarz, detal → CTA web); brak store/PWA  
 
 ### Jakość — zrobione
 
@@ -172,7 +172,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Panel wniosków organizatora end-to-end | Wniosek → mail/admin approve → rola ORGANIZER |
 | Galeria z API (upcoming + archive) | **Świadomie odłożona** — prosty podgląd zdjęć z eventów; bez mock-fallback przy błędzie |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
-| Expo `mobile/` (native MVP) | Realna app mobilna poza samym responsive web |
+| Expo `mobile/` (wizytówka) | Katalog Eventów + CTA na web; poza samym responsive web |
 | Automatyczne testy (JUnit + Playwright + Vitest mobile) | Dokumentacja dyplomowa: `docs/testy/TESTY.md` + wyniki |
 | Migracja backendu na Spring Boot + MySQL | Zgodność ze stackiem DZW (React / Spring / MySQL / Docker / Maven) |
 | Seed płatnych wydarzeń + filtr `paid` + badge UI | Demo i UX przepływu płatnego (Dokumentacja); nie wymagane wprost w MPC 1–11 |
@@ -187,10 +187,10 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 
 ```
 MVP funkcje 1–11:     ████████████████░░░░   OK funkcjonalnie; Spec formularzy — luki (patrz spec-conformity.md)
-MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile parity OK
+MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile wizytówka OK
 Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL OK; HTTPS/alerty brak
-Ponad MVP:            Mailpit, Expo, api-types, markers, clear-on-edit, ThemeContext accent
+Ponad MVP:            Mailpit, Expo wizytówka, api-types, markers, clear-on-edit
 ```
 
 ### Komendy

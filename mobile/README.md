@@ -1,12 +1,14 @@
 # RacePortal Mobile (Expo)
 
-Aplikacja Expo (**SDK 57**) z feature parity względem weba — ten sam kontrakt `/api/*`.  
-Backend: Spring Boot na porcie **4000** (Docker Compose).
+Aplikacja Expo (**SDK 57**) — **wizytówka**: publiczny katalog wydarzeń (lista / mapa / kalendarz + detal).  
+Zapis na start, garaż i konta — wyłącznie na **webie** (CTA z detalu otwiera `WEB_URL/wydarzenia/:id`).
+
+Backend: Spring Boot na porcie **4000** (Docker Compose). Web: **8081**.
 
 | Dokument | Zawartość |
 |----------|-----------|
-| **Ten plik** | Jak odpalić (macOS / Windows), API URL, konta |
-| [`docs/mobile.md`](../docs/mobile.md) | Historia zmian, efekty, mapowanie web→mobile |
+| **Ten plik** | Jak odpalić (macOS / Windows), API / WEB URL |
+| [`docs/mobile.md`](../docs/mobile.md) | Historia zmian, architektura wizytówki |
 | [`docs/FAQ-przeglad.md`](../docs/FAQ-przeglad.md) | Typowe pomyłki (Expo poza Compose, Expo Go vs SDK) |
 
 ---
@@ -14,13 +16,13 @@ Backend: Spring Boot na porcie **4000** (Docker Compose).
 ## Wspólne wymagania (Mac i Windows)
 
 1. **Node.js** (LTS, np. 20+)
-2. **Docker Desktop** + działający stack API:
+2. **Docker Desktop** + działający stack API (+ web do CTA):
    ```bash
    # z katalogu głównego repo
    docker compose up -d
    curl http://127.0.0.1:4000/api/health
    ```
-   Oczekiwane: `"status":"ok"`, `"db":"up"`.
+   Oczekiwane: `"status":"ok"`, `"db":"up"`. Web: `http://127.0.0.1:8081`.
 3. Zależności mobile:
    ```bash
    cd mobile
@@ -51,18 +53,21 @@ Expo Go z App Store **często nie obsługuje jeszcze SDK 57** → na iPhonie dos
    # w terminalu Expo naciśnij: i
    ```
    Albo jednym poleceniem: `npx expo start --ios`.
-5. Zaloguj się: `test@wp.pl` / `test123`.
+5. Przeglądaj katalog → detal → **Zapisz się na stronie** (otworzy web).
 
-API na Simulatorze: **`http://127.0.0.1:4000`** (domyślnie, bez zmiennych).
+API na Simulatorze: **`http://127.0.0.1:4000`**; web CTA: **`http://127.0.0.1:8081`** (domyślnie).
 
 ### B) Fizyczny iPhone (ta sama sieć Wi‑Fi)
 
 1. Ustal IP Maca (np. Ustawienia systemowe → Sieć, albo `ipconfig getifaddr en0`).
-2. Start z URL API na LAN:
+2. Start z URL API i weba na LAN:
    ```bash
    cd mobile
-   EXPO_PUBLIC_API_URL=http://192.168.x.x:4000 npm start
+   EXPO_PUBLIC_API_URL=http://192.168.x.x:4000 \
+   EXPO_PUBLIC_WEB_URL=http://192.168.x.x:8081 \
+   npm start
    ```
+   Bez env Expo Go często sam ustawi host z `hostUri` (porty 4000 / 8081).
 3. **Opcja 1 — Simulator / development client** (gdy iOS runtime jest OK).  
    **Opcja 2 — Expo Go:** działa tylko jeśli wersja Expo Go w App Store **obsługuje SDK 57**.  
    Jeśli błąd *incompatible with this version of Expo Go* → użyj Simulatora albo czekaj na update sklepu (ew. `eas go` / development build — poza MVP).
@@ -109,7 +114,7 @@ curl http://127.0.0.1:4000/api/health
    npx expo start --android
    ```
 
-API na emulatorze Androida: klient sam używa **`http://10.0.2.2:4000`** (alias hosta z poziomu emulatora).
+API: **`http://10.0.2.2:4000`**; web CTA: **`http://10.0.2.2:8081`** (ustawiane automatycznie).
 
 ### 3) Mobile — telefon Android + Expo Go
 
@@ -118,6 +123,7 @@ API na emulatorze Androida: klient sam używa **`http://10.0.2.2:4000`** (alias 
 3. ```powershell
    cd mobile
    $env:EXPO_PUBLIC_API_URL="http://192.168.x.x:4000"
+   $env:EXPO_PUBLIC_WEB_URL="http://192.168.x.x:8081"
    npm start
    ```
 4. Zeskanuj QR w **Expo Go**.  
@@ -134,14 +140,14 @@ Otwórz `http://localhost:8082` — wystarczy do smoke / E2E.
 
 ---
 
-## API URL — ściągawka
+## API / WEB URL — ściągawka
 
-| Środowisko | Base URL API |
-|------------|--------------|
-| iOS Simulator (Mac) | `http://127.0.0.1:4000` |
-| Android Emulator | `http://10.0.2.2:4000` (ustawiane automatycznie) |
-| Expo web | `http://127.0.0.1:4000` |
-| Fizyczny telefon | `EXPO_PUBLIC_API_URL=http://<IP_PC>:4000` |
+| Środowisko | Base URL API | WEB (CTA) |
+|------------|--------------|-----------|
+| iOS Simulator (Mac) | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
+| Android Emulator | `http://10.0.2.2:4000` | `http://10.0.2.2:8081` |
+| Expo web | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
+| Fizyczny telefon | `EXPO_PUBLIC_API_URL=http://<IP_PC>:4000` | `EXPO_PUBLIC_WEB_URL=http://<IP_PC>:8081` |
 
 Sprawdzenie API z hosta: `http://127.0.0.1:4000/api/health`.
 
@@ -162,34 +168,17 @@ Komunikat `npx expo install --check` (pakiety do aktualizacji) jest osobną spra
 
 ---
 
-## Konta demo
-
-| Email | Hasło | Rola |
-|-------|-------|------|
-| `test@wp.pl` | `test123` | kierowca |
-| `org@raceportal.pl` | `org123` | organizator |
-| `admin@raceportal.pl` | `admin123` | admin |
-
----
-
-## Zakres (parity z webem)
+## Zakres (wizytówka)
 
 | Obszar | Status |
 |--------|--------|
-| Login / rejestracja / reset hasła | ✅ |
-| Wydarzenia + filtry (q, paid, kategoria) | ✅ |
-| Szczegóły + zapis + wybór auta | ✅ |
-| Moje zgłoszenia / dowód płatności | ✅ |
-| Garaż CRUD | ✅ |
-| Konto + zmiana hasła | ✅ |
-| Ustawienia lokalne | ✅ |
-| Wyniki / archiwum | ✅ |
-| Panel organizatora (CRUD event, zgłoszenia) | ✅ |
-| Panel admina | ✅ |
-| Zostań organizatorem | ✅ |
-| Regulamin / prywatność | ✅ |
-| Galeria | odłożona (jak na webie) |
-| Mapa/kalendarz 1:1 jak web | skrócone — lokalizacja → Apple Maps (iOS) |
+| Katalog wydarzeń (lista / mapa / kalendarz) | ✅ |
+| Filtry publiczne (q, paid, kategoria, lokalizacja, daty) | ✅ |
+| Szczegóły + CTA „Zapisz się na stronie” → web | ✅ |
+| Logowanie / rejestracja / garaż / Moje / role | ❌ tylko web |
+| Publikacja store / PWA | ❌ poza zakresem |
+
+Logowanie i konta demo dotyczą **weba** (`test@wp.pl` / `test123` itd.) — mobilka nie ma ekranu logowania.
 
 ---
 
