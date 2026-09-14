@@ -71,6 +71,12 @@ public class User {
     @Column(length = 30)
     private String phone;
 
+    @Column(length = 255)
+    private String address;
+
+    @Column(name = "instagram_url", length = 500)
+    private String instagramUrl;
+
     /** Czy użytkownik deklaruje prawo jazdy kat. B (wymóg wydarzenia). */
     @Column(name = "has_driving_license_b", nullable = false)
     private boolean hasDrivingLicenseB = false;
@@ -181,6 +187,22 @@ public class User {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getInstagramUrl() {
+        return instagramUrl;
+    }
+
+    public void setInstagramUrl(String instagramUrl) {
+        this.instagramUrl = instagramUrl;
     }
 
     public boolean isHasDrivingLicenseB() {

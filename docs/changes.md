@@ -679,4 +679,27 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 ---
 
-*Ostatnia aktualizacja: 2026-09-04 13:15 — audit CLAUDE.md v2 (prostota/perf/warstwy).*
+---
+
+## 42. Specyfikacja Formularzy + uwagi UX (2026-09-14)
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| 18:40 | Edycja auta: puste pola nie czyściły wartości (PATCH pomijał null) | Backend ustawia `year`/`KM`/`cm³`/`kg` także na null; web/mobile wysyłają `null`/"" | Clear-on-edit zgodny ze specyfikacją |
+| 18:40 | Garaż: wymagane tylko marka/model; gwiazdki ledwo widoczne | Walidacja wymaganych pól + czerwone `*`; Anuluj = Zapisz (flex/h-11) | Spec V3 + UX |
+| 18:40 | PZM zagnieżdżone pod prawem jazdy B | Osobny switch PZM (web+mobile register/konto) | Niezależne deklaracje |
+| 18:40 | Brak adresu/IG; brak typu działalności; duplikaty telefonu | Pola `address`/`instagramUrl`; `businessType` na wniosku; unikalny telefon | Spec formularzy 1–2 |
+| 18:40 | Web: brak „Wyczyść filtry” | Przycisk resetu filtrów na EventsPage | Parzystość z mobile |
+| 18:40 | Mobile: akcent nie działał; Save bez zamknięcia | ThemeContext + tab/przyciski; Alert + `goBack` | Motyw + feedback |
+| 18:40 | Moje/Settings spacing | Większy gap kart; padding top/bottom + safe-area w Settings | iPhone/tablet |
+
+**Świadomie odłożone:** prawdziwy upload plików zdjęć (nadal wymagany URL); pełne przepisanie wszystkich StyleSheetów mobile na dynamiczny akcent (nagłówek/CTA/tab już tak).
+
+**Dokumentacja:** [`spec-conformity.md`](./spec-conformity.md) (luki vs Spec), aktualizacja `MVP.md` / `FAQ` / `mobile.md`.
+
+**Weryfikacja (2026-09-14 18:50):** `npm --prefix web run build` → **PASS**; `npm --prefix mobile run test` → **PASS**; `npm run test:api` / E2E — wymagają Dockera (niedostępny w sesji dokumentacyjnej).
+
+---
+
+*Ostatnia aktualizacja: 2026-09-14 18:50 — docs + gap Spec formularzy.*
+

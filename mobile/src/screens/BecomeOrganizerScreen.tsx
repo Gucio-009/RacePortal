@@ -7,7 +7,7 @@
  * Pomysł (alt): upload dokumentów firmy; weryfikacja NIP.
  */
 import { useState } from "react";
-import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView } from "react-native";
+import { View, Text, StyleSheet, Alert, KeyboardAvoidingView, Platform, ScrollView, Pressable } from "react-native";
 import { api, ApiError } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { Field, PrimaryButton, EmptyState, ErrorText } from "../components/ui";
@@ -16,10 +16,20 @@ import { colors } from "../theme/colors";
 export function BecomeOrganizerScreen() {
   const { user } = useAuth();
   const [company, setCompany] = useState("");
+  const [businessType, setBusinessType] = useState("");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+
+  const BUSINESS_TYPES = [
+    "Osoba prywatna",
+    "Firma",
+    "Jednoosobowa działalność gospodarcza",
+    "Stowarzyszenie",
+    "Fundacja",
+    "Automobilklub zrzeszony w PZM",
+  ] as const;
 
   if (!user) {
     return (
@@ -38,14 +48,18 @@ export function BecomeOrganizerScreen() {
   }
 
   const submit = async () => {
-    if (!company.trim() || !message.trim()) {
-      setError("Uzupełnij firmę i wiadomość");
+    if (!company.trim() || !message.trim() || !businessType) {
+      setError("Uzupełnij firmę, typ działalności i wiadomość");
       return;
     }
     setBusy(true);
     setError(null);
     try {
-      await api.post("/api/organizer/apply", { company: company.trim(), message: message.trim() });
+      await api.post("/api/organizer/apply", {
+        company: company.trim(),
+        businessType,
+        message: message.trim(),
+      });
       setDone(true);
       Alert.alert("OK", "Wniosek wysłany");
     } catch (e) {
@@ -64,6 +78,18 @@ export function BecomeOrganizerScreen() {
         ) : (
           <>
             <Field label="Firma / nazwa" value={company} onChangeText={setCompany} />
+            <Text style={styles.label}>Typ działalności *</Text>
+            <View style={styles.chips}>
+              {BUSINESS_TYPES.map((t) => (
+                <Pressable
+                  key={t}
+                  onPress={() => setBusinessType(t)}
+                  style={[styles.chip, businessType === t && styles.chipOn]}
+                >
+                  <Text style={styles.chipText}>{t}</Text>
+                </Pressable>
+              ))}
+            </View>
             <Field label="Wiadomość" multiline value={message} onChangeText={setMessage} />
             {error ? <ErrorText text={error} /> : null}
             <PrimaryButton label="WYŚLIJ WNIOSEK" onPress={submit} busy={busy} />
@@ -78,4 +104,16 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.bg },
   title: { color: colors.text, fontSize: 22, fontWeight: "900", marginBottom: 16 },
   ok: { color: colors.text, lineHeight: 22 },
+  label: { color: colors.muted, marginBottom: 8, fontWeight: "700" },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
+  chip: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    maxWidth: "100%",
+  },
+  chipOn: { borderColor: colors.gold },
+  chipText: { color: colors.text, fontSize: 12, fontWeight: "600" },
 });

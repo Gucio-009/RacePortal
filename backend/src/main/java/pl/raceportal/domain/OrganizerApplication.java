@@ -51,6 +51,10 @@ public class OrganizerApplication {
     @Column(nullable = false, length = 120)
     private String company;
 
+    /** Forma działalności (np. firma, klub, osoba prywatna). */
+    @Column(name = "business_type", length = 60)
+    private String businessType;
+
     /** Uzasadnienie / opis doświadczenia. */
     @Lob
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -100,6 +104,14 @@ public class OrganizerApplication {
 
     public void setCompany(String company) {
         this.company = company;
+    }
+
+    public String getBusinessType() {
+        return businessType;
+    }
+
+    public void setBusinessType(String businessType) {
+        this.businessType = businessType;
     }
 
     public String getMessage() {

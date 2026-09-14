@@ -31,8 +31,11 @@ export function AccountScreen() {
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
   const [phone, setPhone] = useState(user?.phone || "");
+  const [address, setAddress] = useState(user?.address || "");
+  const [instagramUrl, setInstagramUrl] = useState(user?.instagramUrl || "");
   const [avatar, setAvatar] = useState(user?.avatar || "");
   const [hasLicense, setHasLicense] = useState(Boolean(user?.hasDrivingLicenseB));
+  const [hasPzm, setHasPzm] = useState(Boolean(user?.pzmLicense));
   const [pzm, setPzm] = useState(user?.pzmLicense || "");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -60,8 +63,10 @@ export function AccountScreen() {
         firstName: firstName.trim() || null,
         lastName: lastName.trim() || null,
         phone: phone.trim() || null,
+        address: address.trim() || "",
+        instagramUrl: instagramUrl.trim() || "",
         hasDrivingLicenseB: hasLicense,
-        pzmLicense: hasLicense ? pzm.trim() || null : null,
+        pzmLicense: hasPzm ? pzm.trim() || "" : "",
       });
       setUser(updated);
       Alert.alert("OK", "Profil zapisany");
@@ -103,6 +108,8 @@ export function AccountScreen() {
         <Field label="Imię" value={firstName} onChangeText={setFirstName} />
         <Field label="Nazwisko" value={lastName} onChangeText={setLastName} />
         <Field label="Telefon" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+        <Field label="Adres" value={address} onChangeText={setAddress} />
+        <Field label="Instagram" value={instagramUrl} onChangeText={setInstagramUrl} autoCapitalize="none" />
 
         <Text style={styles.label}>Awatar</Text>
         <Text style={styles.hint}>Domyślnie inicjały — wybierz gotowy styl albo wróć do inicjałów.</Text>
@@ -130,7 +137,15 @@ export function AccountScreen() {
         </View>
 
         <ToggleRow label="Prawo jazdy B" value={hasLicense} onChange={setHasLicense} />
-        {hasLicense ? <Field label="Licencja PZM" value={pzm} onChangeText={setPzm} /> : null}
+        <ToggleRow
+          label="Licencja PZM"
+          value={hasPzm}
+          onChange={(v) => {
+            setHasPzm(v);
+            if (!v) setPzm("");
+          }}
+        />
+        {hasPzm ? <Field label="Numer licencji PZM" value={pzm} onChangeText={setPzm} /> : null}
         {error ? <ErrorText text={error} /> : null}
         <PrimaryButton label="ZAPISZ PROFIL" onPress={saveProfile} busy={busy} />
 

@@ -40,7 +40,10 @@ export function RegisterPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
   const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
+  const [hasPzmLicense, setHasPzmLicense] = useState(false);
   const [pzmLicense, setPzmLicense] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -85,8 +88,10 @@ export function RegisterPage() {
         firstName,
         lastName,
         phone,
+        address,
+        instagramUrl,
         hasDrivingLicenseB,
-        pzmLicense,
+        pzmLicense: hasPzmLicense ? pzmLicense : "",
       });
       if (!result.ok) {
         toast.error(result.message || "Nie udało się utworzyć konta");
@@ -166,7 +171,7 @@ export function RegisterPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4 py-12 bg-cover bg-center"
+      className="min-h-screen flex items-start justify-center px-4 py-12 bg-cover bg-center"
       style={{
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
       }}
@@ -316,6 +321,34 @@ export function RegisterPage() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label htmlFor="address" className="text-white" style={{ fontWeight: 600 }}>
+                    Adres zamieszkania
+                  </Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    placeholder="Ulica, kod, miasto"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="instagram" className="text-white" style={{ fontWeight: 600 }}>
+                    Instagram (opcjonalnie)
+                  </Label>
+                  <Input
+                    id="instagram"
+                    type="url"
+                    placeholder="https://instagram.com/..."
+                    value={instagramUrl}
+                    onChange={(e) => setInstagramUrl(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
                   <Label htmlFor="password" className="text-white" style={{ fontWeight: 600 }}>
                     Hasło
                   </Label>
@@ -358,10 +391,26 @@ export function RegisterPage() {
                       onCheckedChange={setHasDrivingLicenseB}
                     />
                   </div>
-                  {hasDrivingLicenseB && (
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2a2a2a]">
+                    <div>
+                      <Label htmlFor="hasPzm" className="text-white" style={{ fontWeight: 600 }}>
+                        Licencja PZM
+                      </Label>
+                      <p className="text-xs text-[#9ca3af]">Niezależnie od prawa jazdy</p>
+                    </div>
+                    <Switch
+                      id="hasPzm"
+                      checked={hasPzmLicense}
+                      onCheckedChange={(v) => {
+                        setHasPzmLicense(v);
+                        if (!v) setPzmLicense("");
+                      }}
+                    />
+                  </div>
+                  {hasPzmLicense && (
                     <div className="space-y-2">
                       <Label htmlFor="pzmLicense" className="text-white text-sm">
-                        Licencja PZM (opcjonalnie)
+                        Numer licencji PZM
                       </Label>
                       <Input
                         id="pzmLicense"

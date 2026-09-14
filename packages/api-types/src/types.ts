@@ -51,6 +51,8 @@ export interface User {
   firstName?: string | null;
   lastName?: string | null;
   phone?: string | null;
+  address?: string | null;
+  instagramUrl?: string | null;
   hasDrivingLicenseB?: boolean;
   pzmLicense?: string | null;
 }

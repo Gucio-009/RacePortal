@@ -25,6 +25,8 @@ public final class AuthDtos {
             @Size(max = 80) String firstName,
             @Size(max = 80) String lastName,
             @Size(max = 30) String phone,
+            @Size(max = 255) String address,
+            @Size(max = 500) String instagramUrl,
             Boolean hasDrivingLicenseB,
             @Size(max = 40) String pzmLicense
     ) {
@@ -36,6 +38,7 @@ public final class AuthDtos {
             @NotBlank @Email @Size(max = 190) String email,
             @NotBlank @Size(min = 6, max = 100) String password,
             @NotBlank @Size(min = 2, max = 120) String company,
+            @NotBlank @Size(max = 60) String businessType,
             @Size(max = 2000) String message
     ) {
     }
@@ -87,6 +90,8 @@ public final class AuthDtos {
             @Size(max = 80) String firstName,
             @Size(max = 80) String lastName,
             @Size(max = 30) String phone,
+            @Size(max = 255) String address,
+            @Size(max = 500) String instagramUrl,
             Boolean hasDrivingLicenseB,
             @Size(max = 40) String pzmLicense
     ) {
@@ -109,6 +114,8 @@ public final class AuthDtos {
             String firstName,
             String lastName,
             String phone,
+            String address,
+            String instagramUrl,
             boolean hasDrivingLicenseB,
             String pzmLicense
     ) {

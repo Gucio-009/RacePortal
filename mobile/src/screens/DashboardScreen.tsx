@@ -108,7 +108,7 @@ export function DashboardScreen() {
         <FlatList
           data={visibleRegs}
           keyExtractor={(item) => item.id}
-          contentContainerStyle={{ padding: 16 }}
+          contentContainerStyle={{ padding: 16, paddingBottom: 32, gap: 4 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={() => load(true)} tintColor={colors.gold} />
           }
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     padding: 14,
-    marginBottom: 10,
+    marginBottom: 16,
     gap: 4,
   },
   name: { color: colors.text, fontWeight: "800" },

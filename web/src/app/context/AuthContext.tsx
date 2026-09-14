@@ -39,6 +39,8 @@ interface AuthContextType {
       firstName?: string;
       lastName?: string;
       phone?: string;
+      address?: string;
+      instagramUrl?: string;
       hasDrivingLicenseB?: boolean;
       pzmLicense?: string;
     },
@@ -53,6 +55,8 @@ interface AuthContextType {
     firstName?: string;
     lastName?: string;
     phone?: string;
+    address?: string;
+    instagramUrl?: string;
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
   }) => Promise<{ ok: boolean; message?: string }>;
@@ -124,6 +128,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       firstName?: string;
       lastName?: string;
       phone?: string;
+      address?: string;
+      instagramUrl?: string;
       hasDrivingLicenseB?: boolean;
       pzmLicense?: string;
     },
@@ -142,6 +148,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         firstName: profile?.firstName?.trim() || undefined,
         lastName: profile?.lastName?.trim() || undefined,
         phone: profile?.phone?.trim() || undefined,
+        address: profile?.address?.trim() || undefined,
+        instagramUrl: profile?.instagramUrl?.trim() || undefined,
         hasDrivingLicenseB: profile?.hasDrivingLicenseB ?? false,
         pzmLicense: profile?.pzmLicense?.trim() || undefined,
       });
@@ -207,6 +215,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     firstName?: string;
     lastName?: string;
     phone?: string;
+    address?: string;
+    instagramUrl?: string;
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
   }) => {
@@ -217,6 +227,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         firstName: data.firstName,
         lastName: data.lastName,
         phone: data.phone,
+        address: data.address,
+        instagramUrl: data.instagramUrl,
         hasDrivingLicenseB: data.hasDrivingLicenseB,
         pzmLicense: data.pzmLicense,
       });

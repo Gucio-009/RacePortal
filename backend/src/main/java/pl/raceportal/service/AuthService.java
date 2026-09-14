@@ -73,9 +73,12 @@ public class AuthService {
      */
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
+        if (request.phone() != null && !request.phone().isBlank()) {
+            ensurePhoneUnique(normalizePhone(request.phone()), null);
+        }
         User user = createUnverifiedUser(request.username(), request.email(), request.password(), Role.USER);
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
-                request.hasDrivingLicenseB(), request.pzmLicense());
+                request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
         user = userRepository.save(user);
         sendVerificationCode(user);
         return new RegisterResponse(true, user.getEmail(),
@@ -94,6 +97,7 @@ public class AuthService {
         OrganizerApplication application = new OrganizerApplication();
         application.setUser(user);
         application.setCompany(request.company());
+        application.setBusinessType(request.businessType());
         application.setMessage((request.message() == null || request.message().isBlank())
                 ? "Wniosek złożony podczas rejestracji konta organizatora."
                 : request.message());
@@ -254,7 +258,7 @@ public class AuthService {
             user.setAvatar(avatar.isEmpty() ? null : avatar);
         }
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
-                request.hasDrivingLicenseB(), request.pzmLicense());
+                request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
         user = userRepository.save(user);
         return toUserDto(user);
     }
@@ -317,15 +321,40 @@ public class AuthService {
         return new UserDto(user.getId(), user.getEmail(), user.getUsername(),
                 user.getRole().name(), user.getAvatar(), memberSince,
                 user.getFirstName(), user.getLastName(), user.getPhone(),
+                user.getAddress(), user.getInstagramUrl(),
                 user.isHasDrivingLicenseB(), user.getPzmLicense());
     }
 
     private void applyProfileFields(User user, String firstName, String lastName, String phone,
-                                     Boolean hasDrivingLicenseB, String pzmLicense) {
+                                     Boolean hasDrivingLicenseB, String pzmLicense,
+                                     String address, String instagramUrl) {
         if (firstName != null) user.setFirstName(firstName.isBlank() ? null : firstName.trim());
         if (lastName != null) user.setLastName(lastName.isBlank() ? null : lastName.trim());
-        if (phone != null) user.setPhone(phone.isBlank() ? null : phone.trim());
+        if (phone != null) {
+            if (phone.isBlank()) {
+                user.setPhone(null);
+            } else {
+                String normalized = normalizePhone(phone);
+                ensurePhoneUnique(normalized, user.getId());
+                user.setPhone(normalized);
+            }
+        }
+        if (address != null) user.setAddress(address.isBlank() ? null : address.trim());
+        if (instagramUrl != null) user.setInstagramUrl(instagramUrl.isBlank() ? null : instagramUrl.trim());
         if (hasDrivingLicenseB != null) user.setHasDrivingLicenseB(hasDrivingLicenseB);
         if (pzmLicense != null) user.setPzmLicense(pzmLicense.isBlank() ? null : pzmLicense.trim());
+    }
+
+    private void ensurePhoneUnique(String phone, String userId) {
+        boolean taken = userId == null
+                ? userRepository.existsByPhone(phone)
+                : userRepository.existsByPhoneAndIdNot(phone, userId);
+        if (taken) {
+            throw ApiException.conflict("Numer telefonu jest już zajęty");
+        }
+    }
+
+    private static String normalizePhone(String phone) {
+        return phone.trim().replaceAll("\\s+", " ");
     }
 }

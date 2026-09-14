@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-08-03 17:25 (mobile filtry/mapa/kalendarz/gates; empty≠error; galeria deferred)
+**Ostatnia synchronizacja:** 2026-09-14 18:50 (formularze vs Spec; §42 changes; [`spec-conformity.md`](./spec-conformity.md))
 
 ---
 
@@ -87,17 +87,17 @@ Logowanie: http://127.0.0.1:8081/login
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
 | 4 | Panel admina | `/admin` — userzy, pending events, wnioski org. | **OK** |
-| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto` | **OK** |
-| 6 | Garaż | CRUD `/garaz` + API; kategorie = klasy wydarzeń; seed 1 auto/kategorię na `test@wp.pl` | **OK** |
+| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; adres + IG + PZM niezależne — **luki vs Spec** (imię/nazwisko/telefon nie wymagane) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
+| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = URL nie upload | **Częściowo** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
-| 8 | Konto organizatora | Rola ORGANIZER + wniosek `/zostan-organizatorem` | **OK** |
-| 9 | Narzędzia org. | `/organizer` — create UX: selecty (kat./tor/miasto/woj./czas), miniatury zdjęć, chipy wpisowego, auto-fill lokalizacji | **OK** |
+| 8 | Konto organizatora | Rola ORGANIZER + wniosek z `businessType` | **Częściowo** |
+| 9 | Narzędzia org. | `/organizer` — create UX: selecty, miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
 | 11 | Maile | SMTP → Mailpit (rejestracja, zgłoszenia, statusy, reset) | **OK** |
-| 12 | Mapa | Leaflet `/mapa` | **OK** |
+| 12 | Mapa | Leaflet `/mapa` + mobile markery | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
-| 15 | Aplikacja mobilna | Expo w `mobile/` (login, lista, detal, zapis) + web responsive | **Częściowo** |
+| 15 | Aplikacja mobilna | Expo: eventy/filtry/mapa/kalendarz, Moje, garaż, org/admin, ustawienia (akcent) | **OK** (parity funkcjonalna; store/PWA poza zakresem) |
 
 ---
 
@@ -122,7 +122,7 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] 12 Mapa wydarzeń (Leaflet)  
 - [~] 13 Trasa (OSRM; Google opcjonalnie)  
 - [x] 14 Archiwum  
-- [~] 15 Mobile — Expo MVP (`mobile/`: auth, events, rejestracja); brak store/PWA/garaż/mapa w app  
+- [x] 15 Mobile — Expo parity (`mobile/`: auth, eventy, filtry, mapa/kalendarz, Moje, garaż, org/admin); brak store/PWA  
 
 ### Jakość — zrobione
 
@@ -138,18 +138,21 @@ Logowanie: http://127.0.0.1:8081/login
 
 ---
 
-## 5. Co zostało do zrobienia (luka vs MVP)
+## 5. Co zostało do zrobienia (luka vs MVP / Spec)
 
 | Priorytet | Pozycja | Brak / luką |
 |-----------|---------|-------------|
+| **Wysoki (Spec)** | Profil rejestracja | Imię / nazwisko / telefon **wymagane** wg Spec — dziś opcjonalne; brak formatu litery/telefon → [`spec-conformity.md`](./spec-conformity.md) |
+| **Wysoki (Spec)** | Upload plików | Garaż + plakat eventu: Spec = file upload; kod = URL |
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
+| Średni (Spec) | Hasło API | Backend `min=6` vs Spec/UI `8+` ze znakami specjalnymi |
+| Średni (Spec) | Napęd 4WD + słownik marek | Brak w selectach garażu |
 | Średni | HTTPS / HSTS | Brak terminacji TLS (do reverse proxy w prod) |
 | Średni | #13 Google Maps | Brak klucza `GOOGLE_MAPS_API_KEY` w domyślnym env — jest OSRM |
 | Średni | Alerty | Brak automatycznego alertowania przy błędach krytycznych |
 | Średni | Backup restore | Skrypt dump jest; restore nie jest udokumentowany / przetestowany formalnie |
-| Niski (odbiór formalnie 12–15) | #15 Aplikacja mobilna | Expo uproszczone OK; brak: PWA, publikacja w store, garaż/mapa/admin w mobile |
-| Niski | Perf / load | Brak formalnego testu 10k/50 RPS (osobny etap) |
-| Niski | Social OAuth | Google Sign-In opcjonalny (`GOOGLE_OAUTH_CLIENT_ID` / `VITE_GOOGLE_CLIENT_ID`); Facebook poza zakresem |
+| Niski | Store / PWA | Publikacja aplikacji poza zakresem MVP |
+| Niski | Social OAuth | Google opcjonalny; Facebook poza zakresem |
 
 ---
 
@@ -183,11 +186,11 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 ## 7. Skrót jednego rzutu oka
 
 ```
-MVP funkcje 1–11:     ████████████████████  11/11 OK
-MVP funkcje 12–15:    ██████████████░░░░░░   12+14 OK; 13 częściowo; 15 Expo uproszczone
-Odbiór (e2e + perf):  ████████████░░░░░░░░   API JUnit 20/20; E2E Playwright; brak 10k/50RPS
+MVP funkcje 1–11:     ████████████████░░░░   OK funkcjonalnie; Spec formularzy — luki (patrz spec-conformity.md)
+MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile parity OK
+Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL OK; HTTPS/alerty brak
-Ponad MVP:            mapa, OSRM, Mailpit, Expo mobile, Spring Boot + auto-testy + docs
+Ponad MVP:            Mailpit, Expo, api-types, markers, clear-on-edit, ThemeContext accent
 ```
 
 ### Komendy

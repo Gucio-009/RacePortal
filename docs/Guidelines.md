@@ -9,6 +9,7 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 - Mobile: `mobile/` — Expo 57 (parity z webem: eventy, garaż, panele); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
 - Shared: `packages/api-types` — typy + carMatch/avatary/kategorie (Vitest ≥500)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
+- Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)
 - Docker Compose: `web`, `api`, `mysql`, `mailhog` (Mailpit), `backup`
 - Testy: JUnit/MockMvc/Testcontainers (API), Vitest (api-types + mobile), Playwright E2E
 - Alt-technologie: [`docs/pomysly-technologiczne.md`](./pomysly-technologiczne.md)

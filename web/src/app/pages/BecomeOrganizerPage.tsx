@@ -23,9 +23,19 @@ export function BecomeOrganizerPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [company, setCompany] = useState("");
+  const [businessType, setBusinessType] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+
+  const BUSINESS_TYPES = [
+    "Osoba prywatna",
+    "Firma",
+    "Jednoosobowa działalność gospodarcza",
+    "Stowarzyszenie",
+    "Fundacja",
+    "Automobilklub zrzeszony w PZM",
+  ] as const;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,9 +45,17 @@ export function BecomeOrganizerPage() {
       navigate("/login");
       return;
     }
+    if (!businessType) {
+      toast.error("Wybierz typ działalności");
+      return;
+    }
     setLoading(true);
     try {
-      await api.post("/api/organizer/apply", { company: company.trim(), message: message.trim() });
+      await api.post("/api/organizer/apply", {
+        company: company.trim(),
+        businessType,
+        message: message.trim(),
+      });
       setSent(true);
       toast.success("Wniosek wysłany! Administrator rozpatrzy go wkrótce.");
     } catch (e) {
@@ -96,6 +114,24 @@ export function BecomeOrganizerPage() {
                 className="bg-[#121212] border-[#2a2a2a] text-white h-12"
                 placeholder="np. Tor Racing Sp. z o.o."
               />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-white">
+                Typ działalności <span className="text-red-500 font-bold">*</span>
+              </Label>
+              <select
+                required
+                value={businessType}
+                onChange={(e) => setBusinessType(e.target.value)}
+                className="w-full h-12 rounded-md bg-[#121212] border border-[#2a2a2a] text-white px-3"
+              >
+                <option value="">Wybierz typ…</option>
+                {BUSINESS_TYPES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label className="text-white flex items-center gap-2">

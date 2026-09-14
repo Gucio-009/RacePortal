@@ -317,6 +317,25 @@ export function EventsPage() {
               </SelectContent>
             </Select>
           )}
+          <Button
+            type="button"
+            variant="outline"
+            className="h-11 border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+            onClick={() => {
+              setQuery("");
+              setCategory("all");
+              setPaidFilter("all");
+              setVoivodeship("all");
+              setCity("");
+              setTrack("all");
+              setDateFrom("");
+              setDateTo("");
+              setCarId("all");
+              setPage(1);
+            }}
+          >
+            Wyczyść filtry
+          </Button>
         </div>
 
         {loading ? (

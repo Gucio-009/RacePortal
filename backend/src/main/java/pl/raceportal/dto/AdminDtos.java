@@ -55,6 +55,7 @@ public final class AdminDtos {
             String id,
             String userId,
             String company,
+            String businessType,
             String message,
             String status,
             String createdAt,

@@ -26,6 +26,12 @@ public interface UserRepository extends JpaRepository<User, String> {
     /** Unikalność nazwy wyświetlanej przy rejestracji. */
     boolean existsByUsernameIgnoreCase(String username);
 
+    /** Unikalność numeru telefonu. */
+    boolean existsByPhone(String phone);
+
+    /** Unikalność telefonu przy aktualizacji profilu (wyklucza bieżącego użytkownika). */
+    boolean existsByPhoneAndIdNot(String phone, String id);
+
     /** Lista użytkowników dla panelu admina (najnowsi pierwsi). */
     List<User> findAllByOrderByCreatedAtDesc();
 }

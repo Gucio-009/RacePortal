@@ -1,48 +1,67 @@
 # Wyniki testów automatycznych — RacePortal
 
-**Data uruchomienia:** 2026-08-03 (~16:40 lokalnie)  
+**Data uruchomienia:** 2026-09-14 (~18:50 lokalnie)  
 **Branch:** `wojtek`  
-**Pełny raport CR:** [`../review-2026-08-03.md`](../review-2026-08-03.md)
+**Kontekst:** weryfikacja po §42 (formularze / clear-on-edit / ThemeContext) + aktualizacja docs.
 
 ## Preflight
 
-- API health: `db: up` (po ewentualnym `docker compose restart api` jeśli Maven zrzucił schemat)
-- Web Compose: `:8081`
-- Expo web: `:8082` (osobno)
+| Check | Wynik |
+|-------|--------|
+| Docker Desktop | **DOWN** w tej sesji — brak `test:api` / Compose E2E |
+| Web Vite build | **PASS** |
+| Mobile Vitest | **PASS — 3 / 3** |
+| api-types Vitest | **PASS — 599 / 599** |
 
 ## 1. API (JUnit / MockMvc)
 
-**Status: PASS — 22 / 22**
+**Status: NIE URUCHOMIONO** (brak Dockera / sieci Compose).
 
-| Klasa | TC |
-|-------|-----|
-| `ApiIntegrationTest` | 16 |
-| `JwtServiceTest` + `GlobalExceptionHandlerTest` | 6 |
+```bash
+# gdy Docker działa:
+docker compose up -d mysql
+npm run test:api
+```
 
-Uruchomienie: `npm run test:api`
-
-**Uwaga:** kontener Maven może wyczyścić tabele w DB Compose — po teście zrestartuj `api`.
+Ostatni znany PASS w historii: **24/24** (po stabilizacji testów anulowania / płatnego flow — §41).
 
 ## 2. Mobile unit (Vitest)
 
-**Status: PASS — 2 / 2**
+**Status: PASS — 3 / 3**
 
 ```bash
-npm run test:mobile-unit
+npm --prefix mobile run test
 ```
 
-## 3. Web E2E (Playwright · web-desktop)
+## 2b. Shared api-types (Vitest)
 
-**Status: PASS — 12 / 12**
+**Status: PASS — 599 / 599**
 
-TC-WEB-01…12 (publiczne, auth, RBAC). Mapa: tab „Mapa” na `/wydarzenia`.
+```bash
+npm --prefix packages/api-types test
+```
 
-## 4. Mobile E2E (Playwright · mobile-expo)
+## 3. Web build
 
-**Status: PASS — 5 / 5**
+**Status: PASS**
 
-Gość → logowanie → lista/detal → wylogowanie (tryb gościa).
+```bash
+npm --prefix web run build
+```
 
-## Werdykt
+## 4. Web / Mobile E2E (Playwright)
 
-**API 22/22 · mobile unit 2/2 · web E2E 12/12 · mobile E2E 5/5 — PASS**
+**Status: NIE URUCHOMIONO** (wymaga Compose `:8081` + opcjonalnie Expo `:8082`).
+
+## Werdykt sesji
+
+| Warstwa | Status |
+|---------|--------|
+| Web build | PASS |
+| Mobile unit | PASS |
+| api-types | PASS (599) |
+| API / E2E | **Zablokowane** — Docker niedostępny |
+
+Po włączeniu Dockera: `docker compose up -d && npm run test:api && npm run test:e2e` (oraz mobile E2E wg `TESTY.md`).
+
+Zgodność ze Specyfikacją Formularzy: **nie pełna** — szczegóły [`../spec-conformity.md`](../spec-conformity.md).

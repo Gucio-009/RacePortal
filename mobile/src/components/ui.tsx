@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors } from "../theme/colors";
+import { useTheme } from "../theme/ThemeContext";
 
 export function ScreenHeader({
   title,
@@ -34,11 +35,12 @@ export function ScreenHeader({
   right?: ReactNode;
 }) {
   const insets = useSafeAreaInsets();
+  const { accentColor } = useTheme();
   return (
     <View style={[styles.header, { paddingTop: Math.max(insets.top + 12, 20) }]}>
       <View style={{ flex: 1 }}>
         <Text style={styles.title}>
-          {title} <Text style={styles.gold}>•</Text>
+          {title} <Text style={{ color: accentColor }}>•</Text>
         </Text>
         {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
       </View>
@@ -95,9 +97,10 @@ export function PrimaryButton({
   disabled?: boolean;
   style?: ViewStyle;
 }) {
+  const { accentColor } = useTheme();
   return (
     <Pressable
-      style={[styles.btn, (disabled || busy) && { opacity: 0.6 }, style]}
+      style={[styles.btn, { backgroundColor: accentColor }, (disabled || busy) && { opacity: 0.6 }, style]}
       onPress={onPress}
       disabled={disabled || busy}
     >
@@ -115,12 +118,13 @@ export function GhostButton({
   onPress: () => void;
   danger?: boolean;
 }) {
+  const { accentColor } = useTheme();
   return (
     <Pressable
-      style={[styles.ghost, danger && { borderColor: colors.danger }]}
+      style={[styles.ghost, { borderColor: danger ? colors.danger : accentColor }, danger && { borderColor: colors.danger }]}
       onPress={onPress}
     >
-      <Text style={[styles.ghostText, danger && { color: colors.danger }]}>{label}</Text>
+      <Text style={[styles.ghostText, { color: danger ? colors.danger : accentColor }]}>{label}</Text>
     </Pressable>
   );
 }
@@ -168,7 +172,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   title: { color: colors.text, fontSize: 20, fontWeight: "900", letterSpacing: 1 },
-  gold: { color: colors.gold },
   subtitle: { color: colors.muted, marginTop: 2, fontSize: 13 },
   labelRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   label: { color: colors.muted, fontSize: 13, fontWeight: "600" },
@@ -185,7 +188,6 @@ const styles = StyleSheet.create({
   },
   inputError: { borderColor: colors.danger },
   btn: {
-    backgroundColor: colors.gold,
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: "center",
@@ -194,13 +196,12 @@ const styles = StyleSheet.create({
   btnText: { color: "#121212", fontWeight: "800", letterSpacing: 1 },
   ghost: {
     borderWidth: 1,
-    borderColor: colors.gold,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     alignItems: "center",
   },
-  ghostText: { color: colors.gold, fontWeight: "700", fontSize: 12 },
+  ghostText: { fontWeight: "700", fontSize: 12 },
   toggleRow: {
     flexDirection: "row",
     alignItems: "center",

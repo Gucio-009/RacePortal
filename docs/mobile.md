@@ -3,7 +3,7 @@
 Dokument zbiera **całą historię prac nad `mobile/`** (Expo), decyzje technologiczne, stan przed/po oraz efekty widoczne dla użytkownika i recenzenta.  
 Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronologia całego projektu: [`changes.md`](./changes.md).
 
-**Ostatnia aktualizacja:** 2026-08-03 (~10:55).
+**Ostatnia aktualizacja:** 2026-09-14 (~18:50).
 
 ---
 
@@ -73,10 +73,10 @@ Recenzenci mylili **Expo `:8082`** z usługą Compose oraz **MySQL `:3307`** z H
 
 | Tab / obszar | Funkcje | Efekt dla użytkownika |
 |--------------|---------|------------------------|
-| **Eventy** | Lista, filtry (`q`, paid, kategoria), detal, zapis, wybór auta z garażu, link do Apple Maps | Przeglądanie i start jak na webie |
-| **Moje** | Zgłoszenia, anulowanie, dowód płatności (URL) | Obsługa płatnego startu z telefonu |
-| **Garaż** | CRUD aut (pola jak Spec / web) | Auta do dopasowania przy zapisie |
-| **Więcej** | Konto, ustawienia, wyniki/archiwum, galeria (placeholder), organizator, admin, wniosek org., regulamin | Role USER / ORGANIZER / ADMIN |
+| **Eventy** | Lista, filtry (`q`, paid, kategoria, woj., daty), **Wyczyść filtry** (web), detal, zapis, wybór auta, Google Maps | Przeglądanie i start jak na webie |
+| **Moje** | Zgłoszenia (bez CANCELED), long-press anuluj, dowód płatności (URL) | Obsługa płatnego startu z telefonu |
+| **Garaż** | CRUD + cyfry-only + clear-on-edit (null); wymagane pola mocniejsze na web | Auta do dopasowania przy zapisie |
+| **Więcej** | Konto (adres/IG/PZM niezależne), ustawienia (**akcent ThemeContext** + goBack), org/admin | Role USER / ORGANIZER / ADMIN |
 | **Auth** | Rejestracja (+ OTP), reset hasła | Onboarding bez weba |
 
 **Stack nawigacji:**
@@ -258,9 +258,21 @@ npm --prefix mobile test                        # unit
 | [`../mobile/README.md`](../mobile/README.md) | Start **Mac / Windows**, Xcode, Android, Expo Go/SDK 57 |
 | [`changes.md`](./changes.md) §9, §10, §24–26 | Chronologia w skali całego projektu |
 | [`FAQ-przeglad.md`](./FAQ-przeglad.md) | Expo poza Compose, seed, konta, Expo Go |
+| [`spec-conformity.md`](./spec-conformity.md) | Luki vs Specyfikacja Formularzy (upload, wymagalne pola) |
 | [`testy/TESTY.md`](./testy/TESTY.md) | TC mobile |
 | `tests/e2e/mobile.spec.ts` | E2E Expo web |
 | `mobile/App.tsx` + `mobile/src/screens/*` | Implementacja |
+| `mobile/src/theme/ThemeContext.tsx` | Akcent gold/redline/ice |
+
+---
+
+### Etap E — UX / Spec (2026-09-14)
+
+- ThemeContext: zmiana akcentu + Alert + zamknięcie Settings  
+- Clear-on-edit numerów w garażu; większy gap na „Moje”  
+- Profil: adres, Instagram, PZM niezależny; wniosek org. z `businessType`  
+
+Luki względem Spec (upload plików, wymagane imię/telefon itd.): [`spec-conformity.md`](./spec-conformity.md).
 
 ---
 

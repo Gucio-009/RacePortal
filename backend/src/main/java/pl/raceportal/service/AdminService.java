@@ -203,6 +203,7 @@ public class AdminService {
                 application.getId(),
                 application.getUser().getId(),
                 application.getCompany(),
+                application.getBusinessType(),
                 application.getMessage(),
                 application.getStatus().name(),
                 application.getCreatedAt().toString(),

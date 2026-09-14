@@ -27,7 +27,10 @@ export function RegisterScreen({ navigation }: Props) {
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [hasLicense, setHasLicense] = useState(false);
+  const [hasPzm, setHasPzm] = useState(false);
   const [pzm, setPzm] = useState("");
+  const [address, setAddress] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -52,8 +55,10 @@ export function RegisterScreen({ navigation }: Props) {
       firstName: firstName.trim() || undefined,
       lastName: lastName.trim() || undefined,
       phone: phone.trim() || undefined,
+      address: address.trim() || undefined,
+      instagramUrl: instagramUrl.trim() || undefined,
       hasDrivingLicenseB: hasLicense,
-      pzmLicense: hasLicense ? pzm.trim() || undefined : undefined,
+      pzmLicense: hasPzm ? pzm.trim() || undefined : undefined,
     });
     setBusy(false);
     if (!res.ok) {
@@ -89,8 +94,18 @@ export function RegisterScreen({ navigation }: Props) {
             <Field label="Imię" value={firstName} onChangeText={setFirstName} />
             <Field label="Nazwisko" value={lastName} onChangeText={setLastName} />
             <Field label="Telefon" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+            <Field label="Adres (opcjonalnie)" value={address} onChangeText={setAddress} />
+            <Field label="Instagram (opcjonalnie)" autoCapitalize="none" value={instagramUrl} onChangeText={setInstagramUrl} />
             <ToggleRow label="Prawo jazdy kat. B" value={hasLicense} onChange={setHasLicense} />
-            {hasLicense ? <Field label="Licencja PZM (opcjonalnie)" value={pzm} onChangeText={setPzm} /> : null}
+            <ToggleRow
+              label="Licencja PZM"
+              value={hasPzm}
+              onChange={(v) => {
+                setHasPzm(v);
+                if (!v) setPzm("");
+              }}
+            />
+            {hasPzm ? <Field label="Numer licencji PZM" value={pzm} onChangeText={setPzm} /> : null}
             {error ? <ErrorText text={error} /> : null}
             {info ? <Text style={styles.info}>{info}</Text> : null}
             <PrimaryButton label="ZAŁÓŻ KONTO" onPress={onRegister} busy={busy} />

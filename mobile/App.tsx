@@ -19,6 +19,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StatusBar } from "expo-status-bar";
 import { AuthProvider, useAuth } from "./src/context/AuthContext";
+import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
 import { LoginScreen } from "./src/screens/LoginScreen";
 import { RegisterScreen } from "./src/screens/RegisterScreen";
 import { ForgotPasswordScreen } from "./src/screens/ForgotPasswordScreen";
@@ -162,6 +163,7 @@ function MoreNavigator() {
 }
 
 function MainTabs() {
+  const { accentColor } = useTheme();
   return (
     <Tab.Navigator
       screenOptions={{
@@ -170,7 +172,7 @@ function MainTabs() {
           backgroundColor: colors.card,
           borderTopColor: colors.border,
         },
-        tabBarActiveTintColor: colors.gold,
+        tabBarActiveTintColor: accentColor,
         tabBarInactiveTintColor: colors.muted,
       }}
     >
@@ -212,11 +214,12 @@ function MainTabs() {
 
 function RootNavigator() {
   const { loading } = useAuth();
+  const { accentColor } = useTheme();
 
   if (loading) {
     return (
       <View style={styles.boot}>
-        <ActivityIndicator color={colors.gold} size="large" />
+        <ActivityIndicator color={accentColor} size="large" />
       </View>
     );
   }
@@ -245,12 +248,14 @@ function RootNavigator() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <NavigationContainer theme={navTheme}>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </NavigationContainer>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <NavigationContainer theme={navTheme}>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </NavigationContainer>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

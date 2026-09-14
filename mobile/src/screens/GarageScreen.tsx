@@ -124,16 +124,15 @@ export function GarageScreen() {
     }
     const payload = editingId
       ? {
-          // W trybie edycji wysyłamy puste stringi jawnie, żeby backend mógł wyczyścić pola tekstowe.
           make: form.make.trim(),
           model: form.model.trim(),
-          year: form.year ? Number(form.year) : undefined,
+          year: form.year.trim() === "" ? null : Number(form.year),
           className: form.className.trim(),
           plate: form.plate.trim(),
           driveType: form.driveType.trim(),
-          powerHp: form.powerHp ? Number(form.powerHp) : undefined,
-          engineCc: form.engineCc ? Number(form.engineCc) : undefined,
-          weightKg: form.weightKg ? Number(form.weightKg) : undefined,
+          powerHp: form.powerHp.trim() === "" ? null : Number(form.powerHp),
+          engineCc: form.engineCc.trim() === "" ? null : Number(form.engineCc),
+          weightKg: form.weightKg.trim() === "" ? null : Number(form.weightKg),
           registered: form.registered,
           registrationType: form.registered ? form.registrationType.trim() : "",
           kssNumber: form.registered ? form.kssNumber.trim() : "",

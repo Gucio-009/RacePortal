@@ -59,14 +59,16 @@ public class GarageService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
 
+        validateCreateRequiredFields(request);
+
         Car car = new Car();
         car.setUser(user);
         car.setMake(request.make());
         car.setModel(request.model());
         car.setYear(request.year());
-        car.setClassName(request.className());
-        car.setPlate(request.plate());
-        car.setImageUrl((request.imageUrl() == null || request.imageUrl().isBlank()) ? null : request.imageUrl());
+        car.setClassName(blankToNull(request.className()));
+        car.setPlate(blankToNull(request.plate()));
+        car.setImageUrl(blankToNull(request.imageUrl()));
         applyCarFields(car, request);
 
         car = carRepository.save(car);
@@ -95,10 +97,10 @@ public class GarageService {
 
         if (request.make() != null) car.setMake(request.make());
         if (request.model() != null) car.setModel(request.model());
-        if (request.year() != null) car.setYear(request.year());
-        if (request.className() != null) car.setClassName(request.className());
-        if (request.plate() != null) car.setPlate(request.plate());
-        if (request.imageUrl() != null) car.setImageUrl(request.imageUrl().isBlank() ? null : request.imageUrl());
+        car.setYear(request.year());
+        if (request.className() != null) car.setClassName(blankToNull(request.className()));
+        if (request.plate() != null) car.setPlate(blankToNull(request.plate()));
+        if (request.imageUrl() != null) car.setImageUrl(blankToNull(request.imageUrl()));
         applyCarUpdateFields(car, request);
 
         car = carRepository.save(car);
@@ -168,9 +170,9 @@ public class GarageService {
 
     private void applyCarUpdateFields(Car car, CarUpdateRequest request) {
         if (request.driveType() != null) car.setDriveType(blankToNull(request.driveType()));
-        if (request.powerHp() != null) car.setPowerHp(request.powerHp());
-        if (request.engineCc() != null) car.setEngineCc(request.engineCc());
-        if (request.weightKg() != null) car.setWeightKg(request.weightKg());
+        car.setPowerHp(request.powerHp());
+        car.setEngineCc(request.engineCc());
+        car.setWeightKg(request.weightKg());
         if (request.registered() != null) car.setRegistered(request.registered());
         if (request.registrationType() != null) car.setRegistrationType(blankToNull(request.registrationType()));
         if (request.kssNumber() != null) car.setKssNumber(blankToNull(request.kssNumber()));
@@ -180,6 +182,39 @@ public class GarageService {
         if (request.socialUrl() != null) car.setSocialUrl(blankToNull(request.socialUrl()));
         if (request.videoUrl() != null) car.setVideoUrl(blankToNull(request.videoUrl()));
         if (request.modifications() != null) car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private void validateCreateRequiredFields(CarCreateRequest request) {
+        if (request.year() == null) {
+            throw ApiException.badRequest("Rok produkcji jest wymagany");
+        }
+        if (request.driveType() == null || request.driveType().isBlank()) {
+            throw ApiException.badRequest("Napęd jest wymagany");
+        }
+        if (request.powerHp() == null) {
+            throw ApiException.badRequest("Moc jest wymagana");
+        }
+        if (request.engineCc() == null) {
+            throw ApiException.badRequest("Pojemność silnika jest wymagana");
+        }
+        if (request.weightKg() == null) {
+            throw ApiException.badRequest("Masa pojazdu jest wymagana");
+        }
+        if (request.registered() == null) {
+            throw ApiException.badRequest("Informacja o rejestracji jest wymagana");
+        }
+        if (request.hasRollCage() == null) {
+            throw ApiException.badRequest("Informacja o klatce bezpieczeństwa jest wymagana");
+        }
+        if (request.hasOc() == null) {
+            throw ApiException.badRequest("Informacja o OC jest wymagana");
+        }
+        if (request.hasPt() == null) {
+            throw ApiException.badRequest("Informacja o przeglądzie technicznym jest wymagana");
+        }
+        if (request.imageUrl() == null || request.imageUrl().isBlank()) {
+            throw ApiException.badRequest("Zdjęcie pojazdu jest wymagane");
+        }
     }
 
     private static String blankToNull(String value) {

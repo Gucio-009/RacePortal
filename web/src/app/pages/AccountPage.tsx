@@ -32,7 +32,10 @@ export function AccountPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
   const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
+  const [hasPzmLicense, setHasPzmLicense] = useState(false);
   const [pzmLicense, setPzmLicense] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
 
@@ -48,7 +51,10 @@ export function AccountPage() {
     setFirstName(user?.firstName ?? "");
     setLastName(user?.lastName ?? "");
     setPhone(user?.phone ?? "");
+    setAddress(user?.address ?? "");
+    setInstagramUrl(user?.instagramUrl ?? "");
     setHasDrivingLicenseB(user?.hasDrivingLicenseB ?? false);
+    setHasPzmLicense(Boolean(user?.pzmLicense));
     setPzmLicense(user?.pzmLicense ?? "");
   }, [user]);
 
@@ -67,8 +73,10 @@ export function AccountPage() {
       firstName: firstName.trim() || undefined,
       lastName: lastName.trim() || undefined,
       phone: phone.trim() || undefined,
+      address: address.trim() || "",
+      instagramUrl: instagramUrl.trim() || "",
       hasDrivingLicenseB,
-      pzmLicense: pzmLicense.trim() || undefined,
+      pzmLicense: hasPzmLicense ? pzmLicense.trim() : "",
     });
     setSavingProfile(false);
     if (result.ok) {
@@ -178,6 +186,25 @@ export function AccountPage() {
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-white">Adres zamieszkania</Label>
+                <Input
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Ulica, kod, miasto"
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-white">Instagram</Label>
+                <Input
+                  type="url"
+                  value={instagramUrl}
+                  onChange={(e) => setInstagramUrl(e.target.value)}
+                  placeholder="https://instagram.com/..."
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                />
+              </div>
               <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
@@ -188,9 +215,22 @@ export function AccountPage() {
                   </div>
                   <Switch checked={hasDrivingLicenseB} onCheckedChange={setHasDrivingLicenseB} />
                 </div>
-                {hasDrivingLicenseB && (
+                <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2a2a2a]">
+                  <div>
+                    <Label className="text-white">Licencja PZM</Label>
+                    <p className="text-xs text-[#9ca3af]">Niezależnie od prawa jazdy</p>
+                  </div>
+                  <Switch
+                    checked={hasPzmLicense}
+                    onCheckedChange={(v) => {
+                      setHasPzmLicense(v);
+                      if (!v) setPzmLicense("");
+                    }}
+                  />
+                </div>
+                {hasPzmLicense && (
                   <div className="space-y-2">
-                    <Label className="text-white text-sm">Licencja PZM</Label>
+                    <Label className="text-white text-sm">Numer licencji PZM</Label>
                     <Input
                       value={pzmLicense}
                       onChange={(e) => setPzmLicense(e.target.value)}

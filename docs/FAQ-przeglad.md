@@ -1,7 +1,7 @@
 # RacePortal — FAQ dla przeglądu / odbioru
 
 **Jedno miejsce na powtarzające się pytania.** Przed zgłoszeniem „usługa nie działa” / „gdzie seed?” przeczytaj poniższe.  
-Aktualizacja: **2026-08-03**.
+Aktualizacja: **2026-09-14**.
 
 ---
 
@@ -125,7 +125,8 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
 | Galeria | Świadomie **odłożona** (nav: „później”) — nie jest luką MVP do domknięcia teraz |
 | Mobile Expo | Parity z webem (taby Eventy/Moje/Garaż/Więcej) — zob. [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
-| Upload plików (grafika/załączniki) | Nadal URL / poza prostym MVP (Specyfikacja Formularzy — etap późniejszy dla binariów) |
+| Upload plików (grafika/załączniki) | Nadal URL (nie multipart) — świadomy gap vs Spec → [`spec-conformity.md`](./spec-conformity.md) |
+| Specyfikacja Formularzy | Pełna tabela zgodności: [`spec-conformity.md`](./spec-conformity.md) (imię/telefon wymagane w Spec, opcjonalne w UI itd.) |
 
 ---
 
@@ -134,4 +135,5 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 - Szybki start: [`README.md`](../README.md)  
 - Chronologia: [`changes.md`](./changes.md)  
 - MVP plan vs stan: [`MVP.md`](./MVP.md)  
+- Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  

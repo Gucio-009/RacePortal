@@ -227,7 +227,9 @@ class ApiIntegrationTest {
         String token = login("test@wp.pl", "test123");
 
         String carBody = objectMapper.writeValueAsString(
-                new CarPayload("Toyota", "GR86", 2023, null, "PO 11111", null));
+                new CarPayload("Toyota", "GR86", 2023, null, "PO 11111",
+                        "https://example.com/cars/gr86.jpg", "RWD", 230, 2400, 1270,
+                        true, false, true, true));
         String carResponse = mockMvc.perform(post("/api/garage")
                         .header("Authorization", "Bearer " + token)
                         .contentType("application/json")
@@ -249,7 +251,8 @@ class ApiIntegrationTest {
                 .andExpect(status().isCreated());
 
         String conflictingUpdate = objectMapper.writeValueAsString(
-                new CarPayload(null, "GR86 Facelift", null, null, null, null));
+                new CarPayload(null, "GR86 Facelift", null, null, null, null, null, null, null, null,
+                        null, null, null, null));
         mockMvc.perform(patch("/api/garage/" + carId)
                         .header("Authorization", "Bearer " + token)
                         .contentType("application/json")
@@ -262,7 +265,8 @@ class ApiIntegrationTest {
                 .andExpect(status().isBadRequest());
 
         String plateOnlyUpdate = objectMapper.writeValueAsString(
-                new CarPayload(null, null, null, null, "PO 22222", null));
+                new CarPayload(null, null, null, null, "PO 22222", null, null, null, null, null,
+                        null, null, null, null));
         mockMvc.perform(patch("/api/garage/" + carId)
                         .header("Authorization", "Bearer " + token)
                         .contentType("application/json")
@@ -279,7 +283,9 @@ class ApiIntegrationTest {
         String adminToken = login("admin@raceportal.pl", "admin123");
 
         String carBody = objectMapper.writeValueAsString(
-                new CarPayload("Honda", "Civic Type R", 2020, "Track Day", "GD 33333", null));
+                new CarPayload("Honda", "Civic Type R", 2020, "Track Day", "GD 33333",
+                        "https://example.com/cars/civic.jpg", "FWD", 320, 2000, 1400,
+                        true, false, true, true));
         String carResponse = mockMvc.perform(post("/api/garage")
                         .header("Authorization", "Bearer " + token)
                         .contentType("application/json")
@@ -421,7 +427,9 @@ class ApiIntegrationTest {
                 .andExpect(status().isOk());
 
         String carBody = objectMapper.writeValueAsString(
-                new CarPayload("Subaru", "Impreza", 2018, "KJS", "WA 12345", null));
+                new CarPayload("Subaru", "Impreza", 2018, "KJS", "WA 12345",
+                        "https://example.com/cars/impreza.jpg", "AWD", 280, 2000, 1350,
+                        true, false, true, true));
         String carResponse = mockMvc.perform(post("/api/garage")
                         .header("Authorization", "Bearer " + driverToken)
                         .contentType("application/json")
@@ -469,7 +477,9 @@ class ApiIntegrationTest {
                 .andExpect(status().isOk());
 
         String carBody = objectMapper.writeValueAsString(
-                new CarPayload("Honda", "Civic", 2017, "Track Day", "PO 44556", null));
+                new CarPayload("Honda", "Civic", 2017, "Track Day", "PO 44556",
+                        "https://example.com/cars/civic-oc.jpg", "FWD", 180, 1800, 1250,
+                        true, false, false, true));
         String carResponse = mockMvc.perform(post("/api/garage")
                         .header("Authorization", "Bearer " + driverToken)
                         .contentType("application/json")
@@ -569,7 +579,10 @@ class ApiIntegrationTest {
     private record VerifyEmailPayload(String email, String code) {
     }
 
-    private record CarPayload(String make, String model, Integer year, String className, String plate, String imageUrl) {
+    private record CarPayload(String make, String model, Integer year, String className, String plate,
+                              String imageUrl, String driveType, Integer powerHp, Integer engineCc,
+                              Integer weightKg, Boolean registered, Boolean hasRollCage, Boolean hasOc,
+                              Boolean hasPt) {
     }
 
     private record RegistrationCreatePayload(String eventId, String carId, String note) {

@@ -19,6 +19,7 @@ public final class OrganizerDtos {
     /** Wniosek USER → ORGANIZER: firma + uzasadnienie. */
     public record ApplyRequest(
             @NotBlank @Size(min = 2, max = 120) String company,
+            @NotBlank @Size(max = 60) String businessType,
             @NotBlank @Size(min = 10, max = 2000) String message
     ) {
     }

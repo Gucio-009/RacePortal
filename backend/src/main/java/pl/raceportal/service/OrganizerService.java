@@ -67,13 +67,15 @@ public class OrganizerService {
         OrganizerApplication application = new OrganizerApplication();
         application.setUser(user);
         application.setCompany(request.company());
+        application.setBusinessType(request.businessType());
         application.setMessage(request.message());
         application.setStatus(ApplicationStatus.PENDING);
         application = organizerApplicationRepository.save(application);
 
         UserRef userRef = new UserRef(user.getId(), user.getUsername(), user.getEmail(), null);
         return new OrganizerApplicationResponse(
-                application.getId(), user.getId(), application.getCompany(), application.getMessage(),
+                application.getId(), user.getId(), application.getCompany(), application.getBusinessType(),
+                application.getMessage(),
                 application.getStatus().name(), application.getCreatedAt().toString(),
                 application.getUpdatedAt().toString(), userRef);
     }
