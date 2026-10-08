@@ -24,6 +24,8 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
 | [`changes.md`](./changes.md) | Chronologia prac |
 | [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | **Alt-technologie** — dziś vs pomysły (JWT→Keycloak, Next.js, Redis…) |
+| [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | **Luki i pomysły produktowe** — czego brakuje / co warto dodać (nie Spec, nie stack) |
+| [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | **Scenariusz demo** — co pokazać na prezentacji (web + mobile) |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
 | [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |
