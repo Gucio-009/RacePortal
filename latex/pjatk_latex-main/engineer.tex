@@ -2,33 +2,36 @@
 
 \addbibresource{bibliography.bib}
 
+% =============================================================================
+% Dane osobowe / formalne — UZUPEŁNIĆ przed oddaniem (TODO)
+% =============================================================================
 \studfield{Informatyka}
-\studtype{Zaoczne}
-\title{Praca inżynierska o tym i owym}
-\engtitle{Something about this and that}
-\acronym{BRR}
-\titledate{2023-10-10}
-\supervisor{dr Puźniakowski Tadeusz}
-\reviewer{prof. dr hab. inż. lek. Jamroży Omnibus}
-\author{Nowak Jan}{s1234}{Sztuczna Inteligencja}{Stacjonarny}
-\author{Nowak Jan}{s1234}{Sztuczna Inteligencja}{Stacjonarny}
-\author{Nowak Jan}{s1234}{Sztuczna Inteligencja}{Stacjonarny}
-\author{Nowak Jan}{s1234}{Sztuczna Inteligencja}{Stacjonarny}
-\author{Nowak Jan}{s1234}{Sztuczna Inteligencja}{Stacjonarny}
-\consultant{--- brak ---} % Koniecznie trzeba podać brak, albo wpisać konsultantów tak jak przy autorach
-\projectgoals{Celem tego projektu jest pokazanie jak można użyć klasy sprz do przygotowania pracy inżynierskiej na PJATK}
-\productsandservices{Tu wpisujemy oczekiwane produkty}
-\mainfunctionalities{Tu wpisujemy oczekiwane funkcjonalności}
-\successmeasure{Kompilujący się elegancko szablon w postaci stylu LaTeX-owego który można użyć do robienia pracy inż.}
-\projlimitations{Wymagana podstawowa znajomość systemu składu tekstu LaTeX.}
-\date{miesiąc, rok obrony}
+\studtype{Stacjonarne}
+\title{RacePortal --- platforma katalogu i zapisów na wydarzenia motorsportowe}
+\engtitle{RacePortal --- a platform for motorsport event catalog and registrations}
+\acronym{RP}
+\titledate{2025-10-01}
+\supervisor{dr hab.\ Marek Bendarczyk}
+\reviewer{mgr Alex Polin}
+\author{Kasprowicz Oliwier}{s30290}{Cyberbezpieczeństwo}{Stacjonarny}
+\author{Otrombke Natalia}{s26828}{Cyberbezpieczeństwo}{Stacjonarny}
+\author{Gutowski Michał}{s30572}{Cyberbezpieczeństwo}{Stacjonarny}
+\author{Parkitny Miłosz}{s30287}{Cyberbezpieczeństwo}{Stacjonarny}
+\author{Wronisz Wojciech}{s26999}{Cyberbezpieczeństwo}{Stacjonarny}
+\consultant{--- brak ---}
+\projectgoals{Celem projektu jest zaprojektowanie i~zaimplementowanie systemu RacePortal --- centralnego katalogu wydarzeń motorsportowych w~Polsce, umożliwiającego przeglądanie wydarzeń (lista, mapa, kalendarz), zarządzanie garażem pojazdów, zgłoszenia udziału oraz obsługę ról organizatora i~administratora, wraz z~aplikacją mobilną typu wizytówka oraz konteneryzowanym środowiskiem uruchomieniowym.}
+\productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
+\mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
+\successmeasure{Działający stos Docker Compose (web, API, MySQL, Mailpit, backup); realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
+\projlimitations{Brak natywnej bramki płatności (PSP); upload plików zastąpiony adresami URL; aplikacja mobilna bez pełnej parity z~webem (świadoma wizytówka); brak publikacji w~sklepach App Store/Google Play; testy wydajnościowe 10k rekordów / 50~RPS oraz produkcyjny TLS poza domkniętym zakresem lokalnego MVP.}
+\date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
-\nabstract{To jest streszczenie niezwykle innowacyjnej pracy inżynierskiej w której przeplatają się elementy paplaniny z wygenerowanym tekstem pseudonaukowym rozpoznawanym jako dezinformacja.}
-\keyword{grafika komputerowa}
-\keyword{komputer}
-\keyword{XXI wiek}
-\keyword{skład komputerowy}
-\keyword{grafika 3D}
+\nabstract{Praca przedstawia projekt i~implementację systemu RacePortal --- platformy wspierającej katalogowanie wydarzeń motorsportowych oraz proces zapisów uczestników. System obejmuje aplikację webową, backend REST oparty o~Spring Boot i~MySQL oraz aplikację mobilną Expo pełniącą rolę publicznej wizytówki katalogu. W~pracy opisano problem dziedzinowy, wymagania, architekturę, realizację kluczowych modułów (wydarzenia, garaż, zgłoszenia, role), mechanizmy bezpieczeństwa (JWT, RBAC) oraz weryfikację testami automatycznymi. Wynikiem jest działające, konteneryzowane środowisko demonstracyjne zgodne z~zakresem MVP projektu.}
+\keyword{motorsport}
+\keyword{katalog wydarzeń}
+\keyword{Spring Boot}
+\keyword{React}
+\keyword{aplikacja mobilna}
 
 
 
@@ -44,163 +47,387 @@
 
 \chapter{Informacje wstępne}
 \section{Cel i zakres pracy}
+Celem pracy jest zaprojektowanie oraz implementacja systemu \textbf{RacePortal} --- platformy internetowej (z~uzupełnieniem mobilnym) służącej jako centralny katalog wydarzeń motorsportowych w~Polsce oraz narzędzie do obsługi zapisów kierowców.
+
+Zakres obejmuje:
+\begin{itemize}
+  \item aplikację webową (katalog, konta, garaż, zgłoszenia, panele organizatora i~administratora);
+  \item API REST z~trwałą bazą danych wydarzeń, użytkowników i~zgłoszeń;
+  \item powiadomienia e-mail (potwierdzenia, statusy, weryfikacja konta);
+  \item mapę wydarzeń oraz wyznaczanie trasy dojazdu (OSRM; opcjonalnie Google Maps przy kluczu API);
+  \item aplikację mobilną Expo jako \emph{wizytówkę} katalogu z~CTA zapisu na stronie webowej;
+  \item konteneryzację (Docker Compose) oraz podstawowy zestaw testów automatycznych.
+\end{itemize}
+
+Poza zakresem MVP pozostają m.in.\ natywne płatności online, pełny upload plików binarnych, push notifications oraz publikacja aplikacji mobilnej w~sklepach.
+
 \section{Ogólny opis rozwiązania}
+RacePortal jest monorepozytorium składającym się z~warstw:
+\begin{itemize}
+  \item \textbf{web/} --- SPA React~\cite{react:docs} (Vite, Tailwind), serwowana przez nginx;
+  \item \textbf{backend/} --- Spring Boot~3~\cite{spring:boot}, MySQL, JWT~\cite{jwt:rfc}, Bean Validation, JavaMail;
+  \item \textbf{mobile/} --- Expo (React Native), publiczny katalog wydarzeń;
+  \item \textbf{packages/api-types} --- wspólne typy i~logika pomocnicza (m.in.\ dopasowanie kategorii pojazdu do wydarzenia);
+  \item \textbf{docs/}, \textbf{tests/e2e/}, \textbf{scripts/} --- dokumentacja, Playwright, skrypty operacyjne.
+\end{itemize}
+
+Uruchomienie lokalne realizuje Docker Compose~\cite{docker:compose}: web (\texttt{:8081}), API (\texttt{:4000}), MySQL~\cite{mysql:docs} (\texttt{:3307}), Mailpit (\texttt{:8025}) oraz kontener backupu. Aplikacja mobilna startuje poza Compose (Expo~\cite{expo:docs}). Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
+
+Role użytkowników: \texttt{USER} (kierowca), \texttt{ORGANIZER}, \texttt{ADMIN}. Gość może przeglądać katalog; zapis na wydarzenie i~zarządzanie garażem wymagają konta (po stronie weba).
+
 \section{Struktura pracy}
+Kolejne rozdziały obejmują: słownik pojęć, opis problemu dziedzinowego, analizę SWOT, kontekst biznesowy, planowanie projektu, analizę wymagań (w~tym diagramy UML), projekt systemu, opis realizacji oraz szczegóły implementacji backendu, frontendu i~mobile, bezpieczeństwo, testowanie, prezentację systemu, nakład pracy oraz podsumowanie.
 
 \chapter{Słownik pojęć}
+\begin{description}
+  \item[Wydarzenie (event)] Zorganizowany start / impreza motorsportowa (np.\ track day, drift, rally), opisana datą, lokalizacją, kategorią i~wymaganiami.
+  \item[Katalog] Publiczny wykaz wydarzeń z~widokami lista, mapa i~kalendarz oraz filtrami.
+  \item[Garaż] Zbiór pojazdów przypisanych do konta kierowcy, wykorzystywanych przy zapisie na wydarzenie.
+  \item[Zgłoszenie (registration)] Wniosek o~udział w~wydarzeniu, posiadający status (np.\ PENDING, APPROVED, CANCELED).
+  \item[carMatch] Mechanizm dopasowania kategorii/klasy pojazdu do kategorii wydarzenia (aliasy nazw).
+  \item[Organizator] Użytkownik z~rolą ORGANIZER, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
+  \item[Administrator] Użytkownik z~rolą ADMIN, moderujący wydarzenia, wnioski o~rolę organizatora i~role kont.
+  \item[Wizytówka mobilna] Wersja aplikacji Expo ograniczona do przeglądania katalogu; zapis odbywa się na webie (CTA).
+  \item[JWT] JSON Web Token --- token sesji używany do uwierzytelniania żądań API.
+  \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role.
+  \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy wykorzystany jako domyślny provider.
+  \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
+\end{description}
 
 \chapter{Opis problemu}
 \section{Charakterystyka rynku wydarzeń motorsportowych}
-\section{Problemy związane z organizacją wydarzeń i zapisami uczestników}
-\section{Problemy informacyjne po stronie kierowców i organizatorów}
+% TODO: rozwinąć na podstawie pitch / research
+Amatorski i~półprofesjonalny motorsport w~Polsce obejmuje liczne formy aktywności (track day, drift, rally, wyścigi górskie itp.). Informacje o~terminach i~zapisach są często rozproszone pomiędzy strony organizatorów, media społecznościowe oraz komunikatory.
+
+\section{Problemy związane z~organizacją wydarzeń i~zapisami uczestników}
+Organizatorzy potrzebują narzędzia do publikacji wydarzenia, zbierania zgłoszeń, weryfikacji wymagań wobec pojazdu/kierowcy oraz komunikacji statusu zgłoszenia. Ręczne procesy (arkusze, wiadomości prywatne) są podatne na błędy i~trudne do skalowania.
+
+\section{Problemy informacyjne po stronie kierowców i~organizatorów}
+Kierowcy mają trudność ze znalezieniem aktualnych startów w~jednym miejscu, porównaniem wymagań wydarzenia z~posiadanym pojazdem oraz śledzeniem statusu zapisu. Organizatorzy --- z~utrzymaniem spójnej listy uczestników i~powiadomień.
+
 \section{Uzasadnienie potrzeby stworzenia systemu RacePortal}
-\section{Aspekty techniczne i organizacyjne problemu}
+RacePortal odpowiada na potrzebę \textbf{centralnego katalogu} oraz \textbf{ujednoliconego procesu zapisu} z~rolami użytkowników, przy zachowaniu prostego uruchomienia demonstracyjnego (Docker) i~ścieżki mobilnej (odkrywanie wydarzeń).
+
+\section{Aspekty techniczne i~organizacyjne problemu}
+Wyzwania obejmują: spójny model danych wydarzeń i~zgłoszeń, bezpieczeństwo kont (JWT, RBAC), walidację wymagań wydarzenia względem garażu, integrację mapy/trasy, dostarczalność maili w~środowisku deweloperskim oraz świadomy podział odpowiedzialności web vs mobile.
 
 \chapter{Analiza SWOT}
 \section{Mocne strony (Strengths)}
+\begin{itemize}
+  \item Pełny przepływ ról: gość, kierowca, organizator, administrator.
+  \item Trzy widoki katalogu na wspólnych filtrach (lista / mapa / kalendarz).
+  \item Konteneryzacja i~seed kont demonstracyjnych ułatwiają prezentację.
+  \item Testy automatyczne (API, web E2E, unit mobile / api-types).
+  \item Wspólne typy API ograniczają dryf web~$\leftrightarrow$~mobile.
+\end{itemize}
+
 \section{Słabe strony (Weaknesses)}
+\begin{itemize}
+  \item Brak prawdziwego uploadu plików i~bramki płatności.
+  \item Mobilka bez logowania i~garażu (wizytówka).
+  \item Zależność od publicznych serwisów map/trasy (CARTO/OSRM).
+  \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy.
+\end{itemize}
+
 \section{Szanse (Opportunities)}
+\begin{itemize}
+  \item Rozszerzenie o~PSP, waitlistę, watchlistę i~eksport list startowych.
+  \item Integracje z~kalendarzami (iCal) i~powiadomienia push.
+  \item Budowa społeczności wokół torów i~organizatorów regionalnych.
+\end{itemize}
+
 \section{Zagrożenia (Threats)}
+\begin{itemize}
+  \item Konkurencja ze strony grup społecznościowych i~dedykowanych systemów zapisów.
+  \item Zmiany limitów / dostępności publicznych API map i~routingu.
+  \item Wymogi RODO i~odpowiedzialność za dane osobowe przy skali produkcyjnej.
+\end{itemize}
 
 \chapter{Kontekst biznesowy}
 \section{Segmentacja użytkowników}
+\begin{itemize}
+  \item \textbf{Gość} --- przegląda katalog bez konta.
+  \item \textbf{Kierowca (USER)} --- garaż, zapisy, profil.
+  \item \textbf{Organizator} --- tworzy wydarzenia, zarządza zgłoszeniami.
+  \item \textbf{Administrator} --- moderacja, role, wnioski o~organizatora.
+\end{itemize}
+
 \section{Interesariusze systemu}
+Kierowcy, organizatorzy imprez, administratorzy platformy, (potencjalnie) właściciele torów oraz recenzenci / odbiorcy projektu akademickiego.
+
 \section{Propozycja wartości systemu}
-\section{Kanały komunikacji i dystrybucji}
-\section{Kluczowe zasoby i działania}
+Jedno miejsce na odkrywanie startów, dopasowanie auta do wymagań wydarzenia i~obsługę statusu zgłoszenia --- z~osobnymi narzędziami dla organizatora i~administratora.
+
+\section{Kanały komunikacji i~dystrybucji}
+Aplikacja webowa jako kanał główny; e-mail (Mailpit w~dev); mobilna wizytówka jako kanał discovery z~konwersją na web; repozytorium GitHub jako kanał dystrybucji kodu.
+
+\section{Kluczowe zasoby i~działania}
+Zespół deweloperski, infrastruktura Docker, seed danych demo, dokumentacja (\texttt{docs/}), scenariusze prezentacji i~testy automatyczne.
+
 \section{Model działania platformy}
-\section{Realistyczność wdrożenia i dalsze perspektywy}
-\section{Kontekst prawny i etyczny}
+Platforma pośredniczy między organizatorami (podaż wydarzeń) a~kierowcami (popyt na starty). Na etapie MVP nie rozlicza płatności --- obsługuje statusy zgłoszeń i~dowód płatności jako URL.
+
+\section{Realistyczność wdrożenia i~dalsze perspektywy}
+Lokalne MVP jest uruchamialne na stacji deweloperskiej. Wdrożenie produkcyjne wymagałoby TLS, zarządzanego SMTP, kopii zapasowych z~przetestowanym restore, polityki prywatności operacyjnej oraz (opcjonalnie) PSP.
+
+\section{Kontekst prawny i~etyczny}
+System przetwarza dane konta (e-mail, opcjonalnie dane profilu). W~UI uwzględniono politykę prywatności oraz notę RODO przy tworzeniu wydarzenia. Pełna zgodność procesowa (DPIA, retencja) wykracza poza demonstracyjne MVP.
 
 \chapter{Planowanie projektu}
 \section{Cele projektu}
+Dostarczenie działającego MVP katalogu i~zapisów z~rolami użytkowników, mapą, mailami, mobilną wizytówką oraz dokumentacją i~testami umożliwiającymi odbiór / prezentację.
+
 \section{Zakres projektu}
+Zgodnie z~listą funkcji MVP 1--15 (katalog, filtry, detal, admin, konto, garaż, zgłoszenia, organizator, baza, maile, mapa, trasa, archiwum, mobile) --- szczegóły w~dokumentacji projektowej \texttt{docs/MVP.md}.
+
 \section{Metodyka pracy}
+Iteracyjne dostarczanie funkcji w~monorepo, z~bieżącą dokumentacją zmian (\texttt{docs/changes.md}) oraz weryfikacją testami po istotnych zmianach.
+
 \section{Organizacja zespołu}
+% TODO: wpisać realny podział ról w zespole
+Zespół projektowy realizuje prace w~wspólnym repozytorium Git (branch roboczy), z~podziałem na warstwy web / API / mobile / dokumentacja.
+
 \section{Harmonogram pracy}
-\section{Infrastruktura i środowisko pracy}
+% TODO: uzupełnić datami kamieni milowych zespołu
+Prace obejmują m.in.\ scaffold UI, migrację/implementację backendu Spring, parity funkcji web, testy, uproszczenie mobile do wizytówki oraz domykanie dokumentacji odbiorczej.
+
+\section{Infrastruktura i~środowisko pracy}
+Docker Desktop, Node.js (web/mobile), JDK/Maven (API w~kontenerze), Expo / iOS Simulator lub Android Emulator, Playwright, GitHub.
+
 \section{Analiza ryzyka projektowego}
 \subsection{Analiza zagrożeń}
+\begin{itemize}
+  \item Niespójność wymagań formularzy vs implementacja --- mitigacja: rejestr luk (\texttt{spec-conformity.md}).
+  \item Awaria zewnętrznego OSRM/CARTO --- mitigacja: graceful fallback komunikatów, możliwość wymiany providera.
+  \item Dryf typów web/mobile --- mitigacja: \texttt{packages/api-types}.
+  \item Opóźnienia wynikające z~rozrostu zakresu --- mitigacja: świadome odłożenie galerii/PSP/store.
+\end{itemize}
 
 \chapter{Analiza wymagań}
 \section{Źródła i sposób pozyskania wymagań}
+Pitch / zakres MPC, Specyfikacja Formularzy, iteracje implementacyjne, scenariusze prezentacji oraz przeglądy kodu.
+
 \section{Wymagania ogólne i dziedzinowe}
+System ma obsługiwać polski kontekst motorsportu (kategorie, lokalizacje, role) i~umożliwiać kompletny happy-path zapisu na wydarzenie.
+
 \section{Wymagania funkcjonalne}
+\begin{enumerate}
+  \item Przeglądanie wydarzeń (lista, mapa, kalendarz) z~filtrami.
+  \item Podgląd szczegółów wydarzenia.
+  \item Rejestracja, logowanie, reset hasła; opcjonalnie Google Sign-In.
+  \item Zarządzanie profilem i~garażem.
+  \item Składanie i~anulowanie zgłoszeń; podgląd statusów.
+  \item Panel organizatora (CRUD wydarzeń, obsługa zgłoszeń).
+  \item Panel administratora (moderacja, role, wnioski org.).
+  \item Powiadomienia e-mail.
+  \item Archiwum wydarzeń.
+  \item Aplikacja mobilna --- katalog + CTA do weba.
+\end{enumerate}
+
 \section{Wymagania niefunkcjonalne}
+Dostępność lokalna przez Docker; responsywność weba; podstawowa wydajność list (paginacja, cache); obserwowalność (\texttt{/api/health}); dokumentacja uruchomienia.
+
 \section{Wymagania bezpieczeństwa}
+Uwierzytelnianie JWT; RBAC; walidacja wejścia; hasła hashowane; nagłówki bezpieczeństwa nginx (CSP, X-Frame-Options); rate limiting; minimalizacja danych w~UI.
+
 \section{Wymagania interfejsu użytkownika}
+Ciemny motyw motorsportowy z~akcentem marki; czytelne stany puste/błędu; spójność paneli ról; mobilka z~prostą nawigacją katalogu.
+
 \section{Diagramy UML}
 \subsection{Diagram przypadków użycia}
+% TODO: wstawić diagram (PlantUML / draw.io → PDF/PNG)
 \subsection{Diagram klas}
+% TODO: wstawić diagram modelu domenowego
 \subsection{Diagram sekwencji: rejestracja i logowanie}
+% TODO
 \subsection{Diagram sekwencji: zapis na wydarzenie}
+% TODO
 \subsection{Diagram sekwencji: zarządzanie garażem}
+% TODO
 
 \chapter{Projekt systemu}
 \section{Założenia architektoniczne}
+Architektura trójwarstwowa: klienty (web, mobile) $\rightarrow$ API REST $\rightarrow$ MySQL. Statyczny frontend za nginx z~proxy \texttt{/api}.
+
 \section{Architektura logiczna systemu}
+Moduły domenowe: użytkownicy/auth, wydarzenia, zgłoszenia, garaż, organizator, administracja, mapy/trasa, poczta.
+
 \section{Architektura fizyczna i wdrożeniowa}
+Kontenery: \texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{mailhog} (Mailpit), \texttt{backup}. Mobile poza Compose.
+
 \section{Projekt bazy danych}
+Encje m.in.: użytkownik, pojazd, wydarzenie, zgłoszenie, wniosek organizatora; statusy wydarzeń i~zgłoszeń; współrzędne geograficzne wydarzenia.
+
 \section{Projekt interfejsu REST API}
+Zasoby \texttt{/api/auth/*}, \texttt{/api/events}, \texttt{/api/events/markers}, \texttt{/api/registrations}, \texttt{/api/garage}, \texttt{/api/admin/*}, \texttt{/api/organizer/*}, \texttt{/api/maps/route}, \texttt{/api/health}.
+
 \section{Projekt warstwy webowej}
+Routing React Router; AuthContext; strony katalogu, detalu, dashboardu, garażu, paneli; komponent mapy Leaflet.
+
 \section{Projekt aplikacji mobilnej}
+Stack Expo; nawigacja stack Eventy; publiczny klient HTTP; \texttt{EXPO\_PUBLIC\_API\_URL} / \texttt{EXPO\_PUBLIC\_WEB\_URL}; CTA \texttt{Linking} do \texttt{/wydarzenia/:id}.
+
 \section{Projekt mechanizmów bezpieczeństwa}
+JWT w~nagłówku Authorization (web); role na endpointach; walidacja DTO; CORS; CSP nginx.
 
 \chapter{Realizacja}
 \section{Organizacja implementacji}
+Implementacja iteracyjna w~monorepo, z~dokumentowaniem zmian i~utrzymywaniem środowiska Compose jako źródła prawdy uruchomieniowej.
+
 \section{Podział systemu na komponenty}
 \subsection{Backend}
+Spring Boot: kontrolery, serwisy, repozytoria JPA, seed (\texttt{DataInitializer}), joby (np.\ archiwizacja).
 \subsection{Frontend webowy}
+Vite + React; integracja z~API; stany ról i~formularze dziedzinowe.
 \subsection{Aplikacja mobilna}
+Expo --- katalog publiczny bez auth.
 \section{Integracja komponentów}
+Wspólny kontrakt JSON; typy w~\texttt{api-types}; nginx reverse proxy \texttt{/api} w~środowisku Compose.
 \section{Konteneryzacja i uruchamianie środowiska}
+\texttt{docker compose up --build -d}; weryfikacja \texttt{/api/health}; Expo: \texttt{cd mobile \&\& npm start}.
 
 \chapter{Szczegóły implementacji backendu}
 \section{Struktura projektu backendowego}
+Pakiet \texttt{pl.raceportal} --- warstwy controller / service / repository / dto / security.
 \section{Model domenowy i encje}
+Użytkownik (role), Car, Event, Registration oraz powiązane statusy i~flagi wymagań wydarzenia.
 \section{Rejestracja użytkowników i logowanie}
+Rejestracja z~opcjonalną weryfikacją e-mail (kod); logowanie hasłem; opcjonalna wymiana Google idToken $\rightarrow$ JWT.
 \section{Zarządzanie profilami użytkowników}
+Aktualizacja danych profilu, hasła, deklaracji (m.in.\ PZM, prawo jazdy B), pól adresu / Instagram.
 \section{Obsługa wydarzeń}
+Listowanie z~filtrami i~paginacją; markery mapy; CRUD po stronie organizatora; moderacja admina; archiwum.
 \section{Obsługa zgłoszeń}
+Tworzenie zgłoszenia z~wyborem pojazdu; walidacja wymagań; zmiana statusów; anulowanie; maile transactional.
 \section{Obsługa garażu}
+CRUD pojazdów; reguły clear-on-edit pól liczbowych; powiązanie z~kategorią wydarzenia.
 \section{Panel administratora i organizatora}
+Endpointy i~reguły RBAC dla moderacji i~zarządzania zgłoszeniami / wydarzeniami.
 \section{Integracja z bazą danych}
+Spring Data JPA + MySQL 8; konfiguracja przez zmienne środowiskowe Compose.
 \section{Obsługa wyjątków i walidacja}
+Bean Validation; odpowiedzi z~polem \texttt{details}; mapowanie na komunikaty UI.
 
 \chapter{Szczegóły implementacji frontendu webowego}
 \section{Struktura aplikacji webowej}
+Katalog \texttt{web/src/app}: \texttt{pages/}, \texttt{components/}, \texttt{context/}, \texttt{lib/}.
 \section{Strona główna i katalog wydarzeń}
+Widoki Lista / Mapa / Kalendarz; debounce filtrów; „Wyczyść filtry”; paginacja listy vs markery overview.
 \section{Widok szczegółów wydarzenia}
+Opis, wymagania, zapis z~wyborem auta, \texttt{carMatch}, mapa i~trasa.
 \section{Logowanie i rejestracja}
+Formularze auth; weryfikacja kodu; reset hasła; opcjonalny Google Sign-In.
 \section{Dashboard użytkownika}
+Zgłoszenia użytkownika i~szybkie informacje o~nadchodzących startach.
 \section{Widok garażu}
+Formularz pojazdu, walidacja pól wymaganych, edycja i~usuwanie (z~ograniczeniami przy otwartym zgłoszeniu).
 \section{Panel organizatora}
+Tworzenie/edycja wydarzeń, lista zgłoszeń, zmiana statusów.
 \section{Panel administratora}
+Moderacja wydarzeń, wnioski organizatora, zarządzanie rolami.
 \section{Mapa i elementy lokalizacyjne}
+Leaflet + kafelki CARTO; pickery lokalizacji; proxy trasy \texttt{/api/maps/route}.
 \section{Responsywność i doświadczenie użytkownika}
+Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent}.
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
 \section{Założenia aplikacji mobilnej}
+Mobilka ma wspierać odkrywanie wydarzeń, a~nie dublować pełnego klienta webowego.
 \section{Architektura rozwiązania mobilnego}
+Expo SDK, React Navigation (stack Eventy), ThemeProvider, cienki klient API bez JWT.
 \section{Lista wydarzeń i widok szczegółów}
+Filtry publiczne; przełączanie Lista / Kalendarz / Mapa; detal z~metadanymi wydarzenia.
 \section{Nawigacja i interfejs użytkownika}
+Pojedynczy stack: \texttt{EventsList} $\rightarrow$ \texttt{EventDetail}; dark UI spójny z~marką.
 \section{Integracja z API}
+Publiczne GET (events, markers, health); konfiguracja hosta API (localhost / LAN / Android emulator).
 \section{Przekierowanie do wersji webowej}
+Przycisk „Zapisz się na stronie” --- \texttt{Linking.openURL(webEventUrl(id))}.
 \section{Ograniczenia wersji mobilnej}
+Brak auth, garażu, paneli ról i~archiwum w~aplikacji; zależność od dostępności weba przy konwersji zapisu.
 
 \chapter{Bezpieczeństwo systemu}
 \section{Założenia bezpieczeństwa}
+Ochrona kont i~danych zgłoszeń na poziomie ASVS L1 adekwatnym do MVP demonstracyjnego.
 \section{Klasyfikacja danych}
+Dane konta i~profilu; dane pojazdów; dane zgłoszeń; treści wydarzeń (częściowo publiczne).
 \section{Uwierzytelnianie użytkowników}
+Hasło + JWT; opcjonalnie Google; brak sesji serwerowej klasycznej.
 \section{Autoryzacja i kontrola dostępu RBAC}
+Role USER / ORGANIZER / ADMIN egzekwowane w~API i~bramkach UI.
 \section{Wykorzystanie tokenów JWT}
+Token przechowywany po stronie klienta web; dołączany do żądań chronionych.
 \section{Walidacja danych wejściowych}
+Walidacja DTO po stronie API; walidacja formularzy UI; komunikaty pól \texttt{details}.
 \section{Ochrona zasobów użytkowników}
+Dostęp do garażu i~zgłoszeń wyłącznie właściciela (oraz uprawnionych ról w~panelach).
 \section{Bezpieczeństwo komunikacji}
+W~dev HTTP lokalne; w~prod rekomendowany TLS na reverse proxy; CSP / X-Frame-Options na nginx.
 \section{Analiza zagrożeń}
+Uwierzytelnianie, IDOR, XSS, CSRF w~kontekście SPA, brute-force logowania (rate limit).
 \section{Analiza ryzyka}
+Ryzyko akceptowalne dla środowiska demo; produkcja wymaga twardego sekretu JWT, HTTPS i~polityki haseł zsynchronizowanej backend$\leftrightarrow$UI.
 \section{Ograniczenia przyjętych zabezpieczeń}
+Brak 2FA; Google OAuth opcjonalny; brak WAF; publiczny OSRM bez SLA.
 
 \chapter{Testowanie i weryfikacja systemu}
 \section{Strategia testowania}
+Piramida: unit (api-types, mobile client) $\rightarrow$ integracyjne API (MockMvc) $\rightarrow$ E2E Playwright (web + preview mobile).
 \section{Środowisko testowe}
+Docker Compose + opcjonalnie Expo web \texttt{:8082}; dokumentacja \texttt{docs/testy/TESTY.md}.
 \section{Testy jednostkowe}
+Vitest: \texttt{packages/api-types}, \texttt{mobile/tests}.
 \section{Testy integracyjne backendu}
+JUnit / MockMvc --- scenariusze auth, eventy, garaż, zgłoszenia, RBAC, trasa.
 \section{Testy End-to-End aplikacji webowej}
+Playwright: ścieżki katalogu, auth, garaż, role (viewport desktop/mobile).
 \section{Testy aplikacji mobilnej}
+Unit URL API/WEB; E2E gość (lista, widoki, detal, CTA) na Expo web.
 \section{Testy mechanizmów bezpieczeństwa}
+Scenariusze braku dostępu do paneli obcych ról; walidacja wejścia.
 \section{Automatyzacja uruchamiania testów}
+Skrypty npm / \texttt{scripts/}; raporty w~\texttt{docs/testy/wyniki/}.
 \section{Analiza wyników testów}
+Werdykty przebiegów odnotowywane w~dokumentacji wyników; regresie łapane przed prezentacją.
 \section{Ograniczenia procesu testowania}
+Brak pełnych testów natywnych (Detox/Maestro); brak formalnego load testu 10k/50~RPS w~MVP.
 
 \chapter{Prezentacja systemu}
 \section{Prezentacja głównych funkcjonalności}
+Demonstracja katalogu (3 widoki), zapisu kierowcy z~\texttt{carMatch}, paneli org/admin oraz mobile CTA --- zgodnie z~\texttt{docs/scenariusz-prezentacji.md}.
 \section{Scenariusz użycia z perspektywy kierowcy}
+Login seed $\rightarrow$ garaż $\rightarrow$ filtr/katalog $\rightarrow$ zapis $\rightarrow$ dashboard statusów.
 \section{Scenariusz użycia z perspektywy organizatora}
+Login org $\rightarrow$ wydarzenie $\rightarrow$ zgłoszenia $\rightarrow$ zmiana statusu $\rightarrow$ podgląd maila w~Mailpit.
 \section{Scenariusz użycia z perspektywy administratora}
+Login admin $\rightarrow$ moderacja wydarzenia / wniosku organizatora / ról.
 \section{Podsumowanie działania systemu}
+System realizuje spójny obieg informacji o~wydarzeniach i~zapisach w~środowisku uruchamialnym lokalnie.
 
 \chapter{Nakład pracy}
 \section{Liczba godzin przeznaczona na realizację projektu}
+% TODO: wpisać sumaryczny nakład (osobogodziny)
 \section{Podział zadań w zespole}
+% TODO: tabela osób i obszarów (web / API / mobile / docs / testy)
 \section{Narzędzia wspierające zarządzanie pracą}
+Git/GitHub, dokumentacja Markdown w~\texttt{docs/}, Docker, Cursor/IDE, Playwright.
 \section{Problemy organizacyjne i ich rozwiązanie}
+M.in.\ rozrost zakresu mobile --- decyzja o~wizytówce; luki Spec --- rejestr \texttt{spec-conformity.md}; stabilizacja testów względem seedu/archiwizacji.
 
 \chapter{Podsumowanie}
 \section{Największe wyzwania i sposób ich rozwiązania}
+Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo web+API+mobile.
 \section{Zmiany i adaptacje w trakcie realizacji}
+Przejście mobile z~parity na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów.
 \section{Ograniczenia końcowej wersji systemu}
+Brak PSP i~uploadu plików; mobilka bez konta; limity testów wydajnościowych i~produkcyjnego hardeningu.
 \section{Możliwości dalszego rozwoju}
+Płatności, upload, watchlista, iCal, waitlista, eksport list startowych, store/PWA --- por.\ \texttt{docs/pomysly-rozwoju.md}.
 \section{Wnioski końcowe}
+RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego.
 
 \printbibliography[title={Bibliografia}, heading=bibintoc]
 
 \makethesisattachments
-
-
-
-
-
-
 
 \end{document}
