@@ -56,7 +56,25 @@ function FlyToPin({ lat, lng }: { lat: number | null; lng: number | null }) {
   const map = useMap();
   useEffect(() => {
     if (lat == null || lng == null || Number.isNaN(lat) || Number.isNaN(lng)) return;
-    map.flyTo([lat, lng], Math.max(map.getZoom(), 12), { duration: 0.6 });
+    let cancelled = false;
+    const t = window.setTimeout(() => {
+      if (cancelled) return;
+      try {
+        if (!map.getContainer()?.isConnected) return;
+        map.flyTo([lat, lng], Math.max(map.getZoom(), 12), { animate: true, duration: 0.6 });
+      } catch {
+        /* dialog zamknięty — ignoruj _leaflet_pos */
+      }
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+      try {
+        map.stop();
+      } catch {
+        /* ignore */
+      }
+    };
   }, [map, lat, lng]);
   return null;
 }

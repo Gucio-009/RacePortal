@@ -10,7 +10,9 @@
  * ApiError: status + message (+ opcjonalne details walidacji Bean Validation).
  * 204 No Content → `undefined` (DELETE bez body).
  *
- * Pomysł (alt): axios / ky; interceptor 401 → auto-logout; OpenAPI generated client.
+ * 401 przy obecnym Bearer → clear token + opcjonalny handler (AuthContext logout UI).
+ *
+ * Pomysł (alt): axios / ky; OpenAPI generated client; httpOnly cookie.
  */
 
 const API_URL = import.meta.env.VITE_API_URL || "";
@@ -36,6 +38,14 @@ export function getToken(): string | null {
 export function setToken(token: string | null) {
   if (token) localStorage.setItem(TOKEN_KEY, token);
   else localStorage.removeItem(TOKEN_KEY);
+}
+
+type AuthExpiredHandler = () => void;
+let onAuthExpired: AuthExpiredHandler | null = null;
+
+/** AuthContext rejestruje handler — czyści user state po wygaśnięciu JWT. */
+export function setOnAuthExpired(handler: AuthExpiredHandler | null) {
+  onAuthExpired = handler;
 }
 
 /** Składa czytelny komunikat z `error` + mapy `details` (pola formularza). */
@@ -79,6 +89,10 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   }
 
   if (!res.ok) {
+    if (res.status === 401 && token) {
+      setToken(null);
+      onAuthExpired?.();
+    }
     throw new ApiError(
       res.status,
       formatApiError(data.error || data.message, data.details),

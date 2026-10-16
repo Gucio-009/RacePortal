@@ -97,7 +97,7 @@ public class GarageService {
 
         if (request.make() != null) car.setMake(request.make());
         if (request.model() != null) car.setModel(request.model());
-        car.setYear(request.year());
+        if (request.year() != null) car.setYear(request.year());
         if (request.className() != null) car.setClassName(blankToNull(request.className()));
         if (request.plate() != null) car.setPlate(blankToNull(request.plate()));
         if (request.imageUrl() != null) car.setImageUrl(blankToNull(request.imageUrl()));
@@ -170,9 +170,9 @@ public class GarageService {
 
     private void applyCarUpdateFields(Car car, CarUpdateRequest request) {
         if (request.driveType() != null) car.setDriveType(blankToNull(request.driveType()));
-        car.setPowerHp(request.powerHp());
-        car.setEngineCc(request.engineCc());
-        car.setWeightKg(request.weightKg());
+        if (request.powerHp() != null) car.setPowerHp(request.powerHp());
+        if (request.engineCc() != null) car.setEngineCc(request.engineCc());
+        if (request.weightKg() != null) car.setWeightKg(request.weightKg());
         if (request.registered() != null) car.setRegistered(request.registered());
         if (request.registrationType() != null) car.setRegistrationType(blankToNull(request.registrationType()));
         if (request.kssNumber() != null) car.setKssNumber(blankToNull(request.kssNumber()));

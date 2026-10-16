@@ -16,7 +16,7 @@
  */
 
 import { createBrowserRouter, Navigate } from "react-router";
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { RootLayout } from "./components/RootLayout";
 import { HomePage } from "./pages/HomePage";
 import { LoginPage } from "./pages/LoginPage";
@@ -42,6 +42,8 @@ import { Loader2 } from "lucide-react";
 /**
  * Brama auth: spinner podczas bootstrapu `/api/auth/me`, potem redirect lub children.
  * `roles` — opcjonalna biała lista ról (np. tylko ADMIN).
+ * Przy mismatch roli: jednorazowy `refreshSession` (po APPROVE wniosku org. w DB
+ * React state może jeszcze trzymać USER — bez tego redirect na `/` przed panelem).
  */
 function AuthGate({
   children,
@@ -50,9 +52,30 @@ function AuthGate({
   children: ReactNode;
   roles?: UserRole[];
 }) {
-  const { isAuthenticated, user, isLoading } = useAuth();
+  const { isAuthenticated, user, isLoading, refreshSession } = useAuth();
+  const [roleRefreshing, setRoleRefreshing] = useState(false);
+  const refreshAttempted = useRef(false);
 
-  if (isLoading) {
+  useEffect(() => {
+    refreshAttempted.current = false;
+  }, [roles?.join(",")]);
+
+  useEffect(() => {
+    if (!roles || isLoading || !isAuthenticated || !user) return;
+    if (roles.includes(user.role)) return;
+    if (refreshAttempted.current) return;
+    refreshAttempted.current = true;
+    let cancelled = false;
+    setRoleRefreshing(true);
+    void refreshSession().finally(() => {
+      if (!cancelled) setRoleRefreshing(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [roles, isLoading, isAuthenticated, user, refreshSession]);
+
+  if (isLoading || roleRefreshing) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />

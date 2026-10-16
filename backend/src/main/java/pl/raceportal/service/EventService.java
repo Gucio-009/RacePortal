@@ -36,6 +36,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -112,11 +113,11 @@ public class EventService {
         int fetchLimit = matchCarClass != null ? Math.min(200, limit * 10) : limit;
         var pageResult = eventRepository.findAll(spec, PageRequest.of(page - 1, fetchLimit, sort));
 
-        List<EventResponse> items = pageResult.getContent().stream()
+        List<Event> matched = pageResult.getContent().stream()
                 .filter(e -> matchCarClass == null || CategoryMatcher.matches(matchCarClass, e.getCategory()))
                 .limit(limit)
-                .map(this::serialize)
                 .toList();
+        List<EventResponse> items = serializeAll(matched);
 
         // Fuzzy CategoryMatcher nie da się w SQL Spec — dokładny total przez skan stronami (bez findAll całej tabeli).
         long total = matchCarClass != null
@@ -499,8 +500,26 @@ public class EventService {
         }
     }
 
+    /** Serializacja listy z jednym zapytaniem COUNT GROUP BY (bez N+1). */
+    List<EventResponse> serializeAll(List<Event> events) {
+        if (events == null || events.isEmpty()) {
+            return List.of();
+        }
+        List<String> ids = events.stream().map(Event::getId).toList();
+        Map<String, Long> counts = new HashMap<>();
+        for (Object[] row : registrationRepository.countGroupedByEventIds(ids)) {
+            counts.put((String) row[0], (Long) row[1]);
+        }
+        return events.stream()
+                .map(e -> serialize(e, counts.getOrDefault(e.getId(), 0L)))
+                .toList();
+    }
+
     EventResponse serialize(Event event) {
-        long registrationsCount = registrationRepository.countByEvent_Id(event.getId());
+        return serialize(event, registrationRepository.countByEvent_Id(event.getId()));
+    }
+
+    private EventResponse serialize(Event event, long registrationsCount) {
         OrganizerRef organizerRef = event.getOrganizer() != null
                 ? new OrganizerRef(event.getOrganizer().getId(), event.getOrganizer().getUsername())
                 : null;

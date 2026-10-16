@@ -703,6 +703,115 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.token", notNullValue()));
     }
 
+    /** Aktywne zgłoszenie nie może być nadpisane drugim POST (tylko re-apply po CANCELED). */
+    @Test
+    void registration_create_rejectsDuplicateActiveRegistration() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        String driverToken = login("test@wp.pl", "test123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Dup Reg Guard Event",
+                "Event testowy — blokada ponownego zgłoszenia przy aktywnym statusie.",
+                "Track Day", "2027-02-01", "10:00", null, null, "Tor Dup", "Dupowo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk());
+
+        String regBody = objectMapper.writeValueAsString(new RegistrationCreatePayload(eventId, null, null));
+        mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + driverToken)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error", containsString("aktywne zgłoszenie")));
+    }
+
+    /** FSM: CANCELLED nie wraca do APPROVED. */
+    @Test
+    void admin_eventStatus_rejectsReviveFromCancelled() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "FSM Cancel Revive Block",
+                "Event testowy — brak wskrzeszania anulowanego wydarzenia.",
+                "Track Day", "2027-02-05", "11:00", null, null, "Tor FSM", "Fsmowo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("CANCELLED"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("Niedozwolone przejście")));
+    }
+
+    /** Partial PATCH garażu nie nulluje year gdy pole pominięte. */
+    @Test
+    void garage_partialPatch_preservesYearWhenOmitted() throws Exception {
+        String token = login("test@wp.pl", "test123");
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Fiat", "124", 2017, "Track Day", "WW 11111",
+                        "https://example.com/cars/fiat.jpg", "RWD", 140, 1400, 1050,
+                        true, false, true, true));
+        String carId = objectMapper.readTree(mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        String plateOnly = objectMapper.writeValueAsString(
+                new CarPayload(null, null, null, null, "WW 22222", null, null, null, null, null,
+                        null, null, null, null));
+        mockMvc.perform(patch("/api/garage/" + carId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(plateOnly))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.plate", is("WW 22222")))
+                .andExpect(jsonPath("$.year", is(2017)))
+                .andExpect(jsonPath("$.powerHp", is(140)));
+    }
+
     /** Długi URL zdjęcia auta (kolumna TEXT / max 2000) — wcześniej psuło dodawanie do garażu. */
     @Test
     void garage_create_acceptsLongImageUrl() throws Exception {

@@ -22,6 +22,8 @@ app:
     origin: "*"
   jwt:
     secret: raceportal-test-secret-change-me-please
+  security:
+    allow-insecure-defaults: true
   seed:
     enabled: true
 

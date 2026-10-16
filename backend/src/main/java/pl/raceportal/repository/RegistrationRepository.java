@@ -1,9 +1,12 @@
 package pl.raceportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import pl.raceportal.domain.Registration;
 import pl.raceportal.domain.RegistrationStatus;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,6 +33,10 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
 
     /** Licznik uczestników wydarzenia. */
     long countByEvent_Id(String eventId);
+
+    /** Batch count — unika N+1 przy serializacji list wydarzeń. */
+    @Query("select r.event.id, count(r) from Registration r where r.event.id in :ids group by r.event.id")
+    List<Object[]> countGroupedByEventIds(@Param("ids") Collection<String> ids);
 
     /**
      * Czy auto jest użyte w zgłoszeniach o podanych statusach —

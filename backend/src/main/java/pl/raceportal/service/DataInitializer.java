@@ -24,7 +24,7 @@ import java.time.LocalDate;
  * <p>
  * Rola w architekturze: ułatwia lokalny rozwój i demo — konta admin/org/kierowca,
  * wydarzenia (APPROVED/PENDING/ARCHIVED), płatne imprezy oraz garaż z autami per kategoria.
- * Sterowane flagą {@code app.seed.enabled} (domyślnie true).
+ * Sterowane flagą {@code app.seed.enabled} (domyślnie false; demo/compose/test włączają).
  * Technologie: Spring Boot, JPA/MySQL, BCrypt.
  * </p>
  * Reguły: pełny seed tylko gdy brak admina; płatne wydarzenia i auta garażu
@@ -49,7 +49,7 @@ public class DataInitializer implements CommandLineRunner {
 
     public DataInitializer(UserRepository userRepository, CarRepository carRepository,
                             EventRepository eventRepository, PasswordEncoder passwordEncoder,
-                            @Value("${app.seed.enabled:true}") boolean seedEnabled) {
+                            @Value("${app.seed.enabled:false}") boolean seedEnabled) {
         this.userRepository = userRepository;
         this.carRepository = carRepository;
         this.eventRepository = eventRepository;

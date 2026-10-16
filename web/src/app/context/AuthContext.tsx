@@ -17,7 +17,7 @@
  */
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { api, setToken, getToken, ApiError } from "../lib/api";
+import { api, setToken, getToken, setOnAuthExpired, ApiError } from "../lib/api";
 import type { User } from "../lib/types";
 
 export type { User };
@@ -110,6 +110,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
     bootstrap();
   }, []);
+
+  // 401 z api.ts → wyczyść user (token już usunięty)
+  useEffect(() => {
+    setOnAuthExpired(() => setUser(null));
+    return () => setOnAuthExpired(null);
+  }, []);
+
+  // Po APPROVE wniosku org. w innej karcie — odśwież rolę USER przy powrocie do okna
+  useEffect(() => {
+    let lastAt = 0;
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      if (!getToken()) return;
+      const now = Date.now();
+      if (now - lastAt < 15_000) return;
+      lastAt = now;
+      void (async () => {
+        try {
+          const res = await api.post<{ token: string; user: User }>("/api/auth/refresh");
+          persistAuth(res.user, res.token);
+        } catch {
+          /* ignore — 401 obsługuje interceptor */
+        }
+      })();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [persistAuth]);
 
   const login = async (email: string, password: string) => {
     try {

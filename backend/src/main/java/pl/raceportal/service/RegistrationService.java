@@ -76,7 +76,7 @@ public class RegistrationService {
     /**
      * Tworzenie zgłoszenia (diagram „Proces tworzenia zgłoszenia”): wydarzenie APPROVED
      * i otwarte na zgłoszenia; opcjonalne auto — walidacja klasy vs kategorii (CategoryMatcher).
-     * Upsert po (user, event): resetuje status na PENDING.
+     * Nowe zgłoszenie lub ponowne tylko ze statusu {@code CANCELED} (nie resetuje CONFIRMED/ACCEPTED).
      */
     @Transactional
     public RegistrationResponse create(String userId, RegistrationCreateRequest request) {
@@ -108,9 +108,17 @@ public class RegistrationService {
         validateEventRequirements(event, user, car);
 
         Registration registration = registrationRepository.findByUser_IdAndEvent_Id(userId, event.getId())
-                .orElseGet(Registration::new);
-        registration.setUser(user);
-        registration.setEvent(event);
+                .orElse(null);
+        if (registration != null) {
+            if (registration.getStatus() != RegistrationStatus.CANCELED) {
+                throw ApiException.conflict("Masz już aktywne zgłoszenie na to wydarzenie");
+            }
+            // Re-apply po anulowaniu — czyścimy decyzje / płatność.
+        } else {
+            registration = new Registration();
+            registration.setUser(user);
+            registration.setEvent(event);
+        }
         registration.setCar(car);
         registration.setNote(request.note());
         registration.setStatus(RegistrationStatus.PENDING);

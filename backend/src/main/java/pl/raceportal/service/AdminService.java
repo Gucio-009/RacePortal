@@ -23,8 +23,12 @@ import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.web.ApiException;
 
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Panel administratora: statystyki, role użytkowników, moderacja wydarzeń i wniosków organizatora.
@@ -41,6 +45,22 @@ import java.util.Locale;
  */
 @Service
 public class AdminService {
+
+    /** Dozwolone przejścia statusu wydarzenia z panelu admina (CANCELLED → cancelEvent). */
+    private static final Map<EventStatus, Set<EventStatus>> EVENT_STATUS_TRANSITIONS;
+
+    static {
+        EVENT_STATUS_TRANSITIONS = new EnumMap<>(EventStatus.class);
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.DRAFT, EnumSet.of(EventStatus.PENDING, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.PENDING,
+                EnumSet.of(EventStatus.APPROVED, EventStatus.REJECTED, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.APPROVED,
+                EnumSet.of(EventStatus.CANCELLED, EventStatus.ARCHIVED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.REJECTED,
+                EnumSet.of(EventStatus.PENDING, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.ARCHIVED, EnumSet.noneOf(EventStatus.class));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.CANCELLED, EnumSet.noneOf(EventStatus.class));
+    }
 
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
@@ -119,47 +139,55 @@ public class AdminService {
 
     @Transactional(readOnly = true)
     public List<EventResponse> pendingEvents() {
-        return eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING).stream()
-                .map(eventService::serialize)
-                .toList();
+        return eventService.serializeAll(eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING));
     }
 
     /** Ostatnie zatwierdzone wydarzenia — do anulowania z panelu admina. */
     @Transactional(readOnly = true)
     public List<EventResponse> approvedEvents() {
-        return eventRepository.findTop50ByStatusOrderByUpdatedAtDesc(EventStatus.APPROVED).stream()
-                .map(eventService::serialize)
-                .toList();
+        return eventService.serializeAll(
+                eventRepository.findTop50ByStatusOrderByUpdatedAtDesc(EventStatus.APPROVED));
     }
 
     /**
      * Moderacja statusu wydarzenia (APPROVED/REJECTED/…); czyści cache {@code events};
      * powiadamia organizatora mailem. CANCELLED → pełna anulacja ze zgłoszeniami.
+     * Przejścia ograniczone FSM — brak „wskrzeszania” CANCELLED.
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
     public EventResponse updateEventStatus(String eventId, EventStatusUpdateRequest request,
                                             UserPrincipal currentUser) {
-        EventStatus status;
+        EventStatus target;
         try {
-            status = EventStatus.valueOf(request.status().toUpperCase(Locale.ROOT));
+            target = EventStatus.valueOf(request.status().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest("Nieprawidłowy status");
         }
 
-        if (status == EventStatus.CANCELLED) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
+        EventStatus current = event.getStatus();
+        if (current == target) {
+            return eventService.serialize(event);
+        }
+        Set<EventStatus> allowed = EVENT_STATUS_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(target)) {
+            throw ApiException.badRequest(
+                    "Niedozwolone przejście statusu: " + current + " → " + target);
+        }
+
+        if (target == EventStatus.CANCELLED) {
             return eventService.cancelEvent(eventId, currentUser);
         }
 
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
-        event.setStatus(status);
+        event.setStatus(target);
         event = eventRepository.save(event);
 
         if (event.getOrganizer() != null) {
             mailService.send(event.getOrganizer().getEmail(), "Status wydarzenia: " + event.getName(),
                     "<p>Wydarzenie <strong>" + event.getName() + "</strong> ma teraz status: <strong>" +
-                            status + "</strong>.</p>");
+                            target + "</strong>.</p>");
         }
 
         return eventService.serialize(event);
@@ -189,13 +217,19 @@ public class AdminService {
 
         OrganizerApplication application = organizerApplicationRepository.findById(appId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw ApiException.badRequest("Wniosek został już rozpatrzony");
+        }
         application.setStatus(status);
         application = organizerApplicationRepository.save(application);
 
         if (status == ApplicationStatus.APPROVED) {
             User user = application.getUser();
-            user.setRole(Role.ORGANIZER);
-            userRepository.save(user);
+            // Nie degraduj ADMIN → ORGANIZER; USER/ORGANIZER → ORGANIZER.
+            if (user.getRole() != Role.ADMIN) {
+                user.setRole(Role.ORGANIZER);
+                userRepository.save(user);
+            }
         }
 
         mailService.send(application.getUser().getEmail(), "Wniosek o rolę organizatora",

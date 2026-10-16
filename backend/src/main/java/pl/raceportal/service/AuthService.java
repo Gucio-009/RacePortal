@@ -18,10 +18,12 @@ import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
 import pl.raceportal.dto.AuthDtos.UserDto;
 import pl.raceportal.repository.OrganizerApplicationRepository;
 import pl.raceportal.repository.UserRepository;
+import pl.raceportal.security.AttemptRateLimiter;
 import pl.raceportal.security.JwtService;
 import pl.raceportal.web.ApiException;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
@@ -48,23 +50,29 @@ public class AuthService {
     /** Czas ważności kodu weryfikacyjnego e-mail (minuty). */
     private static final int VERIFICATION_CODE_TTL_MINUTES = 15;
 
+    private static final int VERIFY_MAX_ATTEMPTS = 10;
+    private static final int RESEND_MAX_ATTEMPTS = 3;
+    private static final Duration AUTH_CODE_WINDOW = Duration.ofMinutes(15);
+
     private final UserRepository userRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final MailService mailService;
     private final GoogleIdTokenService googleIdTokenService;
+    private final AttemptRateLimiter attemptRateLimiter;
     private final SecureRandom random = new SecureRandom();
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
-                        GoogleIdTokenService googleIdTokenService) {
+                        GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.mailService = mailService;
         this.googleIdTokenService = googleIdTokenService;
+        this.attemptRateLimiter = attemptRateLimiter;
     }
 
     /**
@@ -116,6 +124,9 @@ public class AuthService {
      */
     @Transactional
     public AuthResponse verifyEmail(String email, String code) {
+        String key = "verify:" + email.trim().toLowerCase();
+        attemptRateLimiter.check(key, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
         User user = userRepository.findByEmailIgnoreCase(email)
                 .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy email lub kod"));
 
@@ -123,7 +134,7 @@ public class AuthService {
             if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
                     || !user.getEmailVerificationCode().equals(code)
                     || Instant.now().isAfter(user.getEmailVerificationExpires())) {
-                throw ApiException.badRequest("Nieprawidłowy lub wygasły kod weryfikacyjny");
+                throw ApiException.badRequest("Nieprawidłowy email lub kod");
             }
             user.setEmailVerified(true);
             user.setEmailVerificationCode(null);
@@ -137,10 +148,11 @@ public class AuthService {
 
     /**
      * Ponowna wysyłka kodu — soft-fail (brak błędu gdy email nie istnieje),
-     * żeby nie ujawniać, które adresy są w bazie.
+     * żeby nie ujawniać, które adresy są w bazie. Rate-limit po emailu.
      */
     @Transactional
     public void resendCode(String email) {
+        attemptRateLimiter.check("resend:" + email.trim().toLowerCase(), RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
         userRepository.findByEmailIgnoreCase(email)
                 .filter(user -> !user.isEmailVerified())
                 .ifPresent(this::sendVerificationCode);
@@ -197,10 +209,13 @@ public class AuthService {
             if (familyName != null) user.setLastName(familyName);
             user = userRepository.save(user);
         } else {
+            // Konto lokalne niezweryfikowane: Google udowadnia skrzynkę — unieważnij hasło
+            // atakującego, który zarejestrował email ofiary przed jej pierwszym logowaniem.
             if (!user.isEmailVerified()) {
                 user.setEmailVerified(true);
                 user.setEmailVerificationCode(null);
                 user.setEmailVerificationExpires(null);
+                user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
             }
             if ((user.getAvatar() == null || user.getAvatar().isBlank()) && picture != null && !picture.isBlank()) {
                 user.setAvatar(picture);

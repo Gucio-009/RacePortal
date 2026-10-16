@@ -88,6 +88,6 @@ public class OrganizerService {
         var events = currentUser.getRole() == Role.ADMIN
                 ? eventRepository.findAllByOrderByDateDesc()
                 : eventRepository.findByOrganizer_IdOrderByDateDesc(currentUser.getId());
-        return events.stream().map(eventService::serialize).toList();
+        return eventService.serializeAll(events);
     }
 }

@@ -75,21 +75,17 @@ export function OrganizerPanelPage() {
   };
 
   useEffect(() => {
+    // AuthGate już odświeża rolę przy mismatch; tu best-effort + lista (nawet gdy refresh padnie).
     let cancelled = false;
     (async () => {
-      const refreshed = await refreshSession();
+      await refreshSession();
       if (cancelled) return;
-      if (!refreshed.ok) {
-        setLoadError(refreshed.message || "Brak uprawnień — odśwież sesję (wyloguj i zaloguj ponownie)");
-        setLoading(false);
-        return;
-      }
       loadEvents();
     })();
     return () => {
       cancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount: odśwież rolę, potem lista
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount
   }, []);
 
   /** Pobiera zgłoszenia wybranego wydarzenia i przełącza tab. */
