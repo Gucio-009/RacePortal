@@ -17,6 +17,7 @@ import { Plus } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { api, ApiError } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
 import type { Registration, RegistrationStatus } from "../lib/types";
 import { registrationStatusLabel } from "../lib/types";
 import { OTHER } from "../lib/eventFormPresets";
@@ -31,6 +32,7 @@ import { OrganizerRegistrationsList } from "../components/organizer/OrganizerReg
 import { OrganizerEventFormDialog } from "../components/organizer/OrganizerEventFormDialog";
 
 export function OrganizerPanelPage() {
+  const { refreshSession } = useAuth();
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -73,7 +75,21 @@ export function OrganizerPanelPage() {
   };
 
   useEffect(() => {
-    loadEvents();
+    let cancelled = false;
+    (async () => {
+      const refreshed = await refreshSession();
+      if (cancelled) return;
+      if (!refreshed.ok) {
+        setLoadError(refreshed.message || "Brak uprawnień — odśwież sesję (wyloguj i zaloguj ponownie)");
+        setLoading(false);
+        return;
+      }
+      loadEvents();
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount: odśwież rolę, potem lista
   }, []);
 
   /** Pobiera zgłoszenia wybranego wydarzenia i przełącza tab. */

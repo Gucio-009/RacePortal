@@ -65,6 +65,8 @@ interface AuthContextType {
     newPassword: string,
   ) => Promise<{ ok: boolean; message?: string }>;
   forgotPassword: (email: string) => Promise<{ ok: boolean; message: string }>;
+  /** Odświeża JWT + user z DB (po nadaniu roli ORGANIZER / zmianie roli). */
+  refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   isAuthenticated: boolean;
 }
 
@@ -264,6 +266,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const refreshSession = useCallback(async () => {
+    if (!getToken()) return { ok: false, message: "Brak sesji" };
+    try {
+      const res = await api.post<{ token: string; user: User }>("/api/auth/refresh");
+      persistAuth(res.user, res.token);
+      return { ok: true };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się odświeżyć sesji";
+      return { ok: false, message };
+    }
+  }, [persistAuth]);
+
   return (
     <AuthContext.Provider
       value={{
@@ -278,6 +292,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateProfile,
         changePassword,
         forgotPassword,
+        refreshSession,
         isAuthenticated: !!user,
       }}
     >

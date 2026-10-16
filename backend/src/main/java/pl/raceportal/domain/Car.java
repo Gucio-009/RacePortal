@@ -61,7 +61,8 @@ public class Car {
     @Column(length = 20)
     private String plate;
 
-    @Column(name = "image_url", length = 500)
+    /** TEXT — długie URL (CDN / GitHub raw) nie mieszczą się w VARCHAR(255/500). */
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     /** Typ napędu (np. RWD, AWD, FWD). */

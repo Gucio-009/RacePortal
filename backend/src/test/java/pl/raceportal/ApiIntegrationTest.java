@@ -15,9 +15,12 @@ import org.testcontainers.DockerClientFactory;
 import org.testcontainers.containers.MySQLContainer;
 import pl.raceportal.domain.Event;
 import pl.raceportal.domain.EventStatus;
+import pl.raceportal.domain.User;
 import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.UserRepository;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -96,6 +99,9 @@ class ApiIntegrationTest {
 
     @Autowired
     private EventRepository eventRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     private String login(String email, String password) throws Exception {
         String body = objectMapper.writeValueAsString(new LoginPayload(email, password));
@@ -564,6 +570,156 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.users", greaterThanOrEqualTo(1)));
     }
 
+    /**
+     * Błąd 12: admin widzi APPROVED i może anulować (CANCELLED) z panelu —
+     * PATCH /api/admin/events/{id}/status, nie tylko anulacja przez organizatora.
+     */
+    @Test
+    void admin_listsApprovedEvents_andCancelsViaStatusPatch() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Admin Cancel Approved Tor",
+                "Event testowy — anulowanie zatwierdzonego wydarzenia przez admina.",
+                "Track Day", "2026-12-25", "12:00", null, null, "Tor AdminCancel", "Adminowo", "Mazowieckie",
+                null, 52.1, 21.1, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("APPROVED")));
+
+        mockMvc.perform(get("/api/admin/events/approved")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.id == '" + eventId + "')].status", contains("APPROVED")));
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("CANCELLED"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELLED")));
+    }
+
+    /**
+     * Błędy 13–14: po APPROVE wniosku rola w DB to ORGANIZER; stary JWT (claim USER)
+     * nadal daje dostęp do panelu i tworzenia wydarzeń (filtr ładuje rolę z DB).
+     * POST /api/auth/refresh wydaje nowy token z rolą ORGANIZER.
+     */
+    @Test
+    void organizerApplicationApproved_staleJwtCanAccessPanelAndCreateEvent_refreshUpdatesRole()
+            throws Exception {
+        String email = "org-app-" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
+        String password = "password123";
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String registerBody = objectMapper.writeValueAsString(new RegisterOrganizerPayload(
+                "OrgApplicant", email, password, "Tor Test Sp. z o.o.", "Track Day",
+                "Chcę organizować oficjalne track day na torze testowym."));
+        mockMvc.perform(post("/api/auth/register-organizer")
+                        .contentType("application/json")
+                        .content(registerBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.requiresVerification", is(true)));
+
+        User pendingUser = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        String code = pendingUser.getEmailVerificationCode();
+        assertNotBlank(code);
+
+        String verifyResponse = mockMvc.perform(post("/api/auth/verify-email")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new VerifyEmailPayload(email, code))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role", is("USER")))
+                .andReturn().getResponse().getContentAsString();
+        String staleToken = objectMapper.readTree(verifyResponse).get("token").asText();
+
+        mockMvc.perform(get("/api/organizer/events")
+                        .header("Authorization", "Bearer " + staleToken))
+                .andExpect(status().isForbidden());
+
+        String appsResponse = mockMvc.perform(get("/api/admin/organizer-applications")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        String appId = null;
+        for (JsonNode app : objectMapper.readTree(appsResponse)) {
+            if (email.equalsIgnoreCase(app.path("user").path("email").asText(null))
+                    || email.equalsIgnoreCase(app.path("userEmail").asText(null))) {
+                appId = app.get("id").asText();
+                break;
+            }
+            if (pendingUser.getId().equals(app.path("userId").asText(null))) {
+                appId = app.get("id").asText();
+                break;
+            }
+        }
+        if (appId == null) {
+            throw new AssertionError("Nie znaleziono wniosku organizatora dla " + email);
+        }
+
+        mockMvc.perform(patch("/api/admin/organizer-applications/" + appId)
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("APPROVED")));
+
+        // Ten sam token (claim USER) — filtr bierze ORGANIZER z DB.
+        mockMvc.perform(get("/api/organizer/events")
+                        .header("Authorization", "Bearer " + staleToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Event po APPROVE wniosku",
+                "Tworzenie wydarzenia starym JWT po nadaniu roli ORGANIZER w bazie.",
+                "Track Day", "2027-01-10", "09:00", null, null, "Tor Fresh Org", "Orgowo", "Mazowieckie",
+                null, 52.2, 21.2, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + staleToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Event po APPROVE wniosku")));
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .header("Authorization", "Bearer " + staleToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.role", is("ORGANIZER")))
+                .andExpect(jsonPath("$.token", notNullValue()));
+    }
+
+    /** Długi URL zdjęcia auta (kolumna TEXT / max 2000) — wcześniej psuło dodawanie do garażu. */
+    @Test
+    void garage_create_acceptsLongImageUrl() throws Exception {
+        String token = login("test@wp.pl", "test123");
+        String longUrl = "https://example.com/cars/" + "x".repeat(1800) + ".jpg";
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Mazda", "MX-5", 2019, "Track Day", "WW 99999",
+                        longUrl, "RWD", 184, 2000, 1050,
+                        true, false, true, true));
+        mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.imageUrl", is(longUrl)));
+    }
+
     private static void assertNotBlank(String value) {
         if (value == null || value.isBlank()) {
             throw new AssertionError("Expected non-blank value");
@@ -574,6 +730,10 @@ class ApiIntegrationTest {
     }
 
     private record RegisterPayload(String username, String email, String password) {
+    }
+
+    private record RegisterOrganizerPayload(String username, String email, String password,
+                                            String company, String businessType, String message) {
     }
 
     private record VerifyEmailPayload(String email, String code) {

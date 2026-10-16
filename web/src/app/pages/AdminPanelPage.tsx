@@ -13,7 +13,7 @@
  * Next.js App Router z middleware ochrony roli.
  */
 import { useEffect, useState } from "react";
-import { Users, Calendar, ClipboardList, Shield, Loader2, Check, X, Archive } from "lucide-react";
+import { Users, Calendar, ClipboardList, Shield, Loader2, Check, X, Archive, Ban } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -34,6 +34,7 @@ export function AdminPanelPage() {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [pendingEvents, setPendingEvents] = useState<PendingEvent[]>([]);
+  const [approvedEvents, setApprovedEvents] = useState<PendingEvent[]>([]);
   const [applications, setApplications] = useState<OrganizerApplication[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -41,15 +42,17 @@ export function AdminPanelPage() {
   const loadAll = async () => {
     setLoading(true);
     try {
-      const [s, u, pe, apps] = await Promise.all([
+      const [s, u, pe, ae, apps] = await Promise.all([
         api.get<AdminStats>("/api/admin/stats"),
         api.get<AdminUser[]>("/api/admin/users"),
         api.get<PendingEvent[]>("/api/admin/events/pending"),
+        api.get<PendingEvent[]>("/api/admin/events/approved"),
         api.get<OrganizerApplication[]>("/api/admin/organizer-applications"),
       ]);
       setStats(s);
       setUsers(u);
       setPendingEvents(pe);
+      setApprovedEvents(ae);
       setApplications(apps);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować panelu");
@@ -62,16 +65,31 @@ export function AdminPanelPage() {
     loadAll();
   }, []);
 
-  /** APPROVED / REJECTED / ARCHIVED — usuwa pozycję z listy pending. */
+  /** APPROVED / REJECTED / ARCHIVED / CANCELLED. */
   const updateEventStatus = async (id: string, status: string) => {
     try {
       await api.patch(`/api/admin/events/${id}/status`, { status });
       toast.success(`Status wydarzenia: ${status}`);
       setPendingEvents((prev) => prev.filter((e) => e.id !== id));
-      if (stats) setStats({ ...stats, pendingEvents: Math.max(0, stats.pendingEvents - 1) });
+      if (status === "CANCELLED" || status === "ARCHIVED" || status === "REJECTED") {
+        setApprovedEvents((prev) => prev.filter((e) => e.id !== id));
+      }
+      if (status === "APPROVED") {
+        setPendingEvents((prev) => prev.filter((e) => e.id !== id));
+        loadAll();
+        return;
+      }
+      if (stats && status !== "CANCELLED") {
+        setStats({ ...stats, pendingEvents: Math.max(0, stats.pendingEvents - 1) });
+      }
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
     }
+  };
+
+  const cancelApprovedEvent = async (id: string) => {
+    if (!confirm("Anulować to zatwierdzone wydarzenie? Zgłoszenia uczestników zostaną anulowane.")) return;
+    await updateEventStatus(id, "CANCELLED");
   };
 
   /** Zmiana roli USER / ORGANIZER / ADMIN (nie dla własnego konta w UI). */
@@ -88,7 +106,11 @@ export function AdminPanelPage() {
   const updateApplication = async (id: string, status: "APPROVED" | "REJECTED") => {
     try {
       await api.patch(`/api/admin/organizer-applications/${id}`, { status });
-      toast.success(`Wniosek: ${status}`);
+      toast.success(
+        status === "APPROVED"
+          ? "Wniosek APPROVED — użytkownik powinien otworzyć Panel org. (sesja odświeży się automatycznie)"
+          : `Wniosek: ${status}`,
+      );
       setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
       if (stats && status === "APPROVED") {
         setStats({ ...stats, pendingApps: Math.max(0, stats.pendingApps - 1) });
@@ -143,7 +165,8 @@ export function AdminPanelPage() {
 
         <Tabs defaultValue="events" className="space-y-6">
           <TabsList className="bg-[#1a1a1a] border border-[#2a2a2a] flex-wrap h-auto">
-            <TabsTrigger value="events">Wydarzenia ({pendingEvents.length})</TabsTrigger>
+            <TabsTrigger value="events">Do akceptacji ({pendingEvents.length})</TabsTrigger>
+            <TabsTrigger value="approved">Zatwierdzone ({approvedEvents.length})</TabsTrigger>
             <TabsTrigger value="users">Użytkownicy ({users.length})</TabsTrigger>
             <TabsTrigger value="applications">Wnioski ({applications.filter((a) => a.status === "PENDING").length})</TabsTrigger>
           </TabsList>
@@ -177,6 +200,48 @@ export function AdminPanelPage() {
                       <Button size="sm" variant="outline" onClick={() => updateEventStatus(event.id, "REJECTED")} className="border-red-800 text-red-400">
                         <X className="w-4 h-4 mr-1" />
                         Odrzuć
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => updateEventStatus(event.id, "ARCHIVED")} className="border-[#2a2a2a] text-white">
+                        <Archive className="w-4 h-4 mr-1" />
+                        Archiwum
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="approved" className="space-y-4">
+            {approvedEvents.length === 0 ? (
+              <p className="text-[#9ca3af] text-center py-8">Brak zatwierdzonych wydarzeń.</p>
+            ) : (
+              approvedEvents.map((event) => (
+                <Card key={event.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
+                  <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        <Badge className="bg-[var(--race-accent)] text-[#121212]">{event.category}</Badge>
+                        <Badge variant="outline" className="border-green-800 text-green-400">
+                          {eventStatusLabel(event.status)}
+                        </Badge>
+                      </div>
+                      <h3 className="font-display text-white" style={{ fontWeight: 800 }}>
+                        {event.name}
+                      </h3>
+                      <p className="text-[#9ca3af] text-sm">
+                        {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "—"}
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => cancelApprovedEvent(event.id)}
+                        className="border-red-900 text-red-400 hover:bg-red-950"
+                      >
+                        <Ban className="w-4 h-4 mr-1" />
+                        Anuluj wydarzenie
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => updateEventStatus(event.id, "ARCHIVED")} className="border-[#2a2a2a] text-white">
                         <Archive className="w-4 h-4 mr-1" />

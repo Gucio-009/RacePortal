@@ -11,7 +11,7 @@
  * pełna galeria dopiero w kolejnej iteracji produktu.
  */
 import { useEffect, useMemo, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
@@ -151,10 +151,10 @@ export function GalleryPage() {
                   <DialogTitle className="font-display text-white" style={{ fontSize: "24px", fontWeight: 800 }}>
                     {selected.title}
                   </DialogTitle>
+                  <DialogDescription className="text-[#9ca3af]">
+                    {selected.event} · {selected.date}
+                  </DialogDescription>
                 </DialogHeader>
-                <p className="text-[#9ca3af] mt-2">
-                  {selected.event} · {selected.date}
-                </p>
               </div>
             </>
           )}

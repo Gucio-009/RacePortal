@@ -246,6 +246,16 @@ public class AuthService {
         return toUserDto(user);
     }
 
+    /**
+     * Odświeża JWT na podstawie aktualnej roli w DB (np. po APPROVE wniosku organizatora).
+     */
+    @Transactional(readOnly = true)
+    public AuthResponse refreshSession(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
+    }
+
     @Transactional
     public UserDto updateMe(String userId, UpdateMeRequest request) {
         User user = userRepository.findById(userId)

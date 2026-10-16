@@ -10,6 +10,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import pl.raceportal.domain.User;
+import pl.raceportal.repository.UserRepository;
 
 import java.io.IOException;
 
@@ -17,12 +19,9 @@ import java.io.IOException;
  * Filtr HTTP: odczytuje nagłówek {@code Authorization: Bearer &lt;jwt&gt;}
  * i ustawia autentyczację w {@link SecurityContextHolder}.
  * <p>
- * Rola w architekturze: most między JWT a Spring Security — działa przed
- * {@code UsernamePasswordAuthenticationFilter}. Nieprawidłowy token czyści kontekst
- * (request idzie dalej; chronione endpointy zwrócą 401).
- * Technologie: Spring Security, JJWT.
+ * Rola jest zawsze ładowana z bazy (nie z claim JWT), żeby po APPROVE wniosku
+ * organizatora / zmianie roli w adminie uprawnienia działały bez ponownego logowania.
  * </p>
- * Pomysł (alt): Spring OAuth2 Resource Server ({@code jwt} decoder) zamiast własnego filtra.
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -30,15 +29,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
-    public JwtAuthFilter(JwtService jwtService) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository) {
         this.jwtService = jwtService;
+        this.userRepository = userRepository;
     }
 
-    /**
-     * Jeśli jest Bearer token — parsuje claims i ustawia {@link UserPrincipal};
-     * przy błędzie JWT czyści kontekst i kontynuuje łańcuch.
-     */
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                      @NonNull HttpServletResponse response,
@@ -47,10 +44,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith(BEARER_PREFIX)) {
             String token = header.substring(BEARER_PREFIX.length());
             try {
-                UserPrincipal principal = jwtService.toPrincipal(jwtService.parseClaims(token));
-                var authentication = new UsernamePasswordAuthenticationToken(
-                        principal, null, principal.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                UserPrincipal fromToken = jwtService.toPrincipal(jwtService.parseClaims(token));
+                User user = userRepository.findById(fromToken.getId()).orElse(null);
+                if (user == null) {
+                    SecurityContextHolder.clearContext();
+                } else {
+                    UserPrincipal principal = UserPrincipal.fromUser(user);
+                    var authentication = new UsernamePasswordAuthenticationToken(
+                            principal, null, principal.getAuthorities());
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             } catch (JwtException | IllegalArgumentException ex) {
                 SecurityContextHolder.clearContext();
             }

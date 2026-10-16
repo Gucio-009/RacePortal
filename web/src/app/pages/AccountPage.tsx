@@ -24,6 +24,7 @@ import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { toast } from "sonner";
 import { userInitials } from "../lib/types";
+import { validateInstagramUrl, validatePersonName, validatePhone } from "../lib/profileValidation";
 
 export function AccountPage() {
   const { user, updateProfile, changePassword } = useAuth();
@@ -64,6 +65,22 @@ export function AccountPage() {
   const saveProfile = async () => {
     if (!username.trim() || username.trim().length < 2) {
       toast.error("Nazwa użytkownika musi mieć min. 2 znaki");
+      return;
+    }
+    const nameErr =
+      validatePersonName(firstName, "Imię") || validatePersonName(lastName, "Nazwisko");
+    if (nameErr) {
+      toast.error(nameErr);
+      return;
+    }
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) {
+      toast.error(phoneErr);
+      return;
+    }
+    const igErr = validateInstagramUrl(instagramUrl);
+    if (igErr) {
+      toast.error(igErr);
       return;
     }
     setSavingProfile(true);
@@ -158,50 +175,77 @@ export function AccountPage() {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-white">Imię</Label>
+                  <Label htmlFor="account-firstName" className="text-white">
+                    Imię
+                  </Label>
                   <Input
+                    id="account-firstName"
+                    name="firstName"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    maxLength={50}
+                    autoComplete="given-name"
                     className="bg-[#121212] border-[#2a2a2a] text-white"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-white">Nazwisko</Label>
+                  <Label htmlFor="account-lastName" className="text-white">
+                    Nazwisko
+                  </Label>
                   <Input
+                    id="account-lastName"
+                    name="lastName"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    maxLength={50}
+                    autoComplete="family-name"
                     className="bg-[#121212] border-[#2a2a2a] text-white"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="text-white flex items-center gap-2">
+                <Label htmlFor="account-phone" className="text-white flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[var(--race-accent)]" />
                   Telefon
                 </Label>
                 <Input
+                  id="account-phone"
+                  name="phone"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  maxLength={16}
+                  autoComplete="tel"
+                  placeholder="+48 600 100 200"
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
+                <p className="text-xs text-[#9ca3af]">9–15 cyfr (z kierunkowym), max 16 znaków w polu.</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Adres zamieszkania</Label>
+                <Label htmlFor="account-address" className="text-white">
+                  Adres zamieszkania
+                </Label>
                 <Input
+                  id="account-address"
+                  name="address"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Ulica, kod, miasto"
+                  autoComplete="street-address"
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Instagram</Label>
+                <Label htmlFor="account-instagram" className="text-white">
+                  Instagram
+                </Label>
                 <Input
+                  id="account-instagram"
+                  name="instagramUrl"
                   type="url"
                   value={instagramUrl}
                   onChange={(e) => setInstagramUrl(e.target.value)}
-                  placeholder="https://instagram.com/..."
+                  placeholder="https://www.instagram.com/nazwa/"
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                 />
               </div>

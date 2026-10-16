@@ -21,7 +21,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { LocationMapPicker } from "../LocationMapPicker";
 import { EVENT_CATEGORY_GROUPS } from "../../lib/eventCategories";
@@ -65,9 +65,9 @@ export function OrganizerEventFormDialog({
           <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
             {editingId ? "Edytuj wydarzenie" : "Nowe wydarzenie"}
           </DialogTitle>
-          <p className="text-sm text-[#9ca3af]">
+          <DialogDescription className="text-[#9ca3af]">
             Większość pól wybierasz z listy — „Inne…” tylko gdy potrzebujesz własnej wartości.
-          </p>
+          </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
           <div className="space-y-2 sm:col-span-2">

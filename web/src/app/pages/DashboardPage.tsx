@@ -21,7 +21,7 @@ import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { AvatarPicker } from "../components/AvatarPicker";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar, Registration } from "../lib/types";
@@ -399,6 +399,9 @@ export function DashboardPage() {
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
               Edytuj profil
             </DialogTitle>
+            <DialogDescription className="text-[#9ca3af]">
+              Zmień nazwę użytkownika lub awatar widoczne na koncie.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="flex justify-center">

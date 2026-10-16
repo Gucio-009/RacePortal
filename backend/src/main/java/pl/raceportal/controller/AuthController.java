@@ -106,6 +106,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.me(currentUser.getId()));
     }
 
+    /** Nowy JWT z rolą z DB — po zmianie roli (org/admin) bez ponownego logowania. */
+    @PostMapping("/refresh")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AuthResponse> refresh(@AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(authService.refreshSession(currentUser.getId()));
+    }
+
     /** Aktualizacja profilu (username, avatar, dane osobowe, prawo jazdy / PZM). */
     @PatchMapping("/me")
     @PreAuthorize("isAuthenticated()")

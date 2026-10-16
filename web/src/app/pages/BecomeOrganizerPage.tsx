@@ -39,7 +39,6 @@ export function BecomeOrganizerPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Gate po stronie UI — token i tak jest wymagany przez API.
     if (!isAuthenticated) {
       toast.info("Zaloguj się, aby wysłać wniosek");
       navigate("/login");
@@ -103,23 +102,28 @@ export function BecomeOrganizerPage() {
               </p>
             )}
             <div className="space-y-2">
-              <Label className="text-white flex items-center gap-2">
+              <Label htmlFor="org-apply-company" className="text-white flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-[var(--race-accent)]" />
                 Firma / organizacja *
               </Label>
               <Input
+                id="org-apply-company"
+                name="company"
                 required
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="bg-[#121212] border-[#2a2a2a] text-white h-12"
                 placeholder="np. Tor Racing Sp. z o.o."
+                autoComplete="organization"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">
+              <Label htmlFor="org-apply-businessType" className="text-white">
                 Typ działalności <span className="text-red-500 font-bold">*</span>
               </Label>
               <select
+                id="org-apply-businessType"
+                name="businessType"
                 required
                 value={businessType}
                 onChange={(e) => setBusinessType(e.target.value)}
@@ -134,11 +138,13 @@ export function BecomeOrganizerPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label className="text-white flex items-center gap-2">
+              <Label htmlFor="org-apply-message" className="text-white flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-[var(--race-accent)]" />
                 Wiadomość *
               </Label>
               <Textarea
+                id="org-apply-message"
+                name="message"
                 required
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

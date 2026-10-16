@@ -18,11 +18,12 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { Switch } from "../components/ui/switch";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES } from "../lib/carMatch";
+import { validateHttpUrl } from "../lib/profileValidation";
 import { toast } from "sonner";
 
 const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
@@ -149,7 +150,8 @@ function validateGarageForm(form: typeof emptyForm): string | null {
     return "Pojemność (cm³) jest wymagana (0 = EV)";
   }
   if (!form.weightKg.trim() || Number(form.weightKg) <= 0) return "Masa (kg) jest wymagana";
-  if (!form.imageUrl.trim()) return "Zdjęcie auta (URL) jest wymagane";
+  const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
+  if (imageErr) return imageErr;
   return null;
 }
 
@@ -216,7 +218,16 @@ export function GaragePage() {
       setEditingId(null);
       loadCars();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się zapisać auta");
+      if (e instanceof ApiError) {
+        const details = e.details
+          ? Object.entries(e.details)
+              .map(([k, v]) => `${k}: ${v}`)
+              .join("; ")
+          : "";
+        toast.error(details ? `${e.message} (${details})` : e.message);
+      } else {
+        toast.error("Nie udało się zapisać auta");
+      }
     } finally {
       setSaving(false);
     }
@@ -327,6 +338,9 @@ export function GaragePage() {
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
+            <DialogDescription className="text-[#9ca3af]">
+              Wypełnij wymagane pola pojazdu. Zdjęcie — publiczny URL (http/https), max 2000 znaków.
+            </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             <div className="space-y-2">

@@ -215,6 +215,13 @@ public class GarageService {
         if (request.imageUrl() == null || request.imageUrl().isBlank()) {
             throw ApiException.badRequest("Zdjęcie pojazdu jest wymagane");
         }
+        String image = request.imageUrl().trim();
+        if (image.length() > 2000) {
+            throw ApiException.badRequest("URL zdjęcia jest zbyt długi (max 2000 znaków)");
+        }
+        if (!image.startsWith("http://") && !image.startsWith("https://")) {
+            throw ApiException.badRequest("URL zdjęcia musi zaczynać się od http:// lub https://");
+        }
     }
 
     private static String blankToNull(String value) {

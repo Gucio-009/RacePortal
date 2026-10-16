@@ -2,6 +2,7 @@ package pl.raceportal.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
@@ -22,11 +23,22 @@ public final class AuthDtos {
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
             @NotBlank @Size(min = 6, max = 100) String password,
-            @Size(max = 80) String firstName,
-            @Size(max = 80) String lastName,
-            @Size(max = 30) String phone,
+            @Size(max = 50)
+            @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\s'-]{1,49}$", message = "Imię: tylko litery (2–50)")
+            String firstName,
+            @Size(max = 50)
+            @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\s'-]{1,49}$", message = "Nazwisko: tylko litery (2–50)")
+            String lastName,
+            @Size(max = 16)
+            @Pattern(regexp = "^$|^\\+?[0-9\\s-]{9,16}$", message = "Telefon: nieprawidłowy format")
+            String phone,
             @Size(max = 255) String address,
-            @Size(max = 500) String instagramUrl,
+            @Size(max = 500)
+            @Pattern(
+                    regexp = "^$|^(https?://)?(www\\.)?instagram\\.com/.+$",
+                    message = "Instagram: podaj URL instagram.com"
+            )
+            String instagramUrl,
             Boolean hasDrivingLicenseB,
             @Size(max = 40) String pzmLicense
     ) {
@@ -87,11 +99,22 @@ public final class AuthDtos {
     public record UpdateMeRequest(
             @Size(min = 2, max = 40) String username,
             String avatar,
-            @Size(max = 80) String firstName,
-            @Size(max = 80) String lastName,
-            @Size(max = 30) String phone,
+            @Size(max = 50)
+            @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\s'-]{1,49}$", message = "Imię: tylko litery (2–50)")
+            String firstName,
+            @Size(max = 50)
+            @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\s'-]{1,49}$", message = "Nazwisko: tylko litery (2–50)")
+            String lastName,
+            @Size(max = 16)
+            @Pattern(regexp = "^$|^\\+?[0-9\\s-]{9,16}$", message = "Telefon: nieprawidłowy format")
+            String phone,
             @Size(max = 255) String address,
-            @Size(max = 500) String instagramUrl,
+            @Size(max = 500)
+            @Pattern(
+                    regexp = "^$|^(https?://)?(www\\.)?instagram\\.com/.+$",
+                    message = "Instagram: podaj URL instagram.com"
+            )
+            String instagramUrl,
             Boolean hasDrivingLicenseB,
             @Size(max = 40) String pzmLicense
     ) {

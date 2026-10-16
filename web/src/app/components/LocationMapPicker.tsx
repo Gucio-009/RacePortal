@@ -20,6 +20,7 @@ import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import { MAP_TILE_ATTRIBUTION, MAP_TILE_URL } from "../lib/mapTiles";
 
 // Vite: bez mergeOptions pinezki Leaflet są „zepsute” (404 na ikonach).
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -67,8 +68,20 @@ function FlyToPin({ lat, lng }: { lat: number | null; lng: number | null }) {
 function InvalidateSize() {
   const map = useMap();
   useEffect(() => {
-    const t = window.setTimeout(() => map.invalidateSize(), 120);
-    return () => window.clearTimeout(t);
+    let cancelled = false;
+    const t = window.setTimeout(() => {
+      if (cancelled) return;
+      try {
+        if (!map.getContainer()?.isConnected) return;
+        map.invalidateSize({ animate: false });
+      } catch {
+        /* dialog zamknięty przed timeoutem — ignoruj _leaflet_pos */
+      }
+    }, 120);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(t);
+    };
   }, [map]);
   return null;
 }
@@ -86,10 +99,7 @@ export function LocationMapPicker({ lat, lng, onChange, height = "260px", classN
         scrollWheelZoom
         className="h-full w-full z-0"
       >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
+        <TileLayer attribution={MAP_TILE_ATTRIBUTION} url={MAP_TILE_URL} />
         <InvalidateSize />
         <ClickToSetPin onChange={onChange} />
         <FlyToPin lat={lat} lng={lng} />

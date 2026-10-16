@@ -1,7 +1,7 @@
 /**
  * EventsMapView — mapa Leaflet (react-leaflet) z markerami wydarzeń.
  *
- * Stack: Leaflet + dark tiles CARTO (`dark_all`). CSS Leaflet importowany w `main.tsx`.
+ * Stack: Leaflet + kafelki OpenStreetMap (bez API key). CSS Leaflet w `main.tsx`.
  *
  * Ikony Vite: domyślne URL-e Leaflet (`marker-icon.png`) nie działają z bundlerem —
  * importujemy PNG-i i `L.Icon.Default.mergeOptions`, żeby pinezki były widoczne.
@@ -21,6 +21,7 @@ import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import { Link } from "react-router";
 import { eventImage } from "../lib/types";
+import { MAP_TILE_ATTRIBUTION, MAP_TILE_URL } from "../lib/mapTiles";
 
 // Vite: popraw ścieżki ikon (Leaflet domyślnie szuka względnych URL-i z CSS).
 delete (L.Icon.Default.prototype as unknown as { _getIconUrl?: unknown })._getIconUrl;
@@ -53,16 +54,34 @@ function FitBounds({ markers, polyline }: { markers: MapMarker[]; polyline?: [nu
   const map = useMap();
 
   useEffect(() => {
+    let cancelled = false;
     const points: [number, number][] = [
       ...markers.map((m) => [m.lat, m.lng] as [number, number]),
       ...(polyline ?? []),
     ];
     if (points.length === 0) return;
-    if (points.length === 1) {
-      map.setView(points[0], 12);
-      return;
-    }
-    map.fitBounds(L.latLngBounds(points), { padding: [40, 40] });
+
+    const apply = () => {
+      if (cancelled) return;
+      try {
+        // Unikaj _leaflet_pos gdy mapa jest w trakcie odmontowania / bez kontenera.
+        if (!map.getContainer()?.isConnected) return;
+        if (points.length === 1) {
+          map.setView(points[0], 12, { animate: false });
+          return;
+        }
+        map.fitBounds(L.latLngBounds(points), { padding: [40, 40], animate: false });
+      } catch {
+        /* mapa odmontowana w trakcie zoomu */
+      }
+    };
+
+    map.whenReady(() => {
+      requestAnimationFrame(apply);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [map, markers, polyline]);
 
   return null;
@@ -79,10 +98,7 @@ export function EventsMapView({
   return (
     <div className={`rounded-lg overflow-hidden border border-[#2a2a2a] ${className}`} style={{ height }}>
       <MapContainer center={center} zoom={zoom} scrollWheelZoom className="h-full w-full z-0">
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-        />
+        <TileLayer attribution={MAP_TILE_ATTRIBUTION} url={MAP_TILE_URL} />
         <FitBounds markers={markers} polyline={polyline} />
         {markers.map((marker) => (
           <Marker key={marker.id} position={[marker.lat, marker.lng]}>

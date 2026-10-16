@@ -66,11 +66,18 @@ public class AdminController {
         return ResponseEntity.ok(adminService.pendingEvents());
     }
 
-    /** Zatwierdzenie / odrzucenie / inna zmiana statusu wydarzenia. */
+    /** Ostatnie APPROVED — anulowanie z panelu admina. */
+    @GetMapping("/events/approved")
+    public ResponseEntity<List<EventResponse>> approvedEvents() {
+        return ResponseEntity.ok(adminService.approvedEvents());
+    }
+
+    /** Zatwierdzenie / odrzucenie / anulowanie wydarzenia. */
     @PatchMapping("/events/{id}/status")
     public ResponseEntity<EventResponse> updateEventStatus(@PathVariable String id,
-                                                            @Valid @RequestBody EventStatusUpdateRequest request) {
-        return ResponseEntity.ok(adminService.updateEventStatus(id, request));
+                                                            @Valid @RequestBody EventStatusUpdateRequest request,
+                                                            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(adminService.updateEventStatus(id, request, currentUser));
     }
 
     @GetMapping("/organizer-applications")

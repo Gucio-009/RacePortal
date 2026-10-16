@@ -29,6 +29,9 @@ public interface EventRepository extends JpaRepository<Event, String>, JpaSpecif
     /** Kolejka moderacji (np. PENDING) — najstarsze pierwsze. */
     List<Event> findByStatusOrderByCreatedAtAsc(EventStatus status);
 
+    /** Ostatnie wydarzenia w danym statusie (panel admina — moderacja po APPROVE). */
+    List<Event> findTop50ByStatusOrderByUpdatedAtDesc(EventStatus status);
+
     /** Lista po zestawie statusów (np. APPROVED+ARCHIVED) posortowana kategorią. */
     List<Event> findByStatusInOrderByCategoryAsc(List<EventStatus> statuses);
 

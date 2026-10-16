@@ -124,18 +124,31 @@ public class AdminService {
                 .toList();
     }
 
+    /** Ostatnie zatwierdzone wydarzenia — do anulowania z panelu admina. */
+    @Transactional(readOnly = true)
+    public List<EventResponse> approvedEvents() {
+        return eventRepository.findTop50ByStatusOrderByUpdatedAtDesc(EventStatus.APPROVED).stream()
+                .map(eventService::serialize)
+                .toList();
+    }
+
     /**
      * Moderacja statusu wydarzenia (APPROVED/REJECTED/…); czyści cache {@code events};
-     * powiadamia organizatora mailem.
+     * powiadamia organizatora mailem. CANCELLED → pełna anulacja ze zgłoszeniami.
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
-    public EventResponse updateEventStatus(String eventId, EventStatusUpdateRequest request) {
+    public EventResponse updateEventStatus(String eventId, EventStatusUpdateRequest request,
+                                            UserPrincipal currentUser) {
         EventStatus status;
         try {
             status = EventStatus.valueOf(request.status().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException e) {
             throw ApiException.badRequest("Nieprawidłowy status");
+        }
+
+        if (status == EventStatus.CANCELLED) {
+            return eventService.cancelEvent(eventId, currentUser);
         }
 
         Event event = eventRepository.findById(eventId)
