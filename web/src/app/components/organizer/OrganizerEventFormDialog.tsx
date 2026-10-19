@@ -358,15 +358,17 @@ export function OrganizerEventFormDialog({
             )}
           </div>
 
-          <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
-            <div>
+          <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
+            <div className="min-w-0">
               <Label className="text-white">Przyjmuj zgłoszenia na stronie</Label>
               <p className="text-xs text-[#9ca3af]">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
             </div>
-            <Switch
-              checked={form.acceptRegistrations}
-              onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
-            />
+            <div className="shrink-0">
+              <Switch
+                checked={form.acceptRegistrations}
+                onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
+              />
+            </div>
           </div>
 
           {form.acceptRegistrations && (
@@ -385,12 +387,14 @@ export function OrganizerEventFormDialog({
                     ["requireRegistered", "Zarejestrowane auto"],
                   ] as const
                 ).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between gap-2 rounded border border-[#2a2a2a] px-3 py-2">
-                    <Label className="text-white text-sm">{label}</Label>
-                    <Switch
-                      checked={form[key]}
-                      onCheckedChange={(v) => setForm({ ...form, [key]: v })}
-                    />
+                  <div key={key} className="flex items-center justify-between gap-3 rounded border border-[#2a2a2a] px-3 py-2 overflow-hidden">
+                    <Label className="text-white text-sm min-w-0">{label}</Label>
+                    <div className="shrink-0">
+                      <Switch
+                        checked={form[key]}
+                        onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
@@ -438,12 +442,14 @@ export function OrganizerEventFormDialog({
           </div>
 
           {/* Płatne: flow ACCEPTED → proof → CONFIRMED (patrz OrganizerRegistrationsList). */}
-          <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
-            <div>
+          <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
+            <div className="min-w-0">
               <Label className="text-white">Wydarzenie płatne</Label>
               <p className="text-xs text-[#9ca3af]">Wpisowe + weryfikacja przelewu</p>
             </div>
-            <Switch checked={form.paid} onCheckedChange={(v) => setForm({ ...form, paid: v })} />
+            <div className="shrink-0">
+              <Switch checked={form.paid} onCheckedChange={(v) => setForm({ ...form, paid: v })} />
+            </div>
           </div>
 
           {form.paid && (

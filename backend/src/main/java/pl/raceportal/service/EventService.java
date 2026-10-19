@@ -373,6 +373,7 @@ public class EventService {
                 request.spectatorFee(), request.externalUrl(), request.requireDrivingLicense(),
                 request.requirePzmLicense(), request.requireOc(), request.requirePt(),
                 request.requireCage(), request.requireRegistered());
+        ensureEndNotBeforeStart(event);
 
         event = eventRepository.save(event);
         return serialize(event);
@@ -430,6 +431,8 @@ public class EventService {
             event.setStatus(EventStatus.PENDING);
         }
 
+        ensureEndNotBeforeStart(event);
+
         event = eventRepository.save(event);
         EventResponse response = serialize(event);
 
@@ -479,6 +482,15 @@ public class EventService {
             mailService.send(registration.getUser().getEmail(), "Zmiany w wydarzeniu: " + event.getName(),
                     "<p>Organizator zaktualizował informacje o wydarzeniu <strong>" + event.getName() +
                             "</strong>, na które jesteś zgłoszony/a.</p>");
+        }
+    }
+
+    /** Koniec wydarzenia nie może być przed datą startu. */
+    private void ensureEndNotBeforeStart(Event event) {
+        if (event.getEndDate() != null && event.getDate() != null
+                && event.getEndDate().isBefore(event.getDate())) {
+            throw ApiException.badRequest(
+                    "Data zakończenia nie może być wcześniejsza niż data startu wydarzenia");
         }
     }
 

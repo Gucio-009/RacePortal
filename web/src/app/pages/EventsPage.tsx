@@ -20,7 +20,6 @@ import { format, parseISO, isSameDay } from "date-fns";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../components/ui/select";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { PaidEventBadge } from "../components/PaidEventBadge";
@@ -216,7 +215,7 @@ export function EventsPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 items-end">
           <div className="relative lg:col-span-2">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
             <Input
@@ -293,14 +292,22 @@ export function EventsPage() {
               ))}
             </SelectContent>
           </Select>
-          <div className="space-y-1">
-            <Label className="text-xs text-[#9ca3af]">Od daty</Label>
-            <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11" />
-          </div>
-          <div className="space-y-1">
-            <Label className="text-xs text-[#9ca3af]">Do daty</Label>
-            <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11" />
-          </div>
+          <Input
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+            aria-label="Od daty"
+            title="Od daty"
+            className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+          />
+          <Input
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+            aria-label="Do daty"
+            title="Do daty"
+            className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+          />
           {isAuthenticated && (
             <Select value={carId} onValueChange={setCarId}>
               <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 lg:col-span-2">
@@ -349,11 +356,12 @@ export function EventsPage() {
             <EventsMapView markers={markers} height="560px" />
           )
         ) : view === "calendar" ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4 text-white rdp-dark">
+          <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8">
+            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4 text-white rdp-dark overflow-x-auto">
               <DayPicker
                 mode="single"
                 locale={pl}
+                numberOfMonths={2}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
                 selected={selectedDay}
@@ -365,6 +373,7 @@ export function EventsPage() {
               <style>{`
                 .rdp-has-event:not([disabled]) { background: color-mix(in srgb, var(--race-accent) 25%, transparent); border-radius: 6px; color: var(--race-accent); font-weight: 700; }
                 .rdp { --rdp-accent-color: var(--race-accent); --rdp-background-color: #1a1a1a; color: #fff; }
+                .rdp-dark .rdp-nav_button, .rdp-dark .rdp-nav_icon, .rdp-dark svg { color: #fff; fill: #fff; }
               `}</style>
             </div>
             <div className="space-y-3">
@@ -409,8 +418,8 @@ export function EventsPage() {
                       </div>
                     </div>
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-2 text-[var(--race-accent)] mb-2 text-sm">
-                        <CalendarIcon className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-white mb-2 text-sm">
+                        <CalendarIcon className="w-4 h-4 text-white" />
                         {event.dateLabel || event.date}
                       </div>
                       <h3 className="text-white mb-2 font-display group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>

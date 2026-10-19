@@ -135,24 +135,108 @@ function buildPayload(form: typeof emptyForm, forUpdate: boolean) {
   };
 }
 
-function validateGarageForm(form: typeof emptyForm): string | null {
-  if (!form.make.trim()) return "Marka jest wymagana";
-  if (!form.model.trim()) return "Model jest wymagany";
-  if (!form.year.trim()) return "Rok produkcji jest wymagany";
-  const year = Number(form.year);
+const GARAGE_FIELD_LABELS: Record<string, string> = {
+  make: "Marka",
+  model: "Model",
+  year: "Rok produkcji",
+  driveType: "Rodzaj napędu",
+  powerHp: "Moc (KM)",
+  engineCc: "Pojemność (cm³)",
+  weightKg: "Masa (kg)",
+  imageUrl: "URL zdjęcia",
+};
+
+/** Dodatnia liczba bez wiodącego zera (0 samo w sobie też odrzucamy, poza engineCc). */
+function invalidLeadingZeroOrZero(raw: string, allowZero = false): boolean {
+  const t = raw.trim();
+  if (!t) return true;
+  if (/^0\d+/.test(t)) return true;
+  const n = Number(t);
+  if (!Number.isFinite(n)) return true;
+  if (allowZero) return n < 0;
+  return n <= 0;
+}
+
+function validateGarageForm(form: typeof emptyForm): Record<string, string> {
+  const errors: Record<string, string> = {};
   const maxYear = new Date().getFullYear();
-  if (!Number.isFinite(year) || year < 1900 || year > maxYear) {
-    return `Rok produkcji musi być w zakresie 1900–${maxYear}`;
+
+  if (!form.make.trim()) errors.make = "Marka jest wymagana";
+  if (!form.model.trim()) errors.model = "Model jest wymagany";
+
+  if (!form.year.trim()) {
+    errors.year = "Rok produkcji jest wymagany";
+  } else if (invalidLeadingZeroOrZero(form.year)) {
+    errors.year =
+      "Wartość w polu „Rok produkcji” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  } else {
+    const year = Number(form.year);
+    if (year < 1900 || year > maxYear) {
+      errors.year = `„Rok produkcji” musi być w zakresie 1900–${maxYear}`;
+    }
   }
-  if (!form.driveType) return "Rodzaj napędu jest wymagany";
-  if (!form.powerHp.trim() || Number(form.powerHp) <= 0) return "Moc (KM) jest wymagana";
-  if (form.engineCc.trim() === "" || Number(form.engineCc) < 0) {
-    return "Pojemność (cm³) jest wymagana (0 = EV)";
+
+  if (!form.driveType) errors.driveType = "Rodzaj napędu jest wymagany";
+
+  if (!form.powerHp.trim() || invalidLeadingZeroOrZero(form.powerHp)) {
+    errors.powerHp =
+      "Wartość w polu „Moc (KM)” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  } else if (Number(form.powerHp) > 5000) {
+    errors.powerHp = "„Moc (KM)” nie może być większe niż 5000";
   }
-  if (!form.weightKg.trim() || Number(form.weightKg) <= 0) return "Masa (kg) jest wymagana";
+
+  if (form.engineCc.trim() === "") {
+    errors.engineCc = "Pojemność (cm³) jest wymagana (0 = EV)";
+  } else if (/^0\d+/.test(form.engineCc.trim()) || Number(form.engineCc) < 0) {
+    errors.engineCc =
+      "Wartość w polu „Pojemność (cm³)” nie może zaczynać się od cyfry 0 (dozwolone samo 0 = EV).";
+  } else if (Number(form.engineCc) > 20000) {
+    errors.engineCc = "„Pojemność (cm³)” nie może być większe niż 20000";
+  }
+
+  if (!form.weightKg.trim() || invalidLeadingZeroOrZero(form.weightKg)) {
+    errors.weightKg =
+      "Wartość w polu „Masa (kg)” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  } else if (Number(form.weightKg) > 10000) {
+    errors.weightKg = "„Masa (kg)” nie może być większe niż 10000";
+  }
+
   const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
-  if (imageErr) return imageErr;
-  return null;
+  if (imageErr) errors.imageUrl = imageErr;
+
+  return errors;
+}
+
+function formatGarageApiError(e: ApiError): { message: string; fields: Record<string, string> } {
+  const fields: Record<string, string> = {};
+  if (e.details) {
+    for (const [key, raw] of Object.entries(e.details)) {
+      const label = GARAGE_FIELD_LABELS[key] || key;
+      const maxMatch = raw.match(/(?:mniejsze od|less than or equal to|<=)\s*(\d+)/i)
+        || raw.match(/(\d+)\s*$/);
+      if (/mniejsze|less than or equal|Max/i.test(raw) && maxMatch) {
+        fields[key] = `„${label}” nie może być większe niż ${maxMatch[1]}`;
+      } else if (/większe|greater|Min|zero|0/i.test(raw)) {
+        fields[key] =
+          `Wartość w polu „${label}” nie może zaczynać się od cyfry 0 ani wynosić zero.`;
+      } else {
+        fields[key] = `„${label}”: ${raw}`;
+      }
+    }
+  }
+  const unique = [...new Set(Object.values(fields))];
+  const message = unique.length
+    ? `Nieprawidłowe dane. ${unique.join(" ")}`
+    : e.message.startsWith("Nieprawidłowe")
+      ? e.message
+      : `Nieprawidłowe dane. ${e.message}`;
+  return { message, fields };
+}
+
+function fieldClass(hasError: boolean) {
+  return hasError
+    ? "bg-[#121212] border-red-500 text-white ring-1 ring-red-500/60"
+    : "bg-[#121212] border-[#2a2a2a] text-white";
 }
 
 export function GaragePage() {
@@ -163,6 +247,7 @@ export function GaragePage() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const loadCars = () => {
     setLoading(true);
@@ -187,22 +272,37 @@ export function GaragePage() {
   const openAdd = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setFieldErrors({});
     setDialogOpen(true);
   };
 
   const openEdit = (car: GarageCar) => {
     setEditingId(car.id);
     setForm(carToForm(car));
+    setFieldErrors({});
     setDialogOpen(true);
+  };
+
+  const setFormField = <K extends keyof typeof emptyForm>(key: K, value: (typeof emptyForm)[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    setFieldErrors((prev) => {
+      if (!prev[key as string]) return prev;
+      const next = { ...prev };
+      delete next[key as string];
+      return next;
+    });
   };
 
   /** POST nowe / PATCH istniejące — potem reload listy. */
   const handleSave = async () => {
-    const validationError = validateGarageForm(form);
-    if (validationError) {
-      toast.error(validationError);
+    const errors = validateGarageForm(form);
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      const first = Object.values(errors)[0];
+      toast.error(first.startsWith("Nieprawidłowe") ? first : `Nieprawidłowe dane. ${first}`);
       return;
     }
+    setFieldErrors({});
     setSaving(true);
     const payload = buildPayload(form, Boolean(editingId));
     try {
@@ -219,12 +319,9 @@ export function GaragePage() {
       loadCars();
     } catch (e) {
       if (e instanceof ApiError) {
-        const details = e.details
-          ? Object.entries(e.details)
-              .map(([k, v]) => `${k}: ${v}`)
-              .join("; ")
-          : "";
-        toast.error(details ? `${e.message} (${details})` : e.message);
+        const formatted = formatGarageApiError(e);
+        setFieldErrors(formatted.fields);
+        toast.error(formatted.message);
       } else {
         toast.error("Nie udało się zapisać auta");
       }
@@ -345,28 +442,31 @@ export function GaragePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             <div className="space-y-2">
               <ReqLabel required>Marka</ReqLabel>
-              <Input value={form.make} onChange={(e) => setForm({ ...form, make: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Input value={form.make} onChange={(e) => setFormField("make", e.target.value)} className={fieldClass(!!fieldErrors.make)} />
+              {fieldErrors.make && <p className="text-xs text-red-400">{fieldErrors.make}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Model</ReqLabel>
-              <Input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Input value={form.model} onChange={(e) => setFormField("model", e.target.value)} className={fieldClass(!!fieldErrors.model)} />
+              {fieldErrors.model && <p className="text-xs text-red-400">{fieldErrors.model}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Rok produkcji</ReqLabel>
               <Input
                 value={form.year}
-                onChange={(e) => setForm({ ...form, year: digitsOnly(e.target.value).slice(0, 4) })}
+                onChange={(e) => setFormField("year", digitsOnly(e.target.value).slice(0, 4))}
                 inputMode="numeric"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.year)}
               />
+              {fieldErrors.year && <p className="text-xs text-red-400">{fieldErrors.year}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Napęd</ReqLabel>
               <Select
                 value={form.driveType || "none"}
-                onValueChange={(v) => setForm({ ...form, driveType: v === "none" ? "" : v })}
+                onValueChange={(v) => setFormField("driveType", v === "none" ? "" : v)}
               >
-                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                <SelectTrigger className={fieldClass(!!fieldErrors.driveType)}>
                   <SelectValue placeholder="Wybierz napęd" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
@@ -378,33 +478,37 @@ export function GaragePage() {
                   ))}
                 </SelectContent>
               </Select>
+              {fieldErrors.driveType && <p className="text-xs text-red-400">{fieldErrors.driveType}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Moc (KM)</ReqLabel>
               <Input
                 value={form.powerHp}
-                onChange={(e) => setForm({ ...form, powerHp: digitsOnly(e.target.value) })}
+                onChange={(e) => setFormField("powerHp", digitsOnly(e.target.value))}
                 inputMode="numeric"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.powerHp)}
               />
+              {fieldErrors.powerHp && <p className="text-xs text-red-400">{fieldErrors.powerHp}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Pojemność (cm³)</ReqLabel>
               <Input
                 value={form.engineCc}
-                onChange={(e) => setForm({ ...form, engineCc: digitsOnly(e.target.value) })}
+                onChange={(e) => setFormField("engineCc", digitsOnly(e.target.value))}
                 inputMode="numeric"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.engineCc)}
               />
+              {fieldErrors.engineCc && <p className="text-xs text-red-400">{fieldErrors.engineCc}</p>}
             </div>
             <div className="space-y-2">
               <ReqLabel required>Masa (kg)</ReqLabel>
               <Input
                 value={form.weightKg}
-                onChange={(e) => setForm({ ...form, weightKg: digitsOnly(e.target.value) })}
+                onChange={(e) => setFormField("weightKg", digitsOnly(e.target.value))}
                 inputMode="numeric"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.weightKg)}
               />
+              {fieldErrors.weightKg && <p className="text-xs text-red-400">{fieldErrors.weightKg}</p>}
             </div>
             <div className="space-y-2">
               <Label className="text-white">Kategoria / klasa</Label>
@@ -434,22 +538,24 @@ export function GaragePage() {
               <Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
 
-            <div className="sm:col-span-2 flex items-center justify-between border border-[#2a2a2a] rounded-md p-3">
-              <div>
+            <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
+              <div className="min-w-0">
                 <ReqLabel required>Zarejestrowane</ReqLabel>
                 <p className="text-xs text-[#9ca3af]">Auto posiada ważną rejestrację</p>
               </div>
-              <Switch
-                checked={form.registered}
-                onCheckedChange={(v) =>
-                  setForm({
-                    ...form,
-                    registered: v,
-                    registrationType: v ? form.registrationType : "",
-                    kssNumber: v ? form.kssNumber : "",
-                  })
-                }
-              />
+              <div className="shrink-0">
+                <Switch
+                  checked={form.registered}
+                  onCheckedChange={(v) =>
+                    setForm({
+                      ...form,
+                      registered: v,
+                      registrationType: v ? form.registrationType : "",
+                      kssNumber: v ? form.kssNumber : "",
+                    })
+                  }
+                />
+              </div>
             </div>
 
             {form.registered && (
@@ -503,20 +609,30 @@ export function GaragePage() {
               ).map(([key, label]) => (
                 <div
                   key={key}
-                  className="flex items-center justify-between border border-[#2a2a2a] rounded-md p-3"
+                  className="flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden"
                 >
-                  <ReqLabel required>{label}</ReqLabel>
-                  <Switch
-                    checked={form[key]}
-                    onCheckedChange={(v) => setForm({ ...form, [key]: v })}
-                  />
+                  <div className="min-w-0">
+                    <ReqLabel required>{label}</ReqLabel>
+                  </div>
+                  <div className="shrink-0">
+                    <Switch
+                      checked={form[key]}
+                      onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                    />
+                  </div>
                 </div>
               ))}
             </div>
 
             <div className="space-y-2 sm:col-span-2">
               <ReqLabel required>URL zdjęcia</ReqLabel>
-              <Input value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://..." />
+              <Input
+                value={form.imageUrl}
+                onChange={(e) => setFormField("imageUrl", e.target.value)}
+                className={fieldClass(!!fieldErrors.imageUrl)}
+                placeholder="https://..."
+              />
+              {fieldErrors.imageUrl && <p className="text-xs text-red-400">{fieldErrors.imageUrl}</p>}
               <p className="text-xs text-[#9ca3af]">Upload plików — w kolejnej iteracji; na razie wymagany URL JPG/PNG.</p>
             </div>
             <div className="space-y-2">

@@ -34,8 +34,8 @@ import { PaidEventBadge } from "../components/PaidEventBadge";
 import { EventsMapView } from "../components/EventsMapView";
 import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
-import type { ApiEvent, Car, RouteResult } from "../lib/types";
-import { eventImage, eventStatusLabel, formatEntryFee } from "../lib/types";
+import type { ApiEvent, Car, Registration, RouteResult } from "../lib/types";
+import { eventImage, eventStatusLabel, formatEntryFee, isOpenRegistration } from "../lib/types";
 import { formatCarLabel, partitionCarsForEvent } from "../lib/carMatch";
 import { toast } from "sonner";
 
@@ -49,6 +49,7 @@ export function EventDetailPage() {
   const [carId, setCarId] = useState<string>("none");
   const [note, setNote] = useState("");
   const [registering, setRegistering] = useState(false);
+  const [myRegistration, setMyRegistration] = useState<Registration | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [route, setRoute] = useState<RouteResult | null>(null);
 
@@ -70,6 +71,23 @@ export function EventDetailPage() {
       .then(setCars)
       .catch(() => setCars([]));
   }, [isAuthenticated]);
+
+  // Aktywne zgłoszenie na to wydarzenie → przycisk „Wypisz się”.
+  useEffect(() => {
+    if (!isAuthenticated || !id) {
+      setMyRegistration(null);
+      return;
+    }
+    api
+      .get<Registration[]>("/api/registrations/mine")
+      .then((regs) => {
+        const active = regs.find(
+          (r) => r.eventId === id && isOpenRegistration(r.status),
+        );
+        setMyRegistration(active ?? null);
+      })
+      .catch(() => setMyRegistration(null));
+  }, [isAuthenticated, id]);
 
   // Podział aut: dopasowane do kategorii wydarzenia vs reszta garażu.
   const { recommended, other } = useMemo(
@@ -96,17 +114,34 @@ export function EventDetailPage() {
       return;
     }
     if (!event) return;
+    if (myRegistration) return;
 
     setRegistering(true);
     try {
-      await api.post("/api/registrations", {
+      const created = await api.post<Registration>("/api/registrations", {
         eventId: event.id,
         carId: carId !== "none" ? carId : undefined,
         note: note.trim() || undefined,
       });
+      setMyRegistration(created);
       toast.success(`Zgłoszenie na ${event.name} wysłane`);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się wysłać zgłoszenia");
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleUnregister = async () => {
+    if (!myRegistration) return;
+    if (!window.confirm("Na pewno wypisać się z tego wydarzenia?")) return;
+    setRegistering(true);
+    try {
+      await api.post(`/api/registrations/${myRegistration.id}/cancel`);
+      setMyRegistration(null);
+      toast.success("Wypisano z wydarzenia");
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się wypisać");
     } finally {
       setRegistering(false);
     }
@@ -281,7 +316,7 @@ export function EventDetailPage() {
               </div>
             )}
 
-            {isAuthenticated && event.status === "APPROVED" && (
+            {isAuthenticated && event.status === "APPROVED" && !myRegistration && (
               <>
                 <div className="space-y-2 pt-2 border-t border-[#2a2a2a]">
                   <div className="flex flex-wrap items-center justify-between gap-2">
@@ -373,19 +408,33 @@ export function EventDetailPage() {
             )}
 
             <Button
-              onClick={handleRegister}
-              disabled={registering || event.status !== "APPROVED"}
-              className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12 mt-2"
+              onClick={myRegistration ? handleUnregister : handleRegister}
+              disabled={
+                registering ||
+                (event.status !== "APPROVED" && !myRegistration)
+              }
+              className={
+                myRegistration
+                  ? "w-full border border-red-700 bg-transparent text-red-400 hover:bg-red-950 h-12 mt-2"
+                  : "w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12 mt-2"
+              }
               style={{ fontWeight: 800 }}
             >
               {registering
                 ? "WYSYŁANIE..."
                 : isAuthenticated
-                  ? event.status === "APPROVED"
-                    ? "ZAPISZ SIĘ"
-                    : "ZAPISY NIEDOSTĘPNE"
+                  ? myRegistration
+                    ? "WYPISZ SIĘ"
+                    : event.status === "APPROVED"
+                      ? "ZAPISZ SIĘ"
+                      : "ZAPISY NIEDOSTĘPNE"
                   : "ZALOGUJ I ZAPISZ SIĘ"}
             </Button>
+            {myRegistration && (
+              <p className="text-xs text-[#9ca3af] text-center mt-1">
+                Masz aktywne zgłoszenie — nie możesz zapisać się ponownie.
+              </p>
+            )}
             {!isAuthenticated && (
               <Link to="/login" className="block">
                 <Button variant="outline" className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">

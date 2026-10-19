@@ -131,6 +131,10 @@ export function OrganizerPanelPage() {
       toast.error("Dla płatnego wydarzenia podaj numer konta");
       return;
     }
+    if (form.endDate.trim() && form.endDate < form.date) {
+      toast.error("Data zakończenia nie może być wcześniejsza niż data startu wydarzenia");
+      return;
+    }
     setSaving(true);
     const payload = {
       name: form.name.trim(),
