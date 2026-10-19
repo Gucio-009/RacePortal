@@ -114,6 +114,28 @@ npx playwright test
 
 ---
 
+## Kategorie użytkowników
+
+- **Anonimowi** – przeglądanie wydarzeń.
+- **Kierowcy** – profil, garaż, zgłoszenia na wydarzenia.
+- **Organizatorzy** – dodawanie i edycja własnych eventów (po weryfikacji).
+- **Administratorzy** – zarządzanie treścią i moderacja.
+
+## Zespół projektowy
+
+**Kierownik projektu:** Michał Gutowski  
+
+**Frontend:** Natalia Otrombke, Oliwier Kasprowicz  
+**Backend:** Michał Gutowski, Miłosz Parkitny  
+**Fullstack & Testing & Security:** Wojciech Wronisz  
+**Opiekun projektu:** Marek Bednarczyk
+
+## Workflow (skrót)
+
+- PR z `feature/*` / `fix/*` → review → merge (release do `main` osobno).
+- Zakaz pushowania bezpośrednio na `main`.
+- Przed PR: lokalne testy frontend/backend.
+
 ## Dokumentacja
 
 | Plik | Zawartość |
@@ -123,3 +145,6 @@ npx playwright test
 | [`docs/testy/TESTY.md`](./docs/testy/TESTY.md) | Testy automatyczne |
 | [`docs/Guidelines.md`](./docs/Guidelines.md) | Wytyczne |
 | [`docs/ATTRIBUTIONS.md`](./docs/ATTRIBUTIONS.md) | Licencje / atrybucje |
+
+Pełen *Dokument Założeń Wstępnych*:  
+`02_DZW-GrA(Kasprowicz, Gutowski, Otrombke, Parkitny, Wronisz)_v1.1.pdf`
