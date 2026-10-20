@@ -53,7 +53,13 @@ Please ensure it has the correct permissions for this operation.
 
 Naprawa tokenu: [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → Create Token → szablon **Edit Cloudflare Workers** albo Custom z `Account` → `Cloudflare Pages` → **Edit**, plus dostęp do właściwego Account ID. Potem wklej nowy token jako `CLOUDFLARE_API_TOKEN` (Variable/Secret) albo w polu API token w Build settings.
 
-**Preferowane (bez wrangler / bez tokenu):** wyczyść **Deploy command** całkowicie i ustaw tylko **Build output directory** = `web/dist`. Integracja Git Pages sama wrzuca artefakty — omija `CLOUDFLARE_API_TOKEN` i błąd 10000.
+**Preferowane (bez wrangler / bez tokenu):** klasyczny produkt **Pages → Create project → Connect to Git** ma pole **Build output directory** = `web/dist` i **nie** wymaga Deploy command ani `CLOUDFLARE_API_TOKEN`.
+
+Jeśli jesteś w UI **Workers** (Build + Deploy command + API token) — to nie jest ten sam flow. Pusty Deploy + słaby token = fail. Wtedy:
+1. Kliknij **Save** (pasek „Unsaved changes” na dole).
+2. Sprawdź, czy `VITE_API_URL` ma pełne `….trycloudflare.com` (pole często ucina wizualnie — wartość musi kończyć się na `.com`).
+3. Albo napraw token (Pages Edit), Deploy: `npx wrangler pages deploy web/dist --project-name=RacePortal --commit-dirty=true`.
+4. W repo jest `wrangler.toml` (`pages_build_output_dir = "web/dist"`) — wrangler bierze stąd katalog i nazwę projektu.
 
 ### Czego unikać (już wybuchało)
 
