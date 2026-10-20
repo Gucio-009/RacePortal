@@ -26,6 +26,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | **Alt-technologie** — dziś vs pomysły (JWT→Keycloak, Next.js, Redis…) |
 | [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | **Luki i pomysły produktowe** — czego brakuje / co warto dodać (nie Spec, nie stack) |
 | [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | **Scenariusz demo** — co pokazać na prezentacji (web + mobile) |
+| [`cloudflare-pages.md`](./cloudflare-pages.md) | **Cloudflare Pages** — monorepo build, fork vs upstream, `VITE_API_URL`, tunnel API, CORS, deploy |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
 | [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |
