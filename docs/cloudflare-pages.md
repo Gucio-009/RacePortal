@@ -4,14 +4,16 @@ Repozytorium jest monorepo. Frontend Vite/React siedzi w **`web/`** (stąd błą
 
 ## Build configuration (Settings → Builds & deployments → Edit)
 
+Repo ma npm **workspaces** (root `package.json` obejmuje też `mobile`). Nawet przy Root = `web` `npm ci` czyta rootowy `package-lock.json` — dlatego błędy o `expo-constants` / `datetimepicker` przy budowaniu Pages.
+
 | Pole | Wartość |
 |------|---------|
-| **Root directory** | `web` |
-| **Build command** | `npm ci && npm run build` |
-| **Build output directory** | `dist` |
+| **Root directory** | `/` (puste / korzeń repo) |
+| **Build command** | `npm ci && npm run build --workspace=web` |
+| **Build output directory** | `web/dist` |
 | **Node version** (opcjonalnie) | `22` |
 
-`packages/api-types` jest poza `web/`, ale Cloudflare klonuje całe repo — Vite alias `../packages/api-types` działa przy Root = `web`.
+`packages/api-types` jest w repo (Vite alias z `web/`). Alternatywa Root = `web` też działa **po** zsynchronizowanym root lockfile, z komendą `npm ci && npm run build` i output `dist`.
 
 ## Zmienne środowiskowe (Settings → Environment variables)
 
