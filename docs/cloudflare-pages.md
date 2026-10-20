@@ -43,9 +43,17 @@ Wtedy **nie** używaj ścieżki `web/dist` przy Root=`/web`. Ustaw:
 Failed: error occurred while running deploy command
 ```
 
-Potrzebny też skonfigurowany **API token** w build settings (albo `CLOUDFLARE_API_TOKEN` w Variables). Bez tokenu wrangler padnie zaraz po nazwie projektu.
+Potrzebny też **API token z uprawnieniem Cloudflare Pages — Edit** (nie wystarczy „Account Read”). Typowy błąd przy zbyt słabym tokenie:
 
-**Preferowane:** wyczyść Deploy command i ustaw tylko **Build output directory** = `web/dist` — klasyczny Pages sam uploaduje artefakty (bez wrangler).
+```text
+Authentication error [code: 10000]
+It looks like you are authenticating Wrangler via a custom API token …
+Please ensure it has the correct permissions for this operation.
+```
+
+Naprawa tokenu: [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → Create Token → szablon **Edit Cloudflare Workers** albo Custom z `Account` → `Cloudflare Pages` → **Edit**, plus dostęp do właściwego Account ID. Potem wklej nowy token jako `CLOUDFLARE_API_TOKEN` (Variable/Secret) albo w polu API token w Build settings.
+
+**Preferowane (bez wrangler / bez tokenu):** wyczyść **Deploy command** całkowicie i ustaw tylko **Build output directory** = `web/dist`. Integracja Git Pages sama wrzuca artefakty — omija `CLOUDFLARE_API_TOKEN` i błąd 10000.
 
 ### Czego unikać (już wybuchało)
 
