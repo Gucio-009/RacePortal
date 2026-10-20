@@ -34,7 +34,7 @@ export function HomePage() {
     api
       .get<{ items: ApiEvent[] }>("/api/events?limit=6")
       .then((res) => {
-        setUpcomingEvents(res.items);
+        setUpcomingEvents(res.items ?? []);
         setLoadError(null);
       })
       .catch((e) => {

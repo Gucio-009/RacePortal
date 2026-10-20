@@ -111,14 +111,10 @@ curl -sS "https://TWOJ-TUNEL.trycloudflare.com/api/health"
 
 ## 3. CORS (backend)
 
-Frontend na `https://….pages.dev` wysyła `Origin: https://….pages.dev`.  
-W `docker-compose.yml` (`CORS_ORIGIN`) muszą być m.in.:
+Origin frontu musi być w `CORS_ORIGIN` (Compose): `https://*.pages.dev`, `https://*.trycloudflare.com`, `https://raceportal.pl`, `https://www.raceportal.pl`.
 
-- `https://*.pages.dev`
-- `https://*.trycloudflare.com` (gdy front też przez quick tunnel)
-
-Bez `*.pages.dev`: tunnel health = 200, a login z Pages = **CORS / preflight 403**.  
-Po zmianie `CORS_ORIGIN`: `docker compose up -d api --force-recreate`.
+Bez tego: preflight 403 / `Invalid CORS request`. Puste `VITE_API_URL` na własnej domenie → request w `/api` na Pages (HTML) → crash UI (`undefined.length`).  
+Po zmianie CORS: `docker compose up -d api --force-recreate`.
 
 ## 4. SPA
 
