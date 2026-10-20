@@ -34,9 +34,15 @@ Wtedy **nie** używaj ścieżki `web/dist` przy Root=`/web`. Ustaw:
 |------|---------|
 | Root directory | `/` |
 | Build command | `npm ci && npm run build --workspace=web` |
-| Deploy command | `npx wrangler pages deploy web/dist --project-name=RacePortal --commit-dirty=true` |
+| Deploy command | `npx wrangler pages deploy web/dist --project-name=raceportal --commit-dirty=true` |
 
-`--project-name` = **dokładna** nazwa projektu w dashboardzie Cloudflare (u nas zwykle `RacePortal`). Bez tego:
+`wrangler.toml` → `name` tylko **małe litery i myślniki** (`raceportal`, nie `RacePortal`):
+
+```text
+Expected "name" to be … alphanumeric and lowercase with dashes only but got "RacePortal".
+```
+
+`--project-name` = nazwa projektu Pages w CF (zwykle `raceportal`). Bez flagi:
 
 ```text
 ✘ [ERROR] Missing Pages project name. Use --project-name <name> …
@@ -58,8 +64,8 @@ Naprawa tokenu: [API Tokens](https://dash.cloudflare.com/profile/api-tokens) →
 Jeśli jesteś w UI **Workers** (Build + Deploy command + API token) — to nie jest ten sam flow. Pusty Deploy + słaby token = fail. Wtedy:
 1. Kliknij **Save** (pasek „Unsaved changes” na dole).
 2. Sprawdź, czy `VITE_API_URL` ma pełne `….trycloudflare.com` (pole często ucina wizualnie — wartość musi kończyć się na `.com`).
-3. Albo napraw token (Pages Edit), Deploy: `npx wrangler pages deploy web/dist --project-name=RacePortal --commit-dirty=true`.
-4. W repo jest `wrangler.toml` (`pages_build_output_dir = "web/dist"`) — wrangler bierze stąd katalog i nazwę projektu.
+3. Albo napraw token (Pages Edit), Deploy: `npx wrangler pages deploy web/dist --project-name=raceportal --commit-dirty=true`.
+4. W repo jest `wrangler.toml` (`name = "raceportal"`, `pages_build_output_dir = "web/dist"`).
 
 ### Czego unikać (już wybuchało)
 
