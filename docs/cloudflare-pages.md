@@ -1,153 +1,304 @@
 # Cloudflare Pages — deploy frontendu RacePortal
 
-Checklist i pułapki zebrane przy wdrożeniu (monorepo + Docker API + quick tunnel).
+Pełna ściąga z wdrożenia (2026-10-20): monorepo npm workspaces, Workers Builds vs klasyczny Pages, tokeny, quick tunnel API, CORS, custom domain `raceportal.pl`.
 
-## 0. Które repozytorium GitHub
+---
 
-Pages musi budować z **`Gucio-009/RacePortal`**, branch **`main`** (tam jest zsynchronizowany `package-lock.json`).
-
-Fork **`WojciechWronisz/RacePortal`** często zostaje w tyle — wtedy build pada na `npm ci` (expo / datetimepicker), mimo że na upstream `main` już działa.
-
-- Cloudflare → Settings → Git: upewnij się, że repo = `Gucio-009/RacePortal`.
-- Albo na fork: **Sync fork** / push `main` z upstream, potem Retry.
-
-## 1. Build configuration (Settings → Builds & deployments)
-
-Repo to **npm workspaces** (`web` + `mobile` + `packages/*`). Cloudflare i tak odpala `npm clean-install` (`npm ci`) względem korzenia workspaces — stąd błędy o pakiety Expo, nawet gdy „interesuje nas tylko web”.
-
-### Docelowe wartości (klasyczny Pages / Git)
-
-| Pole | Wartość | Uwagi |
-|------|---------|--------|
-| **Production branch** | `main` | Nie `wojtek`, chyba że świadomie. |
-| **Root directory** | puste / `/` | **Nie** `/web` ani `web`. Przy Root=`web` CF i tak ciągnie root lockfile przez workspaces; ścieżki `web/dist` w Deploy się rozjeżdżają. |
-| **Build command** | `npm ci && npm run build --workspace=web` | Samo `npm run build` w `/` nie zbuduje Vite. |
-| **Build output directory** | `web/dist` | Katalog po udanym Vite (`index.html` + `assets/`). |
-| **Deploy command** | **puste** | Klasyczny Pages sam uploaduje *Build output directory*. |
-| **Node version** | `22` (opcjonalnie) | Buildy na Node 24 też przechodzą przy poprawnym lockfile. |
-
-### Jeśli UI ma osobne pole „Deploy command” (Workers Builds)
-
-Wtedy **nie** używaj ścieżki `web/dist` przy Root=`/web`. Ustaw:
+## TL;DR — działająca konfiguracja (klasyczny Pages)
 
 | Pole | Wartość |
 |------|---------|
-| Root directory | `/` |
+| Produkt Cloudflare | **Pages** → Connect to Git (nie Worker z Deploy command) |
+| GitHub | **`Gucio-009/RacePortal`**, branch **`main`** |
+| Root directory | puste (korzeń repo) |
 | Build command | `npm ci && npm run build --workspace=web` |
-| Deploy command | `npx wrangler pages deploy web/dist --project-name=raceportal --commit-dirty=true` |
+| Build output directory | `web/dist` (bez wiodącego `/`) |
+| Deploy command | **brak / puste** |
+| Variable | `VITE_API_URL` = publiczny origin API (tunnel lub hosting), bez `/` na końcu |
 
-`wrangler.toml` → `name` tylko **małe litery i myślniki** (`raceportal`, nie `RacePortal`):
+API lokalnie: Docker `:4000` + `cloudflared tunnel --url http://localhost:4000`.  
+CORS w Compose musi zawierać origin frontu (`*.pages.dev`, `raceportal.pl`, …).
+
+---
+
+## 0. Worker ≠ Pages (najczęstsza pomyłka UI)
+
+W **Workers & Pages** widać dwa typy aplikacji:
+
+| Typ | Ikona / objawy | Deploy |
+|-----|----------------|--------|
+| **Worker** | „No active routes”, pole **Deploy command**, dropdown **API token** | `wrangler deploy` / `wrangler pages deploy` + token |
+| **Pages** | URL `….pages.dev`, **Build output directory** | CF sam uploaduje `web/dist` |
+
+Worker o nazwie `raceportal` **nie jest** projektem Pages. Stąd:
 
 ```text
-Expected "name" to be … alphanumeric and lowercase with dashes only but got "RacePortal".
+The Pages project "raceportal" does not exist.
 ```
 
-`--project-name` = nazwa projektu Pages w CF (zwykle `raceportal`). Bez flagi:
+**Rozwiązanie:** Create application → **Pages** → Connect to Git (osobny projekt, np. `raceportal` / `raceportal-web`). Stary Worker można zostawić lub usunąć.
+
+---
+
+## 1. Które repozytorium GitHub
+
+Buduj z **`Gucio-009/RacePortal`** + **`main`** (zsynchronizowany root `package-lock.json`).
+
+Fork **`WojciechWronisz/RacePortal`** często zostaje w tyle → ten sam błąd `npm ci` (expo / datetimepicker), mimo że upstream już działa.
+
+- Settings → Git: repo = `Gucio-009/RacePortal`
+- Albo na fork: **Sync fork**, potem Retry
+
+---
+
+## 2. Monorepo i `npm ci`
+
+Root `package.json` ma **workspaces**: `web`, `mobile`, `packages/*`.
+
+Cloudflare zawsze odpala `npm clean-install` (`npm ci`) w kontekście workspaces. Nawet przy Root = `web` npm czyta **rootowy** `package-lock.json`.
+
+### Objaw
 
 ```text
-✘ [ERROR] Missing Pages project name. Use --project-name <name> …
-Failed: error occurred while running deploy command
+npm ci can only install … package.json and package-lock.json … are in sync
+Missing: @react-native-community/datetimepicker@…
+Invalid: lock file's expo-constants@… does not satisfy …
 ```
 
-Potrzebny też **API token z uprawnieniem Cloudflare Pages — Edit** (nie wystarczy „Account Read”). Typowy błąd przy zbyt słabym tokenie:
+### Naprawa
+
+1. Na `main` w `Gucio-009` musi być aktualny lockfile (`npm install` w korzeniu, commit).
+2. Root directory = `/` (nie `web`).
+3. Build: `npm ci && npm run build --workspace=web`.
+4. Po zmianach: **Clear cache** + Retry.
+
+Lokalnie weryfikacja: `npm ci && npm run build --workspace=web`.
+
+---
+
+## 3. Klasyczny Pages — Build configuration
+
+| Pole | Wartość | Uwagi |
+|------|---------|--------|
+| Production branch | `main` | |
+| Root directory | puste | Nie `/web` |
+| Build command | `npm ci && npm run build --workspace=web` | |
+| Build output directory | `web/dist` | **Nie** `/web/dist` (wiodący slash psuje ścieżkę) |
+| Deploy command | puste | Pages sam wrzuca output |
+| Framework preset | None / Vite | |
+
+W logu musi być `vite build` → `✓ built` → Success — **bez** `Executing user deploy command: wrangler …`.
+
+---
+
+## 4. Workers Builds (unikać na demo; jeśli już jesteś w tym UI)
+
+Objawy: pola Build + **Deploy command** + **API token**, brak „Build output directory”.
+
+### Token Builds (dropdown) vs `CLOUDFLARE_API_TOKEN`
+
+| Token | Do czego |
+|-------|----------|
+| Dropdown **API token** (Workers Builds) | Start builda (Initializing). Skasowany → fail w 1–2 s: *build token … deleted or rolled* |
+| Secret `CLOUDFLARE_API_TOKEN` | To czyta **wrangler** przy deploy. Za słaby / stary → `Authentication error [code: 10000]` |
+| `CF_TOKEN` | **Niepotrzebny** — wrangler go nie używa |
+| `CLOUDFLARE_ACCOUNT_ID` | Opcjonalnie, pomaga wranglerowi |
+
+CF i tak wstrzykuje Build token jako `CLOUDFLARE_API_TOKEN`. Słaby Build token = 10000 na Pages API mimo Super Admin na koncie (uprawnienia tokenu ≠ rola konta).
+
+### Tworzenie tokenu pod wrangler Pages
+
+1. [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → **Edit Cloudflare Workers** → Use template  
+   albo Custom: **Account → Cloudflare Pages → Edit**
+2. **Zone Resources: All zones** (nie tylko `raceportal.pl` — ograniczenie strefy często daje 10000)
+3. Account Resources: Twoje konto
+4. Wklej jako Secret `CLOUDFLARE_API_TOKEN`
+
+**User → User Details** w nowym UI bywa niewidoczne — **nie jest wymagane**.
+
+### Deploy command (Workers Builds)
 
 ```text
-Authentication error [code: 10000]
-It looks like you are authenticating Wrangler via a custom API token …
-Please ensure it has the correct permissions for this operation.
+npx wrangler pages deploy web/dist --project-name=raceportal --commit-dirty=true
 ```
 
-Naprawa tokenu: [API Tokens](https://dash.cloudflare.com/profile/api-tokens) → Create Token → szablon **Edit Cloudflare Workers** albo Custom z `Account` → `Cloudflare Pages` → **Edit**, plus dostęp do właściwego Account ID. Potem wklej nowy token jako `CLOUDFLARE_API_TOKEN` (Variable/Secret) albo w polu API token w Build settings.
+| Błąd | Przyczyna |
+|------|-----------|
+| `Missing Pages project name` | Brak `--project-name` |
+| `Expected "name" … lowercase … got "RacePortal"` | W `wrangler.toml`: `name = "raceportal"` (małe litery) |
+| `Authentication error [code: 10000]` | Słaby/stary token; Zone nie All zones |
+| `The Pages project "raceportal" does not exist` | Istnieje Worker o tej nazwie, nie Pages — utwórz projekt Pages |
+| `application detection … root of a workspace` | Deploy = `npx wrangler deploy` zamiast `pages deploy web/dist` |
+| `build token … deleted or rolled` | Dropdown API token wskazuje usunięty token — wybierz nowy / Create new → **Save** |
 
-**Preferowane (bez wrangler / bez tokenu):** klasyczny produkt **Pages → Create project → Connect to Git** ma pole **Build output directory** = `web/dist` i **nie** wymaga Deploy command ani `CLOUDFLARE_API_TOKEN`.
+W repo: `wrangler.toml` (`name = "raceportal"`, `pages_build_output_dir = "web/dist"`) — pomocniczy przy wranglerze; klasyczny Pages go nie wymaga.
 
-Jeśli jesteś w UI **Workers** (Build + Deploy command + API token) — to nie jest ten sam flow. Pusty Deploy + słaby token = fail. Wtedy:
-1. Kliknij **Save** (pasek „Unsaved changes” na dole).
-2. Sprawdź, czy `VITE_API_URL` ma pełne `….trycloudflare.com` (pole często ucina wizualnie — wartość musi kończyć się na `.com`).
-3. Albo napraw token (Pages Edit), Deploy: `npx wrangler pages deploy web/dist --project-name=raceportal --commit-dirty=true`.
-4. W repo jest `wrangler.toml` (`name = "raceportal"`, `pages_build_output_dir = "web/dist"`).
+**Unsaved changes** na dole panelu — bez **Save** Retry używa starej konfiguracji.
 
-### Czego unikać (już wybuchało)
+---
 
-| Ustawienie | Skutek |
-|------------|--------|
-| Root `/` + brak `package.json` w korzeniu (stary stan) | `ENOENT …/package.json` |
-| Root `web` / `/web` + stary root lockfile | `npm ci` — Missing `datetimepicker`, Invalid `expo-constants` / `@expo/env` |
-| Build: `npm install && npm run build` przy Root `/` | Buduje nic sensownego albo zły workspace |
-| Output `dist` przy Root `/` | *Output directory not found* / pusty deploy |
-| Deploy: `wrangler … web/dist` przy Root `/web` | Deploying fail — katalogu nie ma (jest `dist`, nie `web/dist`) |
-| Fork bez sync lockfile | Ten sam `npm ci` EUSAGE, mimo poprawki na `Gucio-009` |
-
-Po zmianie Root / Build / Output: **Clear cache** (Build cache) + Retry.
-
-## 2. Zmienne (Variables and secrets)
+## 5. Zmienne środowiskowe (Pages)
 
 | Type | Name | Value |
 |------|------|--------|
-| Variable | `VITE_API_URL` | Publiczny origin API, **bez** końcowego `/` i **bez** `/api` |
+| Variable | `VITE_API_URL` | `https://….trycloudflare.com` lub URL API — **bez** `/` i **bez** `/api` |
 | Variable | `VITE_GOOGLE_CLIENT_ID` | Opcjonalnie |
+| Variable | `CLOUDFLARE_ACCOUNT_ID` | Tylko przy wranglerze (np. z logów konta) |
+| Secret | `CLOUDFLARE_API_TOKEN` | Tylko przy wrangler Pages deploy |
 
-Vite **wkleja** `VITE_*` w JS **w trakcie builda**. Samo „Save” zmiennej bez **Retry deployment** nic nie zmienia w już zbudowanym artefakcie.
+Vite **wkleja** `VITE_*` przy **buildzie**. Po zmianie zmiennej: obowiązkowy **nowy deploy**.
 
-### API na czas dema (lokalny Docker)
+Pole Value w UI często **ucina wizualnie** URL — sprawdź, czy kończy się na `.com`.
+
+---
+
+## 6. API na czas dema (Docker + quick tunnel)
+
+Frontend na Pages/custom domain **nie sięgnie** `localhost:4000`.
 
 ```bash
-# Docker Compose: API na :4000 musi działać (curl localhost:4000/api/health)
+# API musi być UP
+curl -s http://127.0.0.1:4000/api/health
+
+# Osobny tunnel na API (nie na :8081!)
 cloudflared tunnel --url http://localhost:4000
 ```
 
-W Value wklej URL z logów, np. `https://….trycloudflare.com`.
+Przykład Value: `https://regression-hormone-newbie-implied.trycloudflare.com`
 
-- Nie dawaj `http://localhost:4000` (przeglądarka użytkownika Pages nie dojdzie do Twojego Maca).
-- Nie dawaj URL tunelu na `:8081` (to front, nie API).
-- Quick tunnel = losowy host; po restarcie `cloudflared` **zmień** `VITE_API_URL` i zrób nowy deploy.
-- Bez `VITE_API_URL` strona się zbuduje, ale login / API nie zadziałają na Pages.
+- Tunnel na `:8081` = front (nginx), nie API.
+- Po restarcie `cloudflared` URL się zmienia → zaktualizuj `VITE_API_URL` + redeploy.
+- Bez `VITE_API_URL`: fetch idzie w `https://domena/api/...` → na Pages dostajesz HTML (`_redirects`) zamiast JSON.
 
-Lokalna weryfikacja tunelu:
+Weryfikacja:
 
 ```bash
 curl -sS "https://TWOJ-TUNEL.trycloudflare.com/api/health"
 ```
 
-## 3. CORS (backend)
+Czy API musi być „publiczne”? Na działający login z internetu — tak (choćby losowy `*.trycloudflare.com`). Sam UI bez API = OK bez zmiennej.
 
-Origin frontu musi być w `CORS_ORIGIN` (Compose): `https://*.pages.dev`, `https://*.trycloudflare.com`, `https://raceportal.pl`, `https://www.raceportal.pl`.
+---
 
-Bez tego: preflight 403 / `Invalid CORS request`. Puste `VITE_API_URL` na własnej domenie → request w `/api` na Pages (HTML) → crash UI (`undefined.length`).  
-Po zmianie CORS: `docker compose up -d api --force-recreate`.
+## 7. CORS (backend / Compose)
 
-## 4. SPA
+`docker-compose.yml` → `CORS_ORIGIN` (patterns), m.in.:
 
-`web/public/_redirects` → przy buildzie trafia do `web/dist/_redirects`:
+- `https://*.trycloudflare.com`
+- `https://*.pages.dev`
+- `https://raceportal.pl`
+- `https://www.raceportal.pl`
+- localhost (dev)
+
+Bez originu frontu:
+
+```text
+Invalid CORS request
+```
+
+preflight OPTIONS → 403. Przeglądarka blokuje API mimo żywego tunelu.
+
+Po zmianie:
+
+```bash
+docker compose up -d api --force-recreate
+```
+
+Test:
+
+```bash
+curl -sS -D- -o /dev/null -X OPTIONS "https://TUNEL/api/events" \
+  -H "Origin: https://www.raceportal.pl" \
+  -H "Access-Control-Request-Method: GET"
+# oczekiwane: 200 + access-control-allow-origin: https://www.raceportal.pl
+```
+
+---
+
+## 8. Runtime na `www.raceportal.pl`
+
+### Objaw
+
+```text
+Unexpected Application Error!
+Cannot read properties of undefined (reading 'length')
+```
+
+### Przyczyny (łącznie)
+
+1. Brak / złe `VITE_API_URL` → request same-origin `/api/events` → HTML 200 → `res.items` = `undefined`.
+2. CORS bez `raceportal.pl` / `www.raceportal.pl`.
+3. Martwy tunnel / API.
+
+### Naprawy
+
+- `VITE_API_URL` + redeploy; tunnel żywy; CORS jak w §7.
+- Kod: HomePage używa `res.items ?? []` (nie wywala całej aplikacji).
+- DevTools → Network: `/api/events` musi iść na host tunelu/API, nie na `raceportal.pl`.
+
+---
+
+## 9. SPA
+
+`web/public/_redirects` → `web/dist/_redirects`:
 
 ```text
 /*    /index.html   200
 ```
 
-Deep linki (`/organizer`, `/wydarzenia/:id`) na Pages wymagają tego pliku.
+Deep linki (`/organizer`, `/wydarzenia/:id`) bez tego nie działają na Pages.
 
-## 5. Typowy happy path (demo)
+---
 
-1. `docker compose up -d` — API healthy na `:4000`.
+## 10. Happy path (demo z custom domain)
+
+1. `docker compose up -d` — API healthy `:4000`.
 2. `cloudflared tunnel --url http://localhost:4000` — skopiuj URL.
-3. Pages: repo `Gucio-009/RacePortal`, `main`, Root `/`, build/output jak w §1, Deploy puste.
-4. `VITE_API_URL` = URL tunelu → Save → **Retry deployment**.
-5. Otwórz `*.pages.dev`, zaloguj (`test@wp.pl` / seed z FAQ).
+3. Klasyczny **Pages** + Git `Gucio-009/RacePortal` / `main` (§3).
+4. `VITE_API_URL` = URL tunelu → Save → Deploy.
+5. CORS ma `https://www.raceportal.pl` (Compose + recreate `api`).
+6. Otwórz domenę / `….pages.dev`, konto seed: `test@wp.pl` (FAQ).
 
-## 6. Diagnostyka po logach
+---
 
-| Fragment logu / objaw | Co zrobić |
-|----------------------|-----------|
-| `ENOENT … package.json` | Root = `/` (nie pusty projekt bez root `package.json`) albo zły checkout |
-| `npm ci` + datetimepicker / expo-constants | Sync lockfile / właściwe repo (`Gucio-009`); Root `/`; Clear cache |
-| Build OK, **Deploying** fail / output not found | Output = `web/dist` przy Root `/`; wyczyść Deploy command albo popraw ścieżkę wrangler |
-| `Missing Pages project name` | Deploy: dodaj `--project-name=RacePortal` **albo** wyczyść Deploy i użyj Build output `web/dist` |
-| `wrangler` auth / API token | Token w Build settings / `CLOUDFLARE_API_TOKEN` |
-| Deploy: `wrangler …` bez `--project-name` | Jak wyżej — błąd na etapie Deploying mimo sukcesu Vite |
-| Strona stoi, login nie działa | `VITE_API_URL` + nowy deploy; tunnel żywy; CORS `*.pages.dev` |
-| OPTIONS 403 z Origin `*.pages.dev` | Zaktualizuj `CORS_ORIGIN`, recreate `api` |
+## 11. Tabela diagnostyczna (log → akcja)
 
-## 7. Relacja do Dockera
+| Fragment / objaw | Etap | Akcja |
+|------------------|------|--------|
+| `ENOENT …/package.json` | Install | Root = `/`; jest root `package.json` |
+| `npm ci` + datetimepicker / expo-constants | Install | Upstream `main` + lockfile; nie stary fork; Clear cache |
+| `build token … deleted or rolled` | Initializing | Dropdown API token → nowy; Save |
+| Brak `vite build` w logu, od razu wrangler | Build | Uzupełnij Build command |
+| `Missing Pages project name` | Deploy | `--project-name=raceportal` lub klasyczny Pages bez wrangler |
+| `name` … got `"RacePortal"` | Deploy | `wrangler.toml` → `raceportal` |
+| Auth `10000` | Deploy | Token Pages Edit; Zone = All zones; Secret `CLOUDFLARE_API_TOKEN` |
+| Pages project does not exist | Deploy | Utwórz **Pages**, nie Worker |
+| workspace detection / `wrangler deploy` | Deploy | Użyj `pages deploy web/dist`, nie `wrangler deploy` |
+| Output directory not found | Deploy | Output `web/dist`, Root `/` |
+| Strona OK, API nie | Runtime | `VITE_API_URL` + redeploy; tunnel; CORS |
+| `undefined (reading 'length')` | Runtime | Jak §8 |
+| OPTIONS 403 / Invalid CORS | Runtime | Dodaj origin do `CORS_ORIGIN`, recreate API |
 
-Lokalnie / Compose: nginx na `:8081` proxy’uje `/api` → API, więc `VITE_API_URL` może być puste.  
-Na Pages **nie ma** tego proxy — bez `VITE_API_URL` requesty idą w `https://….pages.dev/api/…` i giną.
+Kolejność pipeline: **Initializing** (Build token) → clone / `npm ci` → **Build** (Vite) → **Deploy** (Pages upload lub wrangler) → runtime w przeglądarce (VITE + CORS + tunnel).
+
+---
+
+## 12. Docker vs Pages
+
+| Środowisko | `VITE_API_URL` |
+|------------|----------------|
+| Compose web `:8081` (nginx `/api` → API) | może być puste |
+| Pages / `raceportal.pl` | **wymagane** (publiczny origin API) |
+
+---
+
+## 13. Pliki w repo związane z Pages
+
+| Plik | Rola |
+|------|------|
+| `package.json` / `package-lock.json` (root) | workspaces + `npm ci` na CF |
+| `web/` | frontend Vite |
+| `web/public/_redirects` | SPA fallback |
+| `wrangler.toml` | opcjonalnie Workers Builds / `pages deploy` |
+| `docker-compose.yml` → `CORS_ORIGIN` | origins Pages / domena / tunnel |
+| `docs/cloudflare-pages.md` | ta ściąga |

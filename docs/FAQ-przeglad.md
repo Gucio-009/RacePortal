@@ -1,7 +1,7 @@
 # RacePortal — FAQ dla przeglądu / odbioru
 
 **Jedno miejsce na powtarzające się pytania.** Przed zgłoszeniem „usługa nie działa” / „gdzie seed?” przeczytaj poniższe.  
-Aktualizacja: **2026-09-14**.
+Aktualizacja: **2026-10-20**.
 
 ---
 
@@ -132,10 +132,25 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 
 ---
 
+## 9. Cloudflare Pages / `raceportal.pl` „nie działa”
+
+| Objaw | Krótko |
+|-------|--------|
+| `npm ci` + expo / datetimepicker | Stary fork albo Root≠`/`; buduj z `Gucio-009/RacePortal` `main` |
+| Worker vs Pages | Worker ≠ Pages — potrzebny projekt **Pages** + `web/dist` |
+| Auth `10000` / token deleted | Osobny Build token vs `CLOUDFLARE_API_TOKEN` (Pages Edit, Zone=All) |
+| Strona stoi, login / lista wydarzeń nie | `VITE_API_URL` = tunnel API (`cloudflared` → `:4000`) + CORS dla domeny |
+| `undefined.length` na `www.raceportal.pl` | Brak `VITE_API_URL` i/lub CORS bez `raceportal.pl` |
+
+Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./cloudflare-pages.md).
+
+---
+
 ## Powiązane dokumenty
 
 - Szybki start: [`README.md`](../README.md)  
 - Chronologia: [`changes.md`](./changes.md)  
 - MVP plan vs stan: [`MVP.md`](./MVP.md)  
 - Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
+- Cloudflare Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  
