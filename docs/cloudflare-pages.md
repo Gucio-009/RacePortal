@@ -1,35 +1,126 @@
 # Cloudflare Pages — deploy frontendu RacePortal
 
-Repozytorium jest monorepo. Frontend Vite/React siedzi w **`web/`** (stąd błąd `ENOENT …/package.json`, gdy Root directory = `/`).
+Checklist i pułapki zebrane przy wdrożeniu (monorepo + Docker API + quick tunnel).
 
-## Build configuration (Settings → Builds & deployments → Edit)
+## 0. Które repozytorium GitHub
 
-Repo ma npm **workspaces** (root `package.json` obejmuje też `mobile`). Nawet przy Root = `web` `npm ci` czyta rootowy `package-lock.json` — dlatego błędy o `expo-constants` / `datetimepicker` przy budowaniu Pages.
+Pages musi budować z **`Gucio-009/RacePortal`**, branch **`main`** (tam jest zsynchronizowany `package-lock.json`).
+
+Fork **`WojciechWronisz/RacePortal`** często zostaje w tyle — wtedy build pada na `npm ci` (expo / datetimepicker), mimo że na upstream `main` już działa.
+
+- Cloudflare → Settings → Git: upewnij się, że repo = `Gucio-009/RacePortal`.
+- Albo na fork: **Sync fork** / push `main` z upstream, potem Retry.
+
+## 1. Build configuration (Settings → Builds & deployments)
+
+Repo to **npm workspaces** (`web` + `mobile` + `packages/*`). Cloudflare i tak odpala `npm clean-install` (`npm ci`) względem korzenia workspaces — stąd błędy o pakiety Expo, nawet gdy „interesuje nas tylko web”.
+
+### Docelowe wartości (klasyczny Pages / Git)
+
+| Pole | Wartość | Uwagi |
+|------|---------|--------|
+| **Production branch** | `main` | Nie `wojtek`, chyba że świadomie. |
+| **Root directory** | puste / `/` | **Nie** `/web` ani `web`. Przy Root=`web` CF i tak ciągnie root lockfile przez workspaces; ścieżki `web/dist` w Deploy się rozjeżdżają. |
+| **Build command** | `npm ci && npm run build --workspace=web` | Samo `npm run build` w `/` nie zbuduje Vite. |
+| **Build output directory** | `web/dist` | Katalog po udanym Vite (`index.html` + `assets/`). |
+| **Deploy command** | **puste** | Klasyczny Pages sam uploaduje *Build output directory*. |
+| **Node version** | `22` (opcjonalnie) | Buildy na Node 24 też przechodzą przy poprawnym lockfile. |
+
+### Jeśli UI ma osobne pole „Deploy command” (Workers Builds)
+
+Wtedy **nie** używaj ścieżki `web/dist` przy Root=`/web`. Ustaw:
 
 | Pole | Wartość |
 |------|---------|
-| **Root directory** | `/` (puste / korzeń repo) |
-| **Build command** | `npm ci && npm run build --workspace=web` |
-| **Build output directory** | `web/dist` |
-| **Node version** (opcjonalnie) | `22` |
+| Root directory | `/` |
+| Build command | `npm ci && npm run build --workspace=web` |
+| Deploy command | `npx wrangler pages deploy web/dist --commit-dirty=true` |
 
-`packages/api-types` jest w repo (Vite alias z `web/`). Alternatywa Root = `web` też działa **po** zsynchronizowanym root lockfile, z komendą `npm ci && npm run build` i output `dist`.
+Bez tokenu API / nazwy projektu `wrangler pages deploy` pada **na etapie Deploying** (build mógł przejść). Preferuj pusty Deploy + Build output directory, jeśli panel na to pozwala.
 
-## Zmienne środowiskowe (Settings → Environment variables)
+### Czego unikać (już wybuchało)
 
-| Nazwa | Opis |
-|-------|------|
-| `VITE_API_URL` | **Wymagane na Pages.** Pełny URL API, np. `https://twoje-api.example.com` (bez końcowego `/`). Puste = relative `/api` (działa tylko z nginx/proxy jak w Dockerze). |
-| `VITE_GOOGLE_CLIENT_ID` | Opcjonalnie — Google Sign-In |
+| Ustawienie | Skutek |
+|------------|--------|
+| Root `/` + brak `package.json` w korzeniu (stary stan) | `ENOENT …/package.json` |
+| Root `web` / `/web` + stary root lockfile | `npm ci` — Missing `datetimepicker`, Invalid `expo-constants` / `@expo/env` |
+| Build: `npm install && npm run build` przy Root `/` | Buduje nic sensownego albo zły workspace |
+| Output `dist` przy Root `/` | *Output directory not found* / pusty deploy |
+| Deploy: `wrangler … web/dist` przy Root `/web` | Deploying fail — katalogu nie ma (jest `dist`, nie `web/dist`) |
+| Fork bez sync lockfile | Ten sam `npm ci` EUSAGE, mimo poprawki na `Gucio-009` |
 
-Po zmianie env: **Retry deployment**.
+Po zmianie Root / Build / Output: **Clear cache** (Build cache) + Retry.
 
-## CORS po stronie API
+## 2. Zmienne (Variables and secrets)
 
-Jeśli front jest na `*.pages.dev` / własnej domenie CF, origin musi być w `CORS_ORIGIN` API (`https://*.pages.dev` — już w `docker-compose.yml`). Bez tego przeglądarka dostanie CORS 403 przy logowaniu, mimo poprawnego `VITE_API_URL`.
+| Type | Name | Value |
+|------|------|--------|
+| Variable | `VITE_API_URL` | Publiczny origin API, **bez** końcowego `/` i **bez** `/api` |
+| Variable | `VITE_GOOGLE_CLIENT_ID` | Opcjonalnie |
 
-Po zmianie zmiennej `VITE_*` w Pages: obowiązkowy **nowy deploy** (Vite wkleja env przy buildzie — samo Save nie wystarczy).
+Vite **wkleja** `VITE_*` w JS **w trakcie builda**. Samo „Save” zmiennej bez **Retry deployment** nic nie zmienia w już zbudowanym artefakcie.
 
-## SPA
+### API na czas dema (lokalny Docker)
 
-Plik `web/public/_redirects` (`/* → /index.html 200`) trafia do `dist/` przy buildzie — deep linki (`/organizer`, `/wydarzenia/:id`) działają na Pages.
+```bash
+# Docker Compose: API na :4000 musi działać (curl localhost:4000/api/health)
+cloudflared tunnel --url http://localhost:4000
+```
+
+W Value wklej URL z logów, np. `https://….trycloudflare.com`.
+
+- Nie dawaj `http://localhost:4000` (przeglądarka użytkownika Pages nie dojdzie do Twojego Maca).
+- Nie dawaj URL tunelu na `:8081` (to front, nie API).
+- Quick tunnel = losowy host; po restarcie `cloudflared` **zmień** `VITE_API_URL` i zrób nowy deploy.
+- Bez `VITE_API_URL` strona się zbuduje, ale login / API nie zadziałają na Pages.
+
+Lokalna weryfikacja tunelu:
+
+```bash
+curl -sS "https://TWOJ-TUNEL.trycloudflare.com/api/health"
+```
+
+## 3. CORS (backend)
+
+Frontend na `https://….pages.dev` wysyła `Origin: https://….pages.dev`.  
+W `docker-compose.yml` (`CORS_ORIGIN`) muszą być m.in.:
+
+- `https://*.pages.dev`
+- `https://*.trycloudflare.com` (gdy front też przez quick tunnel)
+
+Bez `*.pages.dev`: tunnel health = 200, a login z Pages = **CORS / preflight 403**.  
+Po zmianie `CORS_ORIGIN`: `docker compose up -d api --force-recreate`.
+
+## 4. SPA
+
+`web/public/_redirects` → przy buildzie trafia do `web/dist/_redirects`:
+
+```text
+/*    /index.html   200
+```
+
+Deep linki (`/organizer`, `/wydarzenia/:id`) na Pages wymagają tego pliku.
+
+## 5. Typowy happy path (demo)
+
+1. `docker compose up -d` — API healthy na `:4000`.
+2. `cloudflared tunnel --url http://localhost:4000` — skopiuj URL.
+3. Pages: repo `Gucio-009/RacePortal`, `main`, Root `/`, build/output jak w §1, Deploy puste.
+4. `VITE_API_URL` = URL tunelu → Save → **Retry deployment**.
+5. Otwórz `*.pages.dev`, zaloguj (`test@wp.pl` / seed z FAQ).
+
+## 6. Diagnostyka po logach
+
+| Fragment logu / objaw | Co zrobić |
+|----------------------|-----------|
+| `ENOENT … package.json` | Root = `/` (nie pusty projekt bez root `package.json`) albo zły checkout |
+| `npm ci` + datetimepicker / expo-constants | Sync lockfile / właściwe repo (`Gucio-009`); Root `/`; Clear cache |
+| Build OK, **Deploying** fail / output not found | Output = `web/dist` przy Root `/`; wyczyść Deploy command albo popraw ścieżkę wrangler |
+| `wrangler` auth / project | Pusty Deploy + output directory; albo token + `--project-name` |
+| Strona stoi, login nie działa | `VITE_API_URL` + nowy deploy; tunnel żywy; CORS `*.pages.dev` |
+| OPTIONS 403 z Origin `*.pages.dev` | Zaktualizuj `CORS_ORIGIN`, recreate `api` |
+
+## 7. Relacja do Dockera
+
+Lokalnie / Compose: nginx na `:8081` proxy’uje `/api` → API, więc `VITE_API_URL` może być puste.  
+Na Pages **nie ma** tego proxy — bez `VITE_API_URL` requesty idą w `https://….pages.dev/api/…` i giną.
