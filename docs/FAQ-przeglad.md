@@ -146,6 +146,14 @@ Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./clou
 
 ---
 
+## 10. Hosting API + bazy do lutego (GCP za darmo)
+
+Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + `docker-compose.gcp.yml` (API+MySQL), front na Pages.
+
+Instrukcja: [`gcp-deploy.md`](./gcp-deploy.md). Smoke: `./scripts/gcp-smoke.sh http://EXTERNAL_IP:4000`.
+
+---
+
 ## Powiązane dokumenty
 
 - Szybki start: [`README.md`](../README.md)  
@@ -153,4 +161,5 @@ Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./clou
 - MVP plan vs stan: [`MVP.md`](./MVP.md)  
 - Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
 - Cloudflare Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
+- GCP Always Free: [`gcp-deploy.md`](./gcp-deploy.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  
