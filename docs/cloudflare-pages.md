@@ -34,9 +34,18 @@ Wtedy **nie** używaj ścieżki `web/dist` przy Root=`/web`. Ustaw:
 |------|---------|
 | Root directory | `/` |
 | Build command | `npm ci && npm run build --workspace=web` |
-| Deploy command | `npx wrangler pages deploy web/dist --commit-dirty=true` |
+| Deploy command | `npx wrangler pages deploy web/dist --project-name=RacePortal --commit-dirty=true` |
 
-Bez tokenu API / nazwy projektu `wrangler pages deploy` pada **na etapie Deploying** (build mógł przejść). Preferuj pusty Deploy + Build output directory, jeśli panel na to pozwala.
+`--project-name` = **dokładna** nazwa projektu w dashboardzie Cloudflare (u nas zwykle `RacePortal`). Bez tego:
+
+```text
+✘ [ERROR] Missing Pages project name. Use --project-name <name> …
+Failed: error occurred while running deploy command
+```
+
+Potrzebny też skonfigurowany **API token** w build settings (albo `CLOUDFLARE_API_TOKEN` w Variables). Bez tokenu wrangler padnie zaraz po nazwie projektu.
+
+**Preferowane:** wyczyść Deploy command i ustaw tylko **Build output directory** = `web/dist` — klasyczny Pages sam uploaduje artefakty (bez wrangler).
 
 ### Czego unikać (już wybuchało)
 
@@ -116,7 +125,9 @@ Deep linki (`/organizer`, `/wydarzenia/:id`) na Pages wymagają tego pliku.
 | `ENOENT … package.json` | Root = `/` (nie pusty projekt bez root `package.json`) albo zły checkout |
 | `npm ci` + datetimepicker / expo-constants | Sync lockfile / właściwe repo (`Gucio-009`); Root `/`; Clear cache |
 | Build OK, **Deploying** fail / output not found | Output = `web/dist` przy Root `/`; wyczyść Deploy command albo popraw ścieżkę wrangler |
-| `wrangler` auth / project | Pusty Deploy + output directory; albo token + `--project-name` |
+| `Missing Pages project name` | Deploy: dodaj `--project-name=RacePortal` **albo** wyczyść Deploy i użyj Build output `web/dist` |
+| `wrangler` auth / API token | Token w Build settings / `CLOUDFLARE_API_TOKEN` |
+| Deploy: `wrangler …` bez `--project-name` | Jak wyżej — błąd na etapie Deploying mimo sukcesu Vite |
 | Strona stoi, login nie działa | `VITE_API_URL` + nowy deploy; tunnel żywy; CORS `*.pages.dev` |
 | OPTIONS 403 z Origin `*.pages.dev` | Zaktualizuj `CORS_ORIGIN`, recreate `api` |
 
