@@ -118,6 +118,8 @@ nano deploy/gcp/.env.gcp   # ustaw silne MYSQL_* i JWT_SECRET
 https://www.raceportal.pl,https://raceportal.pl,https://*.pages.dev
 ```
 
+`SEED_ENABLED=true` wymaga też `ALLOW_INSECURE_DEFAULTS=true` (inaczej start API: `securityDefaultsValidator` / IllegalStateException). Na demo dyplomowym tak jest OK; silny `JWT_SECRET` i tak ustaw.
+
 Start (pierwszy build API może trwać **długo** na e2-micro — cierpliwie):
 
 ```bash
