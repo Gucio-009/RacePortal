@@ -1,0 +1,14 @@
+<testsuites id="" name="" tests="5" failures="0" skipped="0" errors="0" time="5.66466">
+<testsuite name="mobile.spec.ts" timestamp="2026-08-03T14:37:28.420Z" hostname="mobile-expo" tests="5" failures="0" skipped="0" time="4.832" errors="0">
+<testcase name="Mobile Expo (web preview) › TC-MOB-01: gość widzi listę wydarzeń i może otworzyć logowanie" classname="mobile.spec.ts" time="0.96">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-02: logowanie demo kierowcy i lista wydarzeń" classname="mobile.spec.ts" time="1.023">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-03: błędne hasło pokazuje komunikat" classname="mobile.spec.ts" time="0.639">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-04: wejście w szczegóły i przycisk zapisu" classname="mobile.spec.ts" time="1.089">
+</testcase>
+<testcase name="Mobile Expo (web preview) › TC-MOB-05: wylogowanie wraca do trybu gościa" classname="mobile.spec.ts" time="1.121">
+</testcase>
+</testsuite>
+</testsuites>

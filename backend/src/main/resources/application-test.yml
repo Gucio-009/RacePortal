@@ -1,0 +1,33 @@
+#
+# application-test.yml — profil testów JUnit / MockMvc + Testcontainers.
+#
+# WAŻNE: ddl-auto: create-drop — schemat tworzysz i DROP-ujesz po suite.
+# Dlatego scripts/test-api.sh celuje w osobną bazę `raceportal_test`, NIE w Compose
+# `raceportal` (inaczej UI traci tabele po testach).
+#
+# Pomysł (alt): Flyway test migrations + Testcontainers MySQL z reuse;
+# @Sql skrypty zamiast create-drop.
+#
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+  mail:
+    host: localhost
+    port: 1025
+
+app:
+  cors:
+    origin: "*"
+  jwt:
+    secret: raceportal-test-secret-change-me-please
+  security:
+    allow-insecure-defaults: true
+  seed:
+    enabled: true
+
+logging:
+  level:
+    root: WARN
+    pl.raceportal: INFO

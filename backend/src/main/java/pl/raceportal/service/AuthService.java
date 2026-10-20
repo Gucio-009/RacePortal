@@ -1,0 +1,385 @@
+package pl.raceportal.service;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.ApplicationStatus;
+import pl.raceportal.domain.OrganizerApplication;
+import pl.raceportal.domain.Role;
+import pl.raceportal.domain.User;
+import pl.raceportal.dto.AuthDtos.AuthResponse;
+import pl.raceportal.dto.AuthDtos.ChangePasswordRequest;
+import pl.raceportal.dto.AuthDtos.LoginRequest;
+import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
+import pl.raceportal.dto.AuthDtos.RegisterRequest;
+import pl.raceportal.dto.AuthDtos.RegisterResponse;
+import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
+import pl.raceportal.dto.AuthDtos.UserDto;
+import pl.raceportal.repository.OrganizerApplicationRepository;
+import pl.raceportal.repository.UserRepository;
+import pl.raceportal.security.AttemptRateLimiter;
+import pl.raceportal.security.JwtService;
+import pl.raceportal.web.ApiException;
+
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+
+/**
+ * Serwis uwierzytelniania i zarządzania kontem użytkownika.
+ * <p>
+ * Rola w architekturze: rejestracja (kierowca / organizator), weryfikacja e-mail,
+ * logowanie lokalne i Google OAuth, profil ({@code /me}), zmiana hasła, forgot-password.
+ * Po sukcesie wydaje JWT przez {@link JwtService}.
+ * Technologie: Spring Security (BCrypt), JWT, Spring Mail, Google OAuth ID Token, JPA/MySQL.
+ * </p>
+ * Reguły kluczowe: konto lokalne startuje niezweryfikowane (kod 6-cyfrowy, TTL 15 min);
+ * login wymaga {@code emailVerified}; rejestracja organizatora tworzy też wniosek PENDING
+ * (rola ORGANIZER dopiero po akceptacji admina); Google — find-or-create, email już verified.
+ * <p>
+ * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu kodów weryfikacyjnych;
+ * pełny flow resetu hasła z tokenem zamiast MVP maila.
+ * </p>
+ */
+@Service
+public class AuthService {
+
+    /** Czas ważności kodu weryfikacyjnego e-mail (minuty). */
+    private static final int VERIFICATION_CODE_TTL_MINUTES = 15;
+
+    private static final int VERIFY_MAX_ATTEMPTS = 10;
+    private static final int RESEND_MAX_ATTEMPTS = 3;
+    private static final Duration AUTH_CODE_WINDOW = Duration.ofMinutes(15);
+
+    private final UserRepository userRepository;
+    private final OrganizerApplicationRepository organizerApplicationRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private final MailService mailService;
+    private final GoogleIdTokenService googleIdTokenService;
+    private final AttemptRateLimiter attemptRateLimiter;
+    private final SecureRandom random = new SecureRandom();
+
+    public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
+                        PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
+                        GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter) {
+        this.userRepository = userRepository;
+        this.organizerApplicationRepository = organizerApplicationRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.mailService = mailService;
+        this.googleIdTokenService = googleIdTokenService;
+        this.attemptRateLimiter = attemptRateLimiter;
+    }
+
+    /**
+     * Rejestracja kierowcy (diagram „Proces Rejestracji”): konto USER niezweryfikowane + mail z kodem.
+     * Nie wydaje JWT — klient musi wywołać {@link #verifyEmail}.
+     */
+    @Transactional
+    public RegisterResponse register(RegisterRequest request) {
+        if (request.phone() != null && !request.phone().isBlank()) {
+            ensurePhoneUnique(normalizePhone(request.phone()), null);
+        }
+        User user = createUnverifiedUser(request.username(), request.email(), request.password(), Role.USER);
+        applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
+                request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
+        user = userRepository.save(user);
+        sendVerificationCode(user);
+        return new RegisterResponse(true, user.getEmail(),
+                "Wysłaliśmy 6-cyfrowy kod weryfikacyjny na Twój adres email.");
+    }
+
+    /**
+     * Rejestracja organizatora: konto USER + wniosek {@link ApplicationStatus#PENDING}.
+     * Rola ORGANIZER nadawana dopiero po akceptacji admina ({@code AdminService}),
+     * po wcześniejszej weryfikacji e-mail.
+     */
+    @Transactional
+    public RegisterResponse registerOrganizer(RegisterOrganizerRequest request) {
+        User user = createUnverifiedUser(request.username(), request.email(), request.password(), Role.USER);
+
+        OrganizerApplication application = new OrganizerApplication();
+        application.setUser(user);
+        application.setCompany(request.company());
+        application.setBusinessType(request.businessType());
+        application.setMessage((request.message() == null || request.message().isBlank())
+                ? "Wniosek złożony podczas rejestracji konta organizatora."
+                : request.message());
+        application.setStatus(ApplicationStatus.PENDING);
+        organizerApplicationRepository.save(application);
+
+        sendVerificationCode(user);
+        return new RegisterResponse(true, user.getEmail(),
+                "Wysłaliśmy 6-cyfrowy kod weryfikacyjny na Twój adres email. Po weryfikacji Twój wniosek o konto " +
+                        "organizatora oczekuje na akceptację administratora.");
+    }
+
+    /**
+     * Potwierdza kod weryfikacyjny i wydaje JWT (jak po loginie).
+     * Jeśli konto już zweryfikowane — tylko loguje (idempotentnie).
+     */
+    @Transactional
+    public AuthResponse verifyEmail(String email, String code) {
+        String key = "verify:" + email.trim().toLowerCase();
+        attemptRateLimiter.check(key, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
+        User user = userRepository.findByEmailIgnoreCase(email)
+                .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy email lub kod"));
+
+        if (!user.isEmailVerified()) {
+            if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
+                    || !user.getEmailVerificationCode().equals(code)
+                    || Instant.now().isAfter(user.getEmailVerificationExpires())) {
+                throw ApiException.badRequest("Nieprawidłowy email lub kod");
+            }
+            user.setEmailVerified(true);
+            user.setEmailVerificationCode(null);
+            user.setEmailVerificationExpires(null);
+            user = userRepository.save(user);
+        }
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, toUserDto(user));
+    }
+
+    /**
+     * Ponowna wysyłka kodu — soft-fail (brak błędu gdy email nie istnieje),
+     * żeby nie ujawniać, które adresy są w bazie. Rate-limit po emailu.
+     */
+    @Transactional
+    public void resendCode(String email) {
+        attemptRateLimiter.check("resend:" + email.trim().toLowerCase(), RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+        userRepository.findByEmailIgnoreCase(email)
+                .filter(user -> !user.isEmailVerified())
+                .ifPresent(this::sendVerificationCode);
+    }
+
+    /**
+     * Logowanie email+hasło: BCrypt match, wymaga zweryfikowanego e-mail, zwraca JWT.
+     */
+    @Transactional(readOnly = true)
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByEmailIgnoreCase(request.email())
+                .orElseThrow(() -> ApiException.unauthorized("Nieprawidłowy email lub hasło"));
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw ApiException.unauthorized("Nieprawidłowy email lub hasło");
+        }
+
+        if (!user.isEmailVerified()) {
+            throw new ApiException(HttpStatus.FORBIDDEN,
+                    "Zweryfikuj adres email przed zalogowaniem — sprawdź skrzynkę pocztową lub poproś o nowy kod.");
+        }
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, toUserDto(user));
+    }
+
+    public boolean isGoogleOAuthEnabled() {
+        return googleIdTokenService.isConfigured();
+    }
+
+    /**
+     * Google Sign-In: weryfikacja ID tokenu, find-or-create użytkownika (email już verified przez Google),
+     * wydanie JWT RacePortal. Hasło lokalne to losowy hash — logowanie hasłem wymaga resetu/ustawienia.
+     */
+    @Transactional
+    public AuthResponse loginWithGoogle(String idToken) {
+        var payload = googleIdTokenService.verify(idToken);
+        String email = payload.getEmail().toLowerCase();
+        String name = (String) payload.get("name");
+        String picture = (String) payload.get("picture");
+        String givenName = (String) payload.get("given_name");
+        String familyName = (String) payload.get("family_name");
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElse(null);
+        if (user == null) {
+            user = new User();
+            user.setEmail(email);
+            user.setUsername(uniqueUsernameFrom(email, name));
+            user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
+            user.setRole(Role.USER);
+            user.setEmailVerified(true);
+            user.setAvatar(picture != null && !picture.isBlank() ? picture : null);
+            if (givenName != null) user.setFirstName(givenName);
+            if (familyName != null) user.setLastName(familyName);
+            user = userRepository.save(user);
+        } else {
+            // Konto lokalne niezweryfikowane: Google udowadnia skrzynkę — unieważnij hasło
+            // atakującego, który zarejestrował email ofiary przed jej pierwszym logowaniem.
+            if (!user.isEmailVerified()) {
+                user.setEmailVerified(true);
+                user.setEmailVerificationCode(null);
+                user.setEmailVerificationExpires(null);
+                user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
+            }
+            if ((user.getAvatar() == null || user.getAvatar().isBlank()) && picture != null && !picture.isBlank()) {
+                user.setAvatar(picture);
+            }
+            user = userRepository.save(user);
+        }
+
+        String token = jwtService.generateToken(user);
+        return new AuthResponse(token, toUserDto(user));
+    }
+
+    /** Generuje unikalny username z nazwy Google lub lokalnej części emaila. */
+    private String uniqueUsernameFrom(String email, String name) {
+        String base;
+        if (name != null && !name.isBlank()) {
+            base = name.trim().replaceAll("\\s+", "").replaceAll("[^\\p{L}\\p{N}_-]", "");
+        } else {
+            base = email.split("@")[0].replaceAll("[^\\p{L}\\p{N}_-]", "");
+        }
+        if (base.length() < 2) {
+            base = "user";
+        }
+        if (base.length() > 36) {
+            base = base.substring(0, 36);
+        }
+        String candidate = base;
+        int n = 0;
+        while (userRepository.existsByUsernameIgnoreCase(candidate)) {
+            n++;
+            String suffix = String.valueOf(n);
+            candidate = base.substring(0, Math.min(base.length(), 40 - suffix.length())) + suffix;
+            if (n > 1000) {
+                return "user" + random.nextInt(1_000_000);
+            }
+        }
+        return candidate;
+    }
+
+    @Transactional(readOnly = true)
+    public UserDto me(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        return toUserDto(user);
+    }
+
+    /**
+     * Odświeża JWT na podstawie aktualnej roli w DB (np. po APPROVE wniosku organizatora).
+     */
+    @Transactional(readOnly = true)
+    public AuthResponse refreshSession(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
+    }
+
+    @Transactional
+    public UserDto updateMe(String userId, UpdateMeRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        if (request.username() != null && !request.username().isBlank()) {
+            user.setUsername(request.username());
+        }
+        if (request.avatar() != null) {
+            String avatar = request.avatar().trim();
+            user.setAvatar(avatar.isEmpty() ? null : avatar);
+        }
+        applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
+                request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
+        user = userRepository.save(user);
+        return toUserDto(user);
+    }
+
+    @Transactional
+    public void changePassword(String userId, ChangePasswordRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Nieprawidłowe obecne hasło");
+        }
+        user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
+    }
+
+    /**
+     * MVP resetu hasła: mail informacyjny (bez tokenu resetującego).
+     * Soft-fail — nie ujawnia istnienia konta.
+     */
+    @Transactional(readOnly = true)
+    public void forgotPassword(String email) {
+        userRepository.findByEmailIgnoreCase(email).ifPresent(user ->
+                mailService.send(user.getEmail(), "Reset hasła RACEPORTAL",
+                        "<p>Otrzymaliśmy prośbę o reset hasła dla konta " + user.getUsername() + ".</p>" +
+                                "<p>W wersji MVP skontaktuj się z administratorem lub zaloguj hasłem testowym.</p>"));
+    }
+
+    /** Tworzy użytkownika z {@code emailVerified=false} i zahashowanym hasłem. */
+    private User createUnverifiedUser(String username, String rawEmail, String rawPassword, Role role) {
+        String email = rawEmail.toLowerCase();
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw ApiException.conflict("Konto z tym emailem już istnieje");
+        }
+
+        User user = new User();
+        user.setUsername(username);
+        user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode(rawPassword));
+        user.setRole(role);
+        user.setAvatar(null);
+        user.setEmailVerified(false);
+        return userRepository.save(user);
+    }
+
+    /** Generuje 6-cyfrowy kod, zapisuje TTL i wysyła mail HTML. */
+    private void sendVerificationCode(User user) {
+        String code = String.format("%06d", random.nextInt(1_000_000));
+        user.setEmailVerificationCode(code);
+        user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_CODE_TTL_MINUTES, ChronoUnit.MINUTES));
+        userRepository.save(user);
+
+        mailService.send(user.getEmail(), "Kod weryfikacyjny RACEPORTAL",
+                "<p>Cześć " + user.getUsername() + ",</p>" +
+                        "<p>Twój kod weryfikacyjny to: <strong>" + code + "</strong></p>" +
+                        "<p>Kod jest ważny przez " + VERIFICATION_CODE_TTL_MINUTES + " minut.</p>");
+    }
+
+    private UserDto toUserDto(User user) {
+        String memberSince = String.valueOf(user.getCreatedAt().atZone(ZoneOffset.UTC).getYear());
+        return new UserDto(user.getId(), user.getEmail(), user.getUsername(),
+                user.getRole().name(), user.getAvatar(), memberSince,
+                user.getFirstName(), user.getLastName(), user.getPhone(),
+                user.getAddress(), user.getInstagramUrl(),
+                user.isHasDrivingLicenseB(), user.getPzmLicense());
+    }
+
+    private void applyProfileFields(User user, String firstName, String lastName, String phone,
+                                     Boolean hasDrivingLicenseB, String pzmLicense,
+                                     String address, String instagramUrl) {
+        if (firstName != null) user.setFirstName(firstName.isBlank() ? null : firstName.trim());
+        if (lastName != null) user.setLastName(lastName.isBlank() ? null : lastName.trim());
+        if (phone != null) {
+            if (phone.isBlank()) {
+                user.setPhone(null);
+            } else {
+                String normalized = normalizePhone(phone);
+                ensurePhoneUnique(normalized, user.getId());
+                user.setPhone(normalized);
+            }
+        }
+        if (address != null) user.setAddress(address.isBlank() ? null : address.trim());
+        if (instagramUrl != null) user.setInstagramUrl(instagramUrl.isBlank() ? null : instagramUrl.trim());
+        if (hasDrivingLicenseB != null) user.setHasDrivingLicenseB(hasDrivingLicenseB);
+        if (pzmLicense != null) user.setPzmLicense(pzmLicense.isBlank() ? null : pzmLicense.trim());
+    }
+
+    private void ensurePhoneUnique(String phone, String userId) {
+        boolean taken = userId == null
+                ? userRepository.existsByPhone(phone)
+                : userRepository.existsByPhoneAndIdNot(phone, userId);
+        if (taken) {
+            throw ApiException.conflict("Numer telefonu jest już zajęty");
+        }
+    }
+
+    private static String normalizePhone(String phone) {
+        return phone.trim().replaceAll("\\s+", " ");
+    }
+}

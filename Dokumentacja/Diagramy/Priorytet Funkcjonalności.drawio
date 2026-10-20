@@ -1,0 +1,112 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36" border="50" scale="3" compressed="false" locked="false">
+  <diagram name="Blank" id="YmL12bMKpDGza6XwsDPr">
+    <mxGraphModel grid="0" page="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" pageScale="1" pageWidth="827" pageHeight="1169" background="none" math="1" shadow="0">
+      <root>
+        <mxCell id="X5NqExCQtvZxIxQ7pmgY-0" />
+        <mxCell id="1" parent="X5NqExCQtvZxIxQ7pmgY-0" />
+        <mxCell id="WPANhgRu2q3zCRzci3as-1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="678" width="377" x="-228" y="-39" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="678" width="409" x="241" y="-39" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="678" width="423" x="726" y="-39" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-5" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#6c8ebf;fillColor=#dae8fc;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;MVP&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="114" x="-96.5" y="-102" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#b85450;fillColor=#f8cecc;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;Priorytet 1&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="190" x="350.5" y="-102" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-9" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=#9673a6;fillColor=#e1d5e7;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;Priorytet 2&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="202.5" x="836.25" y="-102" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Kalendarz&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-177" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;podstrona eventu&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-96.5" y="270" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;landing page&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-177" y="-9" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Logowanie&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-1" y="-9" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Filtrowanie&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-177" y="117" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Mapa Everntów&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-177" y="179" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;system zgłoszeń&lt;/span&gt;" vertex="1">
+          <mxGeometry height="126.5" width="260" x="327" y="344" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;nawigacja&lt;/span&gt;" vertex="1">
+          <mxGeometry height="62" width="120" x="-94" y="390" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-25" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;Dodanie do kalendarzu&lt;/span&gt;" vertex="1">
+          <mxGeometry height="61" width="125" x="-96.5" y="330" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-26" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;profil kierowc&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="148" x="257" y="9.5" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-27" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;system polubien&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="148" x="255" y="72.5" as="geometry" />
+        </mxCell>
+        <mxCell id="WPANhgRu2q3zCRzci3as-31" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 56px;&quot;&gt;FUNCKJE&lt;/font&gt;" vertex="1">
+          <mxGeometry height="66" width="356" x="262" y="-325" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Konto Kierowcy&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="-3" y="51" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-2" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Konto Organizatora&lt;/font&gt;" vertex="1">
+          <mxGeometry height="60" width="135" x="-8.5" y="111" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-4" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="&lt;font style=&quot;font-size: 24px;&quot;&gt;Dodawanie Eventu(anonim)&lt;/font&gt;" vertex="1">
+          <mxGeometry height="109" width="248" x="-150" y="507" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="201" width="423" x="206" y="791" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-8" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="&lt;font style=&quot;font-size: 36px;&quot;&gt;PROJECT X&lt;/font&gt;" vertex="1">
+          <mxGeometry height="30" width="202.5" x="316.25" y="728" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-9" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;Urzadzenie pomiarow&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="248" y="814" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-10" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;wyniki na zywo&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="248" y="874" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-11" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;edycja informacji&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="148" x="257" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-12" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;Garaż&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="148" x="746" y="102" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-13" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;filtracja za pomocą auta&lt;/span&gt;" vertex="1">
+          <mxGeometry height="57" width="156" x="742" y="9.5" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-14" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;profil organizatora&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="135" x="486" y="4" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-15" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;crud wydarzenia&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="135" x="488" y="64" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-16" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;crud wydarzenia&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="135" x="488" y="127" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-19" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;cykl mistrzostw&lt;/span&gt;" vertex="1">
+          <mxGeometry height="57" width="156" x="956" y="4" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-23" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;tabela wyników wydarzenia&lt;/span&gt;" vertex="1">
+          <mxGeometry height="78" width="173" x="947.5" y="93" as="geometry" />
+        </mxCell>
+        <mxCell id="e90_AECYxyE5T9-cQwsz-24" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="&lt;span style=&quot;font-size: 24px;&quot;&gt;System Płatności&lt;/span&gt;" vertex="1">
+          <mxGeometry height="60" width="120" x="434" y="861.5" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,37 @@
+node_modules
+dist
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
+!backend/.env.example
+!web/.env.example
+web/node_modules
+web/dist
+backend/node_modules
+backend/dist
+mobile/node_modules
+mobile/.expo
+test-results
+playwright-report
+blob-report
+
+# LaTeX build junk
+latex/**/*.aux
+latex/**/*.log
+latex/**/*.fls
+latex/**/*.fdb_latexmk
+latex/**/*.dvi
+latex/**/*.blg
+latex/**/*.bcf
+latex/**/*.bcf-SAVE-ERROR
+latex/**/*.run.xml
+latex/**/*.toc
+latex/**/*.out
+latex/**/*.synctex.gz
+latex/**/output.log
+
+# Local debug leftovers
+tmp-stadia-tile.png
+stadia-tile-check.png

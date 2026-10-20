@@ -1,0 +1,230 @@
+package pl.raceportal.service;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.Car;
+import pl.raceportal.domain.RegistrationStatus;
+import pl.raceportal.domain.User;
+import pl.raceportal.dto.GarageDtos.CarCreateRequest;
+import pl.raceportal.dto.GarageDtos.CarResponse;
+import pl.raceportal.dto.GarageDtos.CarUpdateRequest;
+import pl.raceportal.repository.CarRepository;
+import pl.raceportal.repository.RegistrationRepository;
+import pl.raceportal.repository.UserRepository;
+import pl.raceportal.web.ApiException;
+
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * Serwis garażu — CRUD pojazdów użytkownika z regułami powiązań ze zgłoszeniami.
+ * <p>
+ * Rola w architekturze: izolacja ownership (userId z JWT); dane techniczne auta
+ * używane przy walidacji wymogów wydarzenia i {@link CategoryMatcher}.
+ * Technologie: Spring, JPA/MySQL.
+ * </p>
+ * Reguły: przy otwartym zgłoszeniu (PENDING/ACCEPTED/CONFIRMED) nie wolno zmieniać
+ * make/model/className ani usuwać auta.
+ * <p>
+ * Pomysł (alt): soft-delete; event sourcing historii zmian pojazdu.
+ * </p>
+ */
+@Service
+public class GarageService {
+
+    /** Statusy zgłoszeń blokujące krytyczne edycje / usunięcie auta. */
+    private static final List<RegistrationStatus> OPEN_STATUSES =
+            List.of(RegistrationStatus.PENDING, RegistrationStatus.ACCEPTED, RegistrationStatus.CONFIRMED);
+
+    private final CarRepository carRepository;
+    private final UserRepository userRepository;
+    private final RegistrationRepository registrationRepository;
+
+    public GarageService(CarRepository carRepository, UserRepository userRepository,
+                          RegistrationRepository registrationRepository) {
+        this.carRepository = carRepository;
+        this.userRepository = userRepository;
+        this.registrationRepository = registrationRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public List<CarResponse> list(String userId) {
+        return carRepository.findByUser_IdOrderByCreatedAtDesc(userId).stream()
+                .map(this::serialize)
+                .toList();
+    }
+
+    @Transactional
+    public CarResponse create(String userId, CarCreateRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+
+        validateCreateRequiredFields(request);
+
+        Car car = new Car();
+        car.setUser(user);
+        car.setMake(request.make());
+        car.setModel(request.model());
+        car.setYear(request.year());
+        car.setClassName(blankToNull(request.className()));
+        car.setPlate(blankToNull(request.plate()));
+        car.setImageUrl(blankToNull(request.imageUrl()));
+        applyCarFields(car, request);
+
+        car = carRepository.save(car);
+        return serialize(car);
+    }
+
+    /**
+     * Edycja auta (diagram „Proces edytowania auta z garażu”):
+     * zmiana marki/modelu/klasy przy otwartym zgłoszeniu jest odrzucana.
+     */
+    @Transactional
+    public CarResponse update(String userId, String carId, CarUpdateRequest request) {
+        Car car = carRepository.findByIdAndUser_Id(carId, userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono auta"));
+
+        boolean hasOpenRegistration = registrationRepository.existsByCar_IdAndStatusIn(carId, OPEN_STATUSES);
+        boolean changesConflict = hasOpenRegistration && (
+                (request.make() != null && !Objects.equals(request.make(), car.getMake())) ||
+                        (request.model() != null && !Objects.equals(request.model(), car.getModel())) ||
+                        (request.className() != null && !Objects.equals(request.className(), car.getClassName())));
+
+        if (changesConflict) {
+            throw ApiException.badRequest(
+                    "Brak możliwości edycji auta ze względu na otwarte zgłoszenie");
+        }
+
+        if (request.make() != null) car.setMake(request.make());
+        if (request.model() != null) car.setModel(request.model());
+        if (request.year() != null) car.setYear(request.year());
+        if (request.className() != null) car.setClassName(blankToNull(request.className()));
+        if (request.plate() != null) car.setPlate(blankToNull(request.plate()));
+        if (request.imageUrl() != null) car.setImageUrl(blankToNull(request.imageUrl()));
+        applyCarUpdateFields(car, request);
+
+        car = carRepository.save(car);
+        return serialize(car);
+    }
+
+    /**
+     * Usuwanie auta (diagram „Proces usuwania auta z garażu”):
+     * dowolne otwarte zgłoszenie całkowicie blokuje delete.
+     */
+    @Transactional
+    public void delete(String userId, String carId) {
+        Car car = carRepository.findByIdAndUser_Id(carId, userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono auta"));
+
+        if (registrationRepository.existsByCar_IdAndStatusIn(carId, OPEN_STATUSES)) {
+            throw ApiException.badRequest(
+                    "Brak możliwości usunięcia auta ze względu na otwarte zgłoszenie");
+        }
+
+        carRepository.delete(car);
+    }
+
+    CarResponse serialize(Car car) {
+        return new CarResponse(
+                car.getId(),
+                car.getUser().getId(),
+                car.getMake(),
+                car.getModel(),
+                car.getYear(),
+                car.getClassName(),
+                car.getPlate(),
+                car.getImageUrl(),
+                car.getDriveType(),
+                car.getPowerHp(),
+                car.getEngineCc(),
+                car.getWeightKg(),
+                car.isRegistered(),
+                car.getRegistrationType(),
+                car.getKssNumber(),
+                car.isHasRollCage(),
+                car.isHasOc(),
+                car.isHasPt(),
+                car.getSocialUrl(),
+                car.getVideoUrl(),
+                car.getModifications(),
+                car.getCreatedAt().toString(),
+                car.getUpdatedAt().toString()
+        );
+    }
+
+    private void applyCarFields(Car car, CarCreateRequest request) {
+        car.setDriveType(blankToNull(request.driveType()));
+        car.setPowerHp(request.powerHp());
+        car.setEngineCc(request.engineCc());
+        car.setWeightKg(request.weightKg());
+        if (request.registered() != null) car.setRegistered(request.registered());
+        car.setRegistrationType(blankToNull(request.registrationType()));
+        car.setKssNumber(blankToNull(request.kssNumber()));
+        if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
+        if (request.hasOc() != null) car.setHasOc(request.hasOc());
+        if (request.hasPt() != null) car.setHasPt(request.hasPt());
+        car.setSocialUrl(blankToNull(request.socialUrl()));
+        car.setVideoUrl(blankToNull(request.videoUrl()));
+        car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private void applyCarUpdateFields(Car car, CarUpdateRequest request) {
+        if (request.driveType() != null) car.setDriveType(blankToNull(request.driveType()));
+        if (request.powerHp() != null) car.setPowerHp(request.powerHp());
+        if (request.engineCc() != null) car.setEngineCc(request.engineCc());
+        if (request.weightKg() != null) car.setWeightKg(request.weightKg());
+        if (request.registered() != null) car.setRegistered(request.registered());
+        if (request.registrationType() != null) car.setRegistrationType(blankToNull(request.registrationType()));
+        if (request.kssNumber() != null) car.setKssNumber(blankToNull(request.kssNumber()));
+        if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
+        if (request.hasOc() != null) car.setHasOc(request.hasOc());
+        if (request.hasPt() != null) car.setHasPt(request.hasPt());
+        if (request.socialUrl() != null) car.setSocialUrl(blankToNull(request.socialUrl()));
+        if (request.videoUrl() != null) car.setVideoUrl(blankToNull(request.videoUrl()));
+        if (request.modifications() != null) car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private void validateCreateRequiredFields(CarCreateRequest request) {
+        if (request.year() == null) {
+            throw ApiException.badRequest("Rok produkcji jest wymagany");
+        }
+        if (request.driveType() == null || request.driveType().isBlank()) {
+            throw ApiException.badRequest("Napęd jest wymagany");
+        }
+        if (request.powerHp() == null) {
+            throw ApiException.badRequest("Moc jest wymagana");
+        }
+        if (request.engineCc() == null) {
+            throw ApiException.badRequest("Pojemność silnika jest wymagana");
+        }
+        if (request.weightKg() == null) {
+            throw ApiException.badRequest("Masa pojazdu jest wymagana");
+        }
+        if (request.registered() == null) {
+            throw ApiException.badRequest("Informacja o rejestracji jest wymagana");
+        }
+        if (request.hasRollCage() == null) {
+            throw ApiException.badRequest("Informacja o klatce bezpieczeństwa jest wymagana");
+        }
+        if (request.hasOc() == null) {
+            throw ApiException.badRequest("Informacja o OC jest wymagana");
+        }
+        if (request.hasPt() == null) {
+            throw ApiException.badRequest("Informacja o przeglądzie technicznym jest wymagana");
+        }
+        if (request.imageUrl() == null || request.imageUrl().isBlank()) {
+            throw ApiException.badRequest("Zdjęcie pojazdu jest wymagane");
+        }
+        String image = request.imageUrl().trim();
+        if (image.length() > 2000) {
+            throw ApiException.badRequest("URL zdjęcia jest zbyt długi (max 2000 znaków)");
+        }
+        if (!image.startsWith("http://") && !image.startsWith("https://")) {
+            throw ApiException.badRequest("URL zdjęcia musi zaczynać się od http:// lub https://");
+        }
+    }
+
+    private static String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value;
+    }
+}

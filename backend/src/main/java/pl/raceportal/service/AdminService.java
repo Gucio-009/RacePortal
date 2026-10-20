@@ -1,0 +1,261 @@
+package pl.raceportal.service;
+
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.ApplicationStatus;
+import pl.raceportal.domain.Event;
+import pl.raceportal.domain.EventStatus;
+import pl.raceportal.domain.OrganizerApplication;
+import pl.raceportal.domain.Role;
+import pl.raceportal.domain.User;
+import pl.raceportal.dto.AdminDtos.EventStatusUpdateRequest;
+import pl.raceportal.dto.AdminDtos.OrganizerApplicationResponse;
+import pl.raceportal.dto.AdminDtos.RoleUpdateRequest;
+import pl.raceportal.dto.AdminDtos.StatsResponse;
+import pl.raceportal.dto.AdminDtos.UserAdminResponse;
+import pl.raceportal.dto.EventDtos.EventResponse;
+import pl.raceportal.dto.RegistrationDtos.UserRef;
+import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.OrganizerApplicationRepository;
+import pl.raceportal.repository.RegistrationRepository;
+import pl.raceportal.repository.UserRepository;
+import pl.raceportal.security.UserPrincipal;
+import pl.raceportal.web.ApiException;
+
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Panel administratora: statystyki, role użytkowników, moderacja wydarzeń i wniosków organizatora.
+ * <p>
+ * Rola w architekturze: RBAC {@code ROLE_ADMIN} — kontroler wymaga JWT admina.
+ * Zmiana statusu wydarzenia invaliduje cache listy; APPROVE wniosku ustawia rolę ORGANIZER.
+ * Technologie: Spring Cache, JPA, Spring Mail.
+ * </p>
+ * Reguły: nie można odebrać sobie roli ADMIN; musi zostać ≥1 admin;
+ * wniosek organizatora tylko APPROVED/REJECTED.
+ * <p>
+ * Pomysł (alt): audit log zmian ról/statusów; Keycloak Admin API zamiast własnego panelu.
+ * </p>
+ */
+@Service
+public class AdminService {
+
+    /** Dozwolone przejścia statusu wydarzenia z panelu admina (CANCELLED → cancelEvent). */
+    private static final Map<EventStatus, Set<EventStatus>> EVENT_STATUS_TRANSITIONS;
+
+    static {
+        EVENT_STATUS_TRANSITIONS = new EnumMap<>(EventStatus.class);
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.DRAFT, EnumSet.of(EventStatus.PENDING, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.PENDING,
+                EnumSet.of(EventStatus.APPROVED, EventStatus.REJECTED, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.APPROVED,
+                EnumSet.of(EventStatus.CANCELLED, EventStatus.ARCHIVED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.REJECTED,
+                EnumSet.of(EventStatus.PENDING, EventStatus.CANCELLED));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.ARCHIVED, EnumSet.noneOf(EventStatus.class));
+        EVENT_STATUS_TRANSITIONS.put(EventStatus.CANCELLED, EnumSet.noneOf(EventStatus.class));
+    }
+
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
+    private final RegistrationRepository registrationRepository;
+    private final OrganizerApplicationRepository organizerApplicationRepository;
+    private final EventService eventService;
+    private final MailService mailService;
+
+    public AdminService(UserRepository userRepository, EventRepository eventRepository,
+                         RegistrationRepository registrationRepository,
+                         OrganizerApplicationRepository organizerApplicationRepository,
+                         EventService eventService, MailService mailService) {
+        this.userRepository = userRepository;
+        this.eventRepository = eventRepository;
+        this.registrationRepository = registrationRepository;
+        this.organizerApplicationRepository = organizerApplicationRepository;
+        this.eventService = eventService;
+        this.mailService = mailService;
+    }
+
+    @Transactional(readOnly = true)
+    public StatsResponse stats() {
+        long users = userRepository.count();
+        long events = eventRepository.count();
+        long pendingEvents = eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING).size();
+        long registrations = registrationRepository.count();
+        long pendingApps = organizerApplicationRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.PENDING)
+                .count();
+        return new StatsResponse(users, events, pendingEvents, registrations, pendingApps);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserAdminResponse> listUsers() {
+        return userRepository.findAllByOrderByCreatedAtDesc().stream()
+                .limit(200)
+                .map(this::serializeUser)
+                .toList();
+    }
+
+    /**
+     * Zmiana roli użytkownika z zabezpieczeniami przed usunięciem ostatniego admina
+     * oraz self-demotion. Wysyła mail z nową rolą.
+     */
+    @Transactional
+    public UserAdminResponse updateUserRole(String userId, RoleUpdateRequest request, UserPrincipal currentUser) {
+        Role role;
+        try {
+            role = Role.valueOf(request.role().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw ApiException.badRequest("Nieprawidłowa rola");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+
+        if (currentUser != null && currentUser.getId().equals(userId) && user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            throw ApiException.badRequest("Nie możesz odebrać sobie roli administratora");
+        }
+
+        if (user.getRole() == Role.ADMIN && role != Role.ADMIN) {
+            long adminCount = userRepository.findAll().stream().filter(u -> u.getRole() == Role.ADMIN).count();
+            if (adminCount <= 1) {
+                throw ApiException.badRequest("Musi pozostać co najmniej jeden administrator");
+            }
+        }
+
+        user.setRole(role);
+        user = userRepository.save(user);
+
+        mailService.send(user.getEmail(), "Zmiana roli w RACEPORTAL",
+                "<p>Twoja rola w systemie to teraz: <strong>" + role + "</strong>.</p>");
+
+        return serializeUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EventResponse> pendingEvents() {
+        return eventService.serializeAll(eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING));
+    }
+
+    /** Ostatnie zatwierdzone wydarzenia — do anulowania z panelu admina. */
+    @Transactional(readOnly = true)
+    public List<EventResponse> approvedEvents() {
+        return eventService.serializeAll(
+                eventRepository.findTop50ByStatusOrderByUpdatedAtDesc(EventStatus.APPROVED));
+    }
+
+    /**
+     * Moderacja statusu wydarzenia (APPROVED/REJECTED/…); czyści cache {@code events};
+     * powiadamia organizatora mailem. CANCELLED → pełna anulacja ze zgłoszeniami.
+     * Przejścia ograniczone FSM — brak „wskrzeszania” CANCELLED.
+     */
+    @Transactional
+    @CacheEvict(cacheNames = "events", allEntries = true)
+    public EventResponse updateEventStatus(String eventId, EventStatusUpdateRequest request,
+                                            UserPrincipal currentUser) {
+        EventStatus target;
+        try {
+            target = EventStatus.valueOf(request.status().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw ApiException.badRequest("Nieprawidłowy status");
+        }
+
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
+        EventStatus current = event.getStatus();
+        if (current == target) {
+            return eventService.serialize(event);
+        }
+        Set<EventStatus> allowed = EVENT_STATUS_TRANSITIONS.getOrDefault(current, Set.of());
+        if (!allowed.contains(target)) {
+            throw ApiException.badRequest(
+                    "Niedozwolone przejście statusu: " + current + " → " + target);
+        }
+
+        if (target == EventStatus.CANCELLED) {
+            return eventService.cancelEvent(eventId, currentUser);
+        }
+
+        event.setStatus(target);
+        event = eventRepository.save(event);
+
+        if (event.getOrganizer() != null) {
+            mailService.send(event.getOrganizer().getEmail(), "Status wydarzenia: " + event.getName(),
+                    "<p>Wydarzenie <strong>" + event.getName() + "</strong> ma teraz status: <strong>" +
+                            target + "</strong>.</p>");
+        }
+
+        return eventService.serialize(event);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrganizerApplicationResponse> organizerApplications() {
+        return organizerApplicationRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(this::serializeApplication)
+                .toList();
+    }
+
+    /**
+     * Decyzja o wniosku organizatora: APPROVED → {@link Role#ORGANIZER}; REJECTED bez zmiany roli.
+     */
+    @Transactional
+    public OrganizerApplicationResponse updateOrganizerApplicationStatus(String appId, String statusValue) {
+        ApplicationStatus status;
+        try {
+            status = ApplicationStatus.valueOf(statusValue.toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw ApiException.badRequest("Nieprawidłowy status");
+        }
+        if (status != ApplicationStatus.APPROVED && status != ApplicationStatus.REJECTED) {
+            throw ApiException.badRequest("Nieprawidłowy status");
+        }
+
+        OrganizerApplication application = organizerApplicationRepository.findById(appId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
+        if (application.getStatus() != ApplicationStatus.PENDING) {
+            throw ApiException.badRequest("Wniosek został już rozpatrzony");
+        }
+        application.setStatus(status);
+        application = organizerApplicationRepository.save(application);
+
+        if (status == ApplicationStatus.APPROVED) {
+            User user = application.getUser();
+            // Nie degraduj ADMIN → ORGANIZER; USER/ORGANIZER → ORGANIZER.
+            if (user.getRole() != Role.ADMIN) {
+                user.setRole(Role.ORGANIZER);
+                userRepository.save(user);
+            }
+        }
+
+        mailService.send(application.getUser().getEmail(), "Wniosek o rolę organizatora",
+                "<p>Twój wniosek o konto organizatora: <strong>" + status + "</strong>.</p>");
+
+        return serializeApplication(application);
+    }
+
+    private UserAdminResponse serializeUser(User user) {
+        return new UserAdminResponse(user.getId(), user.getEmail(), user.getUsername(),
+                user.getRole().name(), user.getAvatar(), user.getCreatedAt().toString());
+    }
+
+    private OrganizerApplicationResponse serializeApplication(OrganizerApplication application) {
+        UserRef userRef = new UserRef(application.getUser().getId(), application.getUser().getUsername(),
+                application.getUser().getEmail(), null);
+        return new OrganizerApplicationResponse(
+                application.getId(),
+                application.getUser().getId(),
+                application.getCompany(),
+                application.getBusinessType(),
+                application.getMessage(),
+                application.getStatus().name(),
+                application.getCreatedAt().toString(),
+                application.getUpdatedAt().toString(),
+                userRef
+        );
+    }
+}

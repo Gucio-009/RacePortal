@@ -1,0 +1,176 @@
+/**
+ * routes.tsx — drzewo tras React Router v7 (`createBrowserRouter`).
+ *
+ * Layout: `RootLayout` na `/` z `<Outlet />` dla dzieci.
+ * AuthGate: czeka na bootstrap JWT (`AuthContext.isLoading`), potem
+ * przekierowuje niezalogowanych na `/login`; opcjonalnie filtruje po `roles`
+ * (ADMIN, ORGANIZER) — niedopasowana rola → `/`.
+ *
+ * Chronione wrappery: Dashboard, Garage, Account, Settings, Admin, Organizer.
+ * Catch-all `*` → Navigate `/` (SPA; nginx i tak serwuje index.html dla deep linków).
+ * Alias `/mapa` → `/wydarzenia` (mapa jest widokiem na liście eventów).
+ *
+ * Docker/nginx: try_files $uri /index.html — bez tego odświeżenie `/organizer` = 404.
+ *
+ * Pomysł (alt): lazy() + Suspense per route; loadery danych (RR loaders) zamiast fetch w pages.
+ */
+
+import { createBrowserRouter, Navigate } from "react-router";
+import { ReactNode, useEffect, useRef, useState } from "react";
+import { RootLayout } from "./components/RootLayout";
+import { HomePage } from "./pages/HomePage";
+import { LoginPage } from "./pages/LoginPage";
+import { RegisterPage } from "./pages/RegisterPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { EventsPage } from "./pages/EventsPage";
+import { EventDetailPage } from "./pages/EventDetailPage";
+import { ResultsPage } from "./pages/ResultsPage";
+import { ArchivePage } from "./pages/ArchivePage";
+import { GalleryPage } from "./pages/GalleryPage";
+import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { GaragePage } from "./pages/GaragePage";
+import { AdminPanelPage } from "./pages/AdminPanelPage";
+import { OrganizerPanelPage } from "./pages/OrganizerPanelPage";
+import { BecomeOrganizerPage } from "./pages/BecomeOrganizerPage";
+import { TermsPage, PrivacyPage } from "./pages/LegalPages";
+import { SettingsPage } from "./pages/SettingsPage";
+import { AccountPage } from "./pages/AccountPage";
+import { useAuth } from "./context/AuthContext";
+import type { UserRole } from "./lib/types";
+import { Loader2 } from "lucide-react";
+
+/**
+ * Brama auth: spinner podczas bootstrapu `/api/auth/me`, potem redirect lub children.
+ * `roles` — opcjonalna biała lista ról (np. tylko ADMIN).
+ * Przy mismatch roli: jednorazowy `refreshSession` (po APPROVE wniosku org. w DB
+ * React state może jeszcze trzymać USER — bez tego redirect na `/` przed panelem).
+ */
+function AuthGate({
+  children,
+  roles,
+}: {
+  children: ReactNode;
+  roles?: UserRole[];
+}) {
+  const { isAuthenticated, user, isLoading, refreshSession } = useAuth();
+  const [roleRefreshing, setRoleRefreshing] = useState(false);
+  const refreshAttempted = useRef(false);
+
+  useEffect(() => {
+    refreshAttempted.current = false;
+  }, [roles?.join(",")]);
+
+  useEffect(() => {
+    if (!roles || isLoading || !isAuthenticated || !user) return;
+    if (roles.includes(user.role)) return;
+    if (refreshAttempted.current) return;
+    refreshAttempted.current = true;
+    let cancelled = false;
+    setRoleRefreshing(true);
+    void refreshSession().finally(() => {
+      if (!cancelled) setRoleRefreshing(false);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [roles, isLoading, isAuthenticated, user, refreshSession]);
+
+  if (isLoading || roleRefreshing) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
+        <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
+
+  return <>{children}</>;
+}
+
+function ProtectedDashboard() {
+  return (
+    <AuthGate>
+      <DashboardPage />
+    </AuthGate>
+  );
+}
+
+function ProtectedGarage() {
+  return (
+    <AuthGate>
+      <GaragePage />
+    </AuthGate>
+  );
+}
+
+function ProtectedAdmin() {
+  return (
+    <AuthGate roles={["ADMIN"]}>
+      <AdminPanelPage />
+    </AuthGate>
+  );
+}
+
+function ProtectedOrganizer() {
+  return (
+    <AuthGate roles={["ORGANIZER", "ADMIN"]}>
+      <OrganizerPanelPage />
+    </AuthGate>
+  );
+}
+
+function ProtectedAccount() {
+  return (
+    <AuthGate>
+      <AccountPage />
+    </AuthGate>
+  );
+}
+
+function ProtectedSettings() {
+  return (
+    <AuthGate>
+      <SettingsPage />
+    </AuthGate>
+  );
+}
+
+function ProtectedBecomeOrganizer() {
+  return (
+    <AuthGate>
+      <BecomeOrganizerPage />
+    </AuthGate>
+  );
+}
+
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: RootLayout,
+    children: [
+      { index: true, Component: HomePage },
+      { path: "login", Component: LoginPage },
+      { path: "register", Component: RegisterPage },
+      { path: "forgot-password", Component: ForgotPasswordPage },
+      { path: "dashboard", Component: ProtectedDashboard },
+      { path: "konto", Component: ProtectedAccount },
+      { path: "ustawienia", Component: ProtectedSettings },
+      { path: "garaz", Component: ProtectedGarage },
+      { path: "admin", Component: ProtectedAdmin },
+      { path: "organizer", Component: ProtectedOrganizer },
+      { path: "zostan-organizatorem", Component: ProtectedBecomeOrganizer },
+      { path: "wydarzenia", Component: EventsPage },
+      { path: "wydarzenia/:id", Component: EventDetailPage },
+      { path: "wyniki", Component: ResultsPage },
+      { path: "archiwum", Component: ArchivePage },
+      { path: "galeria", Component: GalleryPage },
+      { path: "mapa", element: <Navigate to="/wydarzenia" replace /> },
+      { path: "terms", Component: TermsPage },
+      { path: "privacy", Component: PrivacyPage },
+      // SPA catch-all — nieznane ścieżki → home (nginx i tak serwuje index.html)
+      { path: "*", element: <Navigate to="/" replace /> },
+    ],
+  },
+]);

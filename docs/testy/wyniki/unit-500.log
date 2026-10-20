@@ -1,0 +1,14 @@
+npm warn Unknown env config "devdir". This will error in a future major version of npm. See `npm help npmrc` for supported config options.
+npm notice run raceportal@0.0.1 npx
+npm notice run 'vitest' run --reporter=default --reporter=json --outputFile.json=/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/docs/testy/wyniki/unit-500-raw.json
+
+ RUN  v4.1.10 /Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/packages/api-types
+
+ ✓ tests/unit.api-types.test.ts (599 tests) 33ms
+
+ Test Files  1 passed (1)
+      Tests  599 passed (599)
+   Start at  14:53:29
+   Duration  169ms (transform 31ms, setup 0ms, import 42ms, tests 33ms, environment 0ms)
+
+JSON report written to /Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/docs/testy/wyniki/unit-500-raw.json

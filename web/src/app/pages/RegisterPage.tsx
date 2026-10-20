@@ -1,0 +1,523 @@
+/**
+ * RegisterPage — rejestracja konta + weryfikacja e-mail kodem 6-cyfrowym.
+ *
+ * Cel: utworzenie konta kierowcy (USER) z danymi profilu / licencji; opcjonalnie Google.
+ * Wzorce: dwuetapowy UI (formularz → ekran kodu gdy `requiresVerification`),
+ * AuthContext (`register`, `verifyEmail`, `resendCode`, `loginWithGoogle`), React Router.
+ * Auth/JWT: po aktywacji AuthContext zapisuje JWT w `raceportal_token` (jak LoginPage).
+ * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
+ * Theme: `--race-accent`, `font-display`; Mailpit wspomniany w UI (dev :8025).
+ * Docker/nginx: `/register` jako deep link SPA — nginx try_files.
+ *
+ * Pomysł (alt): magic-link zamiast kodu; Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
+ */
+import { useCallback, useState } from "react";
+import { Link, useNavigate } from "react-router";
+import { useAuth } from "../context/AuthContext";
+import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound, Phone, IdCard } from "lucide-react";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Checkbox } from "../components/ui/checkbox";
+import { Switch } from "../components/ui/switch";
+import { Separator } from "../components/ui/separator";
+import { toast } from "sonner";
+import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
+
+/** Reguły siły hasła zsynchronizowane z komunikatami UI / oczekiwaniami API. */
+function isStrongPassword(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
+
+export function RegisterPage() {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [instagramUrl, setInstagramUrl] = useState("");
+  const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
+  const [hasPzmLicense, setHasPzmLicense] = useState(false);
+  const [pzmLicense, setPzmLicense] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu.
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const { register, verifyEmail, resendCode, loginWithGoogle } = useAuth();
+  const navigate = useNavigate();
+  const googleEnabled = isGoogleClientConfigured();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Hasła nie są identyczne");
+      return;
+    }
+
+    if (!acceptTerms) {
+      toast.error("Musisz zaakceptować regulamin");
+      return;
+    }
+
+    if (password.length < 8) {
+      toast.error("Hasło musi mieć minimum 8 znaków");
+      return;
+    }
+
+    if (!isStrongPassword(password)) {
+      toast.error("Hasło musi zawierać wielką literę, cyfrę i znak specjalny");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const result = await register(username, email, password, {
+        firstName,
+        lastName,
+        phone,
+        address,
+        instagramUrl,
+        hasDrivingLicenseB,
+        pzmLicense: hasPzmLicense ? pzmLicense : "",
+      });
+      if (!result.ok) {
+        toast.error(result.message || "Nie udało się utworzyć konta");
+        return;
+      }
+      // Etap 2: kod e-mail zamiast od razu JWT.
+      if ("requiresVerification" in result && result.requiresVerification) {
+        setPendingEmail(result.email);
+        toast.success(result.message || "Kod weryfikacyjny wysłany na e-mail");
+        return;
+      }
+      toast.success("Konto utworzone pomyślnie!");
+      navigate("/dashboard");
+    } catch {
+      toast.error("Wystąpił błąd podczas rejestracji");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /** Potwierdzenie kodu → JWT w AuthContext → dashboard. */
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pendingEmail) return;
+    if (code.trim().length !== 6) {
+      toast.error("Podaj 6-cyfrowy kod");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await verifyEmail(pendingEmail, code.trim());
+      if (result.ok) {
+        toast.success("Konto aktywowane!");
+        navigate("/dashboard");
+      } else {
+        toast.error(result.message || "Nieprawidłowy kod");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!pendingEmail) return;
+    setIsLoading(true);
+    try {
+      const result = await resendCode(pendingEmail);
+      if (result.ok) toast.success(result.message || "Kod wysłany ponownie");
+      else toast.error(result.message || "Nie udało się wysłać kodu");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /** Google wymaga wcześniejszej akceptacji regulaminu (checkbox). */
+  const handleGoogle = useCallback(
+    async (idToken: string) => {
+      if (!acceptTerms) {
+        toast.error("Zaakceptuj regulamin przed kontynuacją");
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const result = await loginWithGoogle(idToken);
+        if (result.ok) {
+          toast.success("Konto Google połączone — jesteś zalogowany");
+          navigate("/dashboard");
+        } else {
+          toast.error(result.message || "Nie udało się kontynuować z Google");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [acceptTerms, loginWithGoogle, navigate],
+  );
+
+  return (
+    <div
+      className="min-h-screen flex items-start justify-center px-4 py-12 bg-cover bg-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+      }}
+    >
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <Flag className="w-16 h-16 text-[var(--race-accent)]" />
+          </div>
+          <h1
+            className="font-display text-white mb-2"
+            style={{ fontSize: "36px", fontWeight: 800 }}
+          >
+            DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
+          </h1>
+          <p className="text-[#9ca3af]" style={{ fontSize: "16px" }}>
+            {pendingEmail ? "Potwierdź adres e-mail kodem" : "Stwórz konto i rozpocznij wyścig"}
+          </p>
+        </div>
+
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 shadow-2xl">
+          {pendingEmail ? (
+            <form onSubmit={handleVerify} className="space-y-5">
+              <p className="text-[#9ca3af] text-sm">
+                Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź też
+                Mailpit (lokalnie :8025).
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="code" className="text-white" style={{ fontWeight: 600 }}>
+                  Kod weryfikacyjny
+                </Label>
+                <div className="relative">
+                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                  <Input
+                    id="code"
+                    inputMode="numeric"
+                    maxLength={6}
+                    placeholder="123456"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12 tracking-widest"
+                    required
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+                style={{ fontSize: "16px", fontWeight: 800 }}
+              >
+                {isLoading ? "WERYFIKACJA..." : "AKTYWUJ KONTO"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isLoading}
+                onClick={handleResend}
+                className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
+              >
+                Wyślij nowy kod
+              </Button>
+            </form>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-white" style={{ fontWeight: 600 }}>
+                    Nazwa użytkownika
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="twoja_nazwa"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-white" style={{ fontWeight: 600 }}>
+                    Email
+                  </Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="twoj@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="firstName" className="text-white" style={{ fontWeight: 600 }}>
+                      Imię
+                    </Label>
+                    <Input
+                      id="firstName"
+                      type="text"
+                      placeholder="Jan"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lastName" className="text-white" style={{ fontWeight: 600 }}>
+                      Nazwisko
+                    </Label>
+                    <Input
+                      id="lastName"
+                      type="text"
+                      placeholder="Kowalski"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-white" style={{ fontWeight: 600 }}>
+                    Telefon
+                  </Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+48 600 000 000"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-white" style={{ fontWeight: 600 }}>
+                    Adres zamieszkania
+                  </Label>
+                  <Input
+                    id="address"
+                    type="text"
+                    placeholder="Ulica, kod, miasto"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="instagram" className="text-white" style={{ fontWeight: 600 }}>
+                    Instagram (opcjonalnie)
+                  </Label>
+                  <Input
+                    id="instagram"
+                    type="url"
+                    placeholder="https://instagram.com/..."
+                    value={instagramUrl}
+                    onChange={(e) => setInstagramUrl(e.target.value)}
+                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-white" style={{ fontWeight: 600 }}>
+                    Hasło
+                  </Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
+                    >
+                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-[#9ca3af]">
+                    Min. 8 znaków, wielka litera, cyfra i znak specjalny (np. !@#$)
+                  </p>
+                </div>
+
+                <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <Label htmlFor="licenseB" className="text-white flex items-center gap-2" style={{ fontWeight: 600 }}>
+                        <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
+                        Prawo jazdy kat. B
+                      </Label>
+                      <p className="text-xs text-[#9ca3af]">Posiadam ważne prawo jazdy</p>
+                    </div>
+                    <Switch
+                      id="licenseB"
+                      checked={hasDrivingLicenseB}
+                      onCheckedChange={setHasDrivingLicenseB}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2a2a2a]">
+                    <div>
+                      <Label htmlFor="hasPzm" className="text-white" style={{ fontWeight: 600 }}>
+                        Licencja PZM
+                      </Label>
+                      <p className="text-xs text-[#9ca3af]">Niezależnie od prawa jazdy</p>
+                    </div>
+                    <Switch
+                      id="hasPzm"
+                      checked={hasPzmLicense}
+                      onCheckedChange={(v) => {
+                        setHasPzmLicense(v);
+                        if (!v) setPzmLicense("");
+                      }}
+                    />
+                  </div>
+                  {hasPzmLicense && (
+                    <div className="space-y-2">
+                      <Label htmlFor="pzmLicense" className="text-white text-sm">
+                        Numer licencji PZM
+                      </Label>
+                      <Input
+                        id="pzmLicense"
+                        type="text"
+                        placeholder="Numer licencji PZM"
+                        value={pzmLicense}
+                        onChange={(e) => setPzmLicense(e.target.value)}
+                        className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-10"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-white" style={{ fontWeight: 600 }}>
+                    Powtórz hasło
+                  </Label>
+                  <div className="relative">
+                    <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      required
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 py-2">
+                  <Checkbox
+                    id="terms"
+                    checked={acceptTerms}
+                    onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
+                    className="mt-1 border-[#2a2a2a] data-[state=checked]:bg-[var(--race-accent)] data-[state=checked]:border-[var(--race-accent)]"
+                  />
+                  <Label
+                    htmlFor="terms"
+                    className="text-[#9ca3af] cursor-pointer leading-relaxed"
+                    style={{ fontSize: "14px" }}
+                  >
+                    Akceptuję{" "}
+                    <Link to="/terms" className="text-[var(--race-accent)] hover:underline">
+                      regulamin
+                    </Link>{" "}
+                    i{" "}
+                    <Link to="/privacy" className="text-[var(--race-accent)] hover:underline">
+                      politykę prywatności
+                    </Link>
+                  </Label>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+                  style={{ fontSize: "16px", fontWeight: 800 }}
+                >
+                  {isLoading ? "TWORZENIE KONTA..." : "STWÓRZ KONTO"}
+                </Button>
+              </form>
+
+              {googleEnabled ? (
+                <>
+                  <div className="relative my-6">
+                    <Separator className="bg-[#2a2a2a]" />
+                    <span
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] px-4 text-[#9ca3af]"
+                      style={{ fontSize: "14px" }}
+                    >
+                      lub
+                    </span>
+                  </div>
+                  <GoogleSignInButton
+                    onCredential={handleGoogle}
+                    onError={(msg) => toast.error(msg)}
+                    disabled={isLoading || !acceptTerms}
+                  />
+                  {!acceptTerms ? (
+                    <p className="text-[#6b7280] text-xs text-center mt-2">
+                      Zaznacz regulamin, aby kontynuować z Google
+                    </p>
+                  ) : null}
+                </>
+              ) : null}
+            </>
+          )}
+
+          <div className="mt-6 text-center">
+            <p className="text-[#9ca3af]">
+              Masz już konto?{" "}
+              <Link to="/login" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
+                Zaloguj się
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

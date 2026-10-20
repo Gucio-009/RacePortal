@@ -1,0 +1,311 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.3.0/bin/node",
+      "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/node_modules/.bin/playwright",
+      "test",
+      "tests/e2e/mobile.spec.ts",
+      "--project=mobile-expo"
+    ],
+    "configFile": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/playwright.config.ts",
+    "rootDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/tests/e2e",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-desktop",
+        "name": "web-desktop",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "web-mobile-viewport",
+        "name": "web-mobile-viewport",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/web\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      },
+      {
+        "outputDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "mobile-expo",
+        "name": "mobile-expo",
+        "testDir": "/Users/wojciechwronisz/Desktop/projekty/RacePortal-wojtek/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "/mobile\\.spec\\.ts/"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "html",
+        {
+          "open": "never",
+          "outputFolder": "docs/testy/wyniki/playwright-report"
+        }
+      ],
+      [
+        "json",
+        {
+          "outputFile": "docs/testy/wyniki/playwright-results.json"
+        }
+      ],
+      [
+        "junit",
+        {
+          "outputFile": "docs/testy/wyniki/playwright-junit.xml"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.62.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "mobile.spec.ts",
+      "file": "mobile.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Mobile Expo (web preview)",
+          "file": "mobile.spec.ts",
+          "line": 16,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-MOB-01: gość widzi listę wydarzeń i może otworzyć logowanie",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 960,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-03T14:37:28.820Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-0455797c35d295febe16",
+              "file": "mobile.spec.ts",
+              "line": 17,
+              "column": 7
+            },
+            {
+              "title": "TC-MOB-02: logowanie demo kierowcy i lista wydarzeń",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1023,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-03T14:37:30.073Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-66684dcbc92b954d107b",
+              "file": "mobile.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-MOB-03: błędne hasło pokazuje komunikat",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 639,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-03T14:37:31.104Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-19f385757b44404e881c",
+              "file": "mobile.spec.ts",
+              "line": 38,
+              "column": 7
+            },
+            {
+              "title": "TC-MOB-04: wejście w szczegóły i przycisk zapisu",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1089,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-03T14:37:31.748Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-3e3b3eeabecbf45820e4",
+              "file": "mobile.spec.ts",
+              "line": 51,
+              "column": 7
+            },
+            {
+              "title": "TC-MOB-05: wylogowanie wraca do trybu gościa",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 60000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "mobile-expo",
+                  "projectName": "mobile-expo",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 1121,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-08-03T14:37:32.843Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "e79c838550b25e92508e-9c778a2e9a42063e7581",
+              "file": "mobile.spec.ts",
+              "line": 57,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-08-03T14:37:28.337Z",
+    "duration": 5664.66,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
