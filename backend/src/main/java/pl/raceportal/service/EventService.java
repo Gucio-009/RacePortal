@@ -373,7 +373,7 @@ public class EventService {
                 request.spectatorFee(), request.externalUrl(), request.requireDrivingLicense(),
                 request.requirePzmLicense(), request.requireOc(), request.requirePt(),
                 request.requireCage(), request.requireRegistered());
-        ensureEndNotBeforeStart(event);
+        ensureEventDatesValid(event, true);
 
         event = eventRepository.save(event);
         return serialize(event);
@@ -431,7 +431,7 @@ public class EventService {
             event.setStatus(EventStatus.PENDING);
         }
 
-        ensureEndNotBeforeStart(event);
+        ensureEventDatesValid(event, false);
 
         event = eventRepository.save(event);
         EventResponse response = serialize(event);
@@ -485,8 +485,20 @@ public class EventService {
         }
     }
 
-    /** Koniec wydarzenia nie może być przed datą startu. */
-    private void ensureEndNotBeforeStart(Event event) {
+    /**
+     * Koniec nie przed startem. Przy tworzeniu (i gdy data jest w przyszłości zmienia się na przeszłość)
+     * start nie może być z przeszłości.
+     */
+    private void ensureEventDatesValid(Event event, boolean isCreate) {
+        if (isCreate && event.getDate() != null && event.getDate().isBefore(LocalDate.now())) {
+            throw ApiException.badRequest("Data wydarzenia nie może być z przeszłości");
+        }
+        if (!isCreate && event.getDate() != null && event.getDate().isBefore(LocalDate.now())
+                && event.getStatus() != EventStatus.ARCHIVED
+                && event.getStatus() != EventStatus.CANCELLED) {
+            // Edycja nadchodzącego/pending — nie pozwól ustawić daty wstecz.
+            throw ApiException.badRequest("Data wydarzenia nie może być z przeszłości");
+        }
         if (event.getEndDate() != null && event.getDate() != null
                 && event.getEndDate().isBefore(event.getDate())) {
             throw ApiException.badRequest(

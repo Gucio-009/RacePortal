@@ -16,11 +16,13 @@ import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { PaidEventBadge } from "../components/PaidEventBadge";
+import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
 import { eventImage } from "../lib/types";
 
 export function HomePage() {
+  const { isAuthenticated } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -62,15 +64,17 @@ export function HomePage() {
             wyniki i bądź częścią społeczności RACEPORTAL.
           </p>
           <div className="flex gap-4 justify-center flex-wrap">
-            <Link to="/register">
-              <Button
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6"
-                style={{ fontSize: "18px", fontWeight: 800 }}
-              >
-                ZAREJESTRUJ SIĘ
-                <ChevronRight className="ml-2 w-5 h-5" />
-              </Button>
-            </Link>
+            {!isAuthenticated && (
+              <Link to="/register">
+                <Button
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6"
+                  style={{ fontSize: "18px", fontWeight: 800 }}
+                >
+                  ZAREJESTRUJ SIĘ
+                  <ChevronRight className="ml-2 w-5 h-5" />
+                </Button>
+              </Link>
+            )}
             <a href="#o-nas">
               <Button
                 variant="outline"

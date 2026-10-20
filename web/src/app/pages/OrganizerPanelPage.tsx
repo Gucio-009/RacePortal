@@ -43,6 +43,7 @@ export function OrganizerPanelPage() {
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   // Komentarze per zgłoszenie — wysyłane przy zmianie statusu.
   const [comments, setComments] = useState<Record<string, string>>({});
 
@@ -57,6 +58,39 @@ export function OrganizerPanelPage() {
   const resolvedTime =
     form.time === OTHER ? form.timeOther.trim() : form.time.trim();
   const resolvedEntryFee = form.entryFeeOther ? form.entryFee.trim() : form.entryFee.trim();
+
+  const clearFieldError = (key: string) => {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+  };
+
+  const todayIso = () => new Date().toISOString().slice(0, 10);
+
+  const validateEventForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!form.name.trim()) errors.name = "Nazwa jest wymagana";
+    if (!form.description.trim()) errors.description = "Opis jest wymagany";
+    if (!resolvedCategory) errors.category = "Kategoria jest wymagana";
+    if (!form.date) {
+      errors.date = "Data jest wymagana";
+    } else if (form.date < todayIso()) {
+      errors.date = "Data wydarzenia nie może być z przeszłości";
+    }
+    if (!resolvedTrack) errors.track = "Tor / lokalizacja jest wymagana";
+    if (!resolvedCity) errors.city = "Miasto jest wymagane";
+    if (!form.voivodeship.trim()) errors.voivodeship = "Województwo jest wymagane";
+    if (form.endDate.trim() && form.date && form.endDate < form.date) {
+      errors.endDate = "Data zakończenia nie może być wcześniejsza niż data startu";
+    }
+    if (form.paid && !form.bankAccount.trim()) {
+      errors.bankAccount = "Dla płatnego wydarzenia podaj numer konta";
+    }
+    return errors;
+  };
 
   const loadEvents = () => {
     setLoading(true);
@@ -104,37 +138,26 @@ export function OrganizerPanelPage() {
   const openCreate = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setFieldErrors({});
     setCreateOpen(true);
   };
 
   const openEdit = (event: OrganizerEvent) => {
     setEditingId(event.id);
     setForm(eventToForm(event));
+    setFieldErrors({});
     setCreateOpen(true);
   };
 
   /** Create (POST) lub update (PATCH) — nowe wydarzenie czeka na akceptację admina. */
   const handleSave = async () => {
-    if (
-      !form.name.trim() ||
-      !form.description.trim() ||
-      !resolvedCategory ||
-      !form.date ||
-      !resolvedTrack ||
-      !resolvedCity ||
-      !form.voivodeship.trim()
-    ) {
-      toast.error("Wypełnij wymagane pola (nazwa, opis, kategoria, data, tor, miasto, województwo)");
+    const errors = validateEventForm();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      Object.values(errors).forEach((msg) => toast.error(msg));
       return;
     }
-    if (form.paid && !form.bankAccount.trim()) {
-      toast.error("Dla płatnego wydarzenia podaj numer konta");
-      return;
-    }
-    if (form.endDate.trim() && form.endDate < form.date) {
-      toast.error("Data zakończenia nie może być wcześniejsza niż data startu wydarzenia");
-      return;
-    }
+    setFieldErrors({});
     setSaving(true);
     const payload = {
       name: form.name.trim(),
@@ -227,6 +250,7 @@ export function OrganizerPanelPage() {
     if (!open) {
       setForm(emptyForm);
       setEditingId(null);
+      setFieldErrors({});
     }
   };
 
@@ -287,6 +311,8 @@ export function OrganizerPanelPage() {
         setForm={setForm}
         saving={saving}
         onSave={handleSave}
+        fieldErrors={fieldErrors}
+        clearFieldError={clearFieldError}
       />
     </div>
   );

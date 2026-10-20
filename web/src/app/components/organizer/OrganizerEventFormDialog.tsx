@@ -38,6 +38,16 @@ import {
 } from "../../lib/eventFormPresets";
 import { applyTrackPreset, type FormState } from "./organizerEventForm";
 
+function fieldClass(hasError: boolean) {
+  return hasError
+    ? "bg-[#121212] border-red-500 text-white ring-1 ring-red-500/60"
+    : "bg-[#121212] border-[#2a2a2a] text-white";
+}
+
+/** Native date picker — biała ikona kalendarza. */
+const DATE_INPUT_CLASS =
+  "[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer";
+
 interface OrganizerEventFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,6 +57,8 @@ interface OrganizerEventFormDialogProps {
   setForm: Dispatch<SetStateAction<FormState>>;
   saving: boolean;
   onSave: () => void;
+  fieldErrors?: Record<string, string>;
+  clearFieldError?: (key: string) => void;
 }
 
 export function OrganizerEventFormDialog({
@@ -57,7 +69,14 @@ export function OrganizerEventFormDialog({
   setForm,
   saving,
   onSave,
+  fieldErrors = {},
+  clearFieldError,
 }: OrganizerEventFormDialogProps) {
+  const patch = (partial: Partial<FormState>, clearKey?: string) => {
+    setForm({ ...form, ...partial });
+    if (clearKey) clearFieldError?.(clearKey);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -71,38 +90,50 @@ export function OrganizerEventFormDialog({
         </DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
           <div className="space-y-2 sm:col-span-2">
-            <Label>Nazwa *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Nazwa<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Input
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) => patch({ name: e.target.value }, "name")}
               placeholder="np. Drift Masters Polish Grand Prix"
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              className={fieldClass(!!fieldErrors.name)}
             />
+            {fieldErrors.name && <p className="text-xs text-red-400">{fieldErrors.name}</p>}
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label>Opis *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Opis<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Textarea
               value={form.description}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              onChange={(e) => patch({ description: e.target.value }, "description")}
               rows={3}
               placeholder="Krótki opis rundy, klas i atrakcji…"
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              className={fieldClass(!!fieldErrors.description)}
             />
+            {fieldErrors.description && (
+              <p className="text-xs text-red-400">{fieldErrors.description}</p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Kategoria *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Kategoria<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Select
               value={form.category || undefined}
-              onValueChange={(v) =>
-                setForm({
-                  ...form,
-                  category: v,
-                  categoryOther: v === OTHER ? form.categoryOther : "",
-                })
-              }
+              onValueChange={(v) => {
+                patch(
+                  {
+                    category: v,
+                    categoryOther: v === OTHER ? form.categoryOther : "",
+                  },
+                  "category",
+                );
+              }}
             >
-              <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+              <SelectTrigger className={fieldClass(!!fieldErrors.category)}>
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
               <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
@@ -122,21 +153,25 @@ export function OrganizerEventFormDialog({
             {form.category === OTHER && (
               <Input
                 value={form.categoryOther}
-                onChange={(e) => setForm({ ...form, categoryOther: e.target.value })}
+                onChange={(e) => patch({ categoryOther: e.target.value }, "category")}
                 placeholder="Własna kategoria"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.category)}
               />
             )}
+            {fieldErrors.category && <p className="text-xs text-red-400">{fieldErrors.category}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label>Data *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Data<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Input
               type="date"
               value={form.date}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              onChange={(e) => patch({ date: e.target.value }, "date")}
+              className={`${fieldClass(!!fieldErrors.date)} ${DATE_INPUT_CLASS}`}
             />
+            {fieldErrors.date && <p className="text-xs text-red-400">{fieldErrors.date}</p>}
           </div>
 
           <div className="space-y-2">
@@ -170,12 +205,17 @@ export function OrganizerEventFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Tor / lokalizacja *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Tor / lokalizacja<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Select
               value={form.trackKey || undefined}
-              onValueChange={(v) => setForm((prev) => applyTrackPreset(prev, v))}
+              onValueChange={(v) => {
+                setForm((prev) => applyTrackPreset(prev, v));
+                clearFieldError?.("track");
+              }}
             >
-              <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+              <SelectTrigger className={fieldClass(!!fieldErrors.track)}>
                 <SelectValue placeholder="Wybierz tor" />
               </SelectTrigger>
               <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
@@ -190,11 +230,12 @@ export function OrganizerEventFormDialog({
             {form.trackKey === OTHER && (
               <Input
                 value={form.trackOther}
-                onChange={(e) => setForm({ ...form, trackOther: e.target.value })}
+                onChange={(e) => patch({ trackOther: e.target.value }, "track")}
                 placeholder="Nazwa toru"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className={fieldClass(!!fieldErrors.track)}
               />
             )}
+            {fieldErrors.track && <p className="text-xs text-red-400">{fieldErrors.track}</p>}
             {form.trackKey && form.trackKey !== OTHER && (
               <p className="text-xs text-[#9ca3af]">
                 Auto: {form.city}, {form.voivodeship}
@@ -204,28 +245,33 @@ export function OrganizerEventFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Miasto *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Miasto<span className="text-red-500 font-bold">*</span>
+            </Label>
             {form.trackKey === OTHER || !form.trackKey ? (
               <>
                 <Select
                   value={form.city || undefined}
                   onValueChange={(v) => {
                     if (v === OTHER) {
-                      setForm({ ...form, city: OTHER, cityOther: "" });
+                      patch({ city: OTHER, cityOther: "" }, "city");
                       return;
                     }
                     const match = TRACK_PRESETS.find((t) => t.city === v);
-                    setForm({
-                      ...form,
-                      city: v,
-                      cityOther: "",
-                      voivodeship: match?.voivodeship ?? form.voivodeship,
-                      lat: match ? String(match.lat) : form.lat,
-                      lng: match ? String(match.lng) : form.lng,
-                    });
+                    patch(
+                      {
+                        city: v,
+                        cityOther: "",
+                        voivodeship: match?.voivodeship ?? form.voivodeship,
+                        lat: match ? String(match.lat) : form.lat,
+                        lng: match ? String(match.lng) : form.lng,
+                      },
+                      "city",
+                    );
+                    if (match?.voivodeship) clearFieldError?.("voivodeship");
                   }}
                 >
-                  <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectTrigger className={fieldClass(!!fieldErrors.city)}>
                     <SelectValue placeholder="Wybierz miasto" />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
@@ -242,9 +288,9 @@ export function OrganizerEventFormDialog({
                 {form.city === OTHER && (
                   <Input
                     value={form.cityOther}
-                    onChange={(e) => setForm({ ...form, cityOther: e.target.value })}
+                    onChange={(e) => patch({ cityOther: e.target.value }, "city")}
                     placeholder="Nazwa miasta"
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                    className={fieldClass(!!fieldErrors.city)}
                   />
                 )}
               </>
@@ -255,16 +301,19 @@ export function OrganizerEventFormDialog({
                 className="bg-[#121212]/60 border-[#2a2a2a] text-[#9ca3af]"
               />
             )}
+            {fieldErrors.city && <p className="text-xs text-red-400">{fieldErrors.city}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label>Województwo *</Label>
+            <Label className="inline-flex items-baseline gap-0.5">
+              Województwo<span className="text-red-500 font-bold">*</span>
+            </Label>
             <Select
               value={form.voivodeship || undefined}
-              onValueChange={(v) => setForm({ ...form, voivodeship: v })}
+              onValueChange={(v) => patch({ voivodeship: v }, "voivodeship")}
               disabled={Boolean(form.trackKey && form.trackKey !== OTHER)}
             >
-              <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white disabled:opacity-60">
+              <SelectTrigger className={`${fieldClass(!!fieldErrors.voivodeship)} disabled:opacity-60`}>
                 <SelectValue placeholder="Wybierz województwo" />
               </SelectTrigger>
               <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
@@ -275,6 +324,9 @@ export function OrganizerEventFormDialog({
                 ))}
               </SelectContent>
             </Select>
+            {fieldErrors.voivodeship && (
+              <p className="text-xs text-red-400">{fieldErrors.voivodeship}</p>
+            )}
           </div>
 
           {/* Mapa tylko przy open — unika Leaflet w ukrytym dialogu (zerowy size). */}
@@ -358,17 +410,16 @@ export function OrganizerEventFormDialog({
             )}
           </div>
 
-          <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
-            <div className="min-w-0">
+          <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+            <div className="flex-1 min-w-0 pr-1">
               <Label className="text-white">Przyjmuj zgłoszenia na stronie</Label>
-              <p className="text-xs text-[#9ca3af]">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
+              <p className="text-xs text-[#9ca3af] truncate">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
             </div>
-            <div className="shrink-0">
-              <Switch
-                checked={form.acceptRegistrations}
-                onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
-              />
-            </div>
+            <Switch
+              className="shrink-0"
+              checked={form.acceptRegistrations}
+              onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
+            />
           </div>
 
           {form.acceptRegistrations && (
@@ -387,14 +438,13 @@ export function OrganizerEventFormDialog({
                     ["requireRegistered", "Zarejestrowane auto"],
                   ] as const
                 ).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between gap-3 rounded border border-[#2a2a2a] px-3 py-2 overflow-hidden">
-                    <Label className="text-white text-sm min-w-0">{label}</Label>
-                    <div className="shrink-0">
-                      <Switch
-                        checked={form[key]}
-                        onCheckedChange={(v) => setForm({ ...form, [key]: v })}
-                      />
-                    </div>
+                  <div key={key} className="flex items-center gap-3 rounded border border-[#2a2a2a] px-3 py-2 box-border overflow-hidden">
+                    <Label className="text-white text-sm flex-1 min-w-0 truncate pr-1">{label}</Label>
+                    <Switch
+                      className="shrink-0"
+                      checked={form[key]}
+                      onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                    />
                   </div>
                 ))}
               </div>
@@ -406,9 +456,10 @@ export function OrganizerEventFormDialog({
             <Input
               type="date"
               value={form.endDate}
-              onChange={(e) => setForm({ ...form, endDate: e.target.value })}
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              onChange={(e) => patch({ endDate: e.target.value }, "endDate")}
+              className={`${fieldClass(!!fieldErrors.endDate)} ${DATE_INPUT_CLASS}`}
             />
+            {fieldErrors.endDate && <p className="text-xs text-red-400">{fieldErrors.endDate}</p>}
           </div>
           <div className="space-y-2">
             <Label>Godzina zakończenia (opcj.)</Label>
@@ -442,14 +493,16 @@ export function OrganizerEventFormDialog({
           </div>
 
           {/* Płatne: flow ACCEPTED → proof → CONFIRMED (patrz OrganizerRegistrationsList). */}
-          <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
-            <div className="min-w-0">
+          <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+            <div className="flex-1 min-w-0 pr-1">
               <Label className="text-white">Wydarzenie płatne</Label>
-              <p className="text-xs text-[#9ca3af]">Wpisowe + weryfikacja przelewu</p>
+              <p className="text-xs text-[#9ca3af] truncate">Wpisowe + weryfikacja przelewu</p>
             </div>
-            <div className="shrink-0">
-              <Switch checked={form.paid} onCheckedChange={(v) => setForm({ ...form, paid: v })} />
-            </div>
+            <Switch
+              className="shrink-0"
+              checked={form.paid}
+              onCheckedChange={(v) => setForm({ ...form, paid: v })}
+            />
           </div>
 
           {form.paid && (
@@ -498,19 +551,24 @@ export function OrganizerEventFormDialog({
                 )}
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Numer konta *</Label>
+                <Label className="inline-flex items-baseline gap-0.5">
+                  Numer konta<span className="text-red-500 font-bold">*</span>
+                </Label>
                 <Input
                   value={form.bankAccount}
-                  onChange={(e) => setForm({ ...form, bankAccount: e.target.value })}
+                  onChange={(e) => patch({ bankAccount: e.target.value }, "bankAccount")}
                   placeholder="PL…"
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className={fieldClass(!!fieldErrors.bankAccount)}
                 />
+                {fieldErrors.bankAccount && (
+                  <p className="text-xs text-red-400">{fieldErrors.bankAccount}</p>
+                )}
                 <Button
                   type="button"
                   size="sm"
                   variant="outline"
                   className="border-[#2a2a2a] text-[var(--race-accent)]"
-                  onClick={() => setForm({ ...form, bankAccount: DEMO_BANK_ACCOUNT })}
+                  onClick={() => patch({ bankAccount: DEMO_BANK_ACCOUNT }, "bankAccount")}
                 >
                   Wstaw konto demo
                 </Button>

@@ -82,9 +82,13 @@ function digitsOnly(value: string) {
 
 function ReqLabel({ children, required }: { children: string; required?: boolean }) {
   return (
-    <Label className="text-white">
-      {children}
-      {required ? <span className="text-red-500 font-bold"> *</span> : null}
+    <Label className="text-white inline-flex items-baseline gap-0.5 max-w-full">
+      <span className="truncate">{children}</span>
+      {required ? (
+        <span className="text-red-500 font-bold shrink-0 leading-none" aria-hidden>
+          *
+        </span>
+      ) : null}
     </Label>
   );
 }
@@ -146,15 +150,17 @@ const GARAGE_FIELD_LABELS: Record<string, string> = {
   imageUrl: "URL zdjęcia",
 };
 
-/** Dodatnia liczba bez wiodącego zera (0 samo w sobie też odrzucamy, poza engineCc). */
-function invalidLeadingZeroOrZero(raw: string, allowZero = false): boolean {
+/** 0 albo wiodące zero (np. 01, 00) — osobna walidacja od pustego pola. */
+function isZeroOrLeadingZero(raw: string): boolean {
   const t = raw.trim();
-  if (!t) return true;
+  if (!t) return false;
+  if (/^0\d*/.test(t) && Number(t) === 0) return true;
   if (/^0\d+/.test(t)) return true;
-  const n = Number(t);
-  if (!Number.isFinite(n)) return true;
-  if (allowZero) return n < 0;
-  return n <= 0;
+  return Number(t) === 0;
+}
+
+function zeroFieldMessage(label: string) {
+  return `Wartość w polu „${label}” nie może zaczynać się od cyfry 0 ani wynosić zero.`;
 }
 
 function validateGarageForm(form: typeof emptyForm): Record<string, string> {
@@ -166,45 +172,54 @@ function validateGarageForm(form: typeof emptyForm): Record<string, string> {
 
   if (!form.year.trim()) {
     errors.year = "Rok produkcji jest wymagany";
-  } else if (invalidLeadingZeroOrZero(form.year)) {
-    errors.year =
-      "Wartość w polu „Rok produkcji” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  } else if (isZeroOrLeadingZero(form.year)) {
+    errors.year = zeroFieldMessage("Rok produkcji");
   } else {
     const year = Number(form.year);
-    if (year < 1900 || year > maxYear) {
+    if (!Number.isFinite(year) || year < 1900 || year > maxYear) {
       errors.year = `„Rok produkcji” musi być w zakresie 1900–${maxYear}`;
     }
   }
 
   if (!form.driveType) errors.driveType = "Rodzaj napędu jest wymagany";
 
-  if (!form.powerHp.trim() || invalidLeadingZeroOrZero(form.powerHp)) {
-    errors.powerHp =
-      "Wartość w polu „Moc (KM)” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  if (!form.powerHp.trim()) {
+    errors.powerHp = "Moc (KM) jest wymagana";
+  } else if (isZeroOrLeadingZero(form.powerHp)) {
+    errors.powerHp = zeroFieldMessage("Moc (KM)");
   } else if (Number(form.powerHp) > 5000) {
     errors.powerHp = "„Moc (KM)” nie może być większe niż 5000";
   }
 
-  if (form.engineCc.trim() === "") {
-    errors.engineCc = "Pojemność (cm³) jest wymagana (0 = EV)";
-  } else if (/^0\d+/.test(form.engineCc.trim()) || Number(form.engineCc) < 0) {
-    errors.engineCc =
-      "Wartość w polu „Pojemność (cm³)” nie może zaczynać się od cyfry 0 (dozwolone samo 0 = EV).";
+  if (!form.engineCc.trim()) {
+    errors.engineCc = "Pojemność (cm³) jest wymagana";
+  } else if (isZeroOrLeadingZero(form.engineCc)) {
+    errors.engineCc = zeroFieldMessage("Pojemność (cm³)");
   } else if (Number(form.engineCc) > 20000) {
     errors.engineCc = "„Pojemność (cm³)” nie może być większe niż 20000";
   }
 
-  if (!form.weightKg.trim() || invalidLeadingZeroOrZero(form.weightKg)) {
-    errors.weightKg =
-      "Wartość w polu „Masa (kg)” nie może zaczynać się od cyfry 0 ani wynosić zero.";
+  if (!form.weightKg.trim()) {
+    errors.weightKg = "Masa (kg) jest wymagana";
+  } else if (isZeroOrLeadingZero(form.weightKg)) {
+    errors.weightKg = zeroFieldMessage("Masa (kg)");
   } else if (Number(form.weightKg) > 10000) {
     errors.weightKg = "„Masa (kg)” nie może być większe niż 10000";
   }
 
-  const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
-  if (imageErr) errors.imageUrl = imageErr;
+  if (!form.imageUrl.trim()) {
+    errors.imageUrl = "URL zdjęcia jest wymagany";
+  } else {
+    const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
+    if (imageErr) errors.imageUrl = imageErr;
+  }
 
   return errors;
+}
+
+/** Osobny toast na każde pole — jeden pod drugim (prawy górny róg). */
+function toastAllFieldErrors(errors: Record<string, string>) {
+  Object.values(errors).forEach((msg) => toast.error(msg));
 }
 
 function formatGarageApiError(e: ApiError): { message: string; fields: Record<string, string> } {
@@ -298,8 +313,7 @@ export function GaragePage() {
     const errors = validateGarageForm(form);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      const first = Object.values(errors)[0];
-      toast.error(first.startsWith("Nieprawidłowe") ? first : `Nieprawidłowe dane. ${first}`);
+      toastAllFieldErrors(errors);
       return;
     }
     setFieldErrors({});
@@ -321,7 +335,11 @@ export function GaragePage() {
       if (e instanceof ApiError) {
         const formatted = formatGarageApiError(e);
         setFieldErrors(formatted.fields);
-        toast.error(formatted.message);
+        if (Object.keys(formatted.fields).length > 0) {
+          toastAllFieldErrors(formatted.fields);
+        } else {
+          toast.error(formatted.message);
+        }
       } else {
         toast.error("Nie udało się zapisać auta");
       }
@@ -538,24 +556,23 @@ export function GaragePage() {
               <Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
             </div>
 
-            <div className="sm:col-span-2 flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden">
-              <div className="min-w-0">
+            <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+              <div className="flex-1 min-w-0 pr-1">
                 <ReqLabel required>Zarejestrowane</ReqLabel>
-                <p className="text-xs text-[#9ca3af]">Auto posiada ważną rejestrację</p>
+                <p className="text-xs text-[#9ca3af] truncate">Auto posiada ważną rejestrację</p>
               </div>
-              <div className="shrink-0">
-                <Switch
-                  checked={form.registered}
-                  onCheckedChange={(v) =>
-                    setForm({
-                      ...form,
-                      registered: v,
-                      registrationType: v ? form.registrationType : "",
-                      kssNumber: v ? form.kssNumber : "",
-                    })
-                  }
-                />
-              </div>
+              <Switch
+                className="shrink-0"
+                checked={form.registered}
+                onCheckedChange={(v) =>
+                  setForm({
+                    ...form,
+                    registered: v,
+                    registrationType: v ? form.registrationType : "",
+                    kssNumber: v ? form.kssNumber : "",
+                  })
+                }
+              />
             </div>
 
             {form.registered && (
@@ -609,17 +626,16 @@ export function GaragePage() {
               ).map(([key, label]) => (
                 <div
                   key={key}
-                  className="flex items-center justify-between gap-3 border border-[#2a2a2a] rounded-md p-3 overflow-hidden"
+                  className="flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden"
                 >
-                  <div className="min-w-0">
+                  <div className="flex-1 min-w-0 pr-1">
                     <ReqLabel required>{label}</ReqLabel>
                   </div>
-                  <div className="shrink-0">
-                    <Switch
-                      checked={form[key]}
-                      onCheckedChange={(v) => setForm({ ...form, [key]: v })}
-                    />
-                  </div>
+                  <Switch
+                    className="shrink-0"
+                    checked={form[key]}
+                    onCheckedChange={(v) => setForm({ ...form, [key]: v })}
+                  />
                 </div>
               ))}
             </div>
