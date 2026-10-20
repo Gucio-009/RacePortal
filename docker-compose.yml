@@ -56,7 +56,7 @@ services:
       DATABASE_PASSWORD: raceportal
       SMTP_HOST: mailhog
       SMTP_PORT: "1025"
-      CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082
+      CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082,https://*.trycloudflare.com
       JWT_SECRET: raceportal-dev-secret-change-me
       SEED_ENABLED: "true"
       ALLOW_INSECURE_DEFAULTS: "true"

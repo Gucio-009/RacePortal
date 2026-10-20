@@ -104,10 +104,11 @@ public class SecurityConfig {
                 .filter(s -> !s.isEmpty())
                 .toList();
 
+        // Zawsze patterns — pozwala na https://*.trycloudflare.com (quick tunnel) obok localhost.
         if (origins.isEmpty() || origins.contains("*")) {
             configuration.setAllowedOriginPatterns(List.of("*"));
         } else {
-            configuration.setAllowedOrigins(origins);
+            configuration.setAllowedOriginPatterns(origins);
         }
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
