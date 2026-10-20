@@ -1,0 +1,101 @@
+#
+# docker-compose.gcp.yml — API + MySQL na GCE Always Free (e2-micro).
+#
+# Front zostaje na Cloudflare Pages; tu tylko backend + baza (+ backup).
+# Env: deploy/gcp/.env.gcp (z .env.gcp.example). MySQL: deploy/gcp/mysql-lowmem.cnf.
+#
+# Uruchomienie (z korzenia repo na VM):
+#   docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp up -d --build
+#
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: raceportal-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-raceportal}
+      MYSQL_USER: ${MYSQL_USER:-raceportal}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - raceportal_mysql_gcp:/var/lib/mysql
+      - ./deploy/gcp/mysql-lowmem.cnf:/etc/mysql/conf.d/lowmem.cnf:ro
+    # Brak publish 3306 na host — tylko sieć compose (bezpieczniej na publicznym IP).
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 40s
+    restart: unless-stopped
+    mem_limit: 384m
+
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: raceportal-mailpit
+    # SMTP tylko w sieci compose — bez portów na host (brak publicznego UI).
+    restart: unless-stopped
+    mem_limit: 64m
+
+  api:
+    build: ./backend
+    container_name: raceportal-api
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-raceportal}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DATABASE_USERNAME: ${MYSQL_USER:-raceportal}
+      DATABASE_PASSWORD: ${MYSQL_PASSWORD}
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      JWT_SECRET: ${JWT_SECRET}
+      SEED_ENABLED: ${SEED_ENABLED:-true}
+      ALLOW_INSECURE_DEFAULTS: ${ALLOW_INSECURE_DEFAULTS:-false}
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+    ports:
+      - "4000:4000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 30
+      start_period: 120s
+    restart: unless-stopped
+    mem_limit: 512m
+
+  backup:
+    image: mysql:8.4
+    container_name: raceportal-backup
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: ${MYSQL_USER:-raceportal}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-raceportal}
+    volumes:
+      - ./scripts/backup.sh:/backup.sh:ro
+      - raceportal_backups_gcp:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        chmod +x /backup.sh
+        while true; do
+          /backup.sh || true
+          sleep 86400
+        done
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+
+volumes:
+  raceportal_mysql_gcp:
+  raceportal_backups_gcp:
