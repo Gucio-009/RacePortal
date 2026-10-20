@@ -26,7 +26,9 @@ Po zmianie env: **Retry deployment**.
 
 ## CORS po stronie API
 
-Jeśli front jest na `*.pages.dev` / własnej domenie CF, dodaj ten origin do `CORS_ORIGIN` w backendzie (wzorce jak `https://*.pages.dev`, `https://*.trycloudflare.com`).
+Jeśli front jest na `*.pages.dev` / własnej domenie CF, origin musi być w `CORS_ORIGIN` API (`https://*.pages.dev` — już w `docker-compose.yml`). Bez tego przeglądarka dostanie CORS 403 przy logowaniu, mimo poprawnego `VITE_API_URL`.
+
+Po zmianie zmiennej `VITE_*` w Pages: obowiązkowy **nowy deploy** (Vite wkleja env przy buildzie — samo Save nie wystarczy).
 
 ## SPA
 
