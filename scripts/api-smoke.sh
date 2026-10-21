@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
-# gcp-smoke.sh — szybki check API na GCP (health + CORS preflight login).
+# api-smoke.sh — szybki check API na VM (health + CORS preflight login).
 #
 # Użycie:
-#   ./scripts/gcp-smoke.sh http://EXTERNAL_IP:4000 https://www.raceportal.pl
-#   ./scripts/gcp-smoke.sh https://api.raceportal.pl https://www.raceportal.pl
+#   ./scripts/api-smoke.sh http://EXTERNAL_IP:4000 https://www.raceportal.pl
+#   ./scripts/api-smoke.sh https://api.raceportal.pl https://www.raceportal.pl
 #
 set -euo pipefail
 

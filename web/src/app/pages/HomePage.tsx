@@ -45,41 +45,44 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-full">
       <section
-        className="relative h-[600px] flex items-center justify-center bg-cover bg-center"
+        className="relative min-h-[70svh] sm:min-h-[600px] flex items-center justify-center bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.7), rgba(18, 18, 18, 0.7)), url('https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
         }}
       >
-        <div className="container mx-auto px-4 text-center z-10">
-          <h1
-            className="font-display mb-6 tracking-wider text-white"
-            style={{ fontSize: "72px", fontWeight: 800, lineHeight: "1.2" }}
-          >
+        <div className="container mx-auto px-4 text-center z-10 py-16 sm:py-20">
+          <h1 className="font-display mb-4 sm:mb-6 tracking-wider text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">WYŚCIGU</span>
           </h1>
-          <p className="mb-8 text-[#9ca3af] max-w-2xl mx-auto" style={{ fontSize: "20px", fontWeight: 500 }}>
+          <p className="mb-6 sm:mb-8 text-[#9ca3af] max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium px-1">
             Twoje centrum motoryzacyjnych emocji. Śledź najważniejsze polskie wydarzenia wyścigowe, sprawdzaj
             wyniki i bądź częścią społeczności RACEPORTAL.
           </p>
-          <div className="flex gap-4 justify-center flex-wrap">
+          <div className="flex gap-3 sm:gap-4 justify-center flex-col sm:flex-row items-stretch sm:items-center max-w-md sm:max-w-none mx-auto">
             {!isAuthenticated && (
-              <Link to="/register">
+              <Link to="/register" className="w-full sm:w-auto">
                 <Button
-                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6"
-                  style={{ fontSize: "18px", fontWeight: 800 }}
+                  className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6 text-base sm:text-lg font-extrabold"
                 >
                   ZAREJESTRUJ SIĘ
                   <ChevronRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
             )}
-            <a href="#o-nas">
+            <Link to="/wydarzenia" className="w-full sm:w-auto sm:hidden">
               <Button
                 variant="outline"
-                className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6"
-                style={{ fontSize: "18px", fontWeight: 800 }}
+                className="w-full border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6 text-base font-extrabold"
+              >
+                KALENDARZ
+              </Button>
+            </Link>
+            <a href="#o-nas" className="w-full sm:w-auto hidden sm:block">
+              <Button
+                variant="outline"
+                className="w-full border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6 text-base sm:text-lg font-extrabold"
               >
                 POZNAJ WIĘCEJ
               </Button>
@@ -87,23 +90,24 @@ export function HomePage() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#121212] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 h-24 sm:h-32 bg-gradient-to-t from-[#121212] to-transparent" />
       </section>
 
-      <section className="container mx-auto px-4 py-16">
-        <div className="flex items-center justify-between mb-12 gap-4 flex-wrap">
-          <div>
-            <h2 className="font-display mb-2" style={{ fontSize: "42px", fontWeight: 800 }}>
+      <section className="container mx-auto px-4 py-10 sm:py-16">
+        <div className="flex items-end justify-between mb-6 sm:mb-12 gap-4">
+          <div className="min-w-0">
+            <h2 className="font-display mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight">
               NADCHODZĄCE <span className="text-[var(--race-accent)]">WYDARZENIA</span>
             </h2>
-            <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
+            <p className="text-[#9ca3af] text-sm sm:text-lg">
               Nie przegap najgorętszych polskich wyścigów sezonu
             </p>
           </div>
-          <Link to="/wydarzenia">
-            <Button variant="ghost" className="text-[var(--race-accent)] hover:bg-[#2a2a2a]" style={{ fontWeight: 700 }}>
-              ZOBACZ WSZYSTKIE
-              <ChevronRight className="ml-2 w-5 h-5" />
+          <Link to="/wydarzenia" className="shrink-0">
+            <Button variant="ghost" className="text-[var(--race-accent)] hover:bg-[#2a2a2a] px-2 sm:px-4 font-bold">
+              <span className="hidden sm:inline">ZOBACZ WSZYSTKIE</span>
+              <span className="sm:hidden">Wszystkie</span>
+              <ChevronRight className="ml-1 sm:ml-2 w-5 h-5" />
             </Button>
           </Link>
         </div>
@@ -164,39 +168,39 @@ export function HomePage() {
         )}
       </section>
 
-      <section id="o-nas" className="bg-[#1a1a1a] py-16 mt-16 scroll-mt-24">
+      <section id="o-nas" className="bg-[#1a1a1a] py-12 sm:py-16 mt-8 sm:mt-16 scroll-mt-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12 max-w-3xl mx-auto">
-            <h2 className="font-display text-white mb-4" style={{ fontSize: "36px", fontWeight: 800 }}>
+          <div className="text-center mb-8 sm:mb-12 max-w-3xl mx-auto">
+            <h2 className="font-display text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-extrabold">
               O <span className="text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
-            <p className="text-[#9ca3af]" style={{ fontSize: "18px" }}>
+            <p className="text-[#9ca3af] text-sm sm:text-lg">
               Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów —
               wszystko w jednym miejscu.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-3 gap-3 sm:gap-8 text-center">
             <div>
-              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-2xl sm:text-4xl md:text-5xl font-extrabold">
                 250+
               </div>
-              <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
+              <p className="text-[#9ca3af] text-[10px] sm:text-lg font-semibold leading-tight">
                 WYŚCIGÓW ROCZNIE
               </p>
             </div>
             <div>
-              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-2xl sm:text-4xl md:text-5xl font-extrabold">
                 50K+
               </div>
-              <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
+              <p className="text-[#9ca3af] text-[10px] sm:text-lg font-semibold leading-tight">
                 AKTYWNYCH UŻYTKOWNIKÓW
               </p>
             </div>
             <div>
-              <div className="font-display text-[var(--race-accent)] mb-2" style={{ fontSize: "48px", fontWeight: 800 }}>
+              <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-2xl sm:text-4xl md:text-5xl font-extrabold">
                 24/7
               </div>
-              <p className="text-[#9ca3af]" style={{ fontSize: "18px", fontWeight: 600 }}>
+              <p className="text-[#9ca3af] text-[10px] sm:text-lg font-semibold leading-tight">
                 LIVE COVERAGE
               </p>
             </div>

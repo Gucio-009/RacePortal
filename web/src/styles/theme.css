@@ -159,9 +159,22 @@ html[data-pit-stop="on"] *::after {
     @apply border-border outline-ring/50;
   }
 
+  html {
+    font-size: var(--font-size);
+    -webkit-tap-highlight-color: transparent;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family-primary);
+    overscroll-behavior-y: none;
+  }
+
+  /* Standalone PWA: pełna wysokość z safe-area */
+  @media all and (display-mode: standalone) {
+    body {
+      min-height: 100dvh;
+    }
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -172,10 +185,6 @@ html[data-pit-stop="on"] *::after {
    * Domyślna typografia HTML (h1–h4, p, label, button, input).
    * W @layer base — utility Tailwind (text-sm, text-lg…) nadpisują te reguły.
    */
-
-  html {
-    font-size: var(--font-size);
-  }
 
   h1 {
     font-size: var(--text-2xl);
