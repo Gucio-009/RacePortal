@@ -744,6 +744,52 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", containsString("aktywne zgłoszenie")));
     }
 
+    /** Utworzenie wydarzenia przez organizatora → powiadomienie admina (kolejka moderacji). */
+    @Test
+    void organizer_createEvent_notifiesAdmins() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        long unreadBefore = objectMapper.readTree(mockMvc.perform(get("/api/notifications/unread-count")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString()).get("unread").asLong();
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Pending Notify Admin",
+                "Event testowy — admin dostaje powiadomienie o wniosku.",
+                "Track Day", "2027-04-01", "09:00", null, null, "Tor Pending", "Pendingowo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.status", is("PENDING")))
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(get("/api/notifications/unread-count")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unread", greaterThanOrEqualTo((int) unreadBefore + 1)));
+
+        String notificationsJson = mockMvc.perform(get("/api/notifications")
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        boolean found = false;
+        for (JsonNode n : objectMapper.readTree(notificationsJson)) {
+            if (eventId.equals(n.path("relatedEventId").asText())
+                    && "EVENT_PENDING_REVIEW".equals(n.path("type").asText())) {
+                found = true;
+                break;
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(found,
+                "Admin powinien dostać powiadomienie EVENT_PENDING_REVIEW");
+    }
+
     /** Odrzucenie bez powodu → 400; z powodem → REJECTED + powiadomienie organizatora. */
     @Test
     void admin_eventReject_requiresReasonAndNotifiesOrganizer() throws Exception {

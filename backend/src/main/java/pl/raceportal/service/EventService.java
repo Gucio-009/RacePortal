@@ -71,14 +71,17 @@ public class EventService {
     private final UserRepository userRepository;
     private final CarRepository carRepository;
     private final MailService mailService;
+    private final NotificationService notificationService;
 
     public EventService(EventRepository eventRepository, RegistrationRepository registrationRepository,
-                         UserRepository userRepository, CarRepository carRepository, MailService mailService) {
+                         UserRepository userRepository, CarRepository carRepository, MailService mailService,
+                         NotificationService notificationService) {
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
         this.userRepository = userRepository;
         this.carRepository = carRepository;
         this.mailService = mailService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -376,6 +379,9 @@ public class EventService {
         ensureEventDatesValid(event, true);
 
         event = eventRepository.save(event);
+        if (event.getStatus() == EventStatus.PENDING) {
+            notificationService.notifyAdminsPendingEvent(event);
+        }
         return serialize(event);
     }
 
@@ -393,6 +399,8 @@ public class EventService {
         if (currentUser.getRole() != Role.ADMIN && !isOwner) {
             throw ApiException.forbidden("Brak uprawnień");
         }
+
+        EventStatus previousStatus = event.getStatus();
 
         if (request.name() != null) event.setName(request.name());
         if (request.description() != null) event.setDescription(request.description());
@@ -435,6 +443,11 @@ public class EventService {
 
         event = eventRepository.save(event);
         EventResponse response = serialize(event);
+
+        // Ponowna moderacja: tylko gdy status faktycznie wraca do PENDING (nie spam przy kolejnych edycjach).
+        if (event.getStatus() == EventStatus.PENDING && previousStatus != EventStatus.PENDING) {
+            notificationService.notifyAdminsPendingEvent(event);
+        }
 
         notifyRegisteredDriversOfChange(event);
 

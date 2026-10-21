@@ -72,6 +72,10 @@ export function NotificationBell() {
       }
     }
     setOpen(false);
+    if (n.type === "EVENT_PENDING_REVIEW") {
+      navigate("/admin");
+      return;
+    }
     if (n.relatedEventId) {
       if (n.type === "EVENT_APPROVED" || n.type === "EVENT_REJECTED" || n.type === "EVENT_STATUS") {
         navigate("/organizer");

@@ -1,6 +1,7 @@
 package pl.raceportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
 
 import java.util.List;
@@ -34,4 +35,7 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     /** Lista użytkowników dla panelu admina (najnowsi pierwsi). */
     List<User> findAllByOrderByCreatedAtDesc();
+
+    /** Wszyscy administratorzy — np. powiadomienia o wydarzeniach PENDING. */
+    List<User> findByRole(Role role);
 }

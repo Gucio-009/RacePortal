@@ -200,7 +200,11 @@ public class AdminService {
         event.setStatus(target);
         event = eventRepository.save(event);
 
-        notifyOrganizerAboutEventStatus(event, target, reason);
+        if (target == EventStatus.PENDING) {
+            notificationService.notifyAdminsPendingEvent(event);
+        } else {
+            notifyOrganizerAboutEventStatus(event, target, reason);
+        }
 
         return eventService.serialize(event);
     }

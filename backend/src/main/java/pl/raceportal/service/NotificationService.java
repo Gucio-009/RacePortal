@@ -2,11 +2,14 @@ package pl.raceportal.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.Event;
 import pl.raceportal.domain.Notification;
+import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
 import pl.raceportal.dto.NotificationDtos.NotificationResponse;
 import pl.raceportal.dto.NotificationDtos.UnreadCountResponse;
 import pl.raceportal.repository.NotificationRepository;
+import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.web.ApiException;
 
@@ -19,9 +22,14 @@ import java.util.List;
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
+    private final UserRepository userRepository;
+    private final MailService mailService;
 
-    public NotificationService(NotificationRepository notificationRepository) {
+    public NotificationService(NotificationRepository notificationRepository,
+                                UserRepository userRepository, MailService mailService) {
         this.notificationRepository = notificationRepository;
+        this.userRepository = userRepository;
+        this.mailService = mailService;
     }
 
     @Transactional
@@ -36,6 +44,41 @@ public class NotificationService {
         n.setBody(body);
         n.setRelatedEventId(relatedEventId);
         notificationRepository.save(n);
+    }
+
+    /**
+     * Informuje wszystkich adminów (in-app + e-mail), że wydarzenie czeka na moderację.
+     */
+    @Transactional
+    public void notifyAdminsPendingEvent(Event event) {
+        if (event == null || event.getId() == null) {
+            return;
+        }
+        String eventName = event.getName() == null ? "wydarzenie" : event.getName();
+        String organizerName = event.getOrganizer() != null ? event.getOrganizer().getUsername() : "organizator";
+        String title = "Nowe wydarzenie do akceptacji";
+        String body = "\"" + eventName + "\" od " + organizerName + " czeka na decyzję w panelu admina.";
+        String safeName = escapeHtml(eventName);
+        String safeOrg = escapeHtml(organizerName);
+
+        for (User admin : userRepository.findByRole(Role.ADMIN)) {
+            notifyUser(admin, "EVENT_PENDING_REVIEW", title, body, event.getId());
+            mailService.send(admin.getEmail(), "RACEPORTAL: wydarzenie do akceptacji — " + eventName,
+                    "<p>Nowe wydarzenie oczekuje na moderację.</p>"
+                            + "<p><strong>" + safeName + "</strong> (organizator: " + safeOrg + ")</p>"
+                            + "<p>Otwórz panel admina i zaakceptuj lub odrzuć wniosek.</p>");
+        }
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     @Transactional(readOnly = true)
