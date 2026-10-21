@@ -97,6 +97,13 @@ public class User {
     @Column(name = "email_verification_expires")
     private Instant emailVerificationExpires;
 
+    /**
+     * Nowy e-mail oczekujący na potwierdzenie kodem (zmiana adresu zalogowanego użytkownika).
+     * Kod leży w {@link #emailVerificationCode} / {@link #emailVerificationExpires}.
+     */
+    @Column(name = "pending_email", length = 190)
+    private String pendingEmail;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -243,6 +250,14 @@ public class User {
 
     public void setEmailVerificationExpires(Instant emailVerificationExpires) {
         this.emailVerificationExpires = emailVerificationExpires;
+    }
+
+    public String getPendingEmail() {
+        return pendingEmail;
+    }
+
+    public void setPendingEmail(String pendingEmail) {
+        this.pendingEmail = pendingEmail;
     }
 
     public Instant getCreatedAt() {

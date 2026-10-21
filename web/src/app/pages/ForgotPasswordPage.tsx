@@ -1,8 +1,8 @@
 /**
- * ForgotPasswordPage — prośba o link / instrukcję resetu hasła.
+ * ForgotPasswordPage — prośba o tymczasowe hasło mailem.
  *
  * Cel: użytkownik podaje e-mail; AuthContext.forgotPassword woła API (bez ujawniania
- * czy konto istnieje — komunikat zawsze „sprawdź skrzynkę” po sukcesie ok).
+ * czy konto istnieje). Backend generuje silne tymczasowe hasło i wysyła SMTP.
  * Wzorce: kontrolowany formularz, toast, Link do `/login`.
  * Auth: publiczna; nie ustawia JWT. Theme: `--race-accent`, `font-display`.
  * Docker/nginx: deep link `/forgot-password` → SPA try_files.
@@ -25,7 +25,7 @@ export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { forgotPassword } = useAuth();
 
-  /** Wywołanie resetu — backend wysyła mail (Mailpit w dev). */
+  /** Wywołanie resetu — backend wysyła tymczasowe hasło (SMTP). */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -65,8 +65,8 @@ export function ForgotPasswordPage() {
                 Sprawdź skrzynkę
               </p>
               <p className="text-[#9ca3af]" style={{ fontSize: "14px" }}>
-                Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje, wysłaliśmy instrukcję
-                resetu hasła.
+                Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje,
+                wysłaliśmy tymczasowe hasło. Zaloguj się nim i zmień hasło w Dane konta.
               </p>
               <Link to="/login">
                 <Button className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12" style={{ fontWeight: 800 }}>
@@ -99,7 +99,7 @@ export function ForgotPasswordPage() {
                 className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
-                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ LINK"}
+                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ HASŁO"}
               </Button>
               <Link to="/login" className="flex items-center justify-center gap-2 text-[#9ca3af] hover:text-[var(--race-accent)]">
                 <ArrowLeft className="w-4 h-4" />

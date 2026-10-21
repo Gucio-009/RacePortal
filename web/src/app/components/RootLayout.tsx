@@ -33,7 +33,6 @@ import {
   Menu,
   X,
   Archive,
-  Images,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -136,22 +135,11 @@ export function RootLayout() {
             <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
               ARCHIWUM
             </NavLink>
-            <NavLink to="/galeria" className={navLinkClass} style={{ fontWeight: 600 }} title="Galeria odłożona na późniejszy etap">
-              GALERIA <span className="text-[#9ca3af] text-[10px]">(później)</span>
-            </NavLink>
-            <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
-              MAPA
-            </NavLink>
 
             {isAuthenticated && isUser && (
-              <>
-                <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  GARAŻ
-                </NavLink>
-                <NavLink to="/zostan-organizatorem" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  ZOSTAŃ ORG.
-                </NavLink>
-              </>
+              <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
+                GARAŻ
+              </NavLink>
             )}
 
             {isAuthenticated && isOrganizer && (
@@ -323,14 +311,6 @@ export function RootLayout() {
             <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/archiwum")}>
               <Archive className="w-4 h-4 text-[var(--race-accent)]" /> Archiwum
             </button>
-            <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/galeria")}>
-              <Images className="w-4 h-4 text-[var(--race-accent)]" /> Galeria
-            </button>
-            {isAuthenticated && isUser && (
-              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/zostan-organizatorem")}>
-                <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> Zostań organizatorem
-              </button>
-            )}
             {isOrganizer && (
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/organizer")}>
                 <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> Panel organizatora

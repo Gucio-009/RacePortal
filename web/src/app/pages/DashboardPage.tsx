@@ -1,10 +1,10 @@
 /**
  * DashboardPage — kokpit zalogowanego użytkownika (zgłoszenia + skrót garażu + profil).
  *
- * Cel: przegląd własnych Registration, anulowanie, dołączanie proof płatności,
- * szybka edycja username/avatar przez AuthContext.updateProfile.
+ * Cel: przegląd własnych Registration, anulowanie, dołączanie proof płatności.
+ * Edycja profilu / hasła / e-maila: `/konto` (jedno miejsce zamiast dialogu na dashboardzie).
  * Wzorce: fetch on mount `/api/registrations/mine` + `/api/garage`, JWT w api client
- * (`raceportal_token`), Dialog edycji profilu, badge roli (USER/ORGANIZER/ADMIN).
+ * (`raceportal_token`), badge roli (USER/ORGANIZER/ADMIN).
  * Auth: wymaga zalogowania (AuthGate w routerze). Theme: `--race-accent`, `font-display`.
  * Docker/nginx: `/dashboard` deep link → SPA try_files.
  *
@@ -20,9 +20,6 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
 import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../components/ui/dialog";
-import { AvatarPicker } from "../components/AvatarPicker";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar, Registration } from "../lib/types";
 import {
@@ -35,11 +32,7 @@ import {
 import { toast } from "sonner";
 
 export function DashboardPage() {
-  const { user, updateProfile } = useAuth();
-  const [editOpen, setEditOpen] = useState(false);
-  const [username, setUsername] = useState(user?.username ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(user?.avatar ?? "");
-  const [saving, setSaving] = useState(false);
+  const { user } = useAuth();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,31 +95,6 @@ export function DashboardPage() {
     }
   };
 
-  const openEdit = () => {
-    setUsername(user?.username ?? "");
-    setAvatarUrl(user?.avatar ?? "");
-    setEditOpen(true);
-  };
-
-  const saveProfile = async () => {
-    if (!username.trim()) {
-      toast.error("Nazwa użytkownika nie może być pusta");
-      return;
-    }
-    setSaving(true);
-    const result = await updateProfile({
-      username: username.trim(),
-      avatar: avatarUrl.trim() || undefined,
-    });
-    setSaving(false);
-    if (result.ok) {
-      toast.success("Profil zaktualizowany");
-      setEditOpen(false);
-    } else {
-      toast.error(result.message || "Nie udało się zaktualizować profilu");
-    }
-  };
-
   const roleBadge =
     user?.role === "ADMIN"
       ? "ADMIN"
@@ -172,13 +140,14 @@ export function DashboardPage() {
                 </div>
               </div>
 
-              <Button
-                onClick={openEdit}
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
-                style={{ fontWeight: 700 }}
-              >
-                EDYTUJ PROFIL
-              </Button>
+              <Link to="/konto">
+                <Button
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                  style={{ fontWeight: 700 }}
+                >
+                  EDYTUJ PROFIL
+                </Button>
+              </Link>
             </div>
           </CardContent>
         </Card>
@@ -392,60 +361,6 @@ export function DashboardPage() {
           </Card>
         </div>
       </div>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white">
-          <DialogHeader>
-            <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-              Edytuj profil
-            </DialogTitle>
-            <DialogDescription className="text-[#9ca3af]">
-              Zmień nazwę użytkownika lub awatar widoczne na koncie.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="flex justify-center">
-              <Avatar className="w-24 h-24 border-2 border-[var(--race-accent)]">
-                <AvatarImage src={avatarUrl || undefined} />
-                <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
-                  {userInitials({ username, firstName: user?.firstName, lastName: user?.lastName })}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-white">Nazwa użytkownika</Label>
-              <Input
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="bg-[#121212] border-[#2a2a2a] text-white"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-white">Awatar</Label>
-              <AvatarPicker
-                value={avatarUrl}
-                onChange={setAvatarUrl}
-                username={username}
-                firstName={user?.firstName ?? undefined}
-                lastName={user?.lastName ?? undefined}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOpen(false)} className="border-[#2a2a2a] text-white">
-              Anuluj
-            </Button>
-            <Button
-              onClick={saveProfile}
-              disabled={saving}
-              className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
-              style={{ fontWeight: 700 }}
-            >
-              {saving ? "ZAPISYWANIE..." : "Zapisz"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

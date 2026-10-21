@@ -748,5 +748,26 @@ Pełne ADR (problem → opcje → decyzja → skutki): [`decyzje-wdrozeniowe.md`
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 14:50 — docs + decyzje (proces / dlaczego).*
+## 45. Patch-note-3 (bezpieczne dopięcia) — auth + nav (2026-10-21)
+
+### Kontekst
+
+Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123` itd.) **bez zmian** — silne hasło tylko przy nowych rejestracjach / zmianie / resecie.
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Reset hasła = mail „skontaktuj się z adminem” | Tymczasowe silne hasło mailem + zmiana w `/konto` | Działa na prod bez ręcznej interwencji |
+| Brak zmiany e-maila | `pending_email` + kod na nowy adres | Ten sam mechanizm co weryfikacja rejestracji |
+| Hasło min. 6 w API | Min. 8 + wielka + cyfra + specjalny | Spójne z UI rejestracji; seed nietknięty |
+| Nav: MAPA / GALERIA / ZOSTAŃ ORG. | Usunięte z top-nav; „Zostań org.” w `/konto` | Mniej ślepych linków na publicznym demie |
+| Dashboard dialog „Edytuj” | Link do `/konto` | Jedno miejsce edycji profilu / hasła / e-maila |
+| UI: „Mailpit :8025” | „Sprawdź skrzynkę (spam)” | Prod nie ma Mailpit |
+
+**Pliki:** `AuthService`, `AuthController`, `AuthDtos`, `User`, web: `AccountPage`, `DashboardPage`, `RootLayout`, `RegisterPage`, `ForgotPasswordPage`, `AuthContext`, `profileValidation`.
+
+**Weryfikacja:** testy API (`Password1!` w register); lokalnie register → mail → verify; forgot-password → login tymczasowym; `/konto` zmiana e-maila.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — patch-note-3 (auth + nav).*
 

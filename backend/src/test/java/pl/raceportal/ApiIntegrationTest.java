@@ -164,7 +164,7 @@ class ApiIntegrationTest {
 
     @Test
     void register_withExistingEmail_returns409() throws Exception {
-        String body = objectMapper.writeValueAsString(new RegisterPayload("Another", "test@wp.pl", "password123"));
+        String body = objectMapper.writeValueAsString(new RegisterPayload("Another", "test@wp.pl", "Password1!"));
         mockMvc.perform(post("/api/auth/register")
                         .contentType("application/json")
                         .content(body))
@@ -187,7 +187,7 @@ class ApiIntegrationTest {
     @Test
     void register_thenVerifyEmail_returnsToken() throws Exception {
         String email = "nowy.kierowca@example.com";
-        String registerBody = objectMapper.writeValueAsString(new RegisterPayload("NowyKierowca", email, "password123"));
+        String registerBody = objectMapper.writeValueAsString(new RegisterPayload("NowyKierowca", email, "Password1!"));
         mockMvc.perform(post("/api/auth/register")
                         .contentType("application/json")
                         .content(registerBody))
@@ -195,7 +195,7 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.requiresVerification", is(true)))
                 .andExpect(jsonPath("$.email", is(email)));
 
-        String loginAttemptBody = objectMapper.writeValueAsString(new LoginPayload(email, "password123"));
+        String loginAttemptBody = objectMapper.writeValueAsString(new LoginPayload(email, "Password1!"));
         mockMvc.perform(post("/api/auth/login")
                         .contentType("application/json")
                         .content(loginAttemptBody))
@@ -622,7 +622,7 @@ class ApiIntegrationTest {
     void organizerApplicationApproved_staleJwtCanAccessPanelAndCreateEvent_refreshUpdatesRole()
             throws Exception {
         String email = "org-app-" + UUID.randomUUID().toString().substring(0, 8) + "@example.com";
-        String password = "password123";
+        String password = "Password1!";
         String adminToken = login("admin@raceportal.pl", "admin123");
 
         String registerBody = objectMapper.writeValueAsString(new RegisterOrganizerPayload(

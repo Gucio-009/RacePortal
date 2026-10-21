@@ -170,7 +170,7 @@ export function SettingsPage() {
               <SettingRow
                 icon={<Shield className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Alerty e-mail"
-                desc="Potwierdzenia zgłoszeń i statusów (Mailpit w dev)"
+                desc="Potwierdzenia zgłoszeń i statusów (e-mail SMTP)"
                 checked={settings.emailAlerts}
                 onChange={() =>
                   toggle("emailAlerts", settings.emailAlerts ? "Alerty e-mail wyłączone" : "Alerty e-mail włączone")

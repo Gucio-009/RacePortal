@@ -11,6 +11,7 @@ import pl.raceportal.domain.User;
 import pl.raceportal.dto.AuthDtos.AuthResponse;
 import pl.raceportal.dto.AuthDtos.ChangePasswordRequest;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
+import pl.raceportal.dto.AuthDtos.MessageResponse;
 import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
 import pl.raceportal.dto.AuthDtos.RegisterRequest;
 import pl.raceportal.dto.AuthDtos.RegisterResponse;
@@ -139,6 +140,7 @@ public class AuthService {
             user.setEmailVerified(true);
             user.setEmailVerificationCode(null);
             user.setEmailVerificationExpires(null);
+            user.setPendingEmail(null);
             user = userRepository.save(user);
         }
 
@@ -215,6 +217,7 @@ public class AuthService {
                 user.setEmailVerified(true);
                 user.setEmailVerificationCode(null);
                 user.setEmailVerificationExpires(null);
+                user.setPendingEmail(null);
                 user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
             }
             if ((user.getAvatar() == null || user.getAvatar().isBlank()) && picture != null && !picture.isBlank()) {
@@ -300,15 +303,79 @@ public class AuthService {
     }
 
     /**
-     * MVP resetu hasła: mail informacyjny (bez tokenu resetującego).
-     * Soft-fail — nie ujawnia istnienia konta.
+     * Reset hasła: generuje silne tymczasowe hasło, zapisuje hash, wysyła mail (soft-fail SMTP).
+     * Nie ujawnia istnienia konta — zawsze ten sam komunikat z kontrolera.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public void forgotPassword(String email) {
-        userRepository.findByEmailIgnoreCase(email).ifPresent(user ->
-                mailService.send(user.getEmail(), "Reset hasła RACEPORTAL",
-                        "<p>Otrzymaliśmy prośbę o reset hasła dla konta " + user.getUsername() + ".</p>" +
-                                "<p>W wersji MVP skontaktuj się z administratorem lub zaloguj hasłem testowym.</p>"));
+        String key = "forgot:" + email.trim().toLowerCase();
+        attemptRateLimiter.check(key, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
+        userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
+            String tempPassword = generateTemporaryPassword();
+            user.setPasswordHash(passwordEncoder.encode(tempPassword));
+            userRepository.save(user);
+
+            String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
+            mailService.send(user.getEmail(), "Tymczasowe hasło RACEPORTAL",
+                    "<p>Cześć " + safeName + ",</p>" +
+                            "<p>Otrzymaliśmy prośbę o reset hasła. Twoje tymczasowe hasło:</p>" +
+                            mailService.codeBox(tempPassword) +
+                            "<p>Zaloguj się nim, a następnie zmień hasło w <strong>Dane konta</strong>.</p>");
+        });
+    }
+
+    /**
+     * Start zmiany e-maila: kod 6-cyfrowy idzie na <em>nowy</em> adres; obecny zostaje do potwierdzenia.
+     */
+    @Transactional
+    public MessageResponse requestEmailChange(String userId, String rawNewEmail) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        String newEmail = rawNewEmail.trim().toLowerCase();
+        attemptRateLimiter.check("email-change:" + userId, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
+        if (newEmail.equalsIgnoreCase(user.getEmail())) {
+            throw ApiException.badRequest("Podaj adres inny niż obecny");
+        }
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+            throw ApiException.conflict("Konto z tym emailem już istnieje");
+        }
+
+        user.setPendingEmail(newEmail);
+        sendVerificationCodeTo(user, newEmail);
+        return new MessageResponse("Wysłaliśmy 6-cyfrowy kod na nowy adres e-mail.");
+    }
+
+    /**
+     * Potwierdza zmianę e-maila kodem wysłanym na pendingEmail; wydaje świeży JWT.
+     */
+    @Transactional
+    public AuthResponse confirmEmailChange(String userId, String code) {
+        attemptRateLimiter.check("email-confirm:" + userId, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        String pending = user.getPendingEmail();
+        if (pending == null || pending.isBlank()) {
+            throw ApiException.badRequest("Brak oczekującej zmiany e-maila");
+        }
+        if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
+                || !user.getEmailVerificationCode().equals(code)
+                || Instant.now().isAfter(user.getEmailVerificationExpires())) {
+            throw ApiException.badRequest("Nieprawidłowy lub wygasły kod");
+        }
+        if (userRepository.existsByEmailIgnoreCase(pending)) {
+            throw ApiException.conflict("Konto z tym emailem już istnieje");
+        }
+
+        user.setEmail(pending);
+        user.setPendingEmail(null);
+        user.setEmailVerificationCode(null);
+        user.setEmailVerificationExpires(null);
+        user.setEmailVerified(true);
+        user = userRepository.save(user);
+        return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
     }
 
     /** Tworzy użytkownika z {@code emailVerified=false} i zahashowanym hasłem. */
@@ -328,22 +395,53 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    /** Generuje 6-cyfrowy kod, zapisuje TTL i wysyła mail HTML. */
+    /** Generuje 6-cyfrowy kod, zapisuje TTL i wysyła mail HTML na bieżący e-mail użytkownika. */
     private void sendVerificationCode(User user) {
+        sendVerificationCodeTo(user, user.getEmail());
+    }
+
+    /** Generuje 6-cyfrowy kod i wysyła na wskazany adres (rejestracja lub zmiana e-maila). */
+    private void sendVerificationCodeTo(User user, String targetEmail) {
         String code = String.format("%06d", random.nextInt(1_000_000));
         user.setEmailVerificationCode(code);
         user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_CODE_TTL_MINUTES, ChronoUnit.MINUTES));
         userRepository.save(user);
 
-        String safeName = user.getUsername() == null ? "" : user.getUsername()
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;");
-        mailService.send(user.getEmail(), "Kod weryfikacyjny RACEPORTAL",
+        String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
+        mailService.send(targetEmail, "Kod weryfikacyjny RACEPORTAL",
                 "<p>Cześć " + safeName + ",</p>" +
                         "<p>Twój kod weryfikacyjny:</p>" +
                         mailService.codeBox(code) +
                         "<p>Kod jest ważny przez " + VERIFICATION_CODE_TTL_MINUTES + " minut.</p>");
+    }
+
+    /** Silne tymczasowe hasło (wielka, mała, cyfra, znak specjalny) — jak przy rejestracji. */
+    private String generateTemporaryPassword() {
+        final String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        final String lower = "abcdefghijkmnopqrstuvwxyz";
+        final String digits = "23456789";
+        final String special = "!@#$%&*";
+        StringBuilder sb = new StringBuilder(12);
+        sb.append(upper.charAt(random.nextInt(upper.length())));
+        sb.append(lower.charAt(random.nextInt(lower.length())));
+        sb.append(digits.charAt(random.nextInt(digits.length())));
+        sb.append(special.charAt(random.nextInt(special.length())));
+        String all = upper + lower + digits + special;
+        for (int i = 0; i < 8; i++) {
+            sb.append(all.charAt(random.nextInt(all.length())));
+        }
+        char[] chars = sb.toString().toCharArray();
+        for (int i = chars.length - 1; i > 0; i--) {
+            int j = random.nextInt(i + 1);
+            char tmp = chars[i];
+            chars[i] = chars[j];
+            chars[j] = tmp;
+        }
+        return new String(chars);
+    }
+
+    private static String escapeHtml(String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
     private UserDto toUserDto(User user) {

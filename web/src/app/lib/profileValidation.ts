@@ -3,6 +3,19 @@
  * Wspólne reguły UI; backend dodatkowo egzekwuje Bean Validation.
  */
 
+/** Synchronizacja z AuthDtos.STRONG_PASSWORD_REGEXP (rejestracja / zmiana hasła). */
+export function isStrongPassword(password: string): boolean {
+  return (
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /\d/.test(password) &&
+    /[^A-Za-z0-9]/.test(password)
+  );
+}
+
+export const STRONG_PASSWORD_HINT =
+  "Min. 8 znaków, wielka litera, cyfra i znak specjalny";
+
 const NAME_RE = /^[\p{L}][\p{L}\s'-]{1,49}$/u;
 /** E.164-ish: opcjonalnie +, potem 9–15 cyfr (po usunięciu spacji/myślników). */
 const PHONE_DIGITS_RE = /^\+?[0-9\s-]{9,16}$/;

@@ -15,6 +15,12 @@ import jakarta.validation.constraints.Size;
  */
 public final class AuthDtos {
 
+    /** Min. 8 znaków, 1 wielka, 1 cyfra, 1 znak specjalny — nowe hasła (rejestracja / zmiana / reset). */
+    public static final String STRONG_PASSWORD_REGEXP =
+            "^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,100}$";
+    public static final String STRONG_PASSWORD_MESSAGE =
+            "Hasło: min. 8 znaków, wielka litera, cyfra i znak specjalny";
+
     private AuthDtos() {
     }
 
@@ -22,7 +28,9 @@ public final class AuthDtos {
     public record RegisterRequest(
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
-            @NotBlank @Size(min = 6, max = 100) String password,
+            @NotBlank @Size(min = 8, max = 100)
+            @Pattern(regexp = STRONG_PASSWORD_REGEXP, message = STRONG_PASSWORD_MESSAGE)
+            String password,
             @Size(max = 50)
             @Pattern(regexp = "^$|^[\\p{L}][\\p{L}\\s'-]{1,49}$", message = "Imię: tylko litery (2–50)")
             String firstName,
@@ -48,7 +56,9 @@ public final class AuthDtos {
     public record RegisterOrganizerRequest(
             @NotBlank @Size(min = 2, max = 40) String username,
             @NotBlank @Email @Size(max = 190) String email,
-            @NotBlank @Size(min = 6, max = 100) String password,
+            @NotBlank @Size(min = 8, max = 100)
+            @Pattern(regexp = STRONG_PASSWORD_REGEXP, message = STRONG_PASSWORD_MESSAGE)
+            String password,
             @NotBlank @Size(min = 2, max = 120) String company,
             @NotBlank @Size(max = 60) String businessType,
             @Size(max = 2000) String message
@@ -96,6 +106,18 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Start zmiany e-maila — kod idzie na nowy adres. */
+    public record RequestEmailChangeRequest(
+            @NotBlank @Email @Size(max = 190) String newEmail
+    ) {
+    }
+
+    /** Potwierdzenie zmiany e-maila kodem z maila. */
+    public record ConfirmEmailChangeRequest(
+            @NotBlank @Size(min = 6, max = 6) String code
+    ) {
+    }
+
     public record UpdateMeRequest(
             @Size(min = 2, max = 40) String username,
             String avatar,
@@ -122,7 +144,9 @@ public final class AuthDtos {
 
     public record ChangePasswordRequest(
             @NotBlank String currentPassword,
-            @NotBlank @Size(min = 6, max = 100) String newPassword
+            @NotBlank @Size(min = 8, max = 100)
+            @Pattern(regexp = STRONG_PASSWORD_REGEXP, message = STRONG_PASSWORD_MESSAGE)
+            String newPassword
     ) {
     }
 

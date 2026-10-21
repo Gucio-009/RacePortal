@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.raceportal.dto.AuthDtos.AuthResponse;
 import pl.raceportal.dto.AuthDtos.ChangePasswordRequest;
+import pl.raceportal.dto.AuthDtos.ConfirmEmailChangeRequest;
 import pl.raceportal.dto.AuthDtos.ForgotPasswordRequest;
 import pl.raceportal.dto.AuthDtos.GoogleLoginRequest;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
@@ -21,6 +22,7 @@ import pl.raceportal.dto.AuthDtos.OAuthProvidersResponse;
 import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
 import pl.raceportal.dto.AuthDtos.RegisterRequest;
 import pl.raceportal.dto.AuthDtos.RegisterResponse;
+import pl.raceportal.dto.AuthDtos.RequestEmailChangeRequest;
 import pl.raceportal.dto.AuthDtos.ResendCodeRequest;
 import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
 import pl.raceportal.dto.AuthDtos.UserDto;
@@ -91,12 +93,12 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
     }
 
-    /** Forgot password — soft-fail, bez ujawniania istnienia konta. */
+    /** Forgot password — tymczasowe hasło mailem; soft-fail, bez ujawniania istnienia konta. */
     @PostMapping("/forgot-password")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.email());
         return ResponseEntity.ok(new MessageResponse(
-                "Jeśli konto istnieje, wysłaliśmy instrukcję resetu hasła na podany adres."));
+                "Jeśli konto istnieje, wysłaliśmy tymczasowe hasło na podany adres."));
     }
 
     /** Profil zalogowanego użytkownika (wymaga JWT). */
@@ -128,5 +130,21 @@ public class AuthController {
                                                             @Valid @RequestBody ChangePasswordRequest request) {
         authService.changePassword(currentUser.getId(), request);
         return ResponseEntity.ok(new MessageResponse("Hasło zostało zmienione"));
+    }
+
+    /** Start zmiany e-maila — kod na nowy adres. */
+    @PostMapping("/me/email-change")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MessageResponse> requestEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                               @Valid @RequestBody RequestEmailChangeRequest request) {
+        return ResponseEntity.ok(authService.requestEmailChange(currentUser.getId(), request.newEmail()));
+    }
+
+    /** Potwierdzenie zmiany e-maila kodem → świeży JWT + UserDto. */
+    @PostMapping("/me/email-change/confirm")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AuthResponse> confirmEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                            @Valid @RequestBody ConfirmEmailChangeRequest request) {
+        return ResponseEntity.ok(authService.confirmEmailChange(currentUser.getId(), request.code()));
     }
 }

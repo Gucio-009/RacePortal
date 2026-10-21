@@ -1,8 +1,9 @@
 /**
- * AccountPage — pełna edycja danych konta i zmiana hasła.
+ * AccountPage — pełna edycja danych konta, hasła i e-maila.
  *
  * Cel: profil kierowcy (imię, telefon, prawo jazdy B, PZM), awatar, username;
- * osobna sekcja changePassword przez AuthContext.
+ * changePassword + zmiana e-maila (kod na nowy adres) przez AuthContext;
+ * CTA „Zostań organizatorem” dla roli USER.
  * Wzorce: sync formularza z `user` w useEffect, JWT w wywołaniach AuthContext
  * (`raceportal_token`), badge roli.
  * Auth: wymaga zalogowania. Theme: `--race-accent`, `font-display`.
@@ -12,7 +13,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { KeyRound, Loader2, Shield, User, Phone, IdCard } from "lucide-react";
+import { KeyRound, Loader2, Mail, Shield, User, Phone, IdCard } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { AvatarPicker } from "../components/AvatarPicker";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
@@ -24,10 +25,16 @@ import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
 import { toast } from "sonner";
 import { userInitials } from "../lib/types";
-import { validateInstagramUrl, validatePersonName, validatePhone } from "../lib/profileValidation";
+import {
+  isStrongPassword,
+  STRONG_PASSWORD_HINT,
+  validateInstagramUrl,
+  validatePersonName,
+  validatePhone,
+} from "../lib/profileValidation";
 
 export function AccountPage() {
-  const { user, updateProfile, changePassword } = useAuth();
+  const { user, updateProfile, changePassword, requestEmailChange, confirmEmailChange } = useAuth();
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -44,6 +51,11 @@ export function AccountPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+
+  const [newEmail, setNewEmail] = useState("");
+  const [emailCode, setEmailCode] = useState("");
+  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [savingEmail, setSavingEmail] = useState(false);
 
   // Hydratacja formularza gdy AuthContext dostarczy / odświeży usera.
   useEffect(() => {
@@ -105,8 +117,8 @@ export function AccountPage() {
 
   /** Zmiana hasła — wymaga aktualnego hasła (nie OAuth-only flow). */
   const savePassword = async () => {
-    if (newPassword.length < 6) {
-      toast.error("Nowe hasło musi mieć min. 6 znaków");
+    if (!isStrongPassword(newPassword)) {
+      toast.error(STRONG_PASSWORD_HINT);
       return;
     }
     if (newPassword !== confirmPassword) {
@@ -126,6 +138,45 @@ export function AccountPage() {
     }
   };
 
+  const sendEmailChangeCode = async () => {
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed || !trimmed.includes("@")) {
+      toast.error("Podaj prawidłowy nowy adres e-mail");
+      return;
+    }
+    if (trimmed === (user?.email ?? "").toLowerCase()) {
+      toast.error("Podaj adres inny niż obecny");
+      return;
+    }
+    setSavingEmail(true);
+    const result = await requestEmailChange(trimmed);
+    setSavingEmail(false);
+    if (result.ok) {
+      setEmailCodeSent(true);
+      toast.success(result.message || "Kod wysłany na nowy adres");
+    } else {
+      toast.error(result.message || "Nie udało się wysłać kodu");
+    }
+  };
+
+  const confirmNewEmail = async () => {
+    if (emailCode.length !== 6) {
+      toast.error("Podaj 6-cyfrowy kod z maila");
+      return;
+    }
+    setSavingEmail(true);
+    const result = await confirmEmailChange(emailCode);
+    setSavingEmail(false);
+    if (result.ok) {
+      toast.success(result.message || "E-mail zmieniony");
+      setNewEmail("");
+      setEmailCode("");
+      setEmailCodeSent(false);
+    } else {
+      toast.error(result.message || "Nie udało się potwierdzić");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#121212]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
@@ -135,7 +186,7 @@ export function AccountPage() {
             <h1 className="font-display text-white mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
               DANE KONTA
             </h1>
-            <p className="text-[#9ca3af]">Zmień nazwę, awatar, dane kierowcy lub hasło.</p>
+            <p className="text-[#9ca3af]">Zmień nazwę, awatar, e-mail, dane kierowcy lub hasło.</p>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[var(--race-accent)]">
@@ -315,6 +366,79 @@ export function AccountPage() {
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
             <CardHeader>
               <CardTitle className="text-white flex items-center gap-2 font-display">
+                <Mail className="w-5 h-5 text-[var(--race-accent)]" />
+                Zmiana e-maila
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-[#9ca3af] text-sm">
+                Obecny adres: <span className="text-white">{user?.email}</span>
+              </p>
+              <div className="space-y-2">
+                <Label className="text-white">Nowy e-mail</Label>
+                <Input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => {
+                    setNewEmail(e.target.value);
+                    setEmailCodeSent(false);
+                  }}
+                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  autoComplete="email"
+                />
+              </div>
+              {emailCodeSent && (
+                <div className="space-y-2">
+                  <Label className="text-white">Kod z nowego maila</Label>
+                  <Input
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={emailCode}
+                    onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                    placeholder="123456"
+                  />
+                </div>
+              )}
+              {!emailCodeSent ? (
+                <Button
+                  onClick={sendEmailChangeCode}
+                  disabled={savingEmail}
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                  style={{ fontWeight: 700 }}
+                >
+                  {savingEmail ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      WYSYŁANIE...
+                    </>
+                  ) : (
+                    "WYŚLIJ KOD"
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  onClick={confirmNewEmail}
+                  disabled={savingEmail}
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                  style={{ fontWeight: 700 }}
+                >
+                  {savingEmail ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      POTWIERDZANIE...
+                    </>
+                  ) : (
+                    "POTWIERDŹ E-MAIL"
+                  )}
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2 font-display">
                 <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
                 Zmiana hasła
               </CardTitle>
@@ -339,6 +463,7 @@ export function AccountPage() {
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                   autoComplete="new-password"
                 />
+                <p className="text-[#9ca3af] text-xs">{STRONG_PASSWORD_HINT}</p>
               </div>
               <div className="space-y-2">
                 <Label className="text-white">Potwierdź nowe hasło</Label>
@@ -367,6 +492,25 @@ export function AccountPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {user?.role === "USER" && (
+            <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+              <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+                <div>
+                  <p className="text-white font-semibold mb-1">Chcesz organizować wydarzenia?</p>
+                  <p className="text-[#9ca3af] text-sm">Złóż wniosek o konto organizatora.</p>
+                </div>
+                <Link to="/zostan-organizatorem">
+                  <Button
+                    className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                    style={{ fontWeight: 700 }}
+                  >
+                    ZOSTAŃ ORGANIZATOREM
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="flex flex-wrap gap-3">
             <Link to="/dashboard">

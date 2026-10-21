@@ -6,7 +6,7 @@
  * AuthContext (`register`, `verifyEmail`, `resendCode`, `loginWithGoogle`), React Router.
  * Auth/JWT: po aktywacji AuthContext zapisuje JWT w `raceportal_token` (jak LoginPage).
  * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
- * Theme: `--race-accent`, `font-display`; Mailpit wspomniany w UI (dev :8025).
+ * Theme: `--race-accent`, `font-display`; kod weryfikacji idzie na skrzynkę użytkownika (SMTP prod).
  * Docker/nginx: `/register` jako deep link SPA — nginx try_files.
  *
  * Pomysł (alt): magic-link zamiast kodu; Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
@@ -23,16 +23,7 @@ import { Switch } from "../components/ui/switch";
 import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
-
-/** Reguły siły hasła zsynchronizowane z komunikatami UI / oczekiwaniami API. */
-function isStrongPassword(password: string): boolean {
-  return (
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /\d/.test(password) &&
-    /[^A-Za-z0-9]/.test(password)
-  );
-}
+import { isStrongPassword } from "../lib/profileValidation";
 
 export function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -196,8 +187,8 @@ export function RegisterPage() {
           {pendingEmail ? (
             <form onSubmit={handleVerify} className="space-y-5">
               <p className="text-[#9ca3af] text-sm">
-                Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź też
-                Mailpit (lokalnie :8025).
+                Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź
+                skrzynkę (także folder spam).
               </p>
               <div className="space-y-2">
                 <Label htmlFor="code" className="text-white" style={{ fontWeight: 600 }}>
