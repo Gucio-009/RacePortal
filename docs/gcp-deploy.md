@@ -1,5 +1,7 @@
 # RacePortal na GCP Always Free (do lutego i dłużej)
 
+> **Codzienne włączanie / wyłączanie VM** (oszczędność): [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) — ten plik = pierwsze postawienie.
+
 Cel: **API + MySQL** na darmowej VM `e2-micro`, front zostaje na **Cloudflare Pages** (`raceportal.pl`).
 
 Trial GCP ($300 / 90 dni) **nie starczy do lutego** (start ~październik → koniec ~styczeń). Używamy **Always Free**.

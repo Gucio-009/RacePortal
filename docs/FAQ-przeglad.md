@@ -150,7 +150,9 @@ Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./clou
 
 Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + `docker-compose.gcp.yml` (API+MySQL), front na Pages.
 
-Instrukcja: [`gcp-deploy.md`](./gcp-deploy.md). Smoke: `./scripts/gcp-smoke.sh http://EXTERNAL_IP:4000`.
+- Pierwsze wdrożenie: [`gcp-deploy.md`](./gcp-deploy.md)
+- **Codziennie (start/stop VM, lokalnie, demo):** [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)
+- Smoke: `./scripts/gcp-smoke.sh https://api.raceportal.pl`
 
 ---
 
@@ -162,4 +164,5 @@ Instrukcja: [`gcp-deploy.md`](./gcp-deploy.md). Smoke: `./scripts/gcp-smoke.sh h
 - Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
 - Cloudflare Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
 - GCP Always Free: [`gcp-deploy.md`](./gcp-deploy.md)  
+- Know-how uruchamianie: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  
