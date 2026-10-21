@@ -1,7 +1,9 @@
 package pl.raceportal.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import pl.raceportal.domain.BugReportStatus;
 
 import java.time.Instant;
 
@@ -20,6 +22,11 @@ public final class BugReportDtos {
     public record BugReportCreatedResponse(String message) {
     }
 
+    public record UpdateBugReportStatusRequest(
+            @NotNull BugReportStatus status
+    ) {
+    }
+
     public record BugReportResponse(
             String id,
             String message,
@@ -27,7 +34,8 @@ public final class BugReportDtos {
             Instant createdAt,
             String username,
             String accountEmail,
-            String contactEmail
+            String contactEmail,
+            BugReportStatus status
     ) {
     }
 }

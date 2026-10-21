@@ -362,12 +362,6 @@ export function RootLayout() {
             <Link to="/privacy" className="hover:text-[var(--race-accent)]">
               Polityka prywatności
             </Link>
-            <Link to="/wydarzenia" className="hover:text-[var(--race-accent)]">
-              Wydarzenia
-            </Link>
-            <Link to="/archiwum" className="hover:text-[var(--race-accent)]">
-              Archiwum
-            </Link>
           </div>
         </div>
       </footer>

@@ -779,5 +779,15 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — powrót do weryfikacji e-mail.*
+## 47. Admin: błędy — status / usuwanie / CSV (2026-10-21)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Lista tylko do odczytu | OPEN/DONE, usuwanie, eksport CSV (widoczny filtr) | Admin musi zamykać i archiwizować zgłoszenia z dema |
+
+**API:** `PATCH /api/bug-reports/{id}/status`, `DELETE /api/bug-reports/{id}`; kolumna `status` (ddl-auto).
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — admin bug reports.*
 

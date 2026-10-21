@@ -4,6 +4,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.raceportal.domain.BugReport;
+import pl.raceportal.domain.BugReportStatus;
 import pl.raceportal.domain.User;
 import pl.raceportal.dto.BugReportDtos.BugReportResponse;
 import pl.raceportal.dto.BugReportDtos.CreateBugReportRequest;
@@ -43,6 +44,7 @@ public class BugReportService {
         BugReport report = new BugReport();
         report.setMessage(request.message().trim());
         report.setPageUrl(cleanPage(request.pageUrl()));
+        report.setStatus(BugReportStatus.OPEN);
         if (principal != null) {
             User user = userRepository.findById(principal.getId()).orElse(null);
             report.setUser(user);
@@ -59,8 +61,25 @@ public class BugReportService {
                 .toList();
     }
 
+    @Transactional
+    public BugReportResponse updateStatus(String id, BugReportStatus status) {
+        BugReport report = bugReportRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono zgłoszenia"));
+        report.setStatus(status);
+        return toResponse(bugReportRepository.save(report));
+    }
+
+    @Transactional
+    public void delete(String id) {
+        if (!bugReportRepository.existsById(id)) {
+            throw ApiException.notFound("Nie znaleziono zgłoszenia");
+        }
+        bugReportRepository.deleteById(id);
+    }
+
     private BugReportResponse toResponse(BugReport report) {
         User user = report.getUser();
+        BugReportStatus status = report.getStatus() == null ? BugReportStatus.OPEN : report.getStatus();
         return new BugReportResponse(
                 report.getId(),
                 report.getMessage(),
@@ -68,7 +87,8 @@ public class BugReportService {
                 report.getCreatedAt(),
                 user != null ? user.getUsername() : null,
                 user != null ? user.getEmail() : null,
-                report.getContactEmail());
+                report.getContactEmail(),
+                status);
     }
 
     private String cleanPage(String raw) {
