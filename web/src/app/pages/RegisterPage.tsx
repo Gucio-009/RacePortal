@@ -11,8 +11,8 @@
  *
  * Pomysł (alt): magic-link zamiast kodu; Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
  */
-import { useCallback, useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useCallback, useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound, Phone, IdCard } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -24,6 +24,11 @@ import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
 import { isStrongPassword } from "../lib/profileValidation";
+import {
+  clearPendingVerifyEmail,
+  getPendingVerifyEmail,
+  setPendingVerifyEmail,
+} from "../lib/pendingVerifyEmail";
 
 export function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -42,12 +47,47 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu.
+  // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu (też po powrocie z sessionStorage / ?verify=).
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  /** Tryb „mam kod” bez znanego e-maila (np. link z logowania). */
+  const [verifyMode, setVerifyMode] = useState(false);
   const { register, verifyEmail, resendCode, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const googleEnabled = isGoogleClientConfigured();
+
+  useEffect(() => {
+    const fromQuery = searchParams.get("email")?.trim().toLowerCase() ?? "";
+    const wantVerify = searchParams.get("verify") === "1" || searchParams.get("verify") === "true";
+    const stored = getPendingVerifyEmail();
+    const resume = fromQuery.includes("@") ? fromQuery : stored;
+    if (resume) {
+      setPendingEmail(resume);
+      setPendingVerifyEmail(resume);
+      setEmail(resume);
+      setVerifyMode(true);
+      return;
+    }
+    if (wantVerify) {
+      setVerifyMode(true);
+    }
+  }, [searchParams]);
+
+  const enterVerifyStep = (addr: string) => {
+    const normalized = addr.trim().toLowerCase();
+    setPendingEmail(normalized);
+    setPendingVerifyEmail(normalized);
+    setEmail(normalized);
+    setVerifyMode(true);
+  };
+
+  const leaveVerifyStep = () => {
+    clearPendingVerifyEmail();
+    setPendingEmail(null);
+    setCode("");
+    setVerifyMode(false);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,10 +130,11 @@ export function RegisterPage() {
       }
       // Etap 2: kod e-mail zamiast od razu JWT.
       if ("requiresVerification" in result && result.requiresVerification) {
-        setPendingEmail(result.email);
+        enterVerifyStep(result.email);
         toast.success(result.message || "Kod weryfikacyjny wysłany na e-mail");
         return;
       }
+      clearPendingVerifyEmail();
       toast.success("Konto utworzone pomyślnie!");
       navigate("/dashboard");
     } catch {
@@ -106,15 +147,20 @@ export function RegisterPage() {
   /** Potwierdzenie kodu → JWT w AuthContext → dashboard. */
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!pendingEmail) return;
+    const target = (pendingEmail || email).trim().toLowerCase();
+    if (!target.includes("@")) {
+      toast.error("Podaj adres e-mail z rejestracji");
+      return;
+    }
     if (code.trim().length !== 6) {
       toast.error("Podaj 6-cyfrowy kod");
       return;
     }
     setIsLoading(true);
     try {
-      const result = await verifyEmail(pendingEmail, code.trim());
+      const result = await verifyEmail(target, code.trim());
       if (result.ok) {
+        clearPendingVerifyEmail();
         toast.success("Konto aktywowane!");
         navigate("/dashboard");
       } else {
@@ -126,12 +172,18 @@ export function RegisterPage() {
   };
 
   const handleResend = async () => {
-    if (!pendingEmail) return;
+    const target = (pendingEmail || email).trim().toLowerCase();
+    if (!target.includes("@")) {
+      toast.error("Podaj adres e-mail, na który wysłać kod");
+      return;
+    }
     setIsLoading(true);
     try {
-      const result = await resendCode(pendingEmail);
-      if (result.ok) toast.success(result.message || "Kod wysłany ponownie");
-      else toast.error(result.message || "Nie udało się wysłać kodu");
+      const result = await resendCode(target);
+      if (result.ok) {
+        enterVerifyStep(target);
+        toast.success(result.message || "Kod wysłany ponownie");
+      } else toast.error(result.message || "Nie udało się wysłać kodu");
     } finally {
       setIsLoading(false);
     }
@@ -179,17 +231,43 @@ export function RegisterPage() {
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: "16px" }}>
-            {pendingEmail ? "Potwierdź adres e-mail kodem" : "Stwórz konto i rozpocznij wyścig"}
+            {verifyMode ? "Potwierdź adres e-mail kodem" : "Stwórz konto i rozpocznij wyścig"}
           </p>
         </div>
 
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 shadow-2xl">
-          {pendingEmail ? (
+          {verifyMode ? (
             <form onSubmit={handleVerify} className="space-y-5">
               <p className="text-[#9ca3af] text-sm">
-                Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź
-                skrzynkę (także folder spam).
+                {pendingEmail ? (
+                  <>
+                    Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź
+                    skrzynkę (także folder spam).
+                  </>
+                ) : (
+                  <>Podaj e-mail z rejestracji i 6-cyfrowy kod z wiadomości (lub wyślij nowy kod).</>
+                )}
               </p>
+              <div className="space-y-2">
+                <Label htmlFor="verify-email" className="text-white" style={{ fontWeight: 600 }}>
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                  <Input
+                    id="verify-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setPendingEmail(null);
+                    }}
+                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="code" className="text-white" style={{ fontWeight: 600 }}>
                   Kod weryfikacyjny
@@ -225,6 +303,13 @@ export function RegisterPage() {
               >
                 Wyślij nowy kod
               </Button>
+              <button
+                type="button"
+                className="w-full text-sm text-[#9ca3af] hover:text-[var(--race-accent)]"
+                onClick={leaveVerifyStep}
+              >
+                Wróć do rejestracji
+              </button>
             </form>
           ) : (
             <>
@@ -499,7 +584,19 @@ export function RegisterPage() {
             </>
           )}
 
-          <div className="mt-6 text-center">
+          <div className="mt-6 text-center space-y-2">
+            {!verifyMode && (
+              <p className="text-[#9ca3af]">
+                Masz już kod aktywacyjny?{" "}
+                <button
+                  type="button"
+                  className="text-[var(--race-accent)] hover:underline font-bold"
+                  onClick={() => setVerifyMode(true)}
+                >
+                  Wpisz kod
+                </button>
+              </p>
+            )}
             <p className="text-[#9ca3af]">
               Masz już konto?{" "}
               <Link to="/login" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>

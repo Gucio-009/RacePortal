@@ -23,6 +23,7 @@ import { Label } from "../components/ui/label";
 import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
+import { setPendingVerifyEmail } from "../lib/pendingVerifyEmail";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -45,7 +46,13 @@ export function LoginPage() {
         toast.success("Zalogowano pomyślnie!");
         navigate("/dashboard");
       } else {
-        toast.error(result.message || "Nieprawidłowy email lub hasło");
+        const msg = result.message || "Nieprawidłowy email lub hasło";
+        toast.error(msg);
+        // Konto istnieje, ale bez aktywacji — wróć do wpisywania kodu.
+        if (/weryfikuj|zweryfikuj|kod/i.test(msg) && email.includes("@")) {
+          setPendingVerifyEmail(email);
+          navigate(`/register?verify=1&email=${encodeURIComponent(email.trim().toLowerCase())}`);
+        }
       }
     } catch (error) {
       toast.error("Wystąpił błąd podczas logowania");
@@ -178,6 +185,23 @@ export function LoginPage() {
           ) : null}
 
           <div className="mt-6 text-center space-y-3">
+            <p className="text-[#9ca3af]">
+              Masz kod aktywacyjny?{" "}
+              <Link
+                to={
+                  email.trim()
+                    ? `/register?verify=1&email=${encodeURIComponent(email.trim().toLowerCase())}`
+                    : "/register?verify=1"
+                }
+                className="text-[var(--race-accent)] hover:underline"
+                style={{ fontWeight: 700 }}
+                onClick={() => {
+                  if (email.includes("@")) setPendingVerifyEmail(email);
+                }}
+              >
+                Wpisz kod
+              </Link>
+            </p>
             <p className="text-[#9ca3af]">
               Nie masz konta?{" "}
               <Link to="/register" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>

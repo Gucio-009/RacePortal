@@ -769,5 +769,15 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — patch-note-3 (auth + nav).*
+## 46. Powrót do ekranu kodu aktywacji (2026-10-21)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Kod tylko w state `/register` — zamknięcie karty = utrata UI | `sessionStorage` + `/register?verify=1&email=` + link z logowania | Po zgubieniu strony nadal da się wpisać kod / dostać nowy |
+
+**Pliki:** `pendingVerifyEmail.ts`, `RegisterPage`, `LoginPage`.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — powrót do weryfikacji e-mail.*
 
