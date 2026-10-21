@@ -12,6 +12,9 @@ import java.sql.Connection;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Publiczny endpoint health-check API i bazy MySQL.
@@ -60,8 +63,24 @@ public class HealthController {
         }
     }
 
+    /**
+     * SMTP nie może zablokować healthchecka Dockera (timeout 10s).
+     * Połączenie z Mailbuxem bywa wolniejsze niż sam start Tomcata.
+     */
     private boolean isSmtpUp() {
         try {
+            return CompletableFuture.supplyAsync(this::probeSmtp).get(3, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean probeSmtp() {
+        try {
+            Properties props = mailSender.getJavaMailProperties();
+            props.put("mail.smtp.connectiontimeout", "3000");
+            props.put("mail.smtp.timeout", "3000");
+            props.put("mail.smtp.writetimeout", "3000");
             mailSender.testConnection();
             return true;
         } catch (Exception e) {

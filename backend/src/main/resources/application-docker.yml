@@ -27,6 +27,9 @@ spring:
           starttls:
             enable: ${SMTP_STARTTLS:true}
             required: true
+          connectiontimeout: 3000
+          timeout: 3000
+          writetimeout: 3000
 
 app:
   mail:
