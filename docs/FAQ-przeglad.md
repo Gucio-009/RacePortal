@@ -1,7 +1,7 @@
 # RacePortal — FAQ dla przeglądu / odbioru
 
 **Jedno miejsce na powtarzające się pytania.** Przed zgłoszeniem „usługa nie działa” / „gdzie seed?” przeczytaj poniższe.  
-Aktualizacja: **2026-10-20**.
+Aktualizacja: **2026-10-21**.
 
 ---
 
@@ -99,9 +99,12 @@ URL: http://127.0.0.1:8081/login
 | Web (nginx) | tak | 8081 |
 | API (Spring) | tak | 4000 |
 | MySQL | tak | 3307 → 3306 |
-| Mailpit | tak | 8025 (UI), 1025 (SMTP) |
 | Backup cron | tak | — |
+| Mailpit | **nie** (usunięty) | — |
+| SMTP (Mailbux) | poza Compose | konfig w env API; hasło w `.env` → `SMTP_PASSWORD` |
 | Expo web | **nie** | 8082 (ręcznie) |
+
+Maile (kod weryfikacji, reset, statusy) idą na skrzynkę użytkownika przez **Mailbux** (`kontakt@raceportal.pl`). Lokalnie i na VM: plik `.env` z `SMTP_PASSWORD`. Sprawdzenie: `GET /api/health` → `"smtp":"up"`.
 
 ---
 
@@ -148,11 +151,15 @@ Starsze objawy z okresu Pages (`VITE_API_URL`, token 10000, Worker ≠ Pages): [
 
 ## 10. Hosting (Oracle Always Free)
 
-Całość stoi na `VM.Standard.A1.Flex` (2 OCPU, 12 GB) we Frankfurcie. Front nie jest na Cloudflare Pages.
+Całość stoi na `VM.Standard.A1.Flex` (2 OCPU, 12 GB) we Frankfurcie. Front **nie** jest na Cloudflare Pages — tunel → nginx `:8081` na VM.
 
 - Pierwsze wdrożenie: [`oracle-deploy.md`](./oracle-deploy.md)
 - Start / stop / aktualizacja kodu: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)
-- Smoke: `curl -sS https://raceportal.pl/api/health`
+- Smoke: `curl -sS https://raceportal.pl/api/health` (oczekuj `db:up`; opcjonalnie `smtp:up`)
+
+## 11. PWA na telefonie
+
+Web (`raceportal.pl`) ma manifest + service worker. Na telefonie: Safari/Chrome → **Dodaj do ekranu początkowego**. Nawigacja: dolny tab bar (Start / Eventy / …) + menu „Więcej” w headerze. Expo (`mobile/`) to osobna wizytówka — nie mylić z PWA weba.
 
 ---
 

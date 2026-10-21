@@ -3,9 +3,10 @@
 Jedno miejsce: **jak odpalić**, **jak wyłączyć**, **co się psuje gdy VM śpi**.
 
 Pierwsze postawienie: [`oracle-deploy.md`](./oracle-deploy.md)  
-FAQ seed / konta: [`FAQ-przeglad.md`](./FAQ-przeglad.md)
+FAQ seed / konta: [`FAQ-przeglad.md`](./FAQ-przeglad.md)  
+**Dlaczego Oracle / Mailbux / PWA (proces decyzji):** [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md)
 
-Ściąga ze starszej próby (front na Cloudflare Pages, API osobno) została w [`cloudflare-pages.md`](./cloudflare-pages.md). Tego układu już nie używamy.
+Ściąga ze starszej próby (front na Cloudflare Pages, API osobno) została w [`cloudflare-pages.md`](./cloudflare-pages.md). Tego układu już nie używamy — uzasadnienie porzucenia też w decyzjach.
 
 ---
 
@@ -50,6 +51,10 @@ docker compose up --build -d
 | MySQL | host `3307` (TCP, nie HTTP) |
 
 Lokalnie nginx na `:8081` proxy’uje `/api`. `VITE_API_URL` nie jest potrzebne.
+
+Maile: SMTP Mailbux (`kontakt@raceportal.pl`). W katalogu projektu plik `.env` z `SMTP_PASSWORD=…`. Health: `"smtp":"up"`.
+
+Web jest **PWA** (manifest + SW): na telefonie „Dodaj do ekranu początkowego” — bottom nav + safe-area.
 
 ### Konta seed
 
@@ -167,6 +172,8 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | `cloudflared` pada przy starcie | Brak pliku `UUID.json` w `/etc/cloudflared`. Tunel bez klucza na dysku trzeba utworzyć od nowa |
 | Login demo nie działa | Seed wyłączony albo hasło już zmienione. Przy pierwszym pustym starcie bez seeda nie ma admina |
 | API nie wstaje po „utwardzeniu” | `SEED_ENABLED=true` i `ALLOW_INSECURE_DEFAULTS=false` naraz są zabronione |
+| `smtp: down` / brak kodu weryfikacji | Brak lub złe `SMTP_PASSWORD` w `.env` na VM / lokalnie; restart `api` |
+| PWA nie instaluje się | Tylko HTTPS (produkcja) albo localhost; SW rejestruje się w buildzie produkcyjnym |
 
 ---
 
@@ -174,7 +181,9 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 
 | Plik | Po co |
 |------|--------|
-| `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile przez SMTP Mailbux |
-| `docker-compose.gcp.yml` | Stary wariant samego API. Na Oracle go nie uruchamiamy |
+| `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile SMTP Mailbux |
+| `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle |
+| `deploy/vm/.env.vm.example` | Szablon sekretów (gdy ktoś odpala wariant VM compose) |
+| `web/public/manifest.webmanifest` + `sw.js` | PWA (ikony, standalone) |
 | `docs/oracle-deploy.md` | Pierwsze postawienie maszyny i tunelu |
-| `docs/gcp-deploy.md` | Skrót: tamten opis jest nieaktualny |
+| `docs/gcp-deploy.md` | Stub: GCP nieaktualne |

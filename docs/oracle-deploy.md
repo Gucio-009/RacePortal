@@ -2,6 +2,8 @@
 
 Aktualne wdrożenie (październik 2026). **Strona, API i MySQL stoją na jednej maszynie.** Cloudflare nie hostuje frontu. Tunel tylko podaje `https://raceportal.pl` do nginx na VM.
 
+**Dlaczego nie GCP + Pages?** Krótko: za mało RAM na e2-micro, dwa deploje i `VITE_API_URL` psuły demo. Pełne uzasadnienie (opcje, skutki, co zostało jako historia): [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md).
+
 ```text
 https://raceportal.pl
 https://www.raceportal.pl
@@ -15,7 +17,7 @@ https://www.raceportal.pl
 
 Codzienne włączanie i wyłączanie: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md).
 
-Starszy wariant (API na GCP, front na Pages) nie jest używany. Plik [`docker-compose.gcp.yml`](../docker-compose.gcp.yml) też nie — na VM idzie zwykły [`docker-compose.yml`](../docker-compose.yml).
+Starszy wariant (API na GCP, front na Pages) nie jest używany. Pliki GCP usunięte / przemianowane — na VM idzie zwykły [`docker-compose.yml`](../docker-compose.yml) (web + api + mysql + backup). Opcjonalny [`docker-compose.vm.yml`](../docker-compose.vm.yml) (API-only) **nie** jest stackiem produkcyjnym.
 
 ---
 

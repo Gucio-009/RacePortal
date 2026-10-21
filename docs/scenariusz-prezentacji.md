@@ -1,7 +1,8 @@
 # RacePortal — scenariusz prezentacji (demo)
 
 **Cel:** pokazać ciekawe rzeczy produktu na żywo (~10–12 min), nie wykład o stacku.  
-**Środowisko:** `docker compose up -d` → web `:8081`, API `:4000`, Mailpit `:8025`; mobile Expo osobno (`:8082` / Simulator).
+**Środowisko (preferowane):** `https://raceportal.pl` (Oracle VM włączona) **albo** lokalnie `docker compose up -d` → web `:8081`, API `:4000` (wymaga `.env` z `SMTP_PASSWORD` do Mailbux).  
+Mobile Expo osobno (`:8082` / Simulator).
 
 **Konta seed**
 
@@ -18,14 +19,14 @@
 1. **Hook (30 s)** — katalog motorsportu PL: znajdź start → auto → org zarządza → admin moderuje.
 2. **Gość / katalog (2 min)** — `/wydarzenia`: Lista → Mapa → Kalendarz + filtry + detal.
 3. **Kierowca (3 min)** — garaż, zapis, `carMatch`, zgłoszenia.
-4. **Organizator (2 min)** — event + zgłoszenia + Mailpit.
+4. **Organizator (2 min)** — event + zgłoszenia + mail na skrzynkę kierowcy.
 5. **Admin (1 min)** — approve eventu / wniosku org.
-6. **Mobile wizytówka (1–1,5 min)** — katalog → CTA „Zapisz się na stronie”.
-7. **Domknięcie (30 s)** — Compose, health, jeden API; uczciwie o lukach (upload = URL).
+6. **Telefon (1–1,5 min)** — web PWA (bottom nav) **lub** Expo wizytówka → CTA „Zapisz się na stronie”.
+7. **Domknięcie (30 s)** — Compose / Oracle, health (`db` + `smtp`), jeden API; uczciwie o lukach (upload = URL).
 
-**Plan B:** nagranie 60–90 s (eventy → zapis → mail → mobile CTA), konta seed na kartce.
+**Plan B:** nagranie 60–90 s (eventy → zapis → mail → PWA/mobile), konta seed na kartce.
 
-**Unikać na żywo:** długa rejestracja+OTP, wykład JWT, obiecywanie store/PSP, „parity mobile = web”.
+**Unikać na żywo:** długa rejestracja+OTP bez działającego SMTP, wykład JWT, obiecywanie store/PSP, „parity mobile = web”.
 
 ---
 
@@ -49,7 +50,7 @@
 ### Auth / onboarding
 
 - Login e-mail + hasło (konta seed)
-- Rejestracja + weryfikacja kodem (mail w Mailpit) — tylko jeśli SMTP działa
+- Rejestracja + weryfikacja kodem (mail na prawdziwą skrzynkę przez Mailbux) — tylko jeśli `smtp: up`
 - Reset hasła
 - Google Sign-In (jeśli Client ID ustawiony; inaczej nie ryzykować)
 - Menu profilu: Moje konto / Dane / Ustawienia / Wyloguj
@@ -72,7 +73,7 @@
 - Wniosek „Zostań organizatorem” (typ działalności)
 - Panel: tworzenie / edycja eventu (presety, kategorie, wpisowe, lokalizacja, plakat URL)
 - Lista zgłoszeń do swojego eventu + zmiana statusów
-- Mail do kierowcy po zmianie statusu → **Mailpit**
+- Mail do kierowcy po zmianie statusu → **skrzynka użytkownika (Mailbux)**
 - Nota RODO przy tworzeniu eventu
 
 ### Admin
@@ -82,21 +83,22 @@
 - Zarządzanie rolami użytkowników (bez self-demote ostatniego admina)
 - „Widok z góry” całego katalogu
 
-### Mobile (wizytówka)
+### Telefon
 
-- Katalog Eventów: lista / mapa / kalendarz (gość, bez logowania)
-- Detal + CTA **„Zapisz się na stronie”** → web
-- Świadoma decyzja: mobile = discovery, web = konwersja
+- **Web PWA** — „Dodaj do ekranu początkowego”, bottom tab bar, safe-area
+- **Expo wizytówka** — katalog Eventów (lista / mapa / kalendarz), detal + CTA → web
+- Świadoma decyzja: mobile Expo = discovery; web (PWA) = pełna konwersja
 
 ### Ustawienia / UX „polishing”
 
 - Motyw / akcent kolorystyczny (`--race-accent`)
-- Responsywność (resize albo viewport mobile w DevTools)
+- Responsywność (telefon / DevTools)
 - Spójny dark UI + font display (Oxanium)
 
 ### Backend / infrastruktura (krótko, ale efektownie)
 
-- Docker Compose: web + API + MySQL + Mailpit (+ backup)
+- Docker Compose: web + API + MySQL (+ backup); maile SMTP Mailbux
+- Prod: Oracle Always Free + Cloudflare Tunnel → `:8081`
 - `GET /api/health` → `db: up`, `smtp: up`
 - Seed 3 ról od razu po starcie
 - Jeden kontrakt API dla web i mobile
@@ -111,31 +113,17 @@
 3. Filtr katalogu po aucie z garażu
 4. Pełny flow zgłoszenia + statusy
 5. Panel organizatora (event → zgłoszenia)
-6. Mail w Mailpit po approve
+6. Mail na prawdziwą skrzynkę po approve
 7. Panel admina (eventy + wnioski org.)
 8. Mapa markerów + trasa do toru
-9. Mobile → CTA na web
-10. Health + Compose jako „działa jak system”, nie mock
+9. Web PWA na telefonie **lub** Expo → CTA na web
+10. Health + Compose / Oracle jako „działa jak system”, nie mock
 
 ---
 
-## Świadomie słabsze (nie obiecywać / nie rozwijać na scenie)
+## Luki (nazwać uczciwie, 15 s)
 
-- Upload plików (jest URL, nie multipart)
-- Galeria „pełna”
-- Płatność PSP (tylko status + dowód URL)
-- Mobile bez garażu / logowania
-- Facebook OAuth / publikacja w store
-
----
-
-## Powiązane
-
-- Luki Spec formularzy: [`spec-conformity.md`](./spec-conformity.md)
-- Pomysły produktowe: [`pomysly-rozwoju.md`](./pomysly-rozwoju.md)
-- Stan MVP: [`MVP.md`](./MVP.md)
-- Mobile: [`mobile.md`](./mobile.md)
-
----
-
-*Utworzono: 2026-10-08 — checklista demo pod prezentację wtorkową.*
+- Upload plików = URL (nie multipart)
+- Spec formularzy: część pól opcjonalna vs wymagana — [`spec-conformity.md`](./spec-conformity.md)
+- Galeria odłożona
+- Brak App Store / Play (jest PWA weba)

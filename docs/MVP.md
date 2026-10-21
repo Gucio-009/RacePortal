@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
 
-**Ostatnia synchronizacja:** 2026-09-14 18:50 (formularze vs Spec; §42 changes; [`spec-conformity.md`](./spec-conformity.md))
+**Ostatnia synchronizacja:** 2026-10-21 14:45 (Oracle + Mailbux + PWA web; §44 changes)
 
 ---
 
@@ -74,9 +74,10 @@ Legenda statusu: **OK** · **Częściowo** · **Brak** · **Ponad**
 
 ## 3. Co jest — stan obecny (porównanie funkcja po funkcji)
 
-Stack: **web** (nginx `:8081`) + **api** (Spring Boot `:4000`) + **MySQL** (`:3307`) + **Mailpit** (`:8025`) + **backup**.
+Stack lokalnie / na VM: **web** (nginx `:8081`) + **api** (Spring Boot `:4000`) + **MySQL** (`:3307`) + **backup**.  
+Maile: SMTP **Mailbux** (nie Mailpit). Prod: Oracle Always Free + Cloudflare Tunnel → `https://raceportal.pl`. Web = **PWA** (manifest / SW / bottom nav).
 
-Logowanie: http://127.0.0.1:8081/login  
+Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/login  
 | Admin | `admin@raceportal.pl` / `admin123` |  
 | Organizator | `org@raceportal.pl` / `org123` |  
 | Kierowca | `test@wp.pl` / `test123` |
@@ -93,11 +94,11 @@ Logowanie: http://127.0.0.1:8081/login
 | 8 | Konto organizatora | Rola ORGANIZER + wniosek z `businessType` | **Częściowo** |
 | 9 | Narzędzia org. | `/organizer` — create UX: selecty, miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
-| 11 | Maile | SMTP → Mailpit (rejestracja, zgłoszenia, statusy, reset) | **OK** |
+| 11 | Maile | SMTP Mailbux → prawdziwa skrzynka (rejestracja, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet `/mapa` + mobile markery | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
-| 15 | Aplikacja mobilna | Expo **wizytówka**: katalog Eventy (lista/mapa/kalendarz + detal) + CTA zapisu na web; bez auth/garażu w app | **OK** (store/PWA poza zakresem) |
+| 15 | Aplikacja mobilna | Expo **wizytówka** + **web PWA** (Add to Home Screen); store poza zakresem | **OK** |
 
 ---
 
@@ -122,11 +123,14 @@ Logowanie: http://127.0.0.1:8081/login
 - [x] 12 Mapa wydarzeń (Leaflet)  
 - [~] 13 Trasa (OSRM; Google opcjonalnie)  
 - [x] 14 Archiwum  
-- [x] 15 Mobile — Expo wizytówka (`mobile/`: eventy, filtry, mapa/kalendarz, detal → CTA web); brak store/PWA  
+- [x] 15 Mobile — Expo wizytówka; web PWA (manifest / SW / mobile nav); brak store  
 
 ### Jakość — zrobione
 
-- [x] Docker Compose (web + api + **MySQL** + mail + backup)  
+- [x] Docker Compose (web + api + **MySQL** + backup); maile SMTP Mailbux  
+- [x] Hosting prod: Oracle VM + Tunnel Cloudflare  
+- [x] Web PWA (installable)  
+
 - [x] Health checks (`/api/health` + Docker)  
 - [x] Backupy codzienne (kontener `backup` → `mysqldump`)  
 - [x] Paginacja, indeksy JPA, cache list wydarzeń (Caffeine)  
@@ -147,11 +151,10 @@ Logowanie: http://127.0.0.1:8081/login
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
 | Średni (Spec) | Hasło API | Backend `min=6` vs Spec/UI `8+` ze znakami specjalnymi |
 | Średni (Spec) | Napęd 4WD + słownik marek | Brak w selectach garażu |
-| Średni | HTTPS / HSTS | Brak terminacji TLS (do reverse proxy w prod) |
 | Średni | #13 Google Maps | Brak klucza `GOOGLE_MAPS_API_KEY` w domyślnym env — jest OSRM |
 | Średni | Alerty | Brak automatycznego alertowania przy błędach krytycznych |
 | Średni | Backup restore | Skrypt dump jest; restore nie jest udokumentowany / przetestowany formalnie |
-| Niski | Store / PWA | Publikacja aplikacji poza zakresem MVP |
+| Niski | Store (Expo) | Publikacja w App Store / Play poza zakresem MVP (web PWA jest) |
 | Niski | Social OAuth | Google opcjonalny; Facebook poza zakresem |
 
 ---
@@ -165,7 +168,9 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Mapa Leaflet (#12) | W zakresie funkcjonalnym MVP, ale **poza** formalnym warunkiem odbioru 1–11 — i tak wdrożona |
 | Trasa OSRM (#13 fallback) | Działa bez klucza Google; Google to opcja |
 | Auto-archiwizacja wydarzeń | Job przy starcie API + filtr archiwum dla minionych APPROVED |
-| Mailpit zamiast tylko „mail w teorii” | Pełny podgląd maili w UI deweloperskim |
+| Mailbux (prawdziwy SMTP) | Kody weryfikacji / statusy na skrzynkę użytkownika |
+| Web PWA + bottom nav | Installable UI na telefonie bez store |
+| Oracle Always Free + Tunnel | Cały stack na jednej VM pod `raceportal.pl` |
 | Seed 3 ról + pending event | Ułatwia demo admin/org/kierowca od razu po `compose up` |
 | Rate limiting + security headers na nginx | ASVS L1 basics ponad „gołe” CRUD |
 | Volume backup + skrypt dzienny | Niezawodność wykraczająca poza samą bazę „w Dockerze” |
@@ -187,20 +192,21 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 
 ```
 MVP funkcje 1–11:     ████████████████░░░░   OK funkcjonalnie; Spec formularzy — luki (patrz spec-conformity.md)
-MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile wizytówka OK
+MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile + web PWA OK
 Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
-Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL OK; HTTPS/alerty brak
-Ponad MVP:            Mailpit, Expo wizytówka, api-types, markers, clear-on-edit
+Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL+Mailbux; Oracle+TLS przez CF Tunnel
+Ponad MVP:            Mailbux, PWA, Oracle deploy, Expo wizytówka, api-types, markers
 ```
 
 ### Komendy
 
 ```bash
+# lokalnie: .env z SMTP_PASSWORD=…
 docker compose up --build -d --remove-orphans
 # App:     http://127.0.0.1:8081/
 # Login:   http://127.0.0.1:8081/login
-# Health:  http://127.0.0.1:8081/api/health
-# Maile:   http://127.0.0.1:8025/
+# Health:  http://127.0.0.1:8081/api/health   # db + smtp
+# Prod:    https://raceportal.pl
 
 cd mobile && npm install && npm start
 
@@ -212,7 +218,8 @@ npm run test:api && npm run test:mobile-unit && npx playwright test
 
 | Plik | Rola |
 |------|------|
-| [`changes.md`](./changes.md) | Chronologia (sekcja 10 = testy, §11 = struktura repo) |
+| [`changes.md`](./changes.md) | Chronologia (§44 = Oracle/Mailbux/PWA) |
+| [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) | Proces i uzasadnienia decyzji (dyplom) |
 | [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | Alternatywy stacku (`Pomysł (alt)` w kodzie) |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testowe |
 | [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt API Spring **20/20 PASS** |

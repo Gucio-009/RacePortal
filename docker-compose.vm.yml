@@ -1,10 +1,9 @@
 #
-# docker-compose.vm.yml — API + MySQL na wirtualce (Oracle / dowolny VPS).
+# docker-compose.vm.yml — opcjonalny stack API + MySQL (bez web).
 #
-# Front zostaje na Cloudflare Pages; tu tylko backend + baza (+ backup).
-# Env: deploy/vm/.env.vm (z .env.vm.example). MySQL: deploy/vm/mysql-lowmem.cnf.
+# Produkcja Oracle używa zwykłego docker-compose.yml (web+api+mysql+backup).
+# Ten plik zostawiony jako wariant API-only. Env: deploy/vm/.env.vm.
 #
-# Uruchomienie (z korzenia repo na VM):
 #   docker compose -f docker-compose.vm.yml --env-file deploy/vm/.env.vm up -d --build
 #
 services:

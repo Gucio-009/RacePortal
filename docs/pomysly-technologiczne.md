@@ -16,7 +16,7 @@
 | JPA Specification filtry | Elasticsearch / OpenSearch | pełnotekstowe wyszukiwanie wydarzeń |
 | Ręczny mapowanie DTO | MapStruct | mniej boilerplate, mniej błędów mapowania |
 | Google idToken weryfikacja w API | Pełny OAuth2 Authorization Code + PKCE | bezpieczniejszy flow web/mobile |
-| JavaMail + Mailpit | SendGrid / SES / Resend | dostarczalność w produkcji |
+| JavaMail + Mailbux SMTP | SendGrid / SES / Resend / kolejka | skalowanie i analytics dostarczalności |
 | Publiczny OSRM | własny OSRM / Google Directions / Mapbox | SLA i limity zapytań |
 | Monolit Spring | osobny serwis powiadomień / worker | kolejki maili, archiwizacja |
 
@@ -24,7 +24,7 @@
 
 | Dziś | Pomysł (alt) | Po co |
 |------|--------------|-------|
-| Vite SPA + nginx | Next.js / Remix | SSR, SEO listy wydarzeń |
+| Vite SPA + nginx (+ PWA) | Next.js / Remix | SSR, SEO listy wydarzeń |
 | React Router data APIs | TanStack Router | typowane trasy |
 | fetch + AuthContext | TanStack Query + Zustand | cache HTTP, mniej prop-drilling |
 | Tailwind v4 + shadcn/Radix | MUI / własny Design System | spójność enterprise / white-label |

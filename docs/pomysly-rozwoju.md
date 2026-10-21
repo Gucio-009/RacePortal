@@ -66,7 +66,7 @@ Nie dubluje:
 | Skeleton loadery zamiast spinnera na listach | Wrażenie szybkości |
 | Dark/light + kontrast WCAG na złotym akcencie | Dostępność / recenzja |
 | Język EN (i18n) choćby Eventów publicznych | SEO / zagraniczni kierowcy |
-| PWA „Dodaj do ekranu głównego” dla weba | Zamiast store w krótkim terminie |
+| ~~PWA „Dodaj do ekranu głównego” dla weba~~ | **Zrobione (2026-10)** — manifest + SW + bottom nav; dalej: offline cache treści / push |
 
 ---
 

@@ -721,3 +721,32 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 
 *Ostatnia aktualizacja: 2026-09-14 19:25 — mobilka-wizytówka + docs + push.*
 
+---
+
+## 44. Oracle + Mailbux + PWA web + sync docs (2026-10-21)
+
+### Kontekst / proces (po kolei)
+
+1. **GCP + Pages** — najpierw API na e2-micro i front na Cloudflare Pages (tunel na `:4000`). Działało „na papierze”, ale mało RAM, dwa deploje, częste pomyłki `VITE_API_URL` / Worker≠Pages.  
+2. **Przenosiny na Oracle** — jedna VM Ampere (2 OCPU / 12 GB), cały Compose, Tunnel na nginx `:8081`. Usunięcie / rename plików GCP; docs Pages i GCP zostają jako historia.  
+3. **Maile** — Mailpit na prod nie docierał do użytkownika → SMTP Mailbux na `kontakt@raceportal.pl` (hasło tylko w `.env`).  
+4. **PWA web** — skoro ludzie i tak otwierają przeglądarkę na telefonie: manifest, SW, bottom nav (Expo zostaje wizytówką).  
+5. **Sync docs** — FAQ / MVP / Guidelines / scenariusz / TESTY dopięte do stanu `main`, plus osobny plik uzasadnień.
+
+Pełne ADR (problem → opcje → decyzja → skutki): [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md).
+
+| Godzina | Było | Jest | Dlaczego |
+|---------|------|------|----------|
+| ~12:00–14:40 | Hosting GCP e2-micro + Pages + tunnel `:4000` | Oracle Always Free; Tunnel → nginx `:8081`; stub GCP/Pages | Więcej RAM, jeden deploy, relative `/api`, mniej klas błędów dema |
+| ~12:00–14:40 | Maile → Mailpit (tylko UI w Dockerze) | SMTP Mailbux na skrzynkę użytkownika | Kod weryfikacji musi dojść do człowieka, nie do kontenera |
+| 14:30–14:40 | Web bez PWA; top-nav łamał się na telefonie | Manifest + SW + bottom nav + responsywny Home/Eventy | Ruch z telefonu bez forsowania store / Expo Go |
+| 14:45–14:50 | Docs z Mailpit/GCP/Pages jako „aktualne” | FAQ, MVP, Guidelines, know-how, scenariusz, TESTY + `decyzje-wdrozeniowe.md` | Dyplom potrzebuje **procesu i uzasadnień**, nie tylko runbooka |
+
+**Pliki:** jak wyżej + `docs/decyzje-wdrozeniowe.md`.
+
+**Weryfikacja:** brak żywych ścieżek do `docker-compose.gcp.yml` / Mailpit w Compose; `curl https://raceportal.pl/api/health`; PWA „Add to Home” na telefonie.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 14:50 — docs + decyzje (proces / dlaczego).*
+

@@ -1,6 +1,6 @@
 # RacePortal — dokumentacja
 
-Indeks dokumentów projektu (branch `wojtek`).
+Indeks dokumentów projektu (branch `main` / roboczy `wojtek`).
 
 ## Struktura katalogów w repo
 
@@ -27,9 +27,10 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | **Luki i pomysły produktowe** — czego brakuje / co warto dodać (nie Spec, nie stack) |
 | [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | **Scenariusz demo** — co pokazać na prezentacji (web + mobile) |
 | [`oracle-deploy.md`](./oracle-deploy.md) | **Oracle Always Free** — cała aplikacja na VM (2 OCPU / 12 GB) + tunel Cloudflare na `:8081` |
-| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | **Know-how start/stop** — lokalnie i maszyna Oracle, checklista demo |
-| [`cloudflare-pages.md`](./cloudflare-pages.md) | Starsza próba Pages (front osobno, tunel na `:4000`) — nie jest aktualnym wdrożeniem |
-| [`gcp-deploy.md`](./gcp-deploy.md) | Skrót: opis GCP jest nieaktualny, patrz `oracle-deploy.md` |
+| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | **Know-how start/stop** — lokalnie i Oracle, Mailbux, PWA, checklista demo |
+| [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) | **Dlaczego tak** — proces decyzji (GCP→Oracle, Mailpit→Mailbux, PWA); materiał pod dyplom |
+| [`cloudflare-pages.md`](./cloudflare-pages.md) | Starsza próba Pages (front osobno) — **historia**, nie aktualne wdrożenie |
+| [`gcp-deploy.md`](./gcp-deploy.md) | Stub: GCP usunięte; patrz `oracle-deploy.md` + decyzje |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
 | [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |

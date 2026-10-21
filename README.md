@@ -19,7 +19,8 @@ Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/
 Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)  
 **FAQ przeglądu (seed / MySQL / Expo / `.env`):** [`docs/FAQ-przeglad.md`](./docs/FAQ-przeglad.md)  
 **Know-how start/stop (lokalnie + VM Oracle):** [`docs/know-how-uruchamianie.md`](./docs/know-how-uruchamianie.md)  
-**Wdrożenie Oracle + tunel Cloudflare:** [`docs/oracle-deploy.md`](./docs/oracle-deploy.md)
+**Wdrożenie Oracle + tunel Cloudflare:** [`docs/oracle-deploy.md`](./docs/oracle-deploy.md)  
+**Prod:** https://raceportal.pl · web jest **PWA** (Dodaj do ekranu początkowego na telefonie)
 
 ## Jak odpalić lokalnie (Docker)
 

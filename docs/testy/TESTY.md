@@ -28,7 +28,7 @@ Testy automatyczne mają:
 | 7. Zgłoszenia | tak | częściowo | częściowo (UI przycisk) |
 | 8–9. Organizator | tak | tak | — |
 | 10. Baza danych | pośrednio (API) | pośrednio | pośrednio |
-| 11. Maile | poza automatami (Mailpit ręcznie) | — | — |
+| 11. Maile | poza automatami (SMTP Mailbux / skrzynka ręcznie) | — | — |
 | 12. Mapa | — | tak | — |
 | 13. Trasa | tak | — | — |
 | 14. Archiwum | tak | tak | — |
@@ -55,7 +55,7 @@ Testy automatyczne mają:
 | Integration | JUnit 5 + MockMvc + Testcontainers | `backend/src/test/` | health, login seed, walidacja błędów, lista events |
 | E2E | Playwright | `tests/e2e/` | UI użytkownika w przeglądarce (desktop + viewport mobile) |
 
-**Środowisko testowe:** lokalny Docker Compose (MySQL + Spring API + nginx web + Mailpit) oraz opcjonalnie Expo web preview.  
+**Środowisko testowe:** lokalny Docker Compose (MySQL + Spring API + nginx web; SMTP Mailbux przez env) oraz opcjonalnie Expo web preview.  
 **API testy bez pełnego compose:** `npm run test:api` (Maven w kontenerze + Docker sock dla Testcontainers).
 
 ---
@@ -226,7 +226,7 @@ Niepowodzenie pojedynczego TC należy opisać w pracy dyplomowej jako defect / o
 
 ## 7. Ograniczenia i dalsze prace
 
-- Maile (Mailpit) — weryfikacja ręczna / przyszły test SMTP.  
+- Maile (SMTP Mailbux) — weryfikacja ręczna / przyszły test SMTP.  
 - Brak pełnego zestawu testów natywnych (Detox/Maestro) — mobile E2E przez Expo web.  
 - Brak pomiaru obciążenia 10k/50 RPS (osobny rozdział jakości MVP).  
 - Rate limiting API może wpływać przy wielokrotnym odpalaniu — między przebiegami warto odczekać lub zrestartować API.

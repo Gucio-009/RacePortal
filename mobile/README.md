@@ -176,7 +176,8 @@ Komunikat `npx expo install --check` (pakiety do aktualizacji) jest osobną spra
 | Filtry publiczne (q, paid, kategoria, lokalizacja, daty) | ✅ |
 | Szczegóły + CTA „Zapisz się na stronie” → web | ✅ |
 | Logowanie / rejestracja / garaż / Moje / role | ❌ tylko web |
-| Publikacja store / PWA | ❌ poza zakresem |
+| Publikacja store | ❌ poza zakresem |
+| Web PWA (telefon w przeglądarce / Add to Home) | ✅ w `web/` — nie mylić z tą appką Expo |
 
 Logowanie i konta demo dotyczą **weba** (`test@wp.pl` / `test123` itd.) — mobilka nie ma ekranu logowania.
 

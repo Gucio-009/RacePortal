@@ -10,20 +10,26 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 - Shared: `packages/api-types` — typy + carMatch/avatary/kategorie (Vitest ≥500)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)
-- Docker Compose: `web`, `api`, `mysql`, `mailhog` (Mailpit), `backup`
+- Docker Compose: `web`, `api`, `mysql`, `backup` (bez Mailpita)
+- Maile: SMTP **Mailbux** (`kontakt@raceportal.pl`) — hasło w `.env` jako `SMTP_PASSWORD`
+- Produkcja: Oracle VM + Cloudflare Tunnel → `:8081` ([`oracle-deploy.md`](./oracle-deploy.md))
+- Web PWA: `web/public/manifest.webmanifest` + `sw.js`, bottom nav na telefonie
 - Testy: JUnit/MockMvc/Testcontainers (API), Vitest (api-types + mobile), Playwright E2E
 - Alt-technologie: [`docs/pomysly-technologiczne.md`](./pomysly-technologiczne.md)
-- App lokalnie: http://127.0.0.1:8081/ (nie 8080)
+- App lokalnie: http://127.0.0.1:8081/ (nie 8080); prod: https://raceportal.pl
 
 ## Dokumentacja — obowiązek aktualizacji
 
 Przy każdej istotnej zmianie aktualizuj:
 
 1. **`docs/MVP.md`** — format porównania (poniżej)
-2. **`docs/changes.md`** — chronologia / co doszło (**z godziną**, nie samym dniem)
-3. **`docs/pomysly-technologiczne.md`** — gdy pojawia się nowa decyzja stack / alt
-4. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
-5. **`docs/testy/TESTY.md`** + wyniki w `docs/testy/wyniki/` — gdy zmienia się zestaw lub wynik testów
+2. **`docs/changes.md`** — chronologia / co doszło (**z godziną**, nie samym dniem) + **proces** (kolejność kroków), nie sama lista plików
+3. **`docs/decyzje-wdrozeniowe.md`** — gdy decyzja infrastrukturalna / produktowa (problem → opcje → wybór → skutki); potrzebne przy dyplomie
+4. **`docs/pomysly-technologiczne.md`** — gdy pojawia się nowa decyzja stack / alt
+5. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
+6. **`docs/testy/TESTY.md`** + wyniki w `docs/testy/wyniki/` — gdy zmienia się zestaw lub wynik testów
+
+**Zasada na dyplom:** zawsze zapisuj **dlaczego** porzuciliśmy A na rzecz B (i co świadomie odłożyliśmy). Stub starych ścieżek (`gcp-deploy.md`, `cloudflare-pages.md`) zostawiamy jako historię — nie kasujemy milcząco.
 
 ### Komentarze w kodzie
 
@@ -35,11 +41,12 @@ Przy każdej istotnej zmianie aktualizuj:
 Każdy nowy wpis musi zawierać:
 
 1. **Datę i godzinę** (np. `2026-08-02 08:27` albo zakres `08:27–08:31`) — nigdy tylko dzień  
-2. Tabelę lub listę **Było → Jest → Dlaczego** (argument decyzji, nie sama lista plików)  
-3. Krótki kontekst *po co* zmiana (problem użytkownika / Dokumentacja / demo)  
-4. Główne pliki + sposób weryfikacji  
+2. Krótki **proces** (co robiliśmy po kolei), jeśli zmiana wieloetapowa  
+3. Tabelę lub listę **Było → Jest → Dlaczego** (argument decyzji, nie sama lista plików)  
+4. Kontekst *po co* (problem użytkownika / demo / docs dyplomowe)  
+5. Główne pliki + sposób weryfikacji  
 
-Bez uzasadnienia („dlaczego A zamiast B”) wpis jest niepełny.
+Bez uzasadnienia („dlaczego A zamiast B”) wpis jest niepełny. Duże decyzje wdrożeniowe → też [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md).
 
 ### MVP.md — obowiązkowy format porównania
 
@@ -96,9 +103,9 @@ npx playwright test
 | Usługa | Adres |
 |--------|--------|
 | Web | http://127.0.0.1:8081/ |
-| API | http://127.0.0.1:4000/api/health |
+| API health | http://127.0.0.1:4000/api/health (`db` + `smtp`) |
 | MySQL | localhost:3307 |
-| Maile | http://127.0.0.1:8025/ |
+| Maile | SMTP Mailbux (nie UI lokalne) — skrzynka odbiorcy |
 | Expo web | http://127.0.0.1:8082/ |
 
 Dokumentacja testów: [`docs/testy/TESTY.md`](./testy/TESTY.md)

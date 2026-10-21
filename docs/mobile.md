@@ -3,7 +3,7 @@
 Dokument zbiera **całą historię prac nad `mobile/`** (Expo), decyzje technologiczne, stan przed/po oraz efekty widoczne dla użytkownika i recenzenta.  
 Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronologia całego projektu: [`changes.md`](./changes.md).
 
-**Ostatnia aktualizacja:** 2026-09-14 (~19:30).
+**Ostatnia aktualizacja:** 2026-10-21 (web PWA osobno od Expo wizytówki).
 
 ---
 
@@ -28,7 +28,7 @@ Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronolog
 | **Expo + React Native** | **Wybrane** — wspólny TS/React z webem, jeden zespół, szybki MVP, Expo Go / Simulator |
 | Flutter | Odrzucone na ten etap (osobny język/zespół) |
 | Natywnie Swift/Kotlin | Zbyt kosztowne przy istniejącym React |
-| PWA / Capacitor | Słabsze UX store / offline vs RN |
+| PWA / Capacitor | Web ma już PWA (`web/`); natywny store nadal poza zakresem Expo |
 
 **Efekt:** kontynuacja stacku z §9 `changes.md` zamiast przepisywania aplikacji.
 
