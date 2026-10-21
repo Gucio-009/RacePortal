@@ -66,6 +66,8 @@ export function AdminPanelPage() {
   const [rejectTarget, setRejectTarget] = useState<PendingEvent | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   /** Równoległe załadowanie całego kokpitu admina. */
   const loadAll = async () => {
@@ -150,6 +152,21 @@ export function AdminPanelPage() {
   };
 
   /** Zmiana roli USER / ORGANIZER / ADMIN (nie dla własnego konta w UI). */
+  const deleteUser = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/api/admin/users/${deleteTarget.id}`);
+      toast.success("Użytkownik usunięty");
+      setDeleteTarget(null);
+      await loadAll();
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć użytkownika");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const updateUserRole = async (id: string, role: string) => {
     try {
       const updated = await api.patch<AdminUser>(`/api/admin/users/${id}/role`, { role });
@@ -421,20 +438,33 @@ export function AdminPanelPage() {
                     </p>
                     <p className="text-[#9ca3af] text-sm">{user.email}</p>
                   </div>
-                  <Select
-                    value={user.role}
-                    onValueChange={(role) => updateUserRole(user.id, role)}
-                    disabled={me?.id === user.id}
-                  >
-                    <SelectTrigger className="w-40 bg-[#121212] border-[#2a2a2a] text-white disabled:opacity-50">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-                      <SelectItem value="USER">USER</SelectItem>
-                      <SelectItem value="ORGANIZER">ORGANIZER</SelectItem>
-                      <SelectItem value="ADMIN">ADMIN</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={user.role}
+                      onValueChange={(role) => updateUserRole(user.id, role)}
+                      disabled={me?.id === user.id}
+                    >
+                      <SelectTrigger className="w-40 bg-[#121212] border-[#2a2a2a] text-white disabled:opacity-50">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                        <SelectItem value="USER">USER</SelectItem>
+                        <SelectItem value="ORGANIZER">ORGANIZER</SelectItem>
+                        <SelectItem value="ADMIN">ADMIN</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {me?.id !== user.id && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className="border-red-800 text-red-400"
+                        onClick={() => setDeleteTarget(user)}
+                      >
+                        Usuń
+                      </Button>
+                    )}
+                  </div>
                   {me?.id === user.id && (
                     <p className="text-xs text-[#9ca3af] sm:absolute sm:sr-only">Nie możesz zmienić własnej roli</p>
                   )}
@@ -483,6 +513,37 @@ export function AdminPanelPage() {
           </TabsContent>
         </Tabs>
       </section>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
+        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+          <DialogHeader>
+            <DialogTitle className="font-display">Usuń użytkownika</DialogTitle>
+            <DialogDescription className="text-[#9ca3af]">
+              {deleteTarget
+                ? `Usunąć konto ${deleteTarget.username} (${deleteTarget.email})? Zgłoszenia, auta i powiadomienia tego konta znikną. Wydarzenia, których był organizatorem, zostaną przypisane do Ciebie.`
+                : "Usunąć to konto?"}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              className="border-[#2a2a2a] text-white"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              Anuluj
+            </Button>
+            <Button
+              className="bg-red-800 hover:bg-red-700 text-white"
+              onClick={deleteUser}
+              disabled={deleting}
+            >
+              {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              Usuń konto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={!!rejectTarget}

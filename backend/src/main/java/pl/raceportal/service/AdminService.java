@@ -16,7 +16,10 @@ import pl.raceportal.dto.AdminDtos.StatsResponse;
 import pl.raceportal.dto.AdminDtos.UserAdminResponse;
 import pl.raceportal.dto.EventDtos.EventResponse;
 import pl.raceportal.dto.RegistrationDtos.UserRef;
+import pl.raceportal.repository.BugReportRepository;
+import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.NotificationRepository;
 import pl.raceportal.repository.OrganizerApplicationRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
@@ -66,6 +69,9 @@ public class AdminService {
     private final EventRepository eventRepository;
     private final RegistrationRepository registrationRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
+    private final CarRepository carRepository;
+    private final NotificationRepository notificationRepository;
+    private final BugReportRepository bugReportRepository;
     private final EventService eventService;
     private final MailService mailService;
     private final NotificationService notificationService;
@@ -73,12 +79,18 @@ public class AdminService {
     public AdminService(UserRepository userRepository, EventRepository eventRepository,
                          RegistrationRepository registrationRepository,
                          OrganizerApplicationRepository organizerApplicationRepository,
+                         CarRepository carRepository,
+                         NotificationRepository notificationRepository,
+                         BugReportRepository bugReportRepository,
                          EventService eventService, MailService mailService,
                          NotificationService notificationService) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
+        this.carRepository = carRepository;
+        this.notificationRepository = notificationRepository;
+        this.bugReportRepository = bugReportRepository;
         this.eventService = eventService;
         this.mailService = mailService;
         this.notificationService = notificationService;
@@ -138,6 +150,49 @@ public class AdminService {
                 "<p>Twoja rola w systemie to teraz: <strong>" + role + "</strong>.</p>");
 
         return serializeUser(user);
+    }
+
+    /**
+     * Kasuje konto. Nie można usunąć siebie ani ostatniego administratora.
+     * Wydarzenia organizowane przez to konto przechodzą na administratora, który kasuje.
+     * Zgłoszenia, auta, powiadomienia i wnioski tego konta są usuwane.
+     */
+    @Transactional
+    @CacheEvict(cacheNames = "events", allEntries = true)
+    public void deleteUser(String userId, UserPrincipal currentUser) {
+        if (currentUser == null) {
+            throw ApiException.unauthorized("Wymagane logowanie");
+        }
+        if (currentUser.getId().equals(userId)) {
+            throw ApiException.badRequest("Nie możesz usunąć własnego konta");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+
+        if (user.getRole() == Role.ADMIN) {
+            long adminCount = userRepository.findAll().stream().filter(u -> u.getRole() == Role.ADMIN).count();
+            if (adminCount <= 1) {
+                throw ApiException.badRequest("Musi pozostać co najmniej jeden administrator");
+            }
+        }
+
+        User actingAdmin = userRepository.findById(currentUser.getId())
+                .orElseThrow(() -> ApiException.unauthorized("Wymagane logowanie"));
+        List<Event> organized = eventRepository.findByOrganizer_IdOrderByDateDesc(userId);
+        for (Event event : organized) {
+            event.setOrganizer(actingAdmin);
+        }
+        eventRepository.saveAll(organized);
+        eventRepository.flush();
+
+        registrationRepository.deleteByCar_User_Id(userId);
+        registrationRepository.deleteByUser_Id(userId);
+        notificationRepository.deleteByUser_Id(userId);
+        organizerApplicationRepository.deleteByUser_Id(userId);
+        bugReportRepository.detachUser(userId);
+        carRepository.deleteByUser_Id(userId);
+        userRepository.deleteById(userId);
     }
 
     @Transactional(readOnly = true)

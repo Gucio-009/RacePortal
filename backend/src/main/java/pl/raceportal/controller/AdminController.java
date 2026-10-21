@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,6 +59,14 @@ public class AdminController {
                                                              @Valid @RequestBody RoleUpdateRequest request,
                                                              @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(adminService.updateUserRole(id, request, currentUser));
+    }
+
+    /** Usunięcie konta. Własnego konta i ostatniego administratora nie da się skasować. */
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<Void> deleteUser(@PathVariable String id,
+                                            @AuthenticationPrincipal UserPrincipal currentUser) {
+        adminService.deleteUser(id, currentUser);
+        return ResponseEntity.noContent().build();
     }
 
     /** Kolejka wydarzeń oczekujących na moderację. */

@@ -24,4 +24,6 @@ public interface CarRepository extends JpaRepository<Car, String> {
 
     /** Seed / uniknięcie duplikatów marka+model w garażu użytkownika. */
     Optional<Car> findFirstByUser_IdAndMakeIgnoreCaseAndModelIgnoreCase(String userId, String make, String model);
+
+    void deleteByUser_Id(String userId);
 }

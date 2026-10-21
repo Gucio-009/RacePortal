@@ -43,4 +43,8 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
      * blokuje usunięcie pojazdu z garażu przy aktywnych zgłoszeniach.
      */
     boolean existsByCar_IdAndStatusIn(String carId, List<RegistrationStatus> statuses);
+
+    void deleteByUser_Id(String userId);
+
+    void deleteByCar_User_Id(String userId);
 }

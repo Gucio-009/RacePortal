@@ -25,4 +25,6 @@ public interface OrganizerApplicationRepository extends JpaRepository<OrganizerA
 
     /** Statystyki — liczba wniosków w statusie. */
     long countByStatus(ApplicationStatus status);
+
+    void deleteByUser_Id(String userId);
 }
