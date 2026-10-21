@@ -61,18 +61,18 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerOrganizer(request));
     }
 
-    /** Weryfikacja kodu e-mail → JWT + UserDto. */
+    /** Aktywacja konta (lub potwierdzenie zmiany e-maila) tokenem z linku → JWT + UserDto. */
     @PostMapping("/verify-email")
     public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        return ResponseEntity.ok(authService.verifyEmail(request.email(), request.code()));
+        return ResponseEntity.ok(authService.verifyEmail(request.email(), request.token()));
     }
 
-    /** Ponowna wysyłka kodu — zawsze ten sam komunikat (anti-enumeration). */
+    /** Ponowna wysyłka linku aktywacyjnego — zawsze ten sam komunikat (anti-enumeration). */
     @PostMapping("/resend-code")
     public ResponseEntity<MessageResponse> resendCode(@Valid @RequestBody ResendCodeRequest request) {
         authService.resendCode(request.email());
         return ResponseEntity.ok(new MessageResponse(
-                "Jeśli konto istnieje i nie jest jeszcze zweryfikowane, wysłaliśmy nowy kod."));
+                "Jeśli konto istnieje i nie jest jeszcze zweryfikowane, wysłaliśmy nowy link aktywacyjny."));
     }
 
     /** Logowanie lokalne email+hasło → JWT. */
@@ -140,11 +140,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.requestEmailChange(currentUser.getId(), request.newEmail()));
     }
 
-    /** Potwierdzenie zmiany e-maila kodem → świeży JWT + UserDto. */
+    /** Potwierdzenie zmiany e-maila tokenem (zwykle przez publiczny link /verify-email). */
     @PostMapping("/me/email-change/confirm")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthResponse> confirmEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
                                                             @Valid @RequestBody ConfirmEmailChangeRequest request) {
-        return ResponseEntity.ok(authService.confirmEmailChange(currentUser.getId(), request.code()));
+        return ResponseEntity.ok(authService.confirmEmailChange(currentUser.getId(), request.token()));
     }
 }

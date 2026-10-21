@@ -73,9 +73,10 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Aktywacja konta (lub potwierdzenie zmiany e-maila) tokenem z linku. */
     public record VerifyEmailRequest(
-            @NotBlank @Email String email,
-            @NotBlank @Size(min = 6, max = 6) String code
+            @Email @Size(max = 190) String email,
+            @NotBlank @Size(min = 20, max = 64) String token
     ) {
     }
 
@@ -112,9 +113,9 @@ public final class AuthDtos {
     ) {
     }
 
-    /** Potwierdzenie zmiany e-maila kodem z maila. */
+    /** Potwierdzenie zmiany e-maila tokenem (ten sam co w linku aktywacyjnym). */
     public record ConfirmEmailChangeRequest(
-            @NotBlank @Size(min = 6, max = 6) String code
+            @NotBlank @Size(min = 20, max = 64) String token
     ) {
     }
 

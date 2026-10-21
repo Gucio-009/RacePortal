@@ -201,10 +201,11 @@ class ApiIntegrationTest {
                         .content(loginAttemptBody))
                 .andExpect(status().isForbidden());
 
-        String wrongCodeBody = objectMapper.writeValueAsString(new VerifyEmailPayload(email, "000000"));
+        String wrongTokenBody = objectMapper.writeValueAsString(
+                new VerifyEmailPayload(email, "000000000000000000000000000000000000000000000000"));
         mockMvc.perform(post("/api/auth/verify-email")
                         .contentType("application/json")
-                        .content(wrongCodeBody))
+                        .content(wrongTokenBody))
                 .andExpect(status().isBadRequest());
     }
 
@@ -635,12 +636,12 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.requiresVerification", is(true)));
 
         User pendingUser = userRepository.findByEmailIgnoreCase(email).orElseThrow();
-        String code = pendingUser.getEmailVerificationCode();
-        assertNotBlank(code);
+        String activationToken = pendingUser.getEmailVerificationCode();
+        assertNotBlank(activationToken);
 
         String verifyResponse = mockMvc.perform(post("/api/auth/verify-email")
                         .contentType("application/json")
-                        .content(objectMapper.writeValueAsString(new VerifyEmailPayload(email, code))))
+                        .content(objectMapper.writeValueAsString(new VerifyEmailPayload(null, activationToken))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.role", is("USER")))
                 .andReturn().getResponse().getContentAsString();
@@ -987,7 +988,7 @@ class ApiIntegrationTest {
                                             String company, String businessType, String message) {
     }
 
-    private record VerifyEmailPayload(String email, String code) {
+    private record VerifyEmailPayload(String email, String token) {
     }
 
     private record CarPayload(String make, String model, Integer year, String className, String plate,

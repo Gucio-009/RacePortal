@@ -48,8 +48,8 @@ export function LoginPage() {
       } else {
         const msg = result.message || "Nieprawidłowy email lub hasło";
         toast.error(msg);
-        // Konto istnieje, ale bez aktywacji — wróć do wpisywania kodu.
-        if (/weryfikuj|zweryfikuj|kod/i.test(msg) && email.includes("@")) {
+        // Konto istnieje, ale bez aktywacji — wróć do ponownej wysyłki linku.
+        if (/weryfikuj|zweryfikuj|kod|link|aktyw/i.test(msg) && email.includes("@")) {
           setPendingVerifyEmail(email);
           navigate(`/register?verify=1&email=${encodeURIComponent(email.trim().toLowerCase())}`);
         }
@@ -186,7 +186,7 @@ export function LoginPage() {
 
           <div className="mt-6 text-center space-y-3">
             <p className="text-[#9ca3af]">
-              Masz kod aktywacyjny?{" "}
+              Nie dostałeś linku aktywacyjnego?{" "}
               <Link
                 to={
                   email.trim()
@@ -199,7 +199,7 @@ export function LoginPage() {
                   if (email.includes("@")) setPendingVerifyEmail(email);
                 }}
               >
-                Wpisz kod
+                Wyślij ponownie
               </Link>
             </p>
             <p className="text-[#9ca3af]">

@@ -1,5 +1,6 @@
 package pl.raceportal.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,19 +38,19 @@ import java.time.temporal.ChronoUnit;
  * Po sukcesie wydaje JWT przez {@link JwtService}.
  * Technologie: Spring Security (BCrypt), JWT, Spring Mail, Google OAuth ID Token, JPA/MySQL.
  * </p>
- * Reguły kluczowe: konto lokalne startuje niezweryfikowane (kod 6-cyfrowy, TTL 15 min);
+ * Reguły kluczowe: konto lokalne startuje niezweryfikowane (link aktywacyjny, TTL 60 min);
  * login wymaga {@code emailVerified}; rejestracja organizatora tworzy też wniosek PENDING
  * (rola ORGANIZER dopiero po akceptacji admina); Google — find-or-create, email już verified.
  * <p>
- * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu kodów weryfikacyjnych;
+ * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu tokenów;
  * pełny flow resetu hasła z tokenem zamiast MVP maila.
  * </p>
  */
 @Service
 public class AuthService {
 
-    /** Czas ważności kodu weryfikacyjnego e-mail (minuty). */
-    private static final int VERIFICATION_CODE_TTL_MINUTES = 15;
+    /** Czas ważności linku aktywacyjnego (minuty). */
+    private static final int VERIFICATION_TOKEN_TTL_MINUTES = 60;
 
     private static final int VERIFY_MAX_ATTEMPTS = 10;
     private static final int RESEND_MAX_ATTEMPTS = 3;
@@ -63,10 +64,12 @@ public class AuthService {
     private final GoogleIdTokenService googleIdTokenService;
     private final AttemptRateLimiter attemptRateLimiter;
     private final SecureRandom random = new SecureRandom();
+    private final String publicBaseUrl;
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
-                        GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter) {
+                        GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter,
+                        @Value("${app.public-base-url:http://localhost:8081}") String publicBaseUrl) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.passwordEncoder = passwordEncoder;
@@ -74,11 +77,12 @@ public class AuthService {
         this.mailService = mailService;
         this.googleIdTokenService = googleIdTokenService;
         this.attemptRateLimiter = attemptRateLimiter;
+        this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
     }
 
     /**
-     * Rejestracja kierowcy (diagram „Proces Rejestracji”): konto USER niezweryfikowane + mail z kodem.
-     * Nie wydaje JWT — klient musi wywołać {@link #verifyEmail}.
+     * Rejestracja kierowcy: konto USER niezweryfikowane + mail z linkiem aktywacyjnym.
+     * Nie wydaje JWT — klient musi otworzyć link ({@link #verifyEmail}).
      */
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -89,9 +93,9 @@ public class AuthService {
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
                 request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
         user = userRepository.save(user);
-        sendVerificationCode(user);
+        sendVerificationLink(user);
         return new RegisterResponse(true, user.getEmail(),
-                "Wysłaliśmy 6-cyfrowy kod weryfikacyjny na Twój adres email.");
+                "Wysłaliśmy link aktywacyjny na Twój adres e-mail.");
     }
 
     /**
@@ -113,43 +117,30 @@ public class AuthService {
         application.setStatus(ApplicationStatus.PENDING);
         organizerApplicationRepository.save(application);
 
-        sendVerificationCode(user);
+        sendVerificationLink(user);
         return new RegisterResponse(true, user.getEmail(),
-                "Wysłaliśmy 6-cyfrowy kod weryfikacyjny na Twój adres email. Po weryfikacji Twój wniosek o konto " +
+                "Wysłaliśmy link aktywacyjny na Twój adres e-mail. Po aktywacji Twój wniosek o konto " +
                         "organizatora oczekuje na akceptację administratora.");
     }
 
     /**
-     * Potwierdza kod weryfikacyjny i wydaje JWT (jak po loginie).
-     * Jeśli konto już zweryfikowane — tylko loguje (idempotentnie).
+     * Potwierdza token z linku aktywacyjnego (rejestracja lub zmiana e-maila) i wydaje JWT.
+     * Ponowne kliknięcie przy już zweryfikowanym koncie bez pending — idempotentnie loguje.
      */
     @Transactional
-    public AuthResponse verifyEmail(String email, String code) {
-        String key = "verify:" + email.trim().toLowerCase();
-        attemptRateLimiter.check(key, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+    public AuthResponse verifyEmail(String email, String rawToken) {
+        String token = rawToken == null ? "" : rawToken.trim();
+        attemptRateLimiter.check("verify-token:" + token, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
-        User user = userRepository.findByEmailIgnoreCase(email)
-                .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy email lub kod"));
+        User user = resolveUserForToken(email, token);
+        applyVerificationToken(user, token);
 
-        if (!user.isEmailVerified()) {
-            if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
-                    || !user.getEmailVerificationCode().equals(code)
-                    || Instant.now().isAfter(user.getEmailVerificationExpires())) {
-                throw ApiException.badRequest("Nieprawidłowy email lub kod");
-            }
-            user.setEmailVerified(true);
-            user.setEmailVerificationCode(null);
-            user.setEmailVerificationExpires(null);
-            user.setPendingEmail(null);
-            user = userRepository.save(user);
-        }
-
-        String token = jwtService.generateToken(user);
-        return new AuthResponse(token, toUserDto(user));
+        String jwt = jwtService.generateToken(user);
+        return new AuthResponse(jwt, toUserDto(user));
     }
 
     /**
-     * Ponowna wysyłka kodu — soft-fail (brak błędu gdy email nie istnieje),
+     * Ponowna wysyłka linku — soft-fail (brak błędu gdy email nie istnieje),
      * żeby nie ujawniać, które adresy są w bazie. Rate-limit po emailu.
      */
     @Transactional
@@ -157,7 +148,7 @@ public class AuthService {
         attemptRateLimiter.check("resend:" + email.trim().toLowerCase(), RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
         userRepository.findByEmailIgnoreCase(email)
                 .filter(user -> !user.isEmailVerified())
-                .ifPresent(this::sendVerificationCode);
+                .ifPresent(this::sendVerificationLink);
     }
 
     /**
@@ -174,7 +165,7 @@ public class AuthService {
 
         if (!user.isEmailVerified()) {
             throw new ApiException(HttpStatus.FORBIDDEN,
-                    "Zweryfikuj adres email przed zalogowaniem — sprawdź skrzynkę pocztową lub poproś o nowy kod.");
+                    "Aktywuj konto linkiem z e-maila przed zalogowaniem — sprawdź skrzynkę lub poproś o nowy link.");
         }
 
         String token = jwtService.generateToken(user);
@@ -326,7 +317,7 @@ public class AuthService {
     }
 
     /**
-     * Start zmiany e-maila: kod 6-cyfrowy idzie na <em>nowy</em> adres; obecny zostaje do potwierdzenia.
+     * Start zmiany e-maila: link potwierdzający idzie na <em>nowy</em> adres; obecny zostaje do kliknięcia.
      */
     @Transactional
     public MessageResponse requestEmailChange(String userId, String rawNewEmail) {
@@ -343,38 +334,23 @@ public class AuthService {
         }
 
         user.setPendingEmail(newEmail);
-        sendVerificationCodeTo(user, newEmail);
-        return new MessageResponse("Wysłaliśmy 6-cyfrowy kod na nowy adres e-mail.");
+        sendVerificationLinkTo(user, newEmail);
+        return new MessageResponse("Wysłaliśmy link potwierdzający na nowy adres e-mail.");
     }
 
     /**
-     * Potwierdza zmianę e-maila kodem wysłanym na pendingEmail; wydaje świeży JWT.
+     * Potwierdza zmianę e-maila tokenem (zalogowany użytkownik); zwykle używany link publiczny.
      */
     @Transactional
-    public AuthResponse confirmEmailChange(String userId, String code) {
+    public AuthResponse confirmEmailChange(String userId, String token) {
         attemptRateLimiter.check("email-confirm:" + userId, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
-        String pending = user.getPendingEmail();
-        if (pending == null || pending.isBlank()) {
+        if (user.getPendingEmail() == null || user.getPendingEmail().isBlank()) {
             throw ApiException.badRequest("Brak oczekującej zmiany e-maila");
         }
-        if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
-                || !user.getEmailVerificationCode().equals(code)
-                || Instant.now().isAfter(user.getEmailVerificationExpires())) {
-            throw ApiException.badRequest("Nieprawidłowy lub wygasły kod");
-        }
-        if (userRepository.existsByEmailIgnoreCase(pending)) {
-            throw ApiException.conflict("Konto z tym emailem już istnieje");
-        }
-
-        user.setEmail(pending);
-        user.setPendingEmail(null);
-        user.setEmailVerificationCode(null);
-        user.setEmailVerificationExpires(null);
-        user.setEmailVerified(true);
-        user = userRepository.save(user);
+        applyVerificationToken(user, token == null ? "" : token.trim());
         return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
     }
 
@@ -395,24 +371,99 @@ public class AuthService {
         return userRepository.save(user);
     }
 
-    /** Generuje 6-cyfrowy kod, zapisuje TTL i wysyła mail HTML na bieżący e-mail użytkownika. */
-    private void sendVerificationCode(User user) {
-        sendVerificationCodeTo(user, user.getEmail());
+    private void sendVerificationLink(User user) {
+        sendVerificationLinkTo(user, user.getEmail());
     }
 
-    /** Generuje 6-cyfrowy kod i wysyła na wskazany adres (rejestracja lub zmiana e-maila). */
-    private void sendVerificationCodeTo(User user, String targetEmail) {
-        String code = String.format("%06d", random.nextInt(1_000_000));
-        user.setEmailVerificationCode(code);
-        user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_CODE_TTL_MINUTES, ChronoUnit.MINUTES));
+    /** Generuje token, zapisuje TTL i wysyła mail z linkiem (rejestracja lub zmiana e-maila). */
+    private void sendVerificationLinkTo(User user, String targetEmail) {
+        String token = generateVerificationToken();
+        user.setEmailVerificationCode(token);
+        user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
         userRepository.save(user);
 
         String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
-        mailService.send(targetEmail, "Kod weryfikacyjny RACEPORTAL",
+        String link = publicBaseUrl + "/verify-email?token=" + token;
+        String safeLink = escapeHtml(link);
+        boolean emailChange = user.getPendingEmail() != null && !user.getPendingEmail().isBlank();
+        String subject = emailChange ? "Potwierdź nowy e-mail RACEPORTAL" : "Aktywuj konto RACEPORTAL";
+        String intro = emailChange
+                ? "Kliknij poniższy przycisk, aby potwierdzić nowy adres e-mail."
+                : "Kliknij poniższy przycisk, aby aktywować konto.";
+        mailService.send(targetEmail, subject,
                 "<p>Cześć " + safeName + ",</p>" +
-                        "<p>Twój kod weryfikacyjny:</p>" +
-                        mailService.codeBox(code) +
-                        "<p>Kod jest ważny przez " + VERIFICATION_CODE_TTL_MINUTES + " minut.</p>");
+                        "<p>" + intro + "</p>" +
+                        "<p style=\"margin:18px 0;\">" +
+                        "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
+                        "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
+                        "text-decoration:none;padding:14px 22px;border-radius:8px;\">" +
+                        (emailChange ? "POTWIERDŹ E-MAIL" : "AKTYWUJ KONTO") +
+                        "</a></p>" +
+                        "<p style=\"font-size:13px;color:#9ca3af;\">Link jest ważny przez " +
+                        VERIFICATION_TOKEN_TTL_MINUTES + " minut. Jeśli przycisk nie działa, wklej adres:<br>" +
+                        "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>");
+    }
+
+    private User resolveUserForToken(String email, String token) {
+        if (token.isBlank()) {
+            throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
+        }
+        if (email != null && !email.isBlank()) {
+            User user = userRepository.findByEmailIgnoreCase(email.trim())
+                    .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy lub wygasły link"));
+            if (user.getEmailVerificationCode() == null || !user.getEmailVerificationCode().equals(token)) {
+                throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
+            }
+            return user;
+        }
+        return userRepository.findByEmailVerificationCode(token)
+                .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy lub wygasły link"));
+    }
+
+    private void applyVerificationToken(User user, String token) {
+        if (user.getEmailVerificationCode() == null || user.getEmailVerificationExpires() == null
+                || !user.getEmailVerificationCode().equals(token)
+                || Instant.now().isAfter(user.getEmailVerificationExpires())) {
+            throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
+        }
+
+        String pending = user.getPendingEmail();
+        if (pending != null && !pending.isBlank()) {
+            if (userRepository.existsByEmailIgnoreCase(pending)
+                    && !pending.equalsIgnoreCase(user.getEmail())) {
+                throw ApiException.conflict("Konto z tym emailem już istnieje");
+            }
+            user.setEmail(pending);
+            user.setPendingEmail(null);
+            user.setEmailVerified(true);
+        } else if (!user.isEmailVerified()) {
+            user.setEmailVerified(true);
+        }
+
+        user.setEmailVerificationCode(null);
+        user.setEmailVerificationExpires(null);
+        userRepository.save(user);
+    }
+
+    private String generateVerificationToken() {
+        byte[] bytes = new byte[24];
+        random.nextBytes(bytes);
+        StringBuilder sb = new StringBuilder(bytes.length * 2);
+        for (byte b : bytes) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
+    }
+
+    private static String trimTrailingSlash(String url) {
+        if (url == null || url.isBlank()) {
+            return "http://localhost:8081";
+        }
+        String trimmed = url.trim();
+        while (trimmed.endsWith("/")) {
+            trimmed = trimmed.substring(0, trimmed.length() - 1);
+        }
+        return trimmed;
     }
 
     /** Silne tymczasowe hasło (wielka, mała, cyfra, znak specjalny) — jak przy rejestracji. */

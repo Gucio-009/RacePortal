@@ -89,8 +89,8 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = true;
 
-    /** Jednorazowy kod weryfikacyjny wysyłany mailem. */
-    @Column(name = "email_verification_code", length = 10)
+    /** Jednorazowy token aktywacji / zmiany e-maila (link w mailu). */
+    @Column(name = "email_verification_code", length = 64)
     private String emailVerificationCode;
 
     /** Termin ważności kodu weryfikacyjnego. */
@@ -98,8 +98,8 @@ public class User {
     private Instant emailVerificationExpires;
 
     /**
-     * Nowy e-mail oczekujący na potwierdzenie kodem (zmiana adresu zalogowanego użytkownika).
-     * Kod leży w {@link #emailVerificationCode} / {@link #emailVerificationExpires}.
+     * Nowy e-mail oczekujący na potwierdzenie linkiem (zmiana adresu zalogowanego użytkownika).
+     * Token leży w {@link #emailVerificationCode} / {@link #emailVerificationExpires}.
      */
     @Column(name = "pending_email", length = 190)
     private String pendingEmail;

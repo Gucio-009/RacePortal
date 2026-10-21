@@ -34,7 +34,7 @@ import {
 } from "../lib/profileValidation";
 
 export function AccountPage() {
-  const { user, updateProfile, changePassword, requestEmailChange, confirmEmailChange } = useAuth();
+  const { user, updateProfile, changePassword, requestEmailChange } = useAuth();
   const [username, setUsername] = useState("");
   const [avatar, setAvatar] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -53,8 +53,7 @@ export function AccountPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [newEmail, setNewEmail] = useState("");
-  const [emailCode, setEmailCode] = useState("");
-  const [emailCodeSent, setEmailCodeSent] = useState(false);
+  const [emailLinkSent, setEmailLinkSent] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
 
   // Hydratacja formularza gdy AuthContext dostarczy / odświeży usera.
@@ -138,7 +137,7 @@ export function AccountPage() {
     }
   };
 
-  const sendEmailChangeCode = async () => {
+  const sendEmailChangeLink = async () => {
     const trimmed = newEmail.trim().toLowerCase();
     if (!trimmed || !trimmed.includes("@")) {
       toast.error("Podaj prawidłowy nowy adres e-mail");
@@ -152,28 +151,10 @@ export function AccountPage() {
     const result = await requestEmailChange(trimmed);
     setSavingEmail(false);
     if (result.ok) {
-      setEmailCodeSent(true);
-      toast.success(result.message || "Kod wysłany na nowy adres");
+      setEmailLinkSent(true);
+      toast.success(result.message || "Link wysłany na nowy adres");
     } else {
-      toast.error(result.message || "Nie udało się wysłać kodu");
-    }
-  };
-
-  const confirmNewEmail = async () => {
-    if (emailCode.length !== 6) {
-      toast.error("Podaj 6-cyfrowy kod z maila");
-      return;
-    }
-    setSavingEmail(true);
-    const result = await confirmEmailChange(emailCode);
-    setSavingEmail(false);
-    if (result.ok) {
-      toast.success(result.message || "E-mail zmieniony");
-      setNewEmail("");
-      setEmailCode("");
-      setEmailCodeSent(false);
-    } else {
-      toast.error(result.message || "Nie udało się potwierdzić");
+      toast.error(result.message || "Nie udało się wysłać linku");
     }
   };
 
@@ -381,58 +362,34 @@ export function AccountPage() {
                   value={newEmail}
                   onChange={(e) => {
                     setNewEmail(e.target.value);
-                    setEmailCodeSent(false);
+                    setEmailLinkSent(false);
                   }}
                   className="bg-[#121212] border-[#2a2a2a] text-white"
                   autoComplete="email"
                 />
               </div>
-              {emailCodeSent && (
-                <div className="space-y-2">
-                  <Label className="text-white">Kod z nowego maila</Label>
-                  <Input
-                    inputMode="numeric"
-                    maxLength={6}
-                    value={emailCode}
-                    onChange={(e) => setEmailCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
-                    placeholder="123456"
-                  />
-                </div>
+              {emailLinkSent && (
+                <p className="text-[#9ca3af] text-sm">
+                  Sprawdź skrzynkę nowego adresu i kliknij link potwierdzający (ważny 60 minut).
+                </p>
               )}
-              {!emailCodeSent ? (
-                <Button
-                  onClick={sendEmailChangeCode}
-                  disabled={savingEmail}
-                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
-                  style={{ fontWeight: 700 }}
-                >
-                  {savingEmail ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      WYSYŁANIE...
-                    </>
-                  ) : (
-                    "WYŚLIJ KOD"
-                  )}
-                </Button>
-              ) : (
-                <Button
-                  onClick={confirmNewEmail}
-                  disabled={savingEmail}
-                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
-                  style={{ fontWeight: 700 }}
-                >
-                  {savingEmail ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      POTWIERDZANIE...
-                    </>
-                  ) : (
-                    "POTWIERDŹ E-MAIL"
-                  )}
-                </Button>
-              )}
+              <Button
+                onClick={sendEmailChangeLink}
+                disabled={savingEmail}
+                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                style={{ fontWeight: 700 }}
+              >
+                {savingEmail ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    WYSYŁANIE...
+                  </>
+                ) : emailLinkSent ? (
+                  "WYŚLIJ LINK PONOWNIE"
+                ) : (
+                  "WYŚLIJ LINK POTWIERDZAJĄCY"
+                )}
+              </Button>
             </CardContent>
           </Card>
 

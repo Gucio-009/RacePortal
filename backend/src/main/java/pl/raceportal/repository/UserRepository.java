@@ -21,6 +21,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     /** Logowanie / OAuth — wyszukanie po emailu (case-insensitive). */
     Optional<User> findByEmailIgnoreCase(String email);
 
+    /** Aktywacja konta / zmiana e-maila po tokenie z linku. */
+    Optional<User> findByEmailVerificationCode(String emailVerificationCode);
+
     /** Unikalność email przy rejestracji. */
     boolean existsByEmailIgnoreCase(String email);
 

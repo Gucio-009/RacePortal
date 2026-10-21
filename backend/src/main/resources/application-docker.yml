@@ -32,6 +32,7 @@ spring:
           writetimeout: 3000
 
 app:
+  public-base-url: ${PUBLIC_BASE_URL:http://localhost:8081}
   mail:
     from: "${SMTP_FROM:RACEPORTAL <noreply@raceportal.pl>}"
   cors:

@@ -47,6 +47,7 @@ services:
       SMTP_AUTH: ${SMTP_AUTH:-true}
       SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
       SMTP_FROM: "${SMTP_FROM:-RACEPORTAL <noreply@raceportal.pl>}"
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://raceportal.pl}
       CORS_ORIGIN: ${CORS_ORIGIN}
       JWT_SECRET: ${JWT_SECRET}
       SEED_ENABLED: ${SEED_ENABLED:-true}

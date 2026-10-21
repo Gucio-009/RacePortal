@@ -1,20 +1,20 @@
 /**
- * RegisterPage — rejestracja konta + weryfikacja e-mail kodem 6-cyfrowym.
+ * RegisterPage — rejestracja konta + oczekiwanie na link aktywacyjny z e-maila.
  *
  * Cel: utworzenie konta kierowcy (USER) z danymi profilu / licencji; opcjonalnie Google.
- * Wzorce: dwuetapowy UI (formularz → ekran kodu gdy `requiresVerification`),
- * AuthContext (`register`, `verifyEmail`, `resendCode`, `loginWithGoogle`), React Router.
- * Auth/JWT: po aktywacji AuthContext zapisuje JWT w `raceportal_token` (jak LoginPage).
+ * Wzorce: dwuetapowy UI (formularz → „sprawdź mail” gdy `requiresVerification`),
+ * AuthContext (`register`, `resendCode`, `loginWithGoogle`); aktywacja przez `/verify-email?token=`.
+ * Auth/JWT: po kliknięciu linku AuthContext zapisuje JWT w `raceportal_token`.
  * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
- * Theme: `--race-accent`, `font-display`; kod weryfikacji idzie na skrzynkę użytkownika (SMTP prod).
+ * Theme: `--race-accent`, `font-display`; link aktywacyjny idzie SMTP (prod Mailbux).
  * Docker/nginx: `/register` jako deep link SPA — nginx try_files.
  *
- * Pomysł (alt): magic-link zamiast kodu; Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
+ * Pomysł (alt): Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
  */
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, KeyRound, Phone, IdCard } from "lucide-react";
+import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, Phone, IdCard } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -49,10 +49,9 @@ export function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu (też po powrocie z sessionStorage / ?verify=).
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const [code, setCode] = useState("");
-  /** Tryb „mam kod” bez znanego e-maila (np. link z logowania). */
+  /** Tryb „czekam na link” / ponowna wysyłka (np. po logowaniu bez aktywacji). */
   const [verifyMode, setVerifyMode] = useState(false);
-  const { register, verifyEmail, resendCode, loginWithGoogle } = useAuth();
+  const { register, resendCode, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const googleEnabled = isGoogleClientConfigured();
@@ -85,7 +84,6 @@ export function RegisterPage() {
   const leaveVerifyStep = () => {
     clearPendingVerifyEmail();
     setPendingEmail(null);
-    setCode("");
     setVerifyMode(false);
   };
 
@@ -128,10 +126,10 @@ export function RegisterPage() {
         toast.error(result.message || "Nie udało się utworzyć konta");
         return;
       }
-      // Etap 2: kod e-mail zamiast od razu JWT.
+      // Etap 2: link w mailu zamiast od razu JWT.
       if ("requiresVerification" in result && result.requiresVerification) {
         enterVerifyStep(result.email);
-        toast.success(result.message || "Kod weryfikacyjny wysłany na e-mail");
+        toast.success(result.message || "Link aktywacyjny wysłany na e-mail");
         return;
       }
       clearPendingVerifyEmail();
@@ -144,37 +142,11 @@ export function RegisterPage() {
     }
   };
 
-  /** Potwierdzenie kodu → JWT w AuthContext → dashboard. */
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleResend = async (e?: React.FormEvent) => {
+    e?.preventDefault();
     const target = (pendingEmail || email).trim().toLowerCase();
     if (!target.includes("@")) {
-      toast.error("Podaj adres e-mail z rejestracji");
-      return;
-    }
-    if (code.trim().length !== 6) {
-      toast.error("Podaj 6-cyfrowy kod");
-      return;
-    }
-    setIsLoading(true);
-    try {
-      const result = await verifyEmail(target, code.trim());
-      if (result.ok) {
-        clearPendingVerifyEmail();
-        toast.success("Konto aktywowane!");
-        navigate("/dashboard");
-      } else {
-        toast.error(result.message || "Nieprawidłowy kod");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    const target = (pendingEmail || email).trim().toLowerCase();
-    if (!target.includes("@")) {
-      toast.error("Podaj adres e-mail, na który wysłać kod");
+      toast.error("Podaj adres e-mail, na który wysłać link");
       return;
     }
     setIsLoading(true);
@@ -182,8 +154,8 @@ export function RegisterPage() {
       const result = await resendCode(target);
       if (result.ok) {
         enterVerifyStep(target);
-        toast.success(result.message || "Kod wysłany ponownie");
-      } else toast.error(result.message || "Nie udało się wysłać kodu");
+        toast.success(result.message || "Link wysłany ponownie");
+      } else toast.error(result.message || "Nie udało się wysłać linku");
     } finally {
       setIsLoading(false);
     }
@@ -231,21 +203,21 @@ export function RegisterPage() {
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: "16px" }}>
-            {verifyMode ? "Potwierdź adres e-mail kodem" : "Stwórz konto i rozpocznij wyścig"}
+            {verifyMode ? "Aktywuj konto linkiem z maila" : "Stwórz konto i rozpocznij wyścig"}
           </p>
         </div>
 
         <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 shadow-2xl">
           {verifyMode ? (
-            <form onSubmit={handleVerify} className="space-y-5">
+            <form onSubmit={handleResend} className="space-y-5">
               <p className="text-[#9ca3af] text-sm">
                 {pendingEmail ? (
                   <>
-                    Wysłaliśmy 6-cyfrowy kod na <span className="text-white">{pendingEmail}</span>. Sprawdź
-                    skrzynkę (także folder spam).
+                    Wysłaliśmy link aktywacyjny na <span className="text-white">{pendingEmail}</span>.
+                    Otwórz wiadomość i kliknij przycisk (sprawdź też spam). Link jest ważny 60 minut.
                   </>
                 ) : (
-                  <>Podaj e-mail z rejestracji i 6-cyfrowy kod z wiadomości (lub wyślij nowy kod).</>
+                  <>Podaj e-mail z rejestracji — wyślemy nowy link aktywacyjny.</>
                 )}
               </p>
               <div className="space-y-2">
@@ -268,41 +240,23 @@ export function RegisterPage() {
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="code" className="text-white" style={{ fontWeight: 600 }}>
-                  Kod weryfikacyjny
-                </Label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
-                  <Input
-                    id="code"
-                    inputMode="numeric"
-                    maxLength={6}
-                    placeholder="123456"
-                    value={code}
-                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12 tracking-widest"
-                    required
-                  />
-                </div>
-              </div>
               <Button
                 type="submit"
                 disabled={isLoading}
                 className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
                 style={{ fontSize: "16px", fontWeight: 800 }}
               >
-                {isLoading ? "WERYFIKACJA..." : "AKTYWUJ KONTO"}
+                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ PONOWNIE LINK"}
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isLoading}
-                onClick={handleResend}
-                className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
-              >
-                Wyślij nowy kod
-              </Button>
+              <Link to="/login">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
+                >
+                  Mam już aktywne konto — logowanie
+                </Button>
+              </Link>
               <button
                 type="button"
                 className="w-full text-sm text-[#9ca3af] hover:text-[var(--race-accent)]"
@@ -587,13 +541,13 @@ export function RegisterPage() {
           <div className="mt-6 text-center space-y-2">
             {!verifyMode && (
               <p className="text-[#9ca3af]">
-                Masz już kod aktywacyjny?{" "}
+                Nie dostałeś linku aktywacyjnego?{" "}
                 <button
                   type="button"
                   className="text-[var(--race-accent)] hover:underline font-bold"
                   onClick={() => setVerifyMode(true)}
                 >
-                  Wpisz kod
+                  Wyślij ponownie
                 </button>
               </p>
             )}

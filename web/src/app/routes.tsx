@@ -28,6 +28,7 @@ import { ResultsPage } from "./pages/ResultsPage";
 import { ArchivePage } from "./pages/ArchivePage";
 import { GalleryPage } from "./pages/GalleryPage";
 import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
+import { VerifyEmailPage } from "./pages/VerifyEmailPage";
 import { GaragePage } from "./pages/GaragePage";
 import { AdminPanelPage } from "./pages/AdminPanelPage";
 import { OrganizerPanelPage } from "./pages/OrganizerPanelPage";
@@ -154,6 +155,7 @@ export const router = createBrowserRouter([
       { path: "login", Component: LoginPage },
       { path: "register", Component: RegisterPage },
       { path: "forgot-password", Component: ForgotPasswordPage },
+      { path: "verify-email", Component: VerifyEmailPage },
       { path: "dashboard", Component: ProtectedDashboard },
       { path: "konto", Component: ProtectedAccount },
       { path: "ustawienia", Component: ProtectedSettings },

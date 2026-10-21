@@ -45,7 +45,7 @@ interface AuthContextType {
       pzmLicense?: string;
     },
   ) => Promise<RegisterResult>;
-  verifyEmail: (email: string, code: string) => Promise<{ ok: boolean; message?: string }>;
+  verifyEmail: (token: string, email?: string) => Promise<{ ok: boolean; message?: string }>;
   resendCode: (email: string) => Promise<{ ok: boolean; message?: string }>;
   loginWithGoogle: (idToken: string) => Promise<{ ok: boolean; message?: string }>;
   logout: () => void;
@@ -66,7 +66,7 @@ interface AuthContextType {
   ) => Promise<{ ok: boolean; message?: string }>;
   forgotPassword: (email: string) => Promise<{ ok: boolean; message: string }>;
   requestEmailChange: (newEmail: string) => Promise<{ ok: boolean; message?: string }>;
-  confirmEmailChange: (code: string) => Promise<{ ok: boolean; message?: string }>;
+  confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
   /** Odświeża JWT + user z DB (po nadaniu roli ORGANIZER / zmianie roli). */
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   isAuthenticated: boolean;
@@ -206,13 +206,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const verifyEmail = async (email: string, code: string) => {
+  const verifyEmail = async (token: string, email?: string) => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/verify-email", { email, code });
+      const res = await api.post<{ token: string; user: User }>("/api/auth/verify-email", {
+        token,
+        ...(email ? { email } : {}),
+      });
       persistAuth(res.user, res.token);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nieprawidłowy kod weryfikacyjny";
+      const message = e instanceof ApiError ? e.message : "Nieprawidłowy lub wygasły link";
       return { ok: false, message };
     }
   };
@@ -306,10 +309,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const confirmEmailChange = async (code: string) => {
+  const confirmEmailChange = async (token: string) => {
     try {
       const res = await api.post<{ token: string; user: User }>("/api/auth/me/email-change/confirm", {
-        code,
+        token,
       });
       persistAuth(res.user, res.token);
       return { ok: true, message: "Adres e-mail został zmieniony" };

@@ -789,5 +789,16 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — admin bug reports.*
+## 48. Link aktywacyjny zamiast kodu 6-cyfrowego (2026-10-21)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| 6-cyfrowy kod w mailu + wpisywanie na `/register` | Token w linku `/verify-email?token=` (TTL 60 min) | Wygodniej na telefonie; mniej błędów wpisywania |
+| `PUBLIC_BASE_URL` brak | `app.public-base-url` (compose: localhost:8081 / VM: raceportal.pl) | Link musi prowadzić na front, nie na API |
+
+Ta sama mechanika dla zmiany e-maila w `/konto`.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — link aktywacyjny.*
 
