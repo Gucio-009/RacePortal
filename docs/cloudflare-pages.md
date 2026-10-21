@@ -2,6 +2,12 @@
 
 Pełna ściąga z wdrożenia (2026-10-20): monorepo npm workspaces, Workers Builds vs klasyczny Pages, tokeny, quick tunnel API, CORS, custom domain `raceportal.pl`.
 
+**Codzienna obsługa + VM:** [`know-how-uruchamianie.md`](./know-how-uruchamianie.md). Produkcja API: `https://api.raceportal.pl` (Tunnel → GCP). Build command z jawnym env:
+
+```text
+npm ci && VITE_API_URL=https://api.raceportal.pl npm run build --workspace=web
+```
+
 ---
 
 ## TL;DR — działająca konfiguracja (klasyczny Pages)
