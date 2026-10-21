@@ -132,27 +132,27 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 
 ---
 
-## 9. Cloudflare Pages / `raceportal.pl` „nie działa”
+## 9. `raceportal.pl` nie działa
+
+Strona i API są na maszynie Oracle. Tunel idzie na nginx `:8081`, nie na sam port 4000.
 
 | Objaw | Krótko |
 |-------|--------|
-| `npm ci` + expo / datetimepicker | Stary fork albo Root≠`/`; buduj z `Gucio-009/RacePortal` `main` |
-| Worker vs Pages | Worker ≠ Pages — potrzebny projekt **Pages** + `web/dist` |
-| Auth `10000` / token deleted | Osobny Build token vs `CLOUDFLARE_API_TOKEN` (Pages Edit, Zone=All) |
-| Strona stoi, login / lista wydarzeń nie | `VITE_API_URL` = tunnel API (`cloudflared` → `:4000`) + CORS dla domeny |
-| `undefined.length` na `www.raceportal.pl` | Brak `VITE_API_URL` i/lub CORS bez `raceportal.pl` |
+| Domena milczy | VM jest **Stopped** albo `cloudflared` nie działa. Start instancji, potem `curl https://raceportal.pl/api/health` |
+| `www` działa, apex nie | CNAME `raceportal.pl` wskazuje skasowany tunel. Cel: `824ebee9-6492-4406-86ba-e300a5e65b7e.cfargotunnel.com` |
+| Login demo odrzucony | Hasło zmienione albo seed wyłączony przed pierwszym startem |
 
-Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./cloudflare-pages.md).
+Starsze objawy z okresu Pages (`VITE_API_URL`, token 10000, Worker ≠ Pages): [`cloudflare-pages.md`](./cloudflare-pages.md).
 
 ---
 
-## 10. Hosting API + bazy do lutego (GCP za darmo)
+## 10. Hosting (Oracle Always Free)
 
-Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + `docker-compose.gcp.yml` (API+MySQL), front na Pages.
+Całość stoi na `VM.Standard.A1.Flex` (2 OCPU, 12 GB) we Frankfurcie. Front nie jest na Cloudflare Pages.
 
-- Pierwsze wdrożenie: [`gcp-deploy.md`](./gcp-deploy.md)
-- **Codziennie (start/stop VM, lokalnie, demo):** [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)
-- Smoke: `./scripts/gcp-smoke.sh https://api.raceportal.pl`
+- Pierwsze wdrożenie: [`oracle-deploy.md`](./oracle-deploy.md)
+- Start / stop / aktualizacja kodu: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)
+- Smoke: `curl -sS https://raceportal.pl/api/health`
 
 ---
 
@@ -162,7 +162,7 @@ Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + 
 - Chronologia: [`changes.md`](./changes.md)  
 - MVP plan vs stan: [`MVP.md`](./MVP.md)  
 - Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
-- Cloudflare Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
-- GCP Always Free: [`gcp-deploy.md`](./gcp-deploy.md)  
+- Oracle + tunel: [`oracle-deploy.md`](./oracle-deploy.md)  
 - Know-how uruchamianie: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)  
+- Starsza próba Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  

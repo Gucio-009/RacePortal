@@ -1,12 +1,10 @@
-# Cloudflare Pages — deploy frontendu RacePortal
+# Cloudflare Pages — starsza próba frontu
 
-Pełna ściąga z wdrożenia (2026-10-20): monorepo npm workspaces, Workers Builds vs klasyczny Pages, tokeny, quick tunnel API, CORS, custom domain `raceportal.pl`.
+Ta ściąga opisuje wdrożenie z 2026-10-20, w którym front stał na Pages, a API szło osobnym tunelem na port 4000. **Aktualna strona tak nie działa.**
 
-**Codzienna obsługa + VM:** [`know-how-uruchamianie.md`](./know-how-uruchamianie.md). Produkcja API: `https://api.raceportal.pl` (Tunnel → GCP). Build command z jawnym env:
+Teraz całość (front, API, MySQL) jest na maszynie Oracle, a tunel wskazuje na nginx `:8081`. Instrukcja: [`oracle-deploy.md`](./oracle-deploy.md). Codzienna obsługa: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md).
 
-```text
-npm ci && VITE_API_URL=https://api.raceportal.pl npm run build --workspace=web
-```
+Poniżej zostaje zapis błędów z tamtej próby (Worker ≠ Pages, tokeny, `VITE_API_URL`). Nie stosuj tego jako procedury na `raceportal.pl`.
 
 ---
 

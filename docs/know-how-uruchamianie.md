@@ -1,43 +1,44 @@
-# RacePortal — know-how: lokalnie i na wirtualce GCP
+# RacePortal — know-how: lokalnie i na maszynie Oracle
 
-Jedno miejsce: **jak odpalić**, **jak wyłączyć**, **co się psuje gdy VM śpi**, oraz skrót rzeczy, o które wywalaliśmy się przy Cloudflare / Pages / tunelu.
+Jedno miejsce: **jak odpalić**, **jak wyłączyć**, **co się psuje gdy VM śpi**.
 
-Szczegóły wdrożenia GCP (pierwszy raz): [`gcp-deploy.md`](./gcp-deploy.md)  
-Szczegóły Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
+Pierwsze postawienie: [`oracle-deploy.md`](./oracle-deploy.md)  
 FAQ seed / konta: [`FAQ-przeglad.md`](./FAQ-przeglad.md)
+
+Ściąga ze starszej próby (front na Cloudflare Pages, API osobno) została w [`cloudflare-pages.md`](./cloudflare-pages.md). Tego układu już nie używamy.
 
 ---
 
-## Architektura „produkcja dyplomowa” (stan po wdrożeniu)
+## Architektura (stan po wdrożeniu)
 
 ```text
-https://www.raceportal.pl     →  Cloudflare Pages (frontend, statyczny)
-https://api.raceportal.pl     →  Cloudflare Tunnel → VM GCP → Docker :4000 (Spring)
-                                      └── MySQL + Mailpit (wewnętrznie) + backup
+https://raceportal.pl
+https://www.raceportal.pl
+        →  Cloudflare Tunnel na VM
+        →  nginx :8081 (kontener web)
+              ├── /       front
+              └── /api/   Spring :4000 + MySQL
 ```
 
 | Część | Gdzie | Gdy VM wyłączona |
 |-------|--------|------------------|
-| Front | Cloudflare Pages | Działa (HTML/JS), ale **bez danych / logowania** |
-| API + baza | GCE `e2-micro` + Docker | **Martwe** — `api.raceportal.pl` nie odpowiada |
-| Tunnel `cloudflared` | systemd na VM | Wstaje **sam** po starcie VM |
-| Kontenery | `restart: unless-stopped` | Wstają **same** po starcie Dockera/VM |
+| Front i API | Oracle `raceportal`, Docker Compose | **Martwe** — domena nie odpowiada |
+| Baza | volume Dockera na dysku VM | Zostaje |
+| Tunnel `cloudflared` | systemd na VM | Wstaje sam po **Start** |
+| Kontenery | `restart: unless-stopped` | Wstają same po starcie Dockera |
 
-**Git:** kod ląduje na `Gucio-009/RacePortal` `main`. Pages często buduje z forka `WojciechWronisz/RacePortal` — przed deployem rób **Sync fork**. Na VM: `git pull` z tego remote, z którego klonowałeś (zalecane: `Gucio-009`).
+Git na VM: `~/RacePortal`, branch `main`, remote `Gucio-009/RacePortal`.
 
 ---
 
-## A) Odpalanie lokalne (Docker na Macu)
+## A) Odpalanie lokalne (Docker)
 
 ### Start
 
 ```bash
 cd /ścieżka/do/RacePortal
-# Docker Desktop włączony
 docker compose up --build -d
 ```
-
-Czekaj aż API będzie healthy (pierwszy build dłuższy).
 
 ### Adresy
 
@@ -45,11 +46,11 @@ Czekaj aż API będzie healthy (pierwszy build dłuższy).
 |----|-----|
 | Aplikacja | http://127.0.0.1:8081/ |
 | Login | http://127.0.0.1:8081/login |
-| API health | http://127.0.0.1:4000/api/health → `"db":"up"` |
-| Mailpit (maile) | http://127.0.0.1:8025/ |
+| API health | http://127.0.0.1:4000/api/health |
+| Mailpit | http://127.0.0.1:8025/ |
 | MySQL | host `3307` (TCP, nie HTTP) |
 
-Lokalnie nginx na `:8081` proxy’uje `/api` → API — **nie** trzeba `VITE_API_URL`.
+Lokalnie nginx na `:8081` proxy’uje `/api`. `VITE_API_URL` nie jest potrzebne.
 
 ### Konta seed
 
@@ -62,220 +63,125 @@ Lokalnie nginx na `:8081` proxy’uje `/api` → API — **nie** trzeba `VITE_AP
 ### Stop lokalnie
 
 ```bash
-docker compose down          # zatrzymaj kontenery (dane w volume zostają)
-docker compose down -v       # UWAGA: usuwa volumes (baza lokalna ginie)
+docker compose down          # kontenery stop, dane w volume zostają
+docker compose down -v       # kasuje volumes razem z bazą
 ```
-
-### Opcjonalnie: demo lokalnego API w internecie (bez GCP)
-
-```bash
-# API musi działać na :4000
-cloudflared tunnel --url http://localhost:4000
-```
-
-URL `https://….trycloudflare.com` → tymczasowo w Pages `VITE_API_URL` + **Retry deployment**.  
-Quick tunnel **nie** jest 24/7 — po restarcie URL się zmienia.
 
 ---
 
-## B) Wirtualka GCP — codzienna obsługa (włącz / wyłącz = oszczędność)
-
-Projekt / VM (przykład z wdrożenia):
+## B) Maszyna Oracle — włącz / wyłącz
 
 | | |
 |--|--|
-| Projekt | `project-fd6f11a6-efca-4acc-829` (Twój ID może być inny) |
-| VM | `instance-20261020-200127` |
-| Strefa | `us-central1-a` |
-| Publiczne API (HTTPS) | `https://api.raceportal.pl` |
-| Front | `https://www.raceportal.pl` |
-| Repo na VM | `~/RacePortal` |
-| Env | `~/RacePortal/deploy/gcp/.env.gcp` (**nie commitować**) |
+| Instancja | `raceportal` |
+| Region | Frankfurt, AD-2 |
+| Kształt | `VM.Standard.A1.Flex`, 2 OCPU, 12 GB |
+| Strona | `https://raceportal.pl` i `https://www.raceportal.pl` |
+| Repo | `~/RacePortal` |
+| SSH | `ubuntu@PUBLICZNE_IP`, klucz `.key` |
 
-Always Free: zatrzymanie VM **nie kasuje dysku**; nie płacisz za vCPU gdy STOPPED (dysk w limicie 30 GB HDD free tier).
+Publiczny adres IP zmienia się po **Stop**. Tunel łączy się z Cloudflare sam, więc DNS nie trzeba poprawiać po każdym starcie.
 
-### B1. Włączenie VM (przed prezentacją / pracą)
+### B1. Włączenie
 
-**Konsola:** [Compute Engine → VM instances](https://console.cloud.google.com/compute/instances) → ▶ **Start**.
+Konsola Oracle → Compute → Instances → `raceportal` → **Start**.
 
-**Albo CLI (Cloud Shell / lokalnie z `gcloud`):**
+Poczekaj, aż status będzie Running, skopiuj nowy publiczny IP i sprawdź z zewnątrz:
+
 ```bash
-gcloud compute instances start instance-20261020-200127 --zone=us-central1-a
+curl -sS https://raceportal.pl/api/health
 ```
 
-Poczekaj ~1–3 min (e2-micro + Spring bywa wolne).
+Oczekiwane: `"db":"up"`. Potem otwórz `https://raceportal.pl`.
 
-**Smoke (z Maca / Cloud Shell — bez SSH):**
+Gdy health nie wstaje:
+
 ```bash
-curl -sS https://api.raceportal.pl/api/health
-# oczekuj: "status":"ok" oraz "db":"up"
-```
-
-Albo:
-```bash
-./scripts/gcp-smoke.sh https://api.raceportal.pl https://www.raceportal.pl
-```
-
-Gdy health OK → otwórz `https://www.raceportal.pl` (hard refresh jeśli coś cache’uje).
-
-**Jeśli health nie wstaje** — SSH i diagnostyka:
-```bash
-gcloud compute ssh instance-20261020-200127 --zone=us-central1-a
-
+ssh -i .\ssh-key-2026-10-20.key ubuntu@PUBLICZNE_IP
 sudo systemctl status cloudflared --no-pager
 cd ~/RacePortal
-docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp ps
-docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp logs api --tail 50
+sudo docker compose ps
+sudo docker compose logs api --tail 50
 curl -sS http://127.0.0.1:4000/api/health
+curl -I http://127.0.0.1:8081
 ```
 
-- `cloudflared` = `active (running)` (wstaje z systemd).
-- Kontenery = `Up` / api `healthy`.
-- `logs -f` = tylko podgląd → **Ctrl+C nie zabija API**.
+`cloudflared` ma być `active (running)`. Kontener `api` ma być healthy. `logs` oglądasz, Ctrl+C ich nie zabija.
 
-### B2. Wyłączenie VM (oszczędność)
+### B2. Wyłączenie
 
-Gdy nie potrzebujesz logowania / API na produkcji:
+Konsola → **Stop**. Nie **Terminate** (to kasuje maszynę i dysk).
 
-**Konsola:** VM → **Stop**.
+Skutek: domena przestaje odpowiadać. Dane MySQL zostają na dysku. Nie rób `docker compose down -v`.
 
-**Albo:**
-```bash
-gcloud compute instances stop instance-20261020-200127 --zone=us-central1-a
-```
-
-Skutek:
-
-- `www.raceportal.pl` — strona się ładuje, ale listy / login / galeria padają (brak API).
-- `api.raceportal.pl` — timeout / błąd.
-- Dane MySQL **zostają** na dysku VM (volume Docker).
-
-**Nie** rób na co dzień `docker compose down -v` na VM — to może skasować dane bazy.
-
-### B3. Po restarcie VM — co startuje samo
+### B3. Co wstaje samo po Start
 
 | Usługa | Jak |
 |--------|-----|
-| Docker | zwykle przy bootcie |
-| `mysql`, `api`, `mailpit`, `backup` | `restart: unless-stopped` |
-| Cloudflare Tunnel | `systemctl enable cloudflared` |
+| Docker | przy starcie systemu |
+| `web`, `api`, `mysql`, `mailhog`, `backup` | `restart: unless-stopped` |
+| Cloudflare Tunnel | `cloudflared.service` |
 
-**Nie trzeba** za każdym razem: `git pull`, `compose up`, instalować tunelu — o ile nic nie zmieniałeś w kodzie.
+Po zwykłym restarcie nie trzeba `git pull` ani stawiać tunelu od nowa. Pierwszy start Springa po dłuższym Stop potrafi potrwać kilka minut.
 
-Pierwszy cold start API na e2-micro: **kilka minut** do `Started RacePortalApplication`.
-
-### B4. Aktualizacja kodu na VM (po merge na GitHub)
+### B4. Aktualizacja kodu
 
 ```bash
-gcloud compute ssh instance-20261020-200127 --zone=us-central1-a
 cd ~/RacePortal
+git fetch origin
+git checkout main
 git pull origin main
-docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp up -d --build
+sudo docker compose up --build -d
 ```
 
-Front (Pages): Sync fork (jeśli budujesz z forka) → push/`main` → Automatic deploy **albo** Retry.
+### B5. Pamięć
 
-Zmiana tylko UI → **nie** musisz ruszać VM.  
-Zmiana API → `pull` + `up --build` na VM.
-
-### B5. Env na VM (ważne reguły)
-
-Plik: `deploy/gcp/.env.gcp`
-
-```text
-SEED_ENABLED=true
-ALLOW_INSECURE_DEFAULTS=true
-```
-
-**Razem** — inaczej API padnie (`securityDefaultsValidator`: seed zabroniony przy `ALLOW_INSECURE_DEFAULTS=false`).
-
-`CORS_ORIGIN` musi mieć m.in.:
-`https://www.raceportal.pl,https://raceportal.pl,https://*.pages.dev`
-
-`GOOGLE_OAUTH_CLIENT_ID` — opcjonalnie (puste = tylko email/hasło).
-
-Po zmianie `.env.gcp`:
 ```bash
-docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp up -d api
+free -h
+sudo docker stats --no-stream
 ```
 
-### B6. Mailpit na GCP
+### B6. Mailpit
 
-UI **nie** jest publiczne. Podgląd:
+UI nie jest otwarte w Security List. Z własnego komputera:
 
-1. Na VM w compose (tymczasowo) pod `mailpit`:
-   ```yaml
-   ports:
-     - "127.0.0.1:8025:8025"
-   ```
-2. `docker compose … up -d mailpit`
-3. Z Maca:
-   ```bash
-   gcloud compute ssh instance-20261020-200127 --zone=us-central1-a -- -L 8025:127.0.0.1:8025
-   ```
-4. http://localhost:8025
+```cmd
+ssh -i .\ssh-key-2026-10-20.key -L 8025:127.0.0.1:8025 ubuntu@PUBLICZNE_IP
+```
 
-Lokalnie Mailpit: http://127.0.0.1:8025 (compose zwykły).
+Potem http://127.0.0.1:8025 . Kody weryfikacyjne z rejestracji są tutaj, nie na prawdziwej skrzynce.
 
 ---
 
-## C) Cloudflare Pages ↔ API (checklista)
+## C) Checklista przed demo
 
-Produkcja:
-
-| Ustawienie | Wartość |
-|------------|---------|
-| Build command | `npm ci && VITE_API_URL=https://api.raceportal.pl npm run build --workspace=web` |
-| Build output | `web/dist` |
-| Root | puste |
-| Variable `VITE_API_URL` | `https://api.raceportal.pl` |
-
-**Dlaczego Build command z `VITE_API_URL=…`?** Samo pole Variables w CF czasem **nie** wchodziło do Vite — JS zostawał bez bazy API i bił w `https://www.raceportal.pl/api/...` → 405.
-
-Po każdej zmianie env: **Retry deployment** (+ hard refresh).  
-Weryfikacja: Network → Fetch/XHR → URL zaczyna się od `https://api.raceportal.pl/...`.
-
-Tunnel Zero Trust:
-
-- Connector na **Debian VM** (nie Windows).
-- Public hostname: `api.raceportal.pl` → service **`http://localhost:4000`** (nie `https://`).
-- `cloudflared.service` = enabled → 24/7 gdy VM RUNNING.
+1. Oracle → **Start** instancji `raceportal`.
+2. `curl -sS https://raceportal.pl/api/health` → `db:up`.
+3. `https://raceportal.pl` → login `admin@raceportal.pl` / `admin123` (dopóki seed jest włączony i hasło nie zostało zmienione).
+4. Po demo → **Stop**.
 
 ---
 
-## D) Typowe błędy (ściąga z wdrożenia)
+## D) Typowe błędy
 
-| Objaw | Przyczyna / co zrobić |
-|-------|------------------------|
-| `www.raceportal.pl/api/...` 405 | Brak `VITE_API_URL` w **buildzie** → Build command + Retry |
-| Galeria / login „Sprawdź API” | VM STOPPED albo API jeszcze startuje |
-| Mixed content | Front HTTPS + API `http://IP` → używaj `https://api.raceportal.pl` |
-| `SEED_ENABLED` + validator | Oba `true` albo oba „bezpieczne” (`seed=false`, `insecure=false`) |
-| `npm ci` + expo/datetimepicker | Fork bez sync / Root ≠ `/` — buduj z aktualnego `main` |
-| Worker ≠ Pages | Deploy frontu = produkt **Pages** + `web/dist` |
-| Curl `127.0.0.1:4000` w Cloud Shell | To nie VM — najpierw `gcloud compute ssh …` |
-| `logs -f` / Ctrl+C | Tylko odłącza logi; API dalej działa |
-| OOM / wolny start na e2-micro | Swap (`setup-swap.sh`); cierpliwość 3–6 min |
-| Mailpit „nic nie ma” na IP:8025 | Nie wystawiony — SSH tunnel §B6 |
+| Objaw | Co zrobić |
+|-------|-----------|
+| `Out of capacity` przy tworzeniu VM | Inna domena dostępności (AD-2, potem AD-3), ten sam kształt 2 OCPU / 12 GB |
+| Publiczny IPv4 się nie włącza | Najpierw kreator VCN, potem istniejąca podsieć **public** |
+| `UNPROTECTED PRIVATE KEY FILE` | `icacls` na pliku `.key`; nie loguj się plikiem `.pub` |
+| `permission denied` na docker.sock | `sudo docker compose …` |
+| Domena nie otwiera strony, `www` tak | Stary CNAME na skasowany tunel. Cel ma być `824ebee9-6492-4406-86ba-e300a5e65b7e.cfargotunnel.com` |
+| `cloudflared` pada przy starcie | Brak pliku `UUID.json` w `/etc/cloudflared`. Tunel bez klucza na dysku trzeba utworzyć od nowa |
+| Login demo nie działa | Seed wyłączony albo hasło już zmienione. Przy pierwszym pustym starcie bez seeda nie ma admina |
+| API nie wstaje po „utwardzeniu” | `SEED_ENABLED=true` i `ALLOW_INSECURE_DEFAULTS=false` naraz są zabronione |
 
 ---
 
-## E) Mini checklista „za 2 minuty przed demo”
-
-1. GCP → Start VM.  
-2. `curl -sS https://api.raceportal.pl/api/health` → `db:up`.  
-3. `https://www.raceportal.pl` → login `test@wp.pl` / `test123`.  
-4. Po demo → **Stop** VM.
-
----
-
-## F) Powiązane pliki w repo
+## E) Pliki
 
 | Plik | Po co |
 |------|--------|
-| `docker-compose.yml` | Stack lokalny (web+api+mysql+mailpit+backup) |
-| `docker-compose.gcp.yml` | Stack na VM (bez web) |
-| `deploy/gcp/.env.gcp.example` | Szablon sekretów VM |
-| `scripts/gcp-smoke.sh` | Health + CORS |
-| `docs/gcp-deploy.md` | Pierwsze postawienie VM |
-| `docs/cloudflare-pages.md` | Pages / monorepo / tokeny |
+| `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + mailpit + backup) |
+| `docker-compose.gcp.yml` | Stary wariant samego API. Na Oracle go nie uruchamiamy |
+| `docs/oracle-deploy.md` | Pierwsze postawienie maszyny i tunelu |
+| `docs/gcp-deploy.md` | Skrót: tamten opis jest nieaktualny |
