@@ -582,7 +582,8 @@ public class EventService {
                 event.isRequireOc(),
                 event.isRequirePt(),
                 event.isRequireCage(),
-                event.isRequireRegistered()
+                event.isRequireRegistered(),
+                event.getRejectionReason()
         );
     }
 

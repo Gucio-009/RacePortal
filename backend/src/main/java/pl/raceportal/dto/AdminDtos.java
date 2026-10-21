@@ -44,9 +44,13 @@ public final class AdminDtos {
     ) {
     }
 
-    /** Moderacja statusu wydarzenia ({@code EventStatus}). */
+    /**
+     * Moderacja statusu wydarzenia ({@code EventStatus}).
+     * {@code reason} wymagany przy REJECTED (walidacja w {@code AdminService}).
+     */
     public record EventStatusUpdateRequest(
-            @NotBlank String status
+            @NotBlank String status,
+            String reason
     ) {
     }
 

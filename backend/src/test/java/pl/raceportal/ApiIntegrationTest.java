@@ -744,6 +744,102 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", containsString("aktywne zgłoszenie")));
     }
 
+    /** Odrzucenie bez powodu → 400; z powodem → REJECTED + powiadomienie organizatora. */
+    @Test
+    void admin_eventReject_requiresReasonAndNotifiesOrganizer() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Reject Needs Reason",
+                "Event testowy — odrzucenie wymaga powodu od admina.",
+                "Track Day", "2027-03-01", "10:00", null, null, "Tor Reject", "Rejectowo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("REJECTED"))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("powód")));
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new EventStatusPayload("REJECTED", "Brak regulaminu i opisu trasy"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("REJECTED")))
+                .andExpect(jsonPath("$.rejectionReason", is("Brak regulaminu i opisu trasy")));
+
+        mockMvc.perform(get("/api/events/" + eventId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("REJECTED")))
+                .andExpect(jsonPath("$.rejectionReason", is("Brak regulaminu i opisu trasy")));
+
+        mockMvc.perform(get("/api/notifications")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].type", is("EVENT_REJECTED")))
+                .andExpect(jsonPath("$[0].relatedEventId", is(eventId)))
+                .andExpect(jsonPath("$[0].body", containsString("Brak regulaminu")));
+    }
+
+    /** Akceptacja wydarzenia tworzy powiadomienie in-app dla organizatora. */
+    @Test
+    void admin_eventApprove_notifiesOrganizer() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Approve Notify Org",
+                "Event testowy — akceptacja wysyła powiadomienie organizatorowi.",
+                "Track Day", "2027-03-02", "12:00", null, null, "Tor Approve", "Approvo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("APPROVED")));
+
+        mockMvc.perform(get("/api/notifications/unread-count")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.unread", greaterThanOrEqualTo(1)));
+
+        String notificationsJson = mockMvc.perform(get("/api/notifications")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        boolean foundApprove = false;
+        for (JsonNode n : objectMapper.readTree(notificationsJson)) {
+            if (eventId.equals(n.path("relatedEventId").asText())
+                    && "EVENT_APPROVED".equals(n.path("type").asText())) {
+                foundApprove = true;
+                break;
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(foundApprove,
+                "Organizator powinien dostać powiadomienie EVENT_APPROVED");
+    }
+
     /** FSM: CANCELLED nie wraca do APPROVED. */
     @Test
     void admin_eventStatus_rejectsReviveFromCancelled() throws Exception {
@@ -863,7 +959,10 @@ class ApiIntegrationTest {
     private record PaymentProofPayload(String paymentProofUrl) {
     }
 
-    private record EventStatusPayload(String status) {
+    private record EventStatusPayload(String status, String reason) {
+        EventStatusPayload(String status) {
+            this(status, null);
+        }
     }
 
     private record EventCreatePayload(String name, String description, String category, String date, String time,

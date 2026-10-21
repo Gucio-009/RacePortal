@@ -80,6 +80,11 @@ export function OrganizerEventList({
                 <Users className="w-4 h-4" />
                 {event._count?.registrations ?? event.registrationsCount ?? 0} zgłoszeń
               </p>
+              {event.status === "REJECTED" && event.rejectionReason && (
+                <p className="text-red-400 text-sm mt-2 whitespace-pre-wrap">
+                  Powód odrzucenia: {event.rejectionReason}
+                </p>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               <Button

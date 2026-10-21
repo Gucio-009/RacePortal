@@ -97,6 +97,19 @@ export interface ApiEvent {
   requirePt?: boolean;
   requireCage?: boolean;
   requireRegistered?: boolean;
+  /** Powód odrzucenia przez admina (gdy status === REJECTED). */
+  rejectionReason?: string | null;
+}
+
+/** Powiadomienie in-app z GET /api/notifications. */
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  type: string;
+  relatedEventId?: string | null;
+  read: boolean;
+  createdAt: string;
 }
 
 /** Lekki marker mapy/kalendarza z GET /api/events/markers (bez pełnego opisu). */

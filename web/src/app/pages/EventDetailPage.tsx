@@ -233,6 +233,11 @@ export function EventDetailPage() {
           <h1 className="font-display text-white" style={{ fontSize: "40px", fontWeight: 800 }}>
             {event.name}
           </h1>
+          {event.status === "REJECTED" && event.rejectionReason && (
+            <p className="mt-3 text-red-300 text-sm max-w-3xl whitespace-pre-wrap">
+              Powód odrzucenia: {event.rejectionReason}
+            </p>
+          )}
         </div>
       </div>
 

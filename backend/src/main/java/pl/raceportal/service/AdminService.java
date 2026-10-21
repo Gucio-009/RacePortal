@@ -68,17 +68,20 @@ public class AdminService {
     private final OrganizerApplicationRepository organizerApplicationRepository;
     private final EventService eventService;
     private final MailService mailService;
+    private final NotificationService notificationService;
 
     public AdminService(UserRepository userRepository, EventRepository eventRepository,
                          RegistrationRepository registrationRepository,
                          OrganizerApplicationRepository organizerApplicationRepository,
-                         EventService eventService, MailService mailService) {
+                         EventService eventService, MailService mailService,
+                         NotificationService notificationService) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.eventService = eventService;
         this.mailService = mailService;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -181,16 +184,76 @@ public class AdminService {
             return eventService.cancelEvent(eventId, currentUser);
         }
 
+        String reason = request.reason() == null ? "" : request.reason().trim();
+        if (target == EventStatus.REJECTED) {
+            if (reason.isBlank()) {
+                throw ApiException.badRequest("Przy odrzuceniu wydarzenia podaj powód");
+            }
+            if (reason.length() > 2000) {
+                throw ApiException.badRequest("Powód odrzucenia jest zbyt długi (max 2000 znaków)");
+            }
+            event.setRejectionReason(reason);
+        } else if (target == EventStatus.APPROVED) {
+            event.setRejectionReason(null);
+        }
+
         event.setStatus(target);
         event = eventRepository.save(event);
 
-        if (event.getOrganizer() != null) {
-            mailService.send(event.getOrganizer().getEmail(), "Status wydarzenia: " + event.getName(),
-                    "<p>Wydarzenie <strong>" + event.getName() + "</strong> ma teraz status: <strong>" +
-                            target + "</strong>.</p>");
-        }
+        notifyOrganizerAboutEventStatus(event, target, reason);
 
         return eventService.serialize(event);
+    }
+
+    /** E-mail + powiadomienie in-app dla organizatora po decyzji admina. */
+    private void notifyOrganizerAboutEventStatus(Event event, EventStatus target, String reason) {
+        User organizer = event.getOrganizer();
+        if (organizer == null) {
+            return;
+        }
+
+        String eventName = event.getName() == null ? "wydarzenie" : event.getName();
+        String safeName = escapeHtml(eventName);
+        String safeReason = escapeHtml(reason);
+
+        if (target == EventStatus.APPROVED) {
+            String title = "Wydarzenie zaakceptowane";
+            String body = "Twoje wydarzenie \"" + eventName + "\" zostało zaakceptowane i jest widoczne publicznie.";
+            notificationService.notifyUser(organizer, "EVENT_APPROVED", title, body, event.getId());
+            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie zaakceptowane — " + eventName,
+                    "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>zaakceptowane</strong>.</p>"
+                            + "<p>Jest już widoczne w kalendarzu RacePortal.</p>");
+            return;
+        }
+
+        if (target == EventStatus.REJECTED) {
+            String title = "Wydarzenie odrzucone";
+            String body = "Twoje wydarzenie \"" + eventName + "\" zostało odrzucone. Powód: " + reason;
+            notificationService.notifyUser(organizer, "EVENT_REJECTED", title, body, event.getId());
+            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie odrzucone — " + eventName,
+                    "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>odrzucone</strong>.</p>"
+                            + "<p><strong>Powód:</strong> " + safeReason + "</p>"
+                            + "<p>Możesz poprawić wydarzenie w panelu organizatora i wysłać je ponownie do moderacji.</p>");
+            return;
+        }
+
+        String title = "Status wydarzenia: " + target.name();
+        String body = "Wydarzenie \"" + eventName + "\" ma teraz status: " + target.name() + ".";
+        notificationService.notifyUser(organizer, "EVENT_STATUS", title, body, event.getId());
+        mailService.send(organizer.getEmail(), "RACEPORTAL: status wydarzenia — " + eventName,
+                "<p>Wydarzenie <strong>" + safeName + "</strong> ma teraz status: <strong>"
+                        + escapeHtml(target.name()) + "</strong>.</p>");
+    }
+
+    private static String escapeHtml(String value) {
+        if (value == null || value.isEmpty()) {
+            return "";
+        }
+        return value
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     @Transactional(readOnly = true)

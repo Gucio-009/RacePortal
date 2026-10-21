@@ -33,6 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { userInitials } from "../lib/types";
+import { NotificationBell } from "./NotificationBell";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -146,6 +147,8 @@ export function RootLayout() {
             )}
 
             {isAuthenticated ? (
+              <>
+              <NotificationBell />
               <div className="relative" ref={menuRef}>
                 <Button
                   type="button"
@@ -253,6 +256,7 @@ export function RootLayout() {
                   </div>
                 )}
               </div>
+              </>
             ) : (
               <Link to="/login">
                 <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>

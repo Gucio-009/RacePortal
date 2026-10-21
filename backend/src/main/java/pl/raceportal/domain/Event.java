@@ -102,6 +102,11 @@ public class Event {
     @Column(nullable = false, length = 20)
     private EventStatus status = EventStatus.PENDING;
 
+    /** Powód odrzucenia przez admina (wymagany przy statusie REJECTED). */
+    @Lob
+    @Column(name = "rejection_reason", columnDefinition = "TEXT")
+    private String rejectionReason;
+
     /** Czy wydarzenie jest płatne dla zawodników. */
     @Column(nullable = false)
     private boolean paid = false;
@@ -307,6 +312,14 @@ public class Event {
 
     public void setStatus(EventStatus status) {
         this.status = status;
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public User getOrganizer() {

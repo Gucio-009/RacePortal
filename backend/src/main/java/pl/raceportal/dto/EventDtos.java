@@ -62,7 +62,8 @@ public final class EventDtos {
             boolean requireOc,
             boolean requirePt,
             boolean requireCage,
-            boolean requireRegistered
+            boolean requireRegistered,
+            String rejectionReason
     ) {
     }
 
