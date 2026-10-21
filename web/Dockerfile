@@ -20,6 +20,7 @@ WORKDIR /app/web
 RUN npm ci
 
 COPY web/index.html web/vite.config.ts web/tsconfig.json web/postcss.config.mjs ./
+COPY web/public ./public
 COPY web/src ./src
 COPY packages/api-types /app/packages/api-types
 

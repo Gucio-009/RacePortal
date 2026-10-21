@@ -23,3 +23,12 @@ createRoot(document.getElementById("root")!).render(
     <App />
   </StrictMode>,
 );
+
+/** PWA: rejestracja SW tylko w produkcji (HTTPS / Pages). */
+if (import.meta.env.PROD && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      /* ignore — brak SW nie blokuje SPA */
+    });
+  });
+}

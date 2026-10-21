@@ -172,25 +172,25 @@ export function EventsPage() {
   );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-full">
       <section
-        className="relative py-20 bg-cover bg-center"
+        className="relative py-10 sm:py-16 md:py-20 bg-cover bg-center"
         style={{
           backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
         }}
       >
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
+          <h1 className="font-display text-white mb-2 sm:mb-3 text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
             KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
-          <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
+          <p className="text-[#9ca3af] max-w-2xl text-sm sm:text-lg">
             Lista, mapa i kalendarz — wspólne filtry dla każdego widoku.
           </p>
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-10">
-        <div className="flex flex-wrap gap-2 mb-6">
+      <section className="container mx-auto px-4 py-6 sm:py-10">
+        <div className="grid grid-cols-3 gap-2 mb-4 sm:mb-6 sm:flex sm:flex-wrap">
           {(
             [
               { id: "list" as const, label: "Lista", icon: List },
@@ -209,8 +209,9 @@ export function EventsPage() {
                   : "border-[#2a2a2a] text-white"
               }
             >
-              <Icon className="w-4 h-4 mr-2" />
-              {label}
+              <Icon className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">{label}</span>
+              <span className="sm:hidden text-xs">{label}</span>
             </Button>
           ))}
         </div>
