@@ -18,7 +18,7 @@
  */
 
 import { Outlet, Link, useNavigate, NavLink } from "react-router";
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   Flag,
@@ -33,11 +33,11 @@ import {
   Menu,
   X,
   Archive,
+  Loader2,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { toast } from "sonner";
-import confetti from "canvas-confetti";
 import { userInitials } from "../lib/types";
 import { NotificationBell } from "./NotificationBell";
 import { BugReportButton } from "./BugReportButton";
@@ -92,21 +92,23 @@ export function RootLayout() {
     navigate(path);
   };
 
-  /** Wylogowanie: czyści JWT (AuthContext) + toast + confetti w kolorze akcentu. */
+  /** Wylogowanie: czyści JWT (AuthContext) + toast + confetti (lazy) w kolorze akcentu. */
   const handleLogout = () => {
     setMenuOpen(false);
     setMoreOpen(false);
     logout();
     toast.success("Wylogowano", { description: "Do zobaczenia na torze 🏁" });
-    confetti({
-      particleCount: 60,
-      spread: 50,
-      origin: { y: 0.2, x: 0.9 },
-      colors: [
-        getComputedStyle(document.documentElement).getPropertyValue("--race-accent").trim() || "#FFD700",
-        "#ffffff",
-        "#9ca3af",
-      ],
+    void import("canvas-confetti").then(({ default: confetti }) => {
+      confetti({
+        particleCount: 60,
+        spread: 50,
+        origin: { y: 0.2, x: 0.9 },
+        colors: [
+          getComputedStyle(document.documentElement).getPropertyValue("--race-accent").trim() || "#FFD700",
+          "#ffffff",
+          "#9ca3af",
+        ],
+      });
     });
     navigate("/");
   };
@@ -127,36 +129,40 @@ export function RootLayout() {
             </span>
           </Link>
 
-          {/* Desktop nav — ukryta na telefonie (bottom bar) */}
-          <div className="hidden md:flex items-center gap-5 flex-wrap justify-end">
-            <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
-              WYDARZENIA
-            </NavLink>
-            <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
-              ARCHIWUM
-            </NavLink>
-
-            {isAuthenticated && isUser && (
-              <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
-                GARAŻ
+          {/* Prawa strona: linki (md+) + jeden bell + konto / hamburger */}
+          <div className="flex items-center gap-2 sm:gap-4 justify-end min-w-0">
+            <div className="hidden md:flex items-center gap-5 flex-wrap justify-end">
+              <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
+                WYDARZENIA
               </NavLink>
-            )}
-
-            {isAuthenticated && isOrganizer && (
-              <NavLink to="/organizer" className={navLinkClass} style={{ fontWeight: 600 }}>
-                PANEL ORG.
+              <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
+                ARCHIWUM
               </NavLink>
-            )}
 
-            {isAuthenticated && isAdmin && (
-              <NavLink to="/admin" className={navLinkClass} style={{ fontWeight: 600 }}>
-                ADMIN
-              </NavLink>
-            )}
+              {isAuthenticated && isUser && (
+                <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
+                  GARAŻ
+                </NavLink>
+              )}
 
-            {isAuthenticated ? (
-              <>
-                <NotificationBell />
+              {isAuthenticated && isOrganizer && (
+                <NavLink to="/organizer" className={navLinkClass} style={{ fontWeight: 600 }}>
+                  PANEL ORG.
+                </NavLink>
+              )}
+
+              {isAuthenticated && isAdmin && (
+                <NavLink to="/admin" className={navLinkClass} style={{ fontWeight: 600 }}>
+                  ADMIN
+                </NavLink>
+              )}
+            </div>
+
+            {/* Jeden mount — wcześniej desktop+mobile = 2× /api/notifications */}
+            {isAuthenticated && <NotificationBell />}
+
+            <div className="hidden md:block">
+              {isAuthenticated ? (
                 <div className="relative" ref={menuRef}>
                   <Button
                     type="button"
@@ -264,19 +270,15 @@ export function RootLayout() {
                     </div>
                   )}
                 </div>
-              </>
-            ) : (
-              <Link to="/login">
-                <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>
-                  ZALOGUJ SIĘ
-                </Button>
-              </Link>
-            )}
-          </div>
+              ) : (
+                <Link to="/login">
+                  <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>
+                    ZALOGUJ SIĘ
+                  </Button>
+                </Link>
+              )}
+            </div>
 
-          {/* Mobile header actions */}
-          <div className="flex md:hidden items-center gap-1.5">
-            {isAuthenticated && <NotificationBell />}
             <Button
               type="button"
               variant="ghost"
@@ -284,7 +286,7 @@ export function RootLayout() {
               aria-label={moreOpen ? "Zamknij menu" : "Więcej"}
               aria-expanded={moreOpen}
               onClick={() => setMoreOpen((v) => !v)}
-              className="text-white hover:bg-[#2a2a2a] h-10 w-10"
+              className="md:hidden text-white hover:bg-[#2a2a2a] h-10 w-10"
             >
               {moreOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -347,9 +349,17 @@ export function RootLayout() {
         )}
       </header>
 
-      {/* Główna treść tras potomnych (React Router Outlet) */}
+      {/* Główna treść — Suspense dla lazy() stron (poza Home) */}
       <main className="flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
-        <Outlet />
+        <Suspense
+          fallback={
+            <div className="min-h-[40vh] flex items-center justify-center text-[#9ca3af]">
+              <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
+            </div>
+          }
+        >
+          <Outlet />
+        </Suspense>
       </main>
 
       <footer className="hidden md:block border-t border-[#2a2a2a] bg-[#1a1a1a] mt-20">

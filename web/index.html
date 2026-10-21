@@ -13,17 +13,48 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="RacePortal" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- manifest dołączany po load w main.tsx (poza critical chain) -->
     <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <title>RACEPORTAL</title>
+    <!-- Pierwszy paint bez czekania na pełny CSS / fonty (ciemne tło = mniej FOUC) -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #121212;
+        color: #fff;
+      }
+      #root {
+        min-height: 100vh;
+      }
+    </style>
+    <!-- LCP hero (HomePage HERO_BG_TRACK) — discoverable przed JS; sync z api-types -->
+    <link rel="preconnect" href="https://images.unsplash.com" crossorigin />
+    <link
+      rel="preload"
+      as="image"
+      href="https://images.unsplash.com/photo-1617130644016-d318045a3958?auto=format&amp;fit=crop&amp;w=1280&amp;q=65&amp;fm=webp"
+      fetchpriority="high"
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Oxanium (display) + Montserrat (body): oba z latin-ext — polskie znaki w tym samym kroju -->
+    <!--
+      Fonty poza critical path: media=print nie blokuje renderu; criticalAssets.ts → media=all.
+      Tylko używane wagi (bez italików) — mniejszy CSS z Google Fonts.
+    -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700;1,800;1,900&family=Oxanium:wght@400;500;600;700;800&display=swap"
+      id="google-fonts"
       rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Oxanium:wght@400;500;600;700;800&display=swap"
+      media="print"
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Oxanium:wght@400;500;600;700;800&display=swap"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

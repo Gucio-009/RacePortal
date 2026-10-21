@@ -1,11 +1,12 @@
 /**
- * NotificationBell — powiadomienia in-app w nagłówku (organizator / admin / kierowca).
- * GET /api/notifications + oznaczanie przeczytanych; poll licznika co 60s.
+ * NotificationBell — powiadomienia in-app w nagłówku.
+ * Start: tylko unread-count (po idle); pełna lista przy otwarciu panelu.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { Bell } from "lucide-react";
 import { api } from "../lib/api";
+import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { AppNotification } from "../lib/types";
 import { Button } from "./ui/button";
 
@@ -16,7 +17,16 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const load = useCallback(async () => {
+  const refreshUnread = useCallback(async () => {
+    try {
+      const count = await api.get<{ unread: number }>("/api/notifications/unread-count");
+      setUnread(count.unread);
+    } catch {
+      /* soft-fail — bell nie blokuje UI */
+    }
+  }, []);
+
+  const loadList = useCallback(async () => {
     try {
       const [list, count] = await Promise.all([
         api.get<AppNotification[]>("/api/notifications"),
@@ -25,15 +35,20 @@ export function NotificationBell() {
       setItems(list);
       setUnread(count.unread);
     } catch {
-      /* soft-fail — bell nie blokuje UI */
+      /* soft-fail */
     }
   }, []);
 
   useEffect(() => {
-    load();
-    const t = window.setInterval(load, 60_000);
-    return () => window.clearInterval(t);
-  }, [load]);
+    const cancelIdle = deferUntilIdle(() => {
+      void refreshUnread();
+    });
+    const t = window.setInterval(() => void refreshUnread(), 60_000);
+    return () => {
+      cancelIdle();
+      window.clearInterval(t);
+    };
+  }, [refreshUnread]);
 
   useEffect(() => {
     if (!open) return;
@@ -94,7 +109,7 @@ export function NotificationBell() {
         aria-expanded={open}
         onClick={() => {
           setOpen((v) => !v);
-          if (!open) load();
+          if (!open) void loadList();
         }}
         className="relative text-white hover:bg-[#2a2a2a] border border-[#2a2a2a] h-9 w-9 p-0"
       >

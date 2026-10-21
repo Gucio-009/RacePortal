@@ -17,7 +17,7 @@ import { Badge } from "../components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent } from "../lib/types";
-import { eventImage } from "../lib/types";
+import { eventImage, IMAGE_WIDTH_CARD, IMAGE_WIDTH_DETAIL } from "../lib/types";
 
 interface GalleryItem {
   id: string;
@@ -42,7 +42,7 @@ export function GalleryPage() {
         .filter((e) => e.imageUrl)
         .map((e) => ({
           id: e.id,
-          image: eventImage(e),
+          image: eventImage(e, IMAGE_WIDTH_CARD),
           title: e.track,
           event: e.name,
           date: new Date(e.date).getFullYear().toString(),

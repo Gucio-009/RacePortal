@@ -29,7 +29,7 @@ Przy każdej istotnej zmianie aktualizuj:
 5. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
 6. **`docs/testy/TESTY.md`** + wyniki w `docs/testy/wyniki/` — gdy zmienia się zestaw lub wynik testów
 
-**Zasada na dyplom:** zawsze zapisuj **dlaczego** porzuciliśmy A na rzecz B (i co świadomie odłożyliśmy). Stub starych ścieżek (`gcp-deploy.md`, `cloudflare-pages.md`) zostawiamy jako historię — nie kasujemy milcząco.
+**Zasada na dyplom:** zawsze zapisuj **dlaczego** porzuciliśmy A na rzecz B w [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) (i/lub `changes.md`). Nie trzymaj osobnych, nieaktualnych runbooków GCP/Pages — mylą recenzentów.
 
 ### Komentarze w kodzie
 

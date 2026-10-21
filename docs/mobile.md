@@ -110,7 +110,7 @@ Recenzenci mylili **Expo `:8082`** z usługą Compose oraz **MySQL `:3307`** z H
 
 **Było:** wymuszony login; auta bez dopasowania kategorii; credentials w polach.  
 **Jest:** przeglądanie Eventów jako gość; `carMatch`; puste pola logowania; E2E zaktualizowane.  
-Szczegóły: [`review-2026-08-03.md`](./review-2026-08-03.md).
+Szczegóły testów: [`testy/TESTY.md`](./testy/TESTY.md); chronologia: [`changes.md`](./changes.md) §27–30.
 
 ---
 

@@ -3,7 +3,7 @@
  *
  * `createRoot` montuje `<App />` w `#root` (index.html).
  * StrictMode: podwójne efekty w dev (wykrywanie side-effectów).
- * Leaflet CSS globalnie — wymagane przez EventsMapView / LocationMapPicker.
+ * Leaflet CSS: import w EventsMapView / LocationMapPicker (lazy z trasą mapy).
  * Style: `styles/index.css` → fonts + Tailwind v4 + theme (--race-accent, Oxanium).
  *
  * Produkcja (Docker nginx): build Vite → static files; SPA fallback na index.html
@@ -12,9 +12,9 @@
  * Pomysł (alt): React 19 / RSC; SSR (Remix) zamiast czystego CSR.
  */
 
+import "./boot/criticalAssets";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "leaflet/dist/leaflet.css";
 import App from "./app/App";
 import "./styles/index.css";
 
@@ -24,11 +24,17 @@ createRoot(document.getElementById("root")!).render(
   </StrictMode>,
 );
 
-/** PWA: rejestracja SW tylko w produkcji (HTTPS / Pages). */
-if (import.meta.env.PROD && "serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
+/** PWA: manifest + SW po `load` — poza critical request chain Lighthouse. */
+window.addEventListener("load", () => {
+  if (!document.querySelector('link[rel="manifest"]')) {
+    const manifest = document.createElement("link");
+    manifest.rel = "manifest";
+    manifest.href = "/manifest.webmanifest";
+    document.head.appendChild(manifest);
+  }
+  if (import.meta.env.PROD && "serviceWorker" in navigator) {
     navigator.serviceWorker.register("/sw.js").catch(() => {
       /* ignore — brak SW nie blokuje SPA */
     });
-  });
-}
+  }
+});

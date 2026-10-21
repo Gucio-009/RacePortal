@@ -18,6 +18,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { toast } from "sonner";
+import { HERO_BG_TRACK } from "../lib/types";
 
 export function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -46,7 +47,7 @@ export function ForgotPasswordPage() {
     <div
       className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
       style={{
-        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
       <div className="w-full max-w-md">

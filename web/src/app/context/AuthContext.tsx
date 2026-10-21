@@ -18,6 +18,7 @@
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
 import { api, setToken, getToken, setOnAuthExpired, ApiError } from "../lib/api";
+import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { User } from "../lib/types";
 
 export type { User };
@@ -93,24 +94,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (!nextUser) setToken(null);
   }, []);
 
-  // Bootstrap: odtwórz sesję z raceportal_token → /api/auth/me
+  // Bootstrap /me poza critical path LCP (idle); bez tokena od razu.
   useEffect(() => {
-    const bootstrap = async () => {
-      if (!getToken()) {
-        setIsLoading(false);
-        return;
-      }
-      try {
-        const me = await api.get<User>("/api/auth/me");
-        setUser(me);
-      } catch {
-        setToken(null);
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    bootstrap();
+    if (!getToken()) {
+      setIsLoading(false);
+      return;
+    }
+    return deferUntilIdle(() => {
+      void (async () => {
+        try {
+          const me = await api.get<User>("/api/auth/me");
+          setUser(me);
+        } catch {
+          setToken(null);
+          setUser(null);
+        } finally {
+          setIsLoading(false);
+        }
+      })();
+    }, 2000);
   }, []);
 
   // 401 z api.ts → wyczyść user (token już usunięty)

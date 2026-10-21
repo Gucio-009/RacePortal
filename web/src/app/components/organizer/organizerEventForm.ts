@@ -101,7 +101,10 @@ export function eventToForm(event: ApiEvent): FormState {
   const categoryInList = ALL_EVENT_CATEGORIES.includes(event.category);
   const trackPreset = TRACK_PRESETS.find((t) => t.track === event.track);
   const timeInList = (START_TIMES as readonly string[]).includes(event.time);
-  const imagePreset = EVENT_IMAGE_PRESETS.find((img) => img.url === event.imageUrl);
+  const photoId = (url?: string | null) => url?.match(/photo-[a-zA-Z0-9_-]+/)?.[0] ?? null;
+  const imagePreset = EVENT_IMAGE_PRESETS.find(
+    (img) => img.url === event.imageUrl || photoId(img.url) === photoId(event.imageUrl),
+  );
   const entryFeeStr = event.entryFee != null ? String(event.entryFee) : "";
   const entryFeeOther =
     Boolean(event.paid && entryFeeStr && !(ENTRY_FEE_PRESETS as readonly string[]).includes(entryFeeStr));

@@ -27,7 +27,7 @@ import { EventsMapView, eventToMarker } from "../components/EventsMapView";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../lib/api";
 import type { Car, EventMarker, EventMarkersResponse, PaginatedEvents } from "../lib/types";
-import { eventImage } from "../lib/types";
+import { eventImage, HERO_BG_EVENTS, IMAGE_WIDTH_CARD } from "../lib/types";
 import { EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import { VOIVODESHIPS, TRACK_PRESETS } from "../lib/eventFormPresets";
 import "react-day-picker/dist/style.css";
@@ -176,7 +176,7 @@ export function EventsPage() {
       <section
         className="relative py-10 sm:py-16 md:py-20 bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('${HERO_BG_EVENTS}')`,
         }}
       >
         <div className="container mx-auto px-4">
@@ -409,7 +409,7 @@ export function EventsPage() {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <ImageWithFallback
-                        src={eventImage(event)}
+                        src={eventImage(event, IMAGE_WIDTH_CARD)}
                         alt={event.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />

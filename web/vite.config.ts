@@ -12,11 +12,33 @@ import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
+/** Prod: CSS jako preload (nie blokuje pierwszego paint); criticalAssets → stylesheet. */
+function deferCssPlugin() {
+  return {
+    name: 'defer-css',
+    apply: 'build' as const,
+    enforce: 'post' as const,
+    transformIndexHtml(html: string) {
+      return html.replace(
+        /<link\s+([^>]*rel="stylesheet"[^>]*)>/gi,
+        (match, attrs: string) => {
+          if (attrs.includes('fonts.googleapis.com') || attrs.includes('id="google-fonts"')) {
+            return match
+          }
+          const rest = attrs.replace(/\s*rel="stylesheet"/, '').trim()
+          return `<link rel="preload" as="style" ${rest}>\n    <noscript><link rel="stylesheet" ${rest}></noscript>`
+        },
+      )
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     // React Fast Refresh + Tailwind v4 (wymagane oba w tym setupie)
     react(),
     tailwindcss(),
+    deferCssPlugin(),
   ],
   resolve: {
     alias: {
@@ -37,6 +59,31 @@ export default defineConfig({
   preview: {
     host: true,
     port: 4173,
+  },
+
+  build: {
+    chunkSizeWarningLimit: 700,
+    rollupOptions: {
+      output: {
+        /** Osobne chunki vendorów — mniej unused JS na pierwszej ścieżce (/). */
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('leaflet') || id.includes('react-leaflet')) return 'leaflet'
+          if (id.includes('recharts')) return 'recharts'
+          if (id.includes('date-fns') || id.includes('react-day-picker')) return 'date'
+          if (id.includes('@radix-ui')) return 'radix'
+          if (id.includes('lucide-react')) return 'lucide'
+          if (
+            id.includes('react-dom') ||
+            id.includes('react-router') ||
+            id.includes('/react/') ||
+            id.includes('\\react\\')
+          ) {
+            return 'react-vendor'
+          }
+        },
+      },
+    },
   },
 
   // Surowy import assetów (nie dodawać .css/.ts/.tsx).

@@ -1,0 +1,14 @@
+# https://raceportal.pl/robots.txt
+User-agent: *
+Allow: /
+
+# Panele i konto — nie indeksować
+Disallow: /admin
+Disallow: /organizer
+Disallow: /dashboard
+Disallow: /konto
+Disallow: /ustawienia
+Disallow: /garaz
+Disallow: /api/
+
+Sitemap: https://raceportal.pl/sitemap.xml

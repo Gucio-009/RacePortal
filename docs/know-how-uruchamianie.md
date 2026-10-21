@@ -6,7 +6,7 @@ Pierwsze postawienie: [`oracle-deploy.md`](./oracle-deploy.md)
 FAQ seed / konta: [`FAQ-przeglad.md`](./FAQ-przeglad.md)  
 **Dlaczego Oracle / Mailbux / PWA (proces decyzji):** [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md)
 
-Ściąga ze starszej próby (front na Cloudflare Pages, API osobno) została w [`cloudflare-pages.md`](./cloudflare-pages.md). Tego układu już nie używamy — uzasadnienie porzucenia też w decyzjach.
+Starszy układ (Pages + osobne API) **nie obowiązuje** — uzasadnienie: [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) §1–3.
 
 ---
 
@@ -172,8 +172,9 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | `cloudflared` pada przy starcie | Brak pliku `UUID.json` w `/etc/cloudflared`. Tunel bez klucza na dysku trzeba utworzyć od nowa |
 | Login demo nie działa | Seed wyłączony albo hasło już zmienione. Przy pierwszym pustym starcie bez seeda nie ma admina |
 | API nie wstaje po „utwardzeniu” | `SEED_ENABLED=true` i `ALLOW_INSECURE_DEFAULTS=false` naraz są zabronione |
-| `smtp: down` / brak kodu weryfikacji | Brak lub złe `SMTP_PASSWORD` w `.env` na VM / lokalnie; restart `api` |
+| `smtp: down` / brak maila aktywacyjnego | Brak lub złe `SMTP_PASSWORD` w `.env`; sprawdź też `PUBLIC_BASE_URL` (link w mailu); restart `api` |
 | PWA nie instaluje się | Tylko HTTPS (produkcja) albo localhost; SW rejestruje się w buildzie produkcyjnym |
+| `robots.txt` = HTML | Brak pliku w `web/public/` albo stary obraz web — przebuduj `web` |
 
 ---
 
@@ -184,6 +185,6 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile SMTP Mailbux |
 | `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle |
 | `deploy/vm/.env.vm.example` | Szablon sekretów (gdy ktoś odpala wariant VM compose) |
-| `web/public/manifest.webmanifest` + `sw.js` | PWA (ikony, standalone) |
+| `web/public/manifest.webmanifest` + `sw.js` | PWA |
+| `web/public/robots.txt` + `sitemap.xml` | SEO (nie SPA fallback) |
 | `docs/oracle-deploy.md` | Pierwsze postawienie maszyny i tunelu |
-| `docs/gcp-deploy.md` | Stub: GCP nieaktualne |

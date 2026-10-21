@@ -5,9 +5,9 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 
 Źródło priorytetów: prezentacja / pitch projektu.  
 Historia prac: [`changes.md`](./changes.md)  
-Katalog: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
+Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-21 14:45 (Oracle + Mailbux + PWA web; §44 changes)
+**Ostatnia synchronizacja:** 2026-10-21 17:15 (Oracle + Mailbux + PWA; link aktywacyjny; admin błędy; porządek docs)
 
 ---
 
@@ -87,15 +87,15 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
-| 4 | Panel admina | `/admin` — userzy, pending events, wnioski org. | **OK** |
-| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; adres + IG + PZM niezależne — **luki vs Spec** (imię/nazwisko/telefon nie wymagane) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
+| 4 | Panel admina | `/admin` — userzy, eventy, wnioski org., zgłoszenia błędów (status/CSV) | **OK** |
+| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja linkiem; zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
 | 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = URL nie upload | **Częściowo** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER + wniosek z `businessType` | **Częściowo** |
 | 9 | Narzędzia org. | `/organizer` — create UX: selecty, miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
-| 11 | Maile | SMTP Mailbux → prawdziwa skrzynka (rejestracja, zgłoszenia, statusy, reset) | **OK** |
-| 12 | Mapa | Leaflet `/mapa` + mobile markery | **OK** |
+| 11 | Maile | SMTP Mailbux → skrzynka (link aktywacyjny, zgłoszenia, statusy, reset) | **OK** |
+| 12 | Mapa | Leaflet w `/wydarzenia` (widok Mapa) + mobile markery | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
 | 15 | Aplikacja mobilna | Expo **wizytówka** + **web PWA** (Add to Home Screen); store poza zakresem | **OK** |
@@ -149,7 +149,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | **Wysoki (Spec)** | Profil rejestracja | Imię / nazwisko / telefon **wymagane** wg Spec — dziś opcjonalne; brak formatu litery/telefon → [`spec-conformity.md`](./spec-conformity.md) |
 | **Wysoki (Spec)** | Upload plików | Garaż + plakat eventu: Spec = file upload; kod = URL |
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
-| Średni (Spec) | Hasło API | Backend `min=6` vs Spec/UI `8+` ze znakami specjalnymi |
+| Średni (Spec) | Hasło seed | Silne hasło przy rejestracji/zmianie; konta seed demo nadal słabe (`admin123`) — świadomie |
 | Średni (Spec) | Napęd 4WD + słownik marek | Brak w selectach garażu |
 | Średni | #13 Google Maps | Brak klucza `GOOGLE_MAPS_API_KEY` w domyślnym env — jest OSRM |
 | Średni | Alerty | Brak automatycznego alertowania przy błędach krytycznych |
@@ -168,7 +168,9 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Mapa Leaflet (#12) | W zakresie funkcjonalnym MVP, ale **poza** formalnym warunkiem odbioru 1–11 — i tak wdrożona |
 | Trasa OSRM (#13 fallback) | Działa bez klucza Google; Google to opcja |
 | Auto-archiwizacja wydarzeń | Job przy starcie API + filtr archiwum dla minionych APPROVED |
-| Mailbux (prawdziwy SMTP) | Kody weryfikacji / statusy na skrzynkę użytkownika |
+| Mailbux (prawdziwy SMTP) | Link aktywacyjny / statusy na skrzynkę użytkownika |
+| Link aktywacyjny + resume | Zamiast kodu 6-cyfrowego; `/verify-email?token=` |
+| Admin: błędy OPEN/DONE + CSV | Moderacja zgłoszeń z przycisku „Zgłoś błąd” |
 | Web PWA + bottom nav | Installable UI na telefonie bez store |
 | Oracle Always Free + Tunnel | Cały stack na jednej VM pod `raceportal.pl` |
 | Seed 3 ról + pending event | Ułatwia demo admin/org/kierowca od razu po `compose up` |
@@ -252,4 +254,4 @@ Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+we
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja docs: 2026-08-03 17:25.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-21.*

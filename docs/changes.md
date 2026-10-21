@@ -1,13 +1,14 @@
 # RACEPORTAL — zmiany
 
+> **Aktualny stan (czytaj najpierw):** [`docs/README.md`](./README.md) · [`MVP.md`](./MVP.md) · [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md)  
+> Ten plik = **długa chronologia** (nie runbook). Szukaj po `## 44` / `## 48` / dacie.
+
 ## Cel
 
-Przenieść design z Figma Make **Advanced UI/UX for RACEPORTAL** na lokalny projekt, uruchomić go w Dockerze, dokończyć placeholdery UI, a następnie dodać backend (API + DB + maile) zgodny z zakresem MVP.
+Przenieść design z Figma Make **Advanced UI/UX for RACEPORTAL** na lokalny projekt, uruchomić w Dockerze, dodać backend zgodny z MVP, potem wdrożyć na Oracle + Mailbux + PWA.
 
-Źródło (wersja finalna):  
-https://www.figma.com/make/8I7geuRdBdohCQhIfdBQyQ/Advanced-UI-UX-for-RACEPORTAL
-
-Katalog projektu: `/Users/wojciechwronisz/Desktop/projekty/raceportal`
+Źródło UI: https://www.figma.com/make/8I7geuRdBdohCQhIfdBQyQ/Advanced-UI-UX-for-RACEPORTAL  
+Repo: `Gucio-009/RacePortal` · branch `main` · prod `https://raceportal.pl`
 
 ---
 
@@ -481,7 +482,7 @@ Szczegóły także w [`Guidelines.md`](./Guidelines.md).
 |---------|------|------|----------|
 | 16:40 | Fake OAuth, fałszywy e-mail save, mobile tylko po loginie, błędy API = pusta lista | Naprawy w web/mobile; gość mobile; mapa limit 200; carMatch mobile | Mniej footgunów i dryfu vs web |
 | 16:40 | E2E mapa na `/mapa`; mobile unit łapał Playwright | E2E tab Mapa; `test:mobile-unit` → `npm --prefix mobile run test` | Stabilne CI lokalne |
-| 16:40 | Brak raportu CR | [`docs/review-2026-08-03.md`](./review-2026-08-03.md) | Jedno miejsce: findings + wyniki testów |
+| 16:40 | Brak raportu CR | wpis w `docs/testy/` + `changes` §27 (osobny review*.md usunięty 2026-10-21) | Findings + wyniki testów |
 
 **Wyniki testów (ten przebieg):** API 22/22 · mobile unit 2/2 · web E2E 12/12 · mobile E2E 5/5.
 
@@ -765,7 +766,7 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 
 **Pliki:** `AuthService`, `AuthController`, `AuthDtos`, `User`, web: `AccountPage`, `DashboardPage`, `RootLayout`, `RegisterPage`, `ForgotPasswordPage`, `AuthContext`, `profileValidation`.
 
-**Weryfikacja:** testy API (`Password1!` w register); lokalnie register → mail → verify; forgot-password → login tymczasowym; `/konto` zmiana e-maila.
+**Weryfikacja:** register → mail → verify; forgot-password; `/konto` zmiana e-maila.
 
 ---
 
@@ -800,5 +801,16 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — link aktywacyjny.*
+## 49. Porządek docs + robots.txt (2026-10-21)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Indeks z stubami GCP/Pages + stary CR | Usunięte `gcp-deploy.md`, `cloudflare-pages.md`, `review-2026-08-03.md`; indeks grupowany w `docs/README.md` | Mniej mylących runbooków; historia w `decyzje-wdrozeniowe.md` |
+| `/robots.txt` = HTML SPA | `web/public/robots.txt` + `sitemap.xml` + lokalizacje nginx | Crawler Search Console |
+
+**Aktualizacja:** FAQ / MVP / README / know-how / Guidelines / scenariusz — link aktywacyjny, `main`, Mailbux.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — porządek docs + robots.txt.*
 

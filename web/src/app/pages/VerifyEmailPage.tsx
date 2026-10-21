@@ -9,6 +9,7 @@ import { Flag, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { clearPendingVerifyEmail } from "../lib/pendingVerifyEmail";
+import { HERO_BG_TRACK } from "../lib/types";
 import { toast } from "sonner";
 
 export function VerifyEmailPage() {
@@ -51,7 +52,7 @@ export function VerifyEmailPage() {
     <div
       className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
       style={{
-        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
       <div className="w-full max-w-md bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">

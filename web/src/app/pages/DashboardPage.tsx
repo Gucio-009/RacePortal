@@ -30,6 +30,7 @@ import {
   userInitials,
 } from "../lib/types";
 import { toast } from "sonner";
+import { HERO_BG_RACE } from "../lib/types";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -107,7 +108,7 @@ export function DashboardPage() {
       <div
         className="h-48 bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.7), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.7), rgba(18, 18, 18, 0.9)), url('${HERO_BG_RACE}')`,
         }}
       />
 

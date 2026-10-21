@@ -17,8 +17,9 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 | **Opcje** | (A) zostać na GCP e2-micro + Pages; (B) osobny hosting frontu + VPS API; (C) **jedna maszyna Oracle Ampere** z pełnym Compose + Tunnel na nginx `:8081`. |
 | **Decyzja** | **(C)** — `VM.Standard.A1.Flex` 2 OCPU / 12 GB (Frankfurt), cały stack w `docker-compose.yml`, Cloudflare tylko jako Tunnel/DNS. |
 | **Dlaczego** | Więcej RAM niż e2-micro → mniej OOM / szybszy start API. Jeden `git pull` + `compose up` aktualizuje front i API. Brak `VITE_API_URL` w prod (relative `/api` przez nginx). Always Free Ampere mieści się w limicie przy ostrożnym kształcie. |
-| **Skutki** | Docs Pages (`cloudflare-pages.md`) i GCP (`gcp-deploy.md`) zostają jako **historia / stub**, nie procedura. Stare pliki `docker-compose.gcp.yml` / `deploy/gcp/` usunięte lub przemianowane (`deploy/vm/`, `docker-compose.vm.yml` = opcjonalny API-only, **nie** prod). |
+| **Skutki** | Pliki GCP/Pages z repo usunięte; procedura = wyłącznie `oracle-deploy.md` + `know-how-uruchamianie.md`. `docker-compose.vm.yml` = opcjonalny API-only, **nie** prod. |
 | **Świadomie nie** | Kubernetes, osobny CDN frontu, managed DB — za dużo na zakres dyplomu. |
+| **Pułapki z okresu Pages** (nie powtarzać) | Worker ≠ Pages w UI Cloudflare; `VITE_API_URL` w buildzie czasem nie wchodził → requesty na zły origin; osobny tunnel na `:4000` vs front na `:8081`. |
 
 ---
 
@@ -27,7 +28,7 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 | | |
 |--|--|
 | **Kiedy** | październik 2026 |
-| **Problem** | Na prod (Pages/VM) Mailpit łapał maile tylko wewnątrz Dockera — użytkownik **nie** dostawał kodu weryfikacyjnego na Gmail/Outlook. Demo „rejestracja” wyglądała jak bug produktu. |
+| **Problem** | Na prod Mailpit łapał maile tylko wewnątrz Dockera — użytkownik **nie** dostawał maila aktywacyjnego na Gmail/Outlook. Demo „rejestracja” wyglądała jak bug produktu. |
 | **Opcje** | (A) SSH + podgląd Mailpita na VM; (B) Brevo / Resend / SendGrid; (C) **skrzynka domenowa Mailbux** (`noreply@raceportal.pl`) + SMTP w Spring. |
 | **Decyzja** | **(C)** — `SMTP_HOST=my.mailbux.com`, auth + STARTTLS; hasło wyłącznie w `.env` (`SMTP_PASSWORD`), nie w git. |
 | **Dlaczego** | Zero dodatkowego SaaS „marketingowego” na Free z limitem użytkowników; ta sama domena co strona; health `smtp: up/down` diagnozuje od razu. Mailpit usunięty z Compose, żeby nie mylić „mail działa lokalnie w UI” z „mail dochodzi do człowieka”. |
@@ -43,7 +44,7 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 | **Problem** | Pages budował SPA z `VITE_API_URL`; zmienne CF czasem nie wchodziły do Vite → requesty na `www…/api` → 405 / HTML zamiast JSON. CORS i dwa deploje. |
 | **Decyzja** | Nginx na VM serwuje `web/dist` i proxy `/api` → Spring. Tunnel celuje w `:8081`. |
 | **Dlaczego** | Klasyczny układ „jeden origin” = mniej klas błędów z dyplomowego dema. |
-| **Skutek** | `cloudflare-pages.md` = archiwum pułapek (Worker≠Pages, token 10000), nie runbook. |
+| **Skutek** | Jeden origin `raceportal.pl` — relative `/api`. |
 
 ---
 
@@ -65,8 +66,19 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 1. Nowy podrozdział tutaj **albo** wpis w [`changes.md`](./changes.md) z pełnym **Dlaczego** (nie tylko „naprawiono”).  
 2. Jeśli zmiana stacku — też wiersz w [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) (dziś vs alt).  
 3. Jeśli zmienia się „co jest vs MVP” — [`MVP.md`](./MVP.md).  
-4. Nie usuwać starych stubów (`gcp-deploy.md`, `cloudflare-pages.md`) bez zostawienia **dlaczego je porzuciliśmy** — to materiał do rozdziału „ewolucja architektury”.
+4. Przy usuwaniu starych runbooków (GCP/Pages) **zostaw uzasadnienie tu** (problem → decyzja) — wystarczy do rozdziału „ewolucja architektury”; nie trzymaj mylących instrukcji „jak wdrożyć Pages”.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — hosting Oracle, Mailbux, PWA.*
+## 6. Aktywacja konta: kod 6-cyfrowy → link w mailu
+
+| | |
+|--|--|
+| **Kiedy** | 2026-10-21 |
+| **Problem** | Wpisywanie kodu na telefonie + zgubienie ekranu weryfikacji. |
+| **Decyzja** | Token w linku `/verify-email?token=` (`PUBLIC_BASE_URL`), TTL 60 min; ten sam wzorzec przy zmianie e-maila. |
+| **Dlaczego** | Jedno kliknięcie z skrzynki; mniej błędów UX na demie. |
+
+---
+
+*Ostatnia aktualizacja: 2026-10-21 — Oracle, Mailbux, PWA, link aktywacyjny; porządek docs.*

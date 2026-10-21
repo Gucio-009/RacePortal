@@ -1,44 +1,75 @@
 /**
  * routes.tsx — drzewo tras React Router v7 (`createBrowserRouter`).
  *
- * Layout: `RootLayout` na `/` z `<Outlet />` dla dzieci.
- * AuthGate: czeka na bootstrap JWT (`AuthContext.isLoading`), potem
- * przekierowuje niezalogowanych na `/login`; opcjonalnie filtruje po `roles`
- * (ADMIN, ORGANIZER) — niedopasowana rola → `/`.
- *
- * Chronione wrappery: Dashboard, Garage, Account, Settings, Admin, Organizer.
- * Catch-all `*` → Navigate `/` (SPA; nginx i tak serwuje index.html dla deep linków).
- * Alias `/mapa` → `/wydarzenia` (mapa jest widokiem na liście eventów).
+ * Layout: `RootLayout` na `/` z `<Outlet />` (+ Suspense) dla dzieci.
+ * HomePage eager (LCP); pozostałe strony = `React.lazy` (mniej unused JS na /).
+ * AuthGate: bootstrap JWT, opcjonalny filtr `roles`.
  *
  * Docker/nginx: try_files $uri /index.html — bez tego odświeżenie `/organizer` = 404.
- *
- * Pomysł (alt): lazy() + Suspense per route; loadery danych (RR loaders) zamiast fetch w pages.
  */
 
 import { createBrowserRouter, Navigate } from "react-router";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { lazy, ReactNode, useEffect, useRef, useState } from "react";
 import { RootLayout } from "./components/RootLayout";
 import { HomePage } from "./pages/HomePage";
-import { LoginPage } from "./pages/LoginPage";
-import { RegisterPage } from "./pages/RegisterPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { EventsPage } from "./pages/EventsPage";
-import { EventDetailPage } from "./pages/EventDetailPage";
-import { ResultsPage } from "./pages/ResultsPage";
-import { ArchivePage } from "./pages/ArchivePage";
-import { GalleryPage } from "./pages/GalleryPage";
-import { ForgotPasswordPage } from "./pages/ForgotPasswordPage";
-import { VerifyEmailPage } from "./pages/VerifyEmailPage";
-import { GaragePage } from "./pages/GaragePage";
-import { AdminPanelPage } from "./pages/AdminPanelPage";
-import { OrganizerPanelPage } from "./pages/OrganizerPanelPage";
-import { BecomeOrganizerPage } from "./pages/BecomeOrganizerPage";
-import { TermsPage, PrivacyPage } from "./pages/LegalPages";
-import { SettingsPage } from "./pages/SettingsPage";
-import { AccountPage } from "./pages/AccountPage";
 import { useAuth } from "./context/AuthContext";
 import type { UserRole } from "./lib/types";
 import { Loader2 } from "lucide-react";
+
+const LoginPage = lazy(() =>
+  import("./pages/LoginPage").then((m) => ({ default: m.LoginPage })),
+);
+const RegisterPage = lazy(() =>
+  import("./pages/RegisterPage").then((m) => ({ default: m.RegisterPage })),
+);
+const DashboardPage = lazy(() =>
+  import("./pages/DashboardPage").then((m) => ({ default: m.DashboardPage })),
+);
+const EventsPage = lazy(() =>
+  import("./pages/EventsPage").then((m) => ({ default: m.EventsPage })),
+);
+const EventDetailPage = lazy(() =>
+  import("./pages/EventDetailPage").then((m) => ({ default: m.EventDetailPage })),
+);
+const ResultsPage = lazy(() =>
+  import("./pages/ResultsPage").then((m) => ({ default: m.ResultsPage })),
+);
+const ArchivePage = lazy(() =>
+  import("./pages/ArchivePage").then((m) => ({ default: m.ArchivePage })),
+);
+const GalleryPage = lazy(() =>
+  import("./pages/GalleryPage").then((m) => ({ default: m.GalleryPage })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import("./pages/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage })),
+);
+const VerifyEmailPage = lazy(() =>
+  import("./pages/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })),
+);
+const GaragePage = lazy(() =>
+  import("./pages/GaragePage").then((m) => ({ default: m.GaragePage })),
+);
+const AdminPanelPage = lazy(() =>
+  import("./pages/AdminPanelPage").then((m) => ({ default: m.AdminPanelPage })),
+);
+const OrganizerPanelPage = lazy(() =>
+  import("./pages/OrganizerPanelPage").then((m) => ({ default: m.OrganizerPanelPage })),
+);
+const BecomeOrganizerPage = lazy(() =>
+  import("./pages/BecomeOrganizerPage").then((m) => ({ default: m.BecomeOrganizerPage })),
+);
+const TermsPage = lazy(() =>
+  import("./pages/LegalPages").then((m) => ({ default: m.TermsPage })),
+);
+const PrivacyPage = lazy(() =>
+  import("./pages/LegalPages").then((m) => ({ default: m.PrivacyPage })),
+);
+const SettingsPage = lazy(() =>
+  import("./pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
+);
+const AccountPage = lazy(() =>
+  import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
+);
 
 /**
  * Brama auth: spinner podczas bootstrapu `/api/auth/me`, potem redirect lub children.

@@ -12,8 +12,13 @@
  * Pomysł (alt): presety z API / CMS; geokodowanie zamiast hardcodowanych coords.
  */
 
+import { IMAGE_WIDTH_CARD, optimizeRemoteImageUrl } from "@raceportal/api-types";
+
 /** Sentinel Select „Inne…” — nie jest prawdziwą wartością domenową. */
 export const OTHER = "__other__";
+
+const img = (photoPath: string) =>
+  optimizeRemoteImageUrl(`https://images.unsplash.com/${photoPath}`, IMAGE_WIDTH_CARD);
 
 export const VOIVODESHIPS = [
   "Dolnośląskie",
@@ -74,38 +79,14 @@ export const START_TIMES = [
 ] as const;
 
 export const EVENT_IMAGE_PRESETS = [
-  {
-    label: "Grid / start",
-    url: "https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "GT / pace",
-    url: "https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Drift",
-    url: "https://images.unsplash.com/photo-1638909486348-82ae8d57dfd7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Festiwal",
-    url: "https://images.unsplash.com/photo-1752449096739-83ac1ef2c0dd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Endurance / noc",
-    url: "https://images.unsplash.com/photo-1664911200744-8c3a496baa2a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Track day",
-    url: "https://images.unsplash.com/photo-1617130627248-0bf361f6556a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Rally",
-    url: "https://images.unsplash.com/photo-1600661653561-629509216228?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
-  {
-    label: "Street / time attack",
-    url: "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080",
-  },
+  { label: "Grid / start", url: img("photo-1638909469623-4fdd7758414b") },
+  { label: "GT / pace", url: img("photo-1617130644016-d318045a3958") },
+  { label: "Drift", url: img("photo-1638909486348-82ae8d57dfd7") },
+  { label: "Festiwal", url: img("photo-1752449096739-83ac1ef2c0dd") },
+  { label: "Endurance / noc", url: img("photo-1664911200744-8c3a496baa2a") },
+  { label: "Track day", url: img("photo-1617130627248-0bf361f6556a") },
+  { label: "Rally", url: img("photo-1600661653561-629509216228") },
+  { label: "Street / time attack", url: img("photo-1492144534655-ae79c964c9d7") },
 ] as const;
 
 export const ENTRY_FEE_PRESETS = ["150", "250", "320", "450", "650", "890", "1200"] as const;

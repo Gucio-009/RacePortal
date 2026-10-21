@@ -64,7 +64,7 @@ E2E Playwright mobile wymaga preview web `:8082` — to zamierzone.
 
 ## 4. Compose i `.env.example`
 
-**Status:** zamknięte. Po `git pull` na `wojtek` plik jest w repo.
+**Status:** zamknięte. Po `git pull` na `main` plik jest w repo.
 
 **Co zgłaszano (kiedyś):**  
 `docker-compose.yml` wymaga pliku `backend/.env.example`. Reguła `.env.*` w `.gitignore` sprawiała, że Git **nie commitował** tego pliku. Autor miał go lokalnie → u niego działało. Po `git clone` pliku nie było → Compose padał z błędem „env file not found”.
@@ -104,7 +104,7 @@ URL: http://127.0.0.1:8081/login
 | SMTP (Mailbux) | poza Compose | konfig w env API; hasło w `.env` → `SMTP_PASSWORD` |
 | Expo web | **nie** | 8082 (ręcznie) |
 
-Maile (kod weryfikacji, reset, statusy) idą na skrzynkę użytkownika przez **Mailbux** (`noreply@raceportal.pl`). Lokalnie i na VM: plik `.env` z `SMTP_PASSWORD`. Sprawdzenie: `GET /api/health` → `"smtp":"up"`.
+Maile (link aktywacyjny `/verify-email?token=…`, reset hasła, statusy) idą na skrzynkę przez **Mailbux** (`noreply@raceportal.pl`). Lokalnie i na VM: `.env` z `SMTP_PASSWORD`; prod: `PUBLIC_BASE_URL=https://raceportal.pl`. Health: `"smtp":"up"`.
 
 ---
 
@@ -128,7 +128,9 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Filtr po aucie z garażu | Zalogowany kierowca → select auta na `/wydarzenia` |
 | Edycja wydarzenia | Panel organizatora → **Edytuj** (PATCH API) |
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
-| Galeria | Świadomie **odłożona** (nav: „później”) — nie jest luką MVP do domknięcia teraz |
+| Galeria | Świadomie **odłożona** (brak w top-nav) — nie jest luką MVP do domknięcia teraz |
+| Aktywacja konta | Link w mailu (nie kod 6-cyfrowy); ponowna wysyłka: `/register?verify=1` |
+| Admin → Błędy | Status OPEN/DONE, usuwanie, eksport CSV |
 | Mobile Expo | **Wizytówka** — tylko Eventy + CTA „Zapisz się na stronie” (web); bez logowania w app — [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
 | Upload plików (grafika/załączniki) | Nadal URL (nie multipart) — świadomy gap vs Spec → [`spec-conformity.md`](./spec-conformity.md) |
 | Specyfikacja Formularzy | Pełna tabela zgodności: [`spec-conformity.md`](./spec-conformity.md) (imię/telefon wymagane w Spec, opcjonalne w UI itd.) |
@@ -145,7 +147,7 @@ Strona i API są na maszynie Oracle. Tunel idzie na nginx `:8081`, nie na sam po
 | `www` działa, apex nie | CNAME `raceportal.pl` wskazuje skasowany tunel. Cel: `824ebee9-6492-4406-86ba-e300a5e65b7e.cfargotunnel.com` |
 | Login demo odrzucony | Hasło zmienione albo seed wyłączony przed pierwszym startem |
 
-Starsze objawy z okresu Pages (`VITE_API_URL`, token 10000, Worker ≠ Pages): [`cloudflare-pages.md`](./cloudflare-pages.md).
+Starsze objawy z okresu Pages (`VITE_API_URL`, Worker ≠ Pages): opis w [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) §1–3 — **nie** stosować Pages jako procedury.
 
 ---
 
@@ -165,11 +167,4 @@ Web (`raceportal.pl`) ma manifest + service worker. Na telefonie: Safari/Chrome 
 
 ## Powiązane dokumenty
 
-- Szybki start: [`README.md`](../README.md)  
-- Chronologia: [`changes.md`](./changes.md)  
-- MVP plan vs stan: [`MVP.md`](./MVP.md)  
-- Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
-- Oracle + tunel: [`oracle-deploy.md`](./oracle-deploy.md)  
-- Know-how uruchamianie: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)  
-- Starsza próba Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
-- Wytyczne: [`Guidelines.md`](./Guidelines.md)  
+Pełny indeks: [`docs/README.md`](./README.md) — start: [`README.md`](../README.md), decyzje: [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md), MVP: [`MVP.md`](./MVP.md).

@@ -50,7 +50,7 @@ Mobile Expo osobno (`:8082` / Simulator).
 ### Auth / onboarding
 
 - Login e-mail + hasło (konta seed)
-- Rejestracja + weryfikacja kodem (mail na prawdziwą skrzynkę przez Mailbux) — tylko jeśli `smtp: up`
+- Rejestracja + aktywacja **linkiem z maila** (Mailbux) — tylko jeśli `smtp: up`
 - Reset hasła
 - Google Sign-In (jeśli Client ID ustawiony; inaczej nie ryzykować)
 - Menu profilu: Moje konto / Dane / Ustawienia / Wyloguj

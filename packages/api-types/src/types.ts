@@ -230,17 +230,82 @@ export interface OrganizerApplication {
   user?: { id: string; username: string; email: string };
 }
 
-/** Domyślne zdjęcie wydarzenia (Unsplash) gdy brak imageUrl. */
-export const DEFAULT_EVENT_IMAGE =
-  "https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080";
+/**
+ * Optymalizuje URL Unsplash: WebP + docelowa szerokość (LCP / karty).
+ * Inne hosty zwraca bez zmian.
+ */
+export function optimizeRemoteImageUrl(
+  url: string,
+  width: number,
+  quality = 70,
+): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname !== "images.unsplash.com") {
+      return url;
+    }
+    const w = Math.min(1920, Math.max(320, Math.round(width)));
+    const out = new URL(`https://images.unsplash.com${parsed.pathname}`);
+    out.searchParams.set("auto", "format");
+    out.searchParams.set("fit", "crop");
+    out.searchParams.set("w", String(w));
+    out.searchParams.set("q", String(quality));
+    out.searchParams.set("fm", "webp");
+    return out.toString();
+  } catch {
+    return url;
+  }
+}
 
-/** Krótszy URL Unsplash tego samego assetu — wygodniejszy na mobile. */
-export const DEFAULT_IMAGE =
-  "https://images.unsplash.com/photo-1638909469623-4fdd7758414b?w=800&q=80";
+/** Szerokość karty wydarzenia (~483 CSS px × 2 DPR). */
+export const IMAGE_WIDTH_CARD = 960;
+/** Hero / banner pełnej szerokości. */
+export const IMAGE_WIDTH_HERO = 1280;
+/** Lightbox / detal. */
+export const IMAGE_WIDTH_DETAIL = 1400;
 
-/** Zwraca imageUrl eventu albo DEFAULT_EVENT_IMAGE. */
-export function eventImage(event: { imageUrl?: string | null }) {
-  return event.imageUrl || DEFAULT_EVENT_IMAGE;
+const DEFAULT_EVENT_PHOTO =
+  "https://images.unsplash.com/photo-1638909469623-4fdd7758414b";
+
+/** Domyślne zdjęcie wydarzenia (Unsplash WebP) gdy brak imageUrl. */
+export const DEFAULT_EVENT_IMAGE = optimizeRemoteImageUrl(DEFAULT_EVENT_PHOTO, IMAGE_WIDTH_CARD);
+
+/** Krótszy URL Unsplash tego samego assetu — mobile / awatar. */
+export const DEFAULT_IMAGE = optimizeRemoteImageUrl(DEFAULT_EVENT_PHOTO, 800);
+
+/**
+ * Tła hero (auth / home) — WebP, ~1280px.
+ * HERO_BG_TRACK = LCP home: trzymaj sync z `<link rel="preload">` w web/index.html.
+ */
+export const HERO_BG_TRACK = optimizeRemoteImageUrl(
+  "https://images.unsplash.com/photo-1617130644016-d318045a3958",
+  IMAGE_WIDTH_HERO,
+  65,
+);
+export const HERO_BG_RACE = optimizeRemoteImageUrl(
+  "https://images.unsplash.com/photo-1638909469623-4fdd7758414b",
+  IMAGE_WIDTH_HERO,
+  65,
+);
+export const HERO_BG_EVENTS = optimizeRemoteImageUrl(
+  "https://images.unsplash.com/photo-1558618666-fcd25c85cd64",
+  IMAGE_WIDTH_HERO,
+  65,
+);
+
+/**
+ * Zwraca imageUrl eventu (zoptymalizowany Unsplash) albo DEFAULT_EVENT_IMAGE.
+ * @param width docelowa szerokość px (domyślnie karta).
+ */
+export function eventImage(
+  event: { imageUrl?: string | null },
+  width: number = IMAGE_WIDTH_CARD,
+) {
+  const raw = event.imageUrl?.trim();
+  if (!raw) {
+    return optimizeRemoteImageUrl(DEFAULT_EVENT_PHOTO, width);
+  }
+  return optimizeRemoteImageUrl(raw, width);
 }
 
 /** Polskie etykiety statusu wydarzenia do UI. */

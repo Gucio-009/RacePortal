@@ -18,7 +18,7 @@ import { Button } from "../components/ui/button";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, PaginatedEvents } from "../lib/types";
-import { eventImage, eventStatusLabel } from "../lib/types";
+import { eventImage, eventStatusLabel, HERO_BG_RACE, IMAGE_WIDTH_CARD } from "../lib/types";
 
 export function ArchivePage() {
   const [page, setPage] = useState(1);
@@ -50,7 +50,7 @@ export function ArchivePage() {
       <section
         className="relative py-20 bg-cover bg-center"
         style={{
-          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.85), rgba(18, 18, 18, 0.9)), url('${HERO_BG_RACE}')`,
         }}
       >
         <div className="container mx-auto px-4">
@@ -77,7 +77,11 @@ export function ArchivePage() {
                 <CardContent className="p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-0">
                     <div className="h-48 md:h-full min-h-[180px]">
-                      <ImageWithFallback src={eventImage(event)} alt={event.name} className="w-full h-full object-cover" />
+                      <ImageWithFallback
+                        src={eventImage(event, IMAGE_WIDTH_CARD)}
+                        alt={event.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                     <div className="p-6">
                       <div className="flex flex-wrap items-center gap-2 mb-3">

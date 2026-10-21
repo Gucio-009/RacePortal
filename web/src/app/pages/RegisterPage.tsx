@@ -29,6 +29,7 @@ import {
   getPendingVerifyEmail,
   setPendingVerifyEmail,
 } from "../lib/pendingVerifyEmail";
+import { HERO_BG_RACE } from "../lib/types";
 
 export function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -188,7 +189,7 @@ export function RegisterPage() {
     <div
       className="min-h-screen flex items-start justify-center px-4 py-12 bg-cover bg-center"
       style={{
-        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1638909469623-4fdd7758414b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_RACE}')`,
       }}
     >
       <div className="w-full max-w-md">

@@ -2,7 +2,7 @@
 
 Centralny katalog wydarzeń motorsportowych w Polsce.
 
-Branch roboczy: **`wojtek`** · repo: [Gucio-009/RacePortal](https://github.com/Gucio-009/RacePortal)
+Branch: **`main`** · repo: [Gucio-009/RacePortal](https://github.com/Gucio-009/RacePortal) · prod: https://raceportal.pl
 
 ## Struktura repozytorium
 
@@ -32,7 +32,7 @@ Pełny indeks dokumentów: [`docs/README.md`](./docs/README.md)
 ### 2. Pobierz projekt
 
 ```bash
-git clone -b wojtek https://github.com/Gucio-009/RacePortal.git
+git clone https://github.com/Gucio-009/RacePortal.git
 cd RacePortal
 ```
 
@@ -65,7 +65,7 @@ Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
 | Logowanie | http://127.0.0.1:8081/login |
 | API health | http://127.0.0.1:8081/api/health |
 
-Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika przez `noreply@raceportal.pl`. W katalogu projektu ustaw `SMTP_PASSWORD` w pliku `.env` (hasło skrzynki albo App Password z Mailbux). Bez tego health pokaże `smtp: down` i wysyłka się nie uda.
+Maile (link aktywacyjny, reset hasła, statusy) idą SMTP przez `noreply@raceportal.pl` (Mailbux). W katalogu projektu: `.env` z `SMTP_PASSWORD=…`. Lokalnie linki używają `PUBLIC_BASE_URL` (domyślnie `http://localhost:8081`). Bez hasła SMTP health pokaże `smtp: down`.
 
 ### 5. Konta testowe
 
@@ -141,9 +141,11 @@ npx playwright test
 
 ## Dokumentacja
 
+Indeks: [`docs/README.md`](./docs/README.md) · FAQ: [`docs/FAQ-przeglad.md`](./docs/FAQ-przeglad.md) · decyzje: [`docs/decyzje-wdrozeniowe.md`](./docs/decyzje-wdrozeniowe.md)
+
 | Plik | Zawartość |
 |------|-----------|
-| [`docs/MVP.md`](./docs/MVP.md) | Zakres MPC: miało być / jest / zrobione / luki |
+| [`docs/MVP.md`](./docs/MVP.md) | Zakres MPC: miało być / jest / luki |
 | [`docs/changes.md`](./docs/changes.md) | Chronologia prac |
 | [`docs/testy/TESTY.md`](./docs/testy/TESTY.md) | Testy automatyczne |
 | [`docs/Guidelines.md`](./docs/Guidelines.md) | Wytyczne |

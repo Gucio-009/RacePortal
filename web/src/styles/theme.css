@@ -19,9 +19,10 @@
 
 :root {
   --font-size: 16px;
-  --font-family-primary: "Montserrat", sans-serif;
+  /* Fallbacki z size-adjust w fonts.css — mniej CLS przy swap webfontów */
+  --font-family-primary: "Montserrat", "Montserrat Fallback", sans-serif;
   /* Oxanium: display jak Orbitron, ale z polskimi znakami (latin-ext) */
-  --font-family-display: "Oxanium", "Montserrat", sans-serif;
+  --font-family-display: "Oxanium", "Oxanium Fallback", "Montserrat Fallback", sans-serif;
   --race-accent: #FFD700;
   --race-motion: 200ms;
   --background: #121212;

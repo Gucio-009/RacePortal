@@ -18,50 +18,66 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { PaidEventBadge } from "../components/PaidEventBadge";
 import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
+import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { ApiEvent } from "../lib/types";
-import { eventImage } from "../lib/types";
+import { eventImage, HERO_BG_TRACK } from "../lib/types";
 
 export function HomePage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Teaser nadchodzących wydarzeń na hero landing.
+  // Teaser poniżej foldu — po idle, żeby nie konkurował z LCP (hero img).
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
-    api
-      .get<{ items: ApiEvent[] }>("/api/events?limit=6")
-      .then((res) => {
-        setUpcomingEvents(res.items ?? []);
-        setLoadError(null);
-      })
-      .catch((e) => {
-        setUpcomingEvents([]);
-        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
-      })
-      .finally(() => setLoading(false));
+    return deferUntilIdle(() => {
+      api
+        .get<{ items: ApiEvent[] }>("/api/events?limit=6")
+        .then((res) => {
+          setUpcomingEvents(res.items ?? []);
+          setLoadError(null);
+        })
+        .catch((e) => {
+          setUpcomingEvents([]);
+          setLoadError(
+            e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.",
+          );
+        })
+        .finally(() => setLoading(false));
+    }, 2500);
   }, []);
 
   return (
     <div className="min-h-full">
-      <section
-        className="relative min-h-[70svh] sm:min-h-[600px] flex items-center justify-center bg-cover bg-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.7), rgba(18, 18, 18, 0.7)), url('https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
-        }}
-      >
+      <section className="relative min-h-[70svh] sm:min-h-[600px] flex items-center justify-center overflow-hidden">
+        {/*
+          LCP: prawdziwy <img> (nie CSS background) + preload w index.html.
+          loading=eager / fetchPriority=high — bez lazy.
+        */}
+        <img
+          src={HERO_BG_TRACK}
+          alt=""
+          width={1280}
+          height={720}
+          fetchPriority="high"
+          loading="eager"
+          decoding="async"
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 bg-[rgba(18,18,18,0.7)]" aria-hidden />
         <div className="container mx-auto px-4 text-center z-10 py-16 sm:py-20">
-          <h1 className="font-display mb-4 sm:mb-6 tracking-wider text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight">
+          <h1 className="font-display mb-4 sm:mb-6 tracking-wider text-white text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.15]">
             DOŁĄCZ DO <span className="text-[var(--race-accent)]">WYŚCIGU</span>
           </h1>
-          <p className="mb-6 sm:mb-8 text-[#9ca3af] max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium px-1">
+          <p className="mb-6 sm:mb-8 text-[#9ca3af] max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed px-1">
             Twoje centrum motoryzacyjnych emocji. Śledź najważniejsze polskie wydarzenia wyścigowe, sprawdzaj
             wyniki i bądź częścią społeczności RACEPORTAL.
           </p>
-          <div className="flex gap-3 sm:gap-4 justify-center flex-col sm:flex-row items-stretch sm:items-center max-w-md sm:max-w-none mx-auto">
-            {!isAuthenticated && (
+          {/* min-h: stała wysokość CTA zanim /me rozstrzygnie auth (bez skoku „Zarejestruj”) */}
+          <div className="flex gap-3 sm:gap-4 justify-center flex-col sm:flex-row items-stretch sm:items-center max-w-md sm:max-w-none mx-auto min-h-[7.5rem] sm:min-h-[3.75rem]">
+            {!authLoading && !isAuthenticated && (
               <Link to="/register" className="w-full sm:w-auto">
                 <Button
                   className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6 text-base sm:text-lg font-extrabold"
@@ -113,11 +129,30 @@ export function HomePage() {
         </div>
 
         {loading ? (
-          <p className="text-center text-[#9ca3af] py-12">Ładowanie wydarzeń...</p>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            aria-busy="true"
+            aria-label="Ładowanie wydarzeń"
+          >
+            {Array.from({ length: 6 }, (_, i) => (
+              <div
+                key={i}
+                className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg overflow-hidden"
+              >
+                <div className="h-48 bg-[#2a2a2a] animate-pulse" />
+                <div className="p-6 space-y-3">
+                  <div className="h-4 w-24 bg-[#2a2a2a] rounded animate-pulse" />
+                  <div className="h-6 w-3/4 max-w-[12rem] bg-[#2a2a2a] rounded animate-pulse" />
+                  <div className="h-4 w-1/2 max-w-[8rem] bg-[#2a2a2a] rounded animate-pulse" />
+                  <div className="h-10 w-full bg-[#2a2a2a] rounded animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : loadError ? (
-          <p className="text-center text-red-400 py-12">{loadError}</p>
+          <p className="text-center text-red-400 py-12 min-h-[20rem]">{loadError}</p>
         ) : upcomingEvents.length === 0 ? (
-          <p className="text-center text-[#9ca3af] py-12">Brak nadchodzących wydarzeń.</p>
+          <p className="text-center text-[#9ca3af] py-12 min-h-[20rem]">Brak nadchodzących wydarzeń.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {upcomingEvents.map((event) => (
@@ -129,8 +164,10 @@ export function HomePage() {
               >
                 <div className="relative h-48 overflow-hidden">
                   <ImageWithFallback
-                    src={eventImage(event)}
+                    src={eventImage(event, 960)}
                     alt={event.name}
+                    width={960}
+                    height={384}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                   />
                   <PaidEventBadge event={event} variant="overlay" />
@@ -143,14 +180,14 @@ export function HomePage() {
                 </div>
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 text-[var(--race-accent)] mb-3">
-                    <Calendar className="w-4 h-4" />
+                    <Calendar className="w-4 h-4 shrink-0" />
                     <span style={{ fontSize: "14px", fontWeight: 700 }}>{event.dateLabel}</span>
                   </div>
-                  <h3 className="font-display mb-2 text-white" style={{ fontSize: "20px", fontWeight: 700 }}>
+                  <h3 className="font-display mb-2 text-white leading-snug" style={{ fontSize: "20px", fontWeight: 700 }}>
                     {event.name}
                   </h3>
                   <div className="flex items-center gap-2 text-[#9ca3af] mb-4">
-                    <MapPin className="w-4 h-4" />
+                    <MapPin className="w-4 h-4 shrink-0" />
                     <span style={{ fontSize: "14px" }}>{event.track}</span>
                   </div>
                   <Link to={`/wydarzenia/${event.id}`}>

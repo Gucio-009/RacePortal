@@ -342,12 +342,21 @@ function buildCases(): Case[] {
     expect(eventImage({ imageUrl: null })).toBe(DEFAULT_EVENT_IMAGE);
     expect(eventImage({ imageUrl: "" })).toBe(DEFAULT_EVENT_IMAGE);
   });
-  add("eventImage keeps custom url", () => {
+  add("eventImage keeps custom non-unsplash url", () => {
     expect(eventImage({ imageUrl: "https://cdn.example/a.jpg" })).toBe("https://cdn.example/a.jpg");
+  });
+  add("eventImage optimizes unsplash to webp + width", () => {
+    const src =
+      "https://images.unsplash.com/photo-1617130627248-0bf361f6556a?crop=entropy&fm=jpg&q=80&w=1080";
+    const out = eventImage({ imageUrl: src }, 640);
+    expect(out).toContain("fm=webp");
+    expect(out).toContain("w=640");
+    expect(out).not.toContain("fm=jpg");
   });
   add("DEFAULT_IMAGE is shorter unsplash variant", () => {
     expect(DEFAULT_IMAGE).toContain("unsplash.com");
     expect(DEFAULT_IMAGE).toContain("w=800");
+    expect(DEFAULT_IMAGE).toContain("fm=webp");
   });
 
   const dates = [

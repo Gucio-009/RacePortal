@@ -35,7 +35,13 @@ import { EventsMapView } from "../components/EventsMapView";
 import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Car, Registration, RouteResult } from "../lib/types";
-import { eventImage, eventStatusLabel, formatEntryFee, isOpenRegistration } from "../lib/types";
+import {
+  eventImage,
+  eventStatusLabel,
+  formatEntryFee,
+  IMAGE_WIDTH_DETAIL,
+  isOpenRegistration,
+} from "../lib/types";
 import { formatCarLabel, partitionCarsForEvent } from "../lib/carMatch";
 import { toast } from "sonner";
 
@@ -214,7 +220,13 @@ export function EventDetailPage() {
   return (
     <div className="min-h-screen pb-16">
       <div className="relative h-[360px]">
-        <ImageWithFallback src={eventImage(event)} alt={event.name} className="w-full h-full object-cover" />
+        <ImageWithFallback
+          src={eventImage(event, IMAGE_WIDTH_DETAIL)}
+          alt={event.name}
+          className="w-full h-full object-cover"
+          loading="eager"
+          fetchPriority="high"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-[#121212] via-[#121212]/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-8">
           <Link to="/wydarzenia" className="inline-flex items-center text-[var(--race-accent)] mb-4 hover:underline" style={{ fontWeight: 600 }}>

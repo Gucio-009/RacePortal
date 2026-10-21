@@ -1,12 +1,28 @@
 /**
- * fonts.css — dokumentacja ładowania fontów (bez @font-face tutaj).
+ * fonts.css — fallbacki z dopasowanymi metrykami (CLS przy font-display: swap).
  *
- * Montserrat (UI) + Oxanium (display / nagłówki z latin-ext) ładujemy z Google Fonts
- * w `index.html` (preconnect + stylesheet) — szybszy first paint niż CSS @import.
- * Mapowanie: --font-family-primary / --font-family-display w theme.css;
- * Tailwind: `font-sans` / `font-display` przez `@theme inline`.
+ * Google Fonts ładujemy w index.html (`media=print` → criticalAssets).
+ * Te @font-face skalują lokalny Arial/Helvetica do szerokości/wysokości
+ * Montserrat / Oxanium, żeby podmiana webfontu nie przesuwała layoutu.
  *
  * Pomysł (alt): self-host woff2 w /public/fonts (RODO / offline Docker).
  */
 
-/* Fonty ładujemy z index.html (preconnect + stylesheet) — tu tylko komentarz dla czytelności. */
+/* Metryki z glyph advances (sample A–z) vs Arial — patrz Chrome font fallbacks. */
+@font-face {
+  font-family: "Montserrat Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  size-adjust: 116.3713%;
+  ascent-override: 83.182%;
+  descent-override: 21.5689%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: "Oxanium Fallback";
+  src: local("Arial"), local("Helvetica Neue"), local("Helvetica");
+  size-adjust: 104.3479%;
+  ascent-override: 75.7083%;
+  descent-override: 20.125%;
+  line-gap-override: 23.9583%;
+}

@@ -24,6 +24,7 @@ import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import { GoogleSignInButton, isGoogleClientConfigured } from "../components/GoogleSignInButton";
 import { setPendingVerifyEmail } from "../lib/pendingVerifyEmail";
+import { HERO_BG_TRACK } from "../lib/types";
 
 export function LoginPage() {
   const [email, setEmail] = useState("");
@@ -84,7 +85,7 @@ export function LoginPage() {
     <div
       className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
       style={{
-        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('https://images.unsplash.com/photo-1617130644016-d318045a3958?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1920')`,
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
       <div className="w-full max-w-md">

@@ -1,42 +1,69 @@
 # RacePortal — dokumentacja
 
-Indeks dokumentów projektu (branch `main` / roboczy `wojtek`).
+Indeks pod aktualny stack: **Oracle VM + Mailbux + PWA** (`https://raceportal.pl`).  
+Branch produkcyjny: **`main`**.
 
-## Struktura katalogów w repo
+## Zaczynaj tutaj
+
+| Potrzeba | Dokument |
+|----------|----------|
+| Szybki start lokalnie | [`../README.md`](../README.md) |
+| Seed / MySQL / Expo / konta demo | [`FAQ-przeglad.md`](./FAQ-przeglad.md) |
+| Start/stop lokalnie i na VM | [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) |
+| Pierwsze postawienie Oracle + Tunnel | [`oracle-deploy.md`](./oracle-deploy.md) |
+| **Dlaczego** Oracle / Mailbux / PWA (dyplom) | [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) |
+| Plan MVP vs stan kodu | [`MVP.md`](./MVP.md) |
+
+## Repo — katalogi
 
 | Katalog | Zawartość |
 |---------|-----------|
-| `web/` | Aplikacja webowa (Vite/React) + Docker image frontendu |
-| `backend/` | API (Spring Boot + MySQL) |
-| `mobile/` | Mobilka-wizytówka (Expo) — Eventy + CTA web |
-| `docs/` | Dokumentacja projektu i dyplomu |
-| `tests/e2e/` | Testy E2E Playwright (web + mobile Expo) |
-| `scripts/` | Skrypty (backup, uruchomienie testów) |
+| `web/` | Vite/React + PWA + nginx |
+| `backend/` | Spring Boot + MySQL + JWT |
+| `mobile/` | Expo wizytówka (Eventy + CTA web) |
+| `packages/api-types/` | Wspólne typy / helpers |
+| `docs/` | Ta dokumentacja |
+| `tests/e2e/` | Playwright |
+| `scripts/` | Backup, testy |
 
-## Dokumenty w `docs/`
+## Dokumenty w `docs/` (wg roli)
+
+### Uruchamianie i produkcja
 
 | Plik | Opis |
 |------|------|
-| [`FAQ-przeglad.md`](./FAQ-przeglad.md) | **FAQ dla recenzentów** — seed, MySQL, Expo, `.env`, konta (czytaj najpierw) |
-| [`spec-conformity.md`](./spec-conformity.md) | **Specyfikacja Formularzy vs kod** — tabela luk (Blocker/Major/Minor) |
-| [`mobile.md`](./mobile.md) | **Aplikacja mobilna** — wizytówka (Eventy + CTA web), chronologia Expo |
-| [`review-2026-08-03.md`](./review-2026-08-03.md) | **Code review** web+mobile + wyniki testów (2026-08-03) |
-| [`MVP.md`](./MVP.md) | Plan vs stan MVP (MPC) |
-| [`changes.md`](./changes.md) | Chronologia prac |
-| [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | **Alt-technologie** — dziś vs pomysły (JWT→Keycloak, Next.js, Redis…) |
-| [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | **Luki i pomysły produktowe** — czego brakuje / co warto dodać (nie Spec, nie stack) |
-| [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | **Scenariusz demo** — co pokazać na prezentacji (web + mobile) |
-| [`oracle-deploy.md`](./oracle-deploy.md) | **Oracle Always Free** — cała aplikacja na VM (2 OCPU / 12 GB) + tunel Cloudflare na `:8081` |
-| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | **Know-how start/stop** — lokalnie i Oracle, Mailbux, PWA, checklista demo |
-| [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) | **Dlaczego tak** — proces decyzji (GCP→Oracle, Mailpit→Mailbux, PWA); materiał pod dyplom |
-| [`cloudflare-pages.md`](./cloudflare-pages.md) | Starsza próba Pages (front osobno) — **historia**, nie aktualne wdrożenie |
-| [`gcp-deploy.md`](./gcp-deploy.md) | Stub: GCP usunięte; patrz `oracle-deploy.md` + decyzje |
+| [`FAQ-przeglad.md`](./FAQ-przeglad.md) | FAQ dla recenzentów |
+| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | Codzienne włączanie / aktualizacja |
+| [`oracle-deploy.md`](./oracle-deploy.md) | Pierwsze wdrożenie VM |
+| [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) | Proces decyzji (ewolucja architektury) |
+
+### Produkt i zakres
+
+| Plik | Opis |
+|------|------|
+| [`MVP.md`](./MVP.md) | Miało być / jest / luki / ponad MVP |
+| [`spec-conformity.md`](./spec-conformity.md) | Specyfikacja Formularzy vs kod |
+| [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | Scenariusz demo |
+| [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | Luki i pomysły produktowe |
+| [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | Stack dziś vs alt (Keycloak, Next…) |
+
+### Chronologia i zasady
+
+| Plik | Opis |
+|------|------|
+| [`changes.md`](./changes.md) | Historia prac (długa — szukaj po § / dacie) |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
-| [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
-| [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |
-| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatnie wyniki testów |
-| [`testy/wyniki/unit-500-wyniki.md`](./testy/wyniki/unit-500-wyniki.md) | 599 unit `@raceportal/api-types` |
+| [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje (shadcn, Unsplash, mapy) |
 
-Root repozytorium zawiera tylko [`README.md`](../README.md) (szybki start) oraz konfigurację monorepo / Docker Compose.
+### Mobile i testy
 
-> **Dla osób przeglądających projekt:** pytania o seed, „niedziałający” MySQL/Expo i `env_file` są zebrane w [`FAQ-przeglad.md`](./FAQ-przeglad.md) — prosimy nie zgłaszać ich ponownie bez sprawdzenia FAQ.
+| Plik | Opis |
+|------|------|
+| [`mobile.md`](./mobile.md) | Historia Expo → wizytówka |
+| [`../mobile/README.md`](../mobile/README.md) | Jak odpalić mobilkę (Mac/Windows) |
+| [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka testów |
+| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatnie wyniki |
+| [`testy/wyniki/unit-500-wyniki.md`](./testy/wyniki/unit-500-wyniki.md) | Unit `@raceportal/api-types` |
+
+> Usunięte jako zbędne / mylące (historia jest w `decyzje-wdrozeniowe.md` + `changes.md`):  
+> `gcp-deploy.md`, `cloudflare-pages.md`, `review-2026-08-03.md`.

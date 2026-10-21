@@ -154,13 +154,14 @@ W `docker-compose.yml` blok `environment` serwisu `api` **nadpisuje** `backend/.
 
 Żeby odciąć demo: zaloguj się, zmień hasło admina, potem w tym bloku ustaw własny `JWT_SECRET` (`openssl rand -base64 48`), `SEED_ENABLED: "false"` i `ALLOW_INSECURE_DEFAULTS: "false"`, i zrób `sudo docker compose up -d --force-recreate api`. Przy `ALLOW_INSECURE_DEFAULTS=false` seed musi być wyłączony, inaczej API nie wstanie. Wyłączenie seeda **przed** pierwszym startem zostawia pustą bazę bez administratora.
 
-Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika. Nadawca: `noreply@raceportal.pl`, serwer `my.mailbux.com:587` (STARTTLS). Na VM, obok repozytorium, plik `~/RacePortal/.env` (nie jest w gicie):
+Maile (link aktywacyjny, reset hasła, status zgłoszenia) idą SMTP. Nadawca: `noreply@raceportal.pl`, serwer `my.mailbux.com:587` (STARTTLS). Na VM, w `~/RacePortal/.env` (nie w gicie):
 
 ```bash
 SMTP_PASSWORD=haslo-skrzynki-albo-app-password
+PUBLIC_BASE_URL=https://raceportal.pl
 ```
 
-Potem `sudo docker compose up -d --force-recreate api`. Bez tej zmiennej API wstanie, ale `smtp` w health będzie `down` i wiadomości nie wyjdą.
+Potem `sudo docker compose up -d --force-recreate api`. Bez `SMTP_PASSWORD` API wstanie, ale `smtp` w health będzie `down`. Bez `PUBLIC_BASE_URL` linki aktywacyjne mogą wskazywać na localhost.
 
 ---
 
