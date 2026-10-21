@@ -11,7 +11,7 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)
 - Docker Compose: `web`, `api`, `mysql`, `backup` (bez Mailpita)
-- Maile: SMTP **Mailbux** (`kontakt@raceportal.pl`) — hasło w `.env` jako `SMTP_PASSWORD`
+- Maile: SMTP **Mailbux** (`noreply@raceportal.pl`) — hasło w `.env` jako `SMTP_PASSWORD`
 - Produkcja: Oracle VM + Cloudflare Tunnel → `:8081` ([`oracle-deploy.md`](./oracle-deploy.md))
 - Web PWA: `web/public/manifest.webmanifest` + `sw.js`, bottom nav na telefonie
 - Testy: JUnit/MockMvc/Testcontainers (API), Vitest (api-types + mobile), Playwright E2E

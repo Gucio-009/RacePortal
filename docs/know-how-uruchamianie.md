@@ -52,7 +52,7 @@ docker compose up --build -d
 
 Lokalnie nginx na `:8081` proxy’uje `/api`. `VITE_API_URL` nie jest potrzebne.
 
-Maile: SMTP Mailbux (`kontakt@raceportal.pl`). W katalogu projektu plik `.env` z `SMTP_PASSWORD=…`. Health: `"smtp":"up"`.
+Maile: SMTP Mailbux (`noreply@raceportal.pl`). W katalogu projektu plik `.env` z `SMTP_PASSWORD=…`. Health: `"smtp":"up"`.
 
 Web jest **PWA** (manifest + SW): na telefonie „Dodaj do ekranu początkowego” — bottom nav + safe-area.
 
@@ -147,7 +147,7 @@ sudo docker stats --no-stream
 
 ### B6. Maile
 
-Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`kontakt@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). `GET /api/health` pokazuje `smtp: up`, gdy serwer przyjmie logowanie.
+Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`noreply@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). `GET /api/health` pokazuje `smtp: up`, gdy serwer przyjmie logowanie.
 
 ---
 

@@ -104,7 +104,7 @@ URL: http://127.0.0.1:8081/login
 | SMTP (Mailbux) | poza Compose | konfig w env API; hasło w `.env` → `SMTP_PASSWORD` |
 | Expo web | **nie** | 8082 (ręcznie) |
 
-Maile (kod weryfikacji, reset, statusy) idą na skrzynkę użytkownika przez **Mailbux** (`kontakt@raceportal.pl`). Lokalnie i na VM: plik `.env` z `SMTP_PASSWORD`. Sprawdzenie: `GET /api/health` → `"smtp":"up"`.
+Maile (kod weryfikacji, reset, statusy) idą na skrzynkę użytkownika przez **Mailbux** (`noreply@raceportal.pl`). Lokalnie i na VM: plik `.env` z `SMTP_PASSWORD`. Sprawdzenie: `GET /api/health` → `"smtp":"up"`.
 
 ---
 

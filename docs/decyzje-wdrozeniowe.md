@@ -28,7 +28,7 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 |--|--|
 | **Kiedy** | październik 2026 |
 | **Problem** | Na prod (Pages/VM) Mailpit łapał maile tylko wewnątrz Dockera — użytkownik **nie** dostawał kodu weryfikacyjnego na Gmail/Outlook. Demo „rejestracja” wyglądała jak bug produktu. |
-| **Opcje** | (A) SSH + podgląd Mailpita na VM; (B) Brevo / Resend / SendGrid; (C) **skrzynka domenowa Mailbux** (`kontakt@raceportal.pl`) + SMTP w Spring. |
+| **Opcje** | (A) SSH + podgląd Mailpita na VM; (B) Brevo / Resend / SendGrid; (C) **skrzynka domenowa Mailbux** (`noreply@raceportal.pl`) + SMTP w Spring. |
 | **Decyzja** | **(C)** — `SMTP_HOST=my.mailbux.com`, auth + STARTTLS; hasło wyłącznie w `.env` (`SMTP_PASSWORD`), nie w git. |
 | **Dlaczego** | Zero dodatkowego SaaS „marketingowego” na Free z limitem użytkowników; ta sama domena co strona; health `smtp: up/down` diagnozuje od razu. Mailpit usunięty z Compose, żeby nie mylić „mail działa lokalnie w UI” z „mail dochodzi do człowieka”. |
 | **Skutki** | Lokalnie też Mailbux (ten sam mechanizm co prod). Scenariusz prezentacji: pokazywać realną skrzynkę albo mieć `smtp: up` przed live. |

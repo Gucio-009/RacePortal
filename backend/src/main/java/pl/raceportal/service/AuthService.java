@@ -335,9 +335,14 @@ public class AuthService {
         user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_CODE_TTL_MINUTES, ChronoUnit.MINUTES));
         userRepository.save(user);
 
+        String safeName = user.getUsername() == null ? "" : user.getUsername()
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
         mailService.send(user.getEmail(), "Kod weryfikacyjny RACEPORTAL",
-                "<p>Cześć " + user.getUsername() + ",</p>" +
-                        "<p>Twój kod weryfikacyjny to: <strong>" + code + "</strong></p>" +
+                "<p>Cześć " + safeName + ",</p>" +
+                        "<p>Twój kod weryfikacyjny:</p>" +
+                        mailService.codeBox(code) +
                         "<p>Kod jest ważny przez " + VERIFICATION_CODE_TTL_MINUTES + " minut.</p>");
     }
 

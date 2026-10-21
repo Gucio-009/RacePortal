@@ -65,7 +65,7 @@ Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
 | Logowanie | http://127.0.0.1:8081/login |
 | API health | http://127.0.0.1:8081/api/health |
 
-Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika przez `kontakt@raceportal.pl`. W katalogu projektu ustaw `SMTP_PASSWORD` w pliku `.env` (hasło skrzynki albo App Password z Mailbux). Bez tego health pokaże `smtp: down` i wysyłka się nie uda.
+Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika przez `noreply@raceportal.pl`. W katalogu projektu ustaw `SMTP_PASSWORD` w pliku `.env` (hasło skrzynki albo App Password z Mailbux). Bez tego health pokaże `smtp: down` i wysyłka się nie uda.
 
 ### 5. Konta testowe
 
