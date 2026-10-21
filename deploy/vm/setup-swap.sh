@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# setup-swap.sh — 2 GB swap na e2-micro (Spring + MySQL).
-# Uruchom raz na VM jako root: sudo bash deploy/gcp/setup-swap.sh
+# setup-swap.sh — 2 GB swap na małej VM (Spring + MySQL).
+# Uruchom raz na VM jako root: sudo bash deploy/vm/setup-swap.sh
 set -euo pipefail
 
 SWAPFILE="${SWAPFILE:-/swapfile}"

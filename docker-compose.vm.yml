@@ -1,11 +1,11 @@
 #
-# docker-compose.gcp.yml — API + MySQL na GCE Always Free (e2-micro).
+# docker-compose.vm.yml — API + MySQL na wirtualce (Oracle / dowolny VPS).
 #
 # Front zostaje na Cloudflare Pages; tu tylko backend + baza (+ backup).
-# Env: deploy/gcp/.env.gcp (z .env.gcp.example). MySQL: deploy/gcp/mysql-lowmem.cnf.
+# Env: deploy/vm/.env.vm (z .env.vm.example). MySQL: deploy/vm/mysql-lowmem.cnf.
 #
 # Uruchomienie (z korzenia repo na VM):
-#   docker compose -f docker-compose.gcp.yml --env-file deploy/gcp/.env.gcp up -d --build
+#   docker compose -f docker-compose.vm.yml --env-file deploy/vm/.env.vm up -d --build
 #
 services:
   mysql:
@@ -17,8 +17,8 @@ services:
       MYSQL_USER: ${MYSQL_USER:-raceportal}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - raceportal_mysql_gcp:/var/lib/mysql
-      - ./deploy/gcp/mysql-lowmem.cnf:/etc/mysql/conf.d/lowmem.cnf:ro
+      - raceportal_mysql_vm:/var/lib/mysql
+      - ./deploy/vm/mysql-lowmem.cnf:/etc/mysql/conf.d/lowmem.cnf:ro
     # Brak publish 3306 na host — tylko sieć compose (bezpieczniej na publicznym IP).
     healthcheck:
       test:
@@ -81,7 +81,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE:-raceportal}
     volumes:
       - ./scripts/backup.sh:/backup.sh:ro
-      - raceportal_backups_gcp:/backups
+      - raceportal_backups_vm:/backups
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
@@ -97,5 +97,5 @@ services:
     mem_limit: 128m
 
 volumes:
-  raceportal_mysql_gcp:
-  raceportal_backups_gcp:
+  raceportal_mysql_vm:
+  raceportal_backups_vm:

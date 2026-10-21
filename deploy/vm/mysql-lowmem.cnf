@@ -1,4 +1,4 @@
-# MySQL tuned for GCE e2-micro (~1 GB RAM) — keep buffer pool small.
+# MySQL tuned for small VMs (~1 GB RAM) — keep buffer pool small.
 [mysqld]
 innodb_buffer_pool_size=128M
 performance_schema=OFF

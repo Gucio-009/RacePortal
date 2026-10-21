@@ -146,13 +146,12 @@ Pełna ściąga (wszystkie błędy z wdrożenia): [`cloudflare-pages.md`](./clou
 
 ---
 
-## 10. Hosting API + bazy do lutego (GCP za darmo)
+## 10. Hosting API + bazy (Oracle VM)
 
-Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + `docker-compose.gcp.yml` (API+MySQL), front na Pages.
+API + MySQL na wirtualce Oracle (`docker-compose.vm.yml`), front na Cloudflare Pages.
 
-- Pierwsze wdrożenie: [`gcp-deploy.md`](./gcp-deploy.md)
 - **Codziennie (start/stop VM, lokalnie, demo):** [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)
-- Smoke: `./scripts/gcp-smoke.sh https://api.raceportal.pl`
+- Smoke: `./scripts/api-smoke.sh https://api.raceportal.pl`
 
 ---
 
@@ -163,6 +162,5 @@ Trial GCP 90 dni **nie starczy** do lutego. Wariant: **Always Free e2-micro** + 
 - MVP plan vs stan: [`MVP.md`](./MVP.md)  
 - Spec vs kod: [`spec-conformity.md`](./spec-conformity.md)  
 - Cloudflare Pages: [`cloudflare-pages.md`](./cloudflare-pages.md)  
-- GCP Always Free: [`gcp-deploy.md`](./gcp-deploy.md)  
 - Know-how uruchamianie: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md)  
 - Wytyczne: [`Guidelines.md`](./Guidelines.md)  

@@ -27,8 +27,7 @@ Indeks dokumentów projektu (branch `wojtek`).
 | [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | **Luki i pomysły produktowe** — czego brakuje / co warto dodać (nie Spec, nie stack) |
 | [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | **Scenariusz demo** — co pokazać na prezentacji (web + mobile) |
 | [`cloudflare-pages.md`](./cloudflare-pages.md) | **Cloudflare Pages** — pełna ściąga (Worker≠Pages, npm workspaces, tokeny 10000, tunnel API, CORS, `raceportal.pl`) |
-| [`gcp-deploy.md`](./gcp-deploy.md) | **GCP Always Free** — e2-micro + Compose (API+MySQL) do lutego, Pages jako front |
-| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | **Know-how start/stop** — lokalnie + VM (włącz/wyłącz oszczędność), Pages, tunnel, checklista demo |
+| [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) | **Know-how start/stop** — lokalnie + VM Oracle (włącz/wyłącz), Pages, tunnel, checklista demo |
 | [`Guidelines.md`](./Guidelines.md) | Wytyczne dla agentów / deweloperów |
 | [`ATTRIBUTIONS.md`](./ATTRIBUTIONS.md) | Licencje i atrybucje |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testów automatycznych |
