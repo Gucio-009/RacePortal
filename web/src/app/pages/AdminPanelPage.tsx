@@ -48,6 +48,7 @@ import { useAuth } from "../context/AuthContext";
 import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
 import { eventStatusLabel, formatEventDate, formatEntryFee } from "../lib/types";
 import { toast } from "sonner";
+import { AdminBugReports } from "../components/AdminBugReports";
 
 interface PendingEvent extends ApiEvent {
   organizer?: { id: string; username: string; email: string } | null;
@@ -225,6 +226,7 @@ export function AdminPanelPage() {
             <TabsTrigger value="approved">Zatwierdzone ({approvedEvents.length})</TabsTrigger>
             <TabsTrigger value="users">Użytkownicy ({users.length})</TabsTrigger>
             <TabsTrigger value="applications">Wnioski ({applications.filter((a) => a.status === "PENDING").length})</TabsTrigger>
+            <TabsTrigger value="bugs">Błędy</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
@@ -474,6 +476,10 @@ export function AdminPanelPage() {
                 </Card>
               ))
             )}
+          </TabsContent>
+
+          <TabsContent value="bugs">
+            <AdminBugReports />
           </TabsContent>
         </Tabs>
       </section>

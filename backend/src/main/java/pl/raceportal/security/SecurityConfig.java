@@ -86,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/auth/oauth/providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/events/**", "/api/events/meta/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/maps/route").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/bug-reports").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 

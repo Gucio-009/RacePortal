@@ -41,6 +41,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { userInitials } from "../lib/types";
 import { NotificationBell } from "./NotificationBell";
+import { BugReportButton } from "./BugReportButton";
 import { MobileBottomNav } from "./MobileBottomNav";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
@@ -391,6 +392,7 @@ export function RootLayout() {
         </div>
       </footer>
 
+      <BugReportButton />
       <MobileBottomNav />
     </div>
   );
