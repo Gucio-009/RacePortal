@@ -11,9 +11,11 @@ import pl.raceportal.domain.Car;
 import pl.raceportal.domain.Event;
 import pl.raceportal.domain.EventStatus;
 import pl.raceportal.domain.Role;
+import pl.raceportal.domain.Track;
 import pl.raceportal.domain.User;
 import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.TrackRepository;
 import pl.raceportal.repository.UserRepository;
 
 import java.math.BigDecimal;
@@ -44,15 +46,18 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final CarRepository carRepository;
     private final EventRepository eventRepository;
+    private final TrackRepository trackRepository;
     private final PasswordEncoder passwordEncoder;
     private final boolean seedEnabled;
 
     public DataInitializer(UserRepository userRepository, CarRepository carRepository,
-                            EventRepository eventRepository, PasswordEncoder passwordEncoder,
+                            EventRepository eventRepository, TrackRepository trackRepository,
+                            PasswordEncoder passwordEncoder,
                             @Value("${app.seed.enabled:false}") boolean seedEnabled) {
         this.userRepository = userRepository;
         this.carRepository = carRepository;
         this.eventRepository = eventRepository;
+        this.trackRepository = trackRepository;
         this.passwordEncoder = passwordEncoder;
         this.seedEnabled = seedEnabled;
     }
@@ -64,6 +69,9 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        // Katalog torów — zawsze (nawet bez app.seed.enabled); to słownik lokalizacji, nie demo.
+        ensurePolishTracks();
+
         if (!seedEnabled) {
             return;
         }
@@ -78,6 +86,30 @@ public class DataInitializer implements CommandLineRunner {
         ensurePaidDemoEvents();
         // Always ensure test driver has one car per race category.
         ensureDemoGarageCars();
+    }
+
+    /** Upsert pełnego katalogu torów / miejsc eventowych w Polsce. */
+    private void ensurePolishTracks() {
+        int created = 0;
+        int updated = 0;
+        for (TrackCatalog.Entry entry : TrackCatalog.ALL) {
+            Track track = trackRepository.findFirstByNameIgnoreCase(entry.name()).orElseGet(Track::new);
+            boolean isNew = track.getId() == null;
+            track.setName(entry.name());
+            track.setCity(entry.city());
+            track.setVoivodeship(entry.voivodeship());
+            track.setLat(entry.lat());
+            track.setLng(entry.lng());
+            track.setKind(entry.kind());
+            trackRepository.save(track);
+            if (isNew) {
+                created++;
+            } else {
+                updated++;
+            }
+        }
+        log.info("Polish tracks catalog ensured: {} total ({} created, {} updated)",
+                TrackCatalog.ALL.length, created, updated);
     }
 
     /** Pierwszy seed: admin, organizator, kierowca + zestaw wydarzeń w różnych statusach. */

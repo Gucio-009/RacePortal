@@ -85,6 +85,7 @@ public class SecurityConfig {
                                 "/api/auth/forgot-password", "/api/auth/oauth/google").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/oauth/providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/events/**", "/api/events/meta/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/tracks", "/api/tracks/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/maps/route").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/bug-reports").permitAll()
                         .anyRequest().authenticated())

@@ -12,7 +12,12 @@
  * Pomysł (alt): presety z API / CMS; geokodowanie zamiast hardcodowanych coords.
  */
 
-import { IMAGE_WIDTH_CARD, optimizeRemoteImageUrl } from "@raceportal/api-types";
+import {
+  IMAGE_WIDTH_CARD,
+  optimizeRemoteImageUrl,
+  TRACK_PRESETS as SHARED_TRACK_PRESETS,
+  type TrackPreset as SharedTrackPreset,
+} from "@raceportal/api-types";
 
 /** Sentinel Select „Inne…” — nie jest prawdziwą wartością domenową. */
 export const OTHER = "__other__";
@@ -39,27 +44,10 @@ export const VOIVODESHIPS = [
   "Zachodniopomorskie",
 ] as const;
 
-export type TrackPreset = {
-  track: string;
-  city: string;
-  voivodeship: string;
-  lat: number;
-  lng: number;
-};
+export type TrackPreset = SharedTrackPreset;
 
-/** Popularne tory PL — wybór wypełnia miasto / województwo / współrzędne. */
-export const TRACK_PRESETS: TrackPreset[] = [
-  { track: "Tor Poznań", city: "Poznań", voivodeship: "Wielkopolskie", lat: 52.3312, lng: 16.8491 },
-  { track: "Autodrom Pomorze Pszczółki", city: "Pszczółki", voivodeship: "Pomorskie", lat: 54.1985, lng: 18.5986 },
-  { track: "Tor Słomczyn", city: "Słomczyn", voivodeship: "Mazowieckie", lat: 52.0376, lng: 20.7589 },
-  { track: "Autodrom Most", city: "Most", voivodeship: "Dolnośląskie", lat: 50.5031, lng: 13.636 },
-  { track: "Tor Kamień Śląski", city: "Kamień Śląski", voivodeship: "Opolskie", lat: 50.575, lng: 18.083 },
-  { track: "Tor Ułęż", city: "Ułęż", voivodeship: "Lubelskie", lat: 51.627, lng: 22.108 },
-  { track: "Tor Kielce", city: "Kielce", voivodeship: "Świętokrzyskie", lat: 50.8661, lng: 20.6286 },
-  { track: "Ośrodek Rajdowy Radom", city: "Radom", voivodeship: "Mazowieckie", lat: 51.4027, lng: 21.1471 },
-  { track: "Tor Modlin", city: "Nowy Dwór Mazowiecki", voivodeship: "Mazowieckie", lat: 52.451, lng: 20.651 },
-  { track: "Tor Jastrząb", city: "Jastrząb", voivodeship: "Mazowieckie", lat: 51.248, lng: 20.943 },
-];
+/** Katalog torów PL (api-types) — wybór wypełnia miasto / województwo / współrzędne. */
+export const TRACK_PRESETS: TrackPreset[] = SHARED_TRACK_PRESETS;
 
 export const START_TIMES = [
   "08:00",
