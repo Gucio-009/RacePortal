@@ -47,7 +47,6 @@ docker compose up --build -d
 | Aplikacja | http://127.0.0.1:8081/ |
 | Login | http://127.0.0.1:8081/login |
 | API health | http://127.0.0.1:4000/api/health |
-| Mailpit | http://127.0.0.1:8025/ |
 | MySQL | host `3307` (TCP, nie HTTP) |
 
 Lokalnie nginx na `:8081` proxy’uje `/api`. `VITE_API_URL` nie jest potrzebne.
@@ -119,7 +118,7 @@ Skutek: domena przestaje odpowiadać. Dane MySQL zostają na dysku. Nie rób `do
 | Usługa | Jak |
 |--------|-----|
 | Docker | przy starcie systemu |
-| `web`, `api`, `mysql`, `mailhog`, `backup` | `restart: unless-stopped` |
+| `web`, `api`, `mysql`, `backup` | `restart: unless-stopped` |
 | Cloudflare Tunnel | `cloudflared.service` |
 
 Po zwykłym restarcie nie trzeba `git pull` ani stawiać tunelu od nowa. Pierwszy start Springa po dłuższym Stop potrafi potrwać kilka minut.
@@ -141,15 +140,9 @@ free -h
 sudo docker stats --no-stream
 ```
 
-### B6. Mailpit
+### B6. Maile
 
-UI nie jest otwarte w Security List. Z własnego komputera:
-
-```cmd
-ssh -i .\ssh-key-2026-10-20.key -L 8025:127.0.0.1:8025 ubuntu@PUBLICZNE_IP
-```
-
-Potem http://127.0.0.1:8025 . Kody weryfikacyjne z rejestracji są tutaj, nie na prawdziwej skrzynce.
+Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`kontakt@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). `GET /api/health` pokazuje `smtp: up`, gdy serwer przyjmie logowanie.
 
 ---
 
@@ -181,7 +174,7 @@ Potem http://127.0.0.1:8025 . Kody weryfikacyjne z rejestracji są tutaj, nie na
 
 | Plik | Po co |
 |------|--------|
-| `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + mailpit + backup) |
+| `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile przez SMTP Mailbux |
 | `docker-compose.gcp.yml` | Stary wariant samego API. Na Oracle go nie uruchamiamy |
 | `docs/oracle-deploy.md` | Pierwsze postawienie maszyny i tunelu |
 | `docs/gcp-deploy.md` | Skrót: tamten opis jest nieaktualny |

@@ -52,7 +52,6 @@ docker compose up --build -d
 | Web | 8081 | http://127.0.0.1:8081/ |
 | API | 4000 | http://127.0.0.1:4000/api/health (`db: up`) |
 | MySQL | **3307** | TCP (nie HTTP). `docker compose ps` → `healthy` |
-| Mailpit | 8025 | http://127.0.0.1:8025/ |
 | Expo web | 8082 | **poza Compose** — `cd mobile && npx expo start --web --port 8082` |
 
 Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
@@ -64,7 +63,8 @@ Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
 | Aplikacja | http://127.0.0.1:8081/ |
 | Logowanie | http://127.0.0.1:8081/login |
 | API health | http://127.0.0.1:8081/api/health |
-| Maile (Mailpit) | http://127.0.0.1:8025/ |
+
+Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika przez `kontakt@raceportal.pl`. W katalogu projektu ustaw `SMTP_PASSWORD` w pliku `.env` (hasło skrzynki albo App Password z Mailbux). Bez tego health pokaże `smtp: down` i wysyłka się nie uda.
 
 ### 5. Konta testowe
 

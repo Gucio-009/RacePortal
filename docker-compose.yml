@@ -3,15 +3,17 @@
 #
 # Usługi:
 #   mysql     — MySQL 8.4, baza `raceportal`, port hosta 3307→3306 (unika kolizji z lokalnym MySQL).
-#   mailhog   — Mailpit (UI :8025, SMTP :1025) do podglądu maili bez prawdziwego SMTP.
 #   api       — Spring Boot (backend/Dockerfile), profil `docker`, seed włączony, JWT/CORS pod web+mobile.
 #   web       — Vite build + nginx (web/Dockerfile, context = root repo — potrzebny packages/api-types).
 #   backup    — pętla scripts/backup.sh co 24h → volume raceportal_backups.
 #
+# Maile idą SMTP na skrzynki użytkowników (Mailbux). Hasło nie jest w repo:
+# w katalogu projektu plik `.env` z jedną linią `SMTP_PASSWORD=...` (App Password skrzynki).
+#
 # Dlaczego osobno od testów: JUnit/create-drop celuje w `raceportal_test` (patrz scripts/test-api.sh),
 # żeby nie wycierać tej bazy Compose z seedem.
 #
-# Porty (host): API 4000, web 8081, MySQL 3307, Mailpit 8025/1025.
+# Porty (host): API 4000, web 8081, MySQL 3307.
 #
 # Pomysł (alt): docker-compose.override.yml pod produkcję (bez SEED_ENABLED, secrets z vault);
 # albo profile compose (dev/test/prod) zamiast jednego pliku.
@@ -36,14 +38,6 @@ services:
       retries: 20
     restart: unless-stopped
 
-  mailhog:
-    image: axllent/mailpit:v1.21
-    container_name: raceportal-mailhog
-    ports:
-      - "8025:8025"
-      - "1025:1025"
-    restart: unless-stopped
-
   api:
     build: ./backend
     container_name: raceportal-api
@@ -54,8 +48,13 @@ services:
       DATABASE_URL: jdbc:mysql://mysql:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DATABASE_USERNAME: raceportal
       DATABASE_PASSWORD: raceportal
-      SMTP_HOST: mailhog
-      SMTP_PORT: "1025"
+      SMTP_HOST: my.mailbux.com
+      SMTP_PORT: "587"
+      SMTP_USERNAME: kontakt@raceportal.pl
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: "true"
+      SMTP_STARTTLS: "true"
+      SMTP_FROM: "RACEPORTAL <kontakt@raceportal.pl>"
       CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082,https://*.trycloudflare.com,https://*.pages.dev,https://raceportal.pl,https://www.raceportal.pl
       JWT_SECRET: raceportal-dev-secret-change-me
       SEED_ENABLED: "true"
@@ -66,8 +65,6 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      mailhog:
-        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
       interval: 10s

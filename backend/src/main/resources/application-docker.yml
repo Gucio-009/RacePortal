@@ -1,8 +1,9 @@
 #
 # application-docker.yml — profil `docker` (kontener api w Compose).
 #
-# Nadpisuje hosty: MySQL = hostname usługi `mysql`, SMTP = `mailhog` (Mailpit).
+# Nadpisuje hosty: MySQL = hostname usługi `mysql`, SMTP = Mailbux (STARTTLS).
 # Reszta (JWT, seed, CORS) idzie z env w docker-compose.yml.
+# Hasło: SMTP_PASSWORD z pliku `.env` w katalogu projektu (nie commituj).
 #
 # Pomysł (alt): ConfigMap/Secrets w K8s zamiast pliku profilu; Spring Cloud Config.
 #
@@ -15,10 +16,21 @@ spring:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:update}
   mail:
-    host: ${SMTP_HOST:mailhog}
-    port: ${SMTP_PORT:1025}
+    host: ${SMTP_HOST:my.mailbux.com}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:kontakt@raceportal.pl}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:true}
+          starttls:
+            enable: ${SMTP_STARTTLS:true}
+            required: true
 
 app:
+  mail:
+    from: "${SMTP_FROM:RACEPORTAL <kontakt@raceportal.pl>}"
   cors:
     origin: ${CORS_ORIGIN:*}
 

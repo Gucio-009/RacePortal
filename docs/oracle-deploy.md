@@ -88,7 +88,7 @@ curl -sS http://127.0.0.1:4000/api/health
 
 Oczekiwane: `HTTP/1.1 200` oraz health ze `"db":"up"`.
 
-Kontenery: `web` (nginx, host `8081`), `api` (`4000`), `mysql` (`3307` tylko na interfejsie hosta, z internetu zablokowane listą), `mailhog` (Mailpit), `backup`.
+Kontenery: `web` (nginx, host `8081`), `api` (`4000`), `mysql` (`3307` tylko na interfejsie hosta, z internetu zablokowane listą), `backup`.
 
 ---
 
@@ -152,13 +152,13 @@ W `docker-compose.yml` blok `environment` serwisu `api` **nadpisuje** `backend/.
 
 Żeby odciąć demo: zaloguj się, zmień hasło admina, potem w tym bloku ustaw własny `JWT_SECRET` (`openssl rand -base64 48`), `SEED_ENABLED: "false"` i `ALLOW_INSECURE_DEFAULTS: "false"`, i zrób `sudo docker compose up -d --force-recreate api`. Przy `ALLOW_INSECURE_DEFAULTS=false` seed musi być wyłączony, inaczej API nie wstanie. Wyłączenie seeda **przed** pierwszym startem zostawia pustą bazę bez administratora.
 
-Maile (kod weryfikacji, reset hasła) idą do Mailpit wewnątrz Compose, nie na skrzynki. Podgląd z własnego komputera:
+Maile (kod weryfikacji, reset hasła, status zgłoszenia) idą SMTP na adres użytkownika. Nadawca: `kontakt@raceportal.pl`, serwer `my.mailbux.com:587` (STARTTLS). Na VM, obok repozytorium, plik `~/RacePortal/.env` (nie jest w gicie):
 
-```cmd
-ssh -i .\ssh-key-2026-10-20.key -L 8025:127.0.0.1:8025 ubuntu@PUBLICZNE_IP
+```bash
+SMTP_PASSWORD=haslo-skrzynki-albo-app-password
 ```
 
-Potem http://127.0.0.1:8025 . Prawdziwy SMTP (Brevo) to osobny krok, nie część tego wdrożenia.
+Potem `sudo docker compose up -d --force-recreate api`. Bez tej zmiennej API wstanie, ale `smtp` w health będzie `down` i wiadomości nie wyjdą.
 
 ---
 

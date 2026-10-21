@@ -33,13 +33,6 @@ services:
     restart: unless-stopped
     mem_limit: 384m
 
-  mailpit:
-    image: axllent/mailpit:v1.21
-    container_name: raceportal-mailpit
-    # SMTP tylko w sieci compose — bez portów na host (brak publicznego UI).
-    restart: unless-stopped
-    mem_limit: 64m
-
   api:
     build: ./backend
     container_name: raceportal-api
@@ -48,8 +41,13 @@ services:
       DATABASE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-raceportal}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       DATABASE_USERNAME: ${MYSQL_USER:-raceportal}
       DATABASE_PASSWORD: ${MYSQL_PASSWORD}
-      SMTP_HOST: ${SMTP_HOST:-mailpit}
-      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_HOST: ${SMTP_HOST:-my.mailbux.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-kontakt@raceportal.pl}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_AUTH: ${SMTP_AUTH:-true}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_FROM: "${SMTP_FROM:-RACEPORTAL <kontakt@raceportal.pl>}"
       CORS_ORIGIN: ${CORS_ORIGIN}
       JWT_SECRET: ${JWT_SECRET}
       SEED_ENABLED: ${SEED_ENABLED:-true}
@@ -60,8 +58,6 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
-      mailpit:
-        condition: service_started
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:4000/api/health || exit 1"]
       interval: 15s
