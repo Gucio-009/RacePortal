@@ -2,40 +2,71 @@
  * BecomeOrganizerPage — wniosek USER → ORGANIZER (rozpatrywany w AdminPanel).
  *
  * Cel: zalogowany kierowca wysyła firmę + opis doświadczenia; admin zatwierdza.
- * Wzorce: formularz POST `/api/organizer/apply` z JWT; redirect do login jeśli brak sesji.
+ * Wzorce: formularz POST `/api/organizer/apply` z JWT; status GET `/api/organizer/my-application`.
  * Auth: wymaga `isAuthenticated` (toast + navigate); API też egzekwuje JWT.
  * Theme: `--race-accent`, `font-display`. Docker/nginx: deep link → SPA try_files.
- *
- * Pomysł (alt): multi-step wizard; upload dokumentów; TanStack Form; status wniosku w dashboardzie.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { Building2, MessageSquare, Loader2 } from "lucide-react";
+import { Building2, MessageSquare, Loader2, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { api, ApiError } from "../lib/api";
+import type { OrganizerApplication } from "../lib/types";
 import { toast } from "sonner";
 
+const BUSINESS_TYPES = [
+  "Osoba prywatna",
+  "Firma",
+  "Jednoosobowa działalność gospodarcza",
+  "Stowarzyszenie",
+  "Fundacja",
+  "Automobilklub zrzeszony w PZM",
+] as const;
+
 export function BecomeOrganizerPage() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [company, setCompany] = useState("");
   const [businessType, setBusinessType] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [checking, setChecking] = useState(isAuthenticated);
+  const [existing, setExisting] = useState<OrganizerApplication | null>(null);
   const [sent, setSent] = useState(false);
 
-  const BUSINESS_TYPES = [
-    "Osoba prywatna",
-    "Firma",
-    "Jednoosobowa działalność gospodarcza",
-    "Stowarzyszenie",
-    "Fundacja",
-    "Automobilklub zrzeszony w PZM",
-  ] as const;
+  const alreadyOrganizer = user?.role === "ORGANIZER" || user?.role === "ADMIN";
+  const showPending = sent || existing?.status === "PENDING";
+  const showForm =
+    !alreadyOrganizer &&
+    !showPending &&
+    existing?.status !== "APPROVED";
+
+  useEffect(() => {
+    if (!isAuthenticated || alreadyOrganizer) {
+      setChecking(false);
+      return;
+    }
+    let cancelled = false;
+    setChecking(true);
+    api
+      .get<OrganizerApplication | undefined>("/api/organizer/my-application")
+      .then((app) => {
+        if (!cancelled && app) setExisting(app);
+      })
+      .catch(() => {
+        /* brak wniosku lub błąd — pokaż formularz */
+      })
+      .finally(() => {
+        if (!cancelled) setChecking(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, alreadyOrganizer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,15 +81,16 @@ export function BecomeOrganizerPage() {
     }
     setLoading(true);
     try {
-      await api.post("/api/organizer/apply", {
+      const created = await api.post<OrganizerApplication>("/api/organizer/apply", {
         company: company.trim(),
         businessType,
         message: message.trim(),
       });
+      setExisting(created);
       setSent(true);
       toast.success("Wniosek wysłany! Administrator rozpatrzy go wkrótce.");
-    } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się wysłać wniosku");
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : "Nie udało się wysłać wniosku");
     } finally {
       setLoading(false);
     }
@@ -78,20 +110,74 @@ export function BecomeOrganizerPage() {
         </div>
       </section>
 
-      <section className="container mx-auto px-4 py-10 max-w-2xl">
-        {sent ? (
+      <section className="container mx-auto px-4 py-10 max-w-2xl space-y-6">
+        {checking ? (
+          <div className="flex items-center justify-center gap-3 text-[#9ca3af] py-16">
+            <Loader2 className="w-6 h-6 animate-spin text-[var(--race-accent)]" />
+            Sprawdzanie statusu wniosku...
+          </div>
+        ) : alreadyOrganizer ? (
           <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
             <p className="text-white" style={{ fontWeight: 700 }}>
-              Wniosek został wysłany
+              Masz już uprawnienia organizatora
             </p>
-            <p className="text-[#9ca3af]">Administrator skontaktuje się z Tobą po weryfikacji.</p>
+            <p className="text-[#9ca3af]">Możesz tworzyć i zarządzać wydarzeniami w panelu organizatora.</p>
+            <Link to="/organizer">
+              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+                Panel organizatora
+              </Button>
+            </Link>
+          </div>
+        ) : showPending ? (
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+            <Clock className="w-12 h-12 text-[var(--race-accent)] mx-auto" />
+            <p className="text-white" style={{ fontWeight: 700 }}>
+              Wniosek oczekuje na decyzję
+            </p>
+            <p className="text-[#9ca3af]">
+              {existing?.company ? (
+                <>
+                  Firma: <span className="text-white">{existing.company}</span>
+                  {existing.businessType ? ` · ${existing.businessType}` : ""}.{" "}
+                </>
+              ) : null}
+              Administrator rozpatrzy wniosek wkrótce — dostaniesz dostęp do panelu organizatora po akceptacji.
+            </p>
             <Link to="/dashboard">
               <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
                 Wróć do profilu
               </Button>
             </Link>
           </div>
-        ) : (
+        ) : existing?.status === "APPROVED" ? (
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+            <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
+            <p className="text-white" style={{ fontWeight: 700 }}>
+              Wniosek został zaakceptowany
+            </p>
+            <p className="text-[#9ca3af]">
+              Odśwież sesję (wyloguj i zaloguj ponownie), jeśli nie widzisz panelu organizatora.
+            </p>
+            <Link to="/organizer">
+              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+                Panel organizatora
+              </Button>
+            </Link>
+          </div>
+        ) : null}
+
+        {existing?.status === "REJECTED" && showForm && (
+          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 text-center space-y-2">
+            <XCircle className="w-10 h-10 text-red-400 mx-auto" />
+            <p className="text-white" style={{ fontWeight: 700 }}>
+              Poprzedni wniosek został odrzucony
+            </p>
+            <p className="text-[#9ca3af] text-sm">Możesz złożyć nowy wniosek z aktualnymi danymi.</p>
+          </div>
+        )}
+
+        {showForm && (
           <form onSubmit={handleSubmit} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 space-y-6">
             {!isAuthenticated && (
               <p className="text-[var(--race-accent)] text-sm">
@@ -155,7 +241,7 @@ export function BecomeOrganizerPage() {
             </div>
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || !isAuthenticated}
               className="w-full bg-[var(--race-accent)] text-[#121212] h-12"
               style={{ fontWeight: 800 }}
             >

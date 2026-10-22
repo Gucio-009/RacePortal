@@ -20,6 +20,9 @@ public interface OrganizerApplicationRepository extends JpaRepository<OrganizerA
     /** Czy użytkownik ma już wniosek w danym statusie (np. PENDING). */
     Optional<OrganizerApplication> findFirstByUser_IdAndStatus(String userId, ApplicationStatus status);
 
+    /** Ostatni wniosek danego użytkownika (do statusu na formularzu). */
+    Optional<OrganizerApplication> findFirstByUser_IdOrderByCreatedAtDesc(String userId);
+
     /** Pełna lista wniosków dla panelu admina. */
     List<OrganizerApplication> findAllByOrderByCreatedAtDesc();
 

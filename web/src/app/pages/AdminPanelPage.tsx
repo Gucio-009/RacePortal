@@ -182,17 +182,30 @@ export function AdminPanelPage() {
       await api.patch(`/api/admin/organizer-applications/${id}`, { status });
       toast.success(
         status === "APPROVED"
-          ? "Wniosek APPROVED — użytkownik powinien otworzyć Panel org. (sesja odświeży się automatycznie)"
-          : `Wniosek: ${status}`,
+          ? "Wniosek zaakceptowany — użytkownik ma teraz rolę organizatora"
+          : "Wniosek odrzucony",
       );
       setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
-      if (stats && status === "APPROVED") {
+      if (stats) {
         setStats({ ...stats, pendingApps: Math.max(0, stats.pendingApps - 1) });
       }
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji wniosku");
     }
   };
+
+  const applicationStatusLabel = (status: string) => {
+    if (status === "PENDING") return "Oczekuje";
+    if (status === "APPROVED") return "Zaakceptowany";
+    if (status === "REJECTED") return "Odrzucony";
+    return status;
+  };
+
+  const sortedApplications = [...applications].sort((a, b) => {
+    if (a.status === "PENDING" && b.status !== "PENDING") return -1;
+    if (b.status === "PENDING" && a.status !== "PENDING") return 1;
+    return (b.createdAt || "").localeCompare(a.createdAt || "");
+  });
 
   if (loading) {
     return (
@@ -474,30 +487,56 @@ export function AdminPanelPage() {
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-4">
-            {applications.length === 0 ? (
-              <p className="text-[#9ca3af] text-center py-8">Brak wniosków.</p>
+            {sortedApplications.length === 0 ? (
+              <p className="text-[#9ca3af] text-center py-8">Brak wniosków o rolę organizatora.</p>
             ) : (
-              applications.map((app) => (
+              sortedApplications.map((app) => (
                 <Card key={app.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
                   <CardHeader>
                     <CardTitle className="text-white flex flex-wrap items-center gap-2" style={{ fontWeight: 700 }}>
                       {app.company}
-                      <Badge variant="outline" className="border-[#2a2a2a] text-white">
-                        {app.status}
+                      <Badge
+                        variant="outline"
+                        className={
+                          app.status === "PENDING"
+                            ? "border-[var(--race-accent)] text-[var(--race-accent)]"
+                            : app.status === "APPROVED"
+                              ? "border-green-700 text-green-400"
+                              : "border-red-800 text-red-400"
+                        }
+                      >
+                        {applicationStatusLabel(app.status)}
                       </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <p className="text-[#9ca3af] text-sm">
                       {app.user?.username} ({app.user?.email})
+                      {app.businessType ? ` · ${app.businessType}` : ""}
                     </p>
-                    <p className="text-[#9ca3af]">{app.message}</p>
+                    {app.createdAt && (
+                      <p className="text-[#6b7280] text-xs">
+                        Złożony: {new Date(app.createdAt).toLocaleString("pl-PL")}
+                      </p>
+                    )}
+                    <p className="text-[#9ca3af] whitespace-pre-wrap">{app.message}</p>
                     {app.status === "PENDING" && (
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={() => updateApplication(app.id, "APPROVED")} className="bg-green-700 hover:bg-green-600">
-                          Zatwierdź
+                      <div className="flex gap-2 pt-1">
+                        <Button
+                          size="sm"
+                          onClick={() => updateApplication(app.id, "APPROVED")}
+                          className="bg-green-700 hover:bg-green-600"
+                        >
+                          <Check className="w-4 h-4 mr-1" />
+                          Zaakceptuj
                         </Button>
-                        <Button size="sm" variant="outline" onClick={() => updateApplication(app.id, "REJECTED")} className="border-red-800 text-red-400">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => updateApplication(app.id, "REJECTED")}
+                          className="border-red-800 text-red-400"
+                        >
+                          <X className="w-4 h-4 mr-1" />
                           Odrzuć
                         </Button>
                       </div>

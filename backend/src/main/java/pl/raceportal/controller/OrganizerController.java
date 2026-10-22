@@ -37,6 +37,18 @@ public class OrganizerController {
         this.organizerService = organizerService;
     }
 
+    /** Status własnego wniosku (null body gdy brak). */
+    @GetMapping("/my-application")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<OrganizerApplicationResponse> myApplication(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        OrganizerApplicationResponse app = organizerService.myApplication(currentUser);
+        if (app == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(app);
+    }
+
     /** Składa wniosek o rolę ORGANIZER (status PENDING). */
     @PostMapping("/apply")
     @PreAuthorize("isAuthenticated()")

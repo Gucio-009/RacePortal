@@ -234,6 +234,17 @@ export function RootLayout() {
                         <Car className="h-4 w-4 text-[var(--race-accent)]" />
                         Garaż
                       </button>
+                      {isUser && (
+                        <button
+                          type="button"
+                          role="menuitem"
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                          onClick={() => go("/zostan-organizatorem")}
+                        >
+                          <Flag className="h-4 w-4 text-[var(--race-accent)]" />
+                          Zostań organizatorem
+                        </button>
+                      )}
                       {isOrganizer && (
                         <button
                           type="button"
@@ -313,6 +324,11 @@ export function RootLayout() {
             <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/archiwum")}>
               <Archive className="w-4 h-4 text-[var(--race-accent)]" /> Archiwum
             </button>
+            {isUser && (
+              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/zostan-organizatorem")}>
+                <Flag className="w-4 h-4 text-[var(--race-accent)]" /> Zostań organizatorem
+              </button>
+            )}
             {isOrganizer && (
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/organizer")}>
                 <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> Panel organizatora

@@ -13,7 +13,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
-import { Calendar, MapPin, Clock, Car, Trophy, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Clock, Car, Trophy, Loader2, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
@@ -152,6 +152,30 @@ export function DashboardPage() {
             </div>
           </CardContent>
         </Card>
+
+        {user?.role === "USER" && (
+          <Card className="bg-[#1a1a1a] border-[#2a2a2a] mb-8">
+            <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
+              <div className="flex items-start gap-3">
+                <Flag className="w-8 h-8 text-[var(--race-accent)] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-white font-semibold mb-1">Chcesz organizować wydarzenia?</p>
+                  <p className="text-[#9ca3af] text-sm">
+                    Złóż wniosek o konto organizatora — administrator rozpatrzy go w panelu.
+                  </p>
+                </div>
+              </div>
+              <Link to="/zostan-organizatorem">
+                <Button
+                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 shrink-0"
+                  style={{ fontWeight: 700 }}
+                >
+                  ZOSTAŃ ORGANIZATOREM
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <Card className="bg-[#1a1a1a] border-[#2a2a2a]">

@@ -47,6 +47,21 @@ public class OrganizerService {
         this.eventService = eventService;
     }
 
+    /** Ostatni wniosek zalogowanego użytkownika (lub null). */
+    @Transactional(readOnly = true)
+    public OrganizerApplicationResponse myApplication(UserPrincipal currentUser) {
+        return organizerApplicationRepository.findFirstByUser_IdOrderByCreatedAtDesc(currentUser.getId())
+                .map(a -> {
+                    UserRef userRef = new UserRef(a.getUser().getId(), a.getUser().getUsername(),
+                            a.getUser().getEmail(), null);
+                    return new OrganizerApplicationResponse(
+                            a.getId(), a.getUser().getId(), a.getCompany(), a.getBusinessType(),
+                            a.getMessage(), a.getStatus().name(),
+                            a.getCreatedAt().toString(), a.getUpdatedAt().toString(), userRef);
+                })
+                .orElse(null);
+    }
+
     /**
      * Składa wniosek o rolę ORGANIZER (status PENDING) — wymaga zalogowanego USER.
      */

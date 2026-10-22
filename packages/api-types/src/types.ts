@@ -224,9 +224,11 @@ export interface OrganizerApplication {
   id: string;
   userId: string;
   company: string;
+  businessType?: string | null;
   message: string;
   status: ApplicationStatus;
   createdAt: string;
+  updatedAt?: string;
   user?: { id: string; username: string; email: string };
 }
 
