@@ -65,3 +65,5 @@ npm --prefix web run build
 Po włączeniu Dockera: `docker compose up -d && npm run test:api && npm run test:e2e` (oraz mobile E2E wg `TESTY.md`).
 
 Zgodność ze Specyfikacją Formularzy: **nie pełna** — szczegóły [`../spec-conformity.md`](../spec-conformity.md).
+
+> **Uwaga (2026-10-22):** ten raport jest z 2026-09-14. Liczba `@Test` w `ApiIntegrationTest` mogła wzrosnąć (~27); nie cytować „51/51 E2E” z pamięci — odpal Playwright lokalnie albo zaktualizuj ten plik po przebiegu. Status odbioru: [`../../MVP.md`](../../MVP.md).

@@ -81,4 +81,15 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — Oracle, Mailbux, PWA, link aktywacyjny; porządek docs.*
+## 7. Katalog torów w bazie + wspólne presety
+
+| | |
+|--|--|
+| **Kiedy** | 2026-10-21 / sync docs 2026-10-22 |
+| **Problem** | Lokalizacje eventów wpisywane ręcznie → literówki, brak GPS, niespójność web/mobile. |
+| **Decyzja** | Seed katalogu torów PL przy starcie API (`ensurePolishTracks`) + `GET /api/tracks`; UI org/filtry korzysta ze shared `TRACK_PRESETS` (`packages/api-types`). |
+| **Dlaczego** | Jedno źródło nazw/GPS; mapa i formularze wyglądają „żywo” bez ręcznego przepisywania. |
+
+---
+
+*Ostatnia aktualizacja: 2026-10-22 — Oracle, Mailbux, PWA, link `/verify-email/{token}`, katalog torów; porządek docs.*

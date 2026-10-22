@@ -8,7 +8,7 @@ Nie dubluje:
 | Plik | Co tam |
 |------|--------|
 | [`spec-conformity.md`](./spec-conformity.md) | Luki vs Specyfikacja Formularzy (pola, upload, walidacje) |
-| [`MVP.md`](./MVP.md) §5 | Luki formalne odbioru (perf 10k/50RPS, HTTPS, restore) |
+| [`MVP.md`](./MVP.md) §5 | Luki formalne odbioru (perf 10k/50RPS, restore; HTTPS na prod przez Cloudflare Tunnel) |
 | [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | Alternatywy stacku (Keycloak, Next, Redis…) |
 
 ---
@@ -72,7 +72,7 @@ Nie dubluje:
 
 ## 4. Dane i „prawdziwość” katalogu
 
-- **Więcej seedów torów PL** (Tor Poznań, Kielce, Bednary…) ze stałymi GPS — mapa wygląda „żywo”.  
+- ~~**Seed torów PL**~~ — **zrobione** (`GET /api/tracks` + `TRACK_PRESETS`); dalej: uzupełnianie brakujących obiektów / weryfikacja GPS.  
 - **Import kalendarzy** (CSV / iCal organizerów zewnętrznych) — mniej ręcznego przepisywania.  
 - **Weryfikacja lokalizacji** — geocode przy zapisie eventu (mniej literówek w mieście/woj.).  
 - **Deduplikacja eventów** (ten sam tor + data + nazwa).
@@ -120,4 +120,4 @@ Kolejność „najwięcej efektu / najmniej ryzyka”:
 
 ---
 
-*Utworzono: 2026-09-28 — rejestr luk produktowych i pomysłów po etapie mobilki-wizytówki.*
+*Utworzono: 2026-09-28 — rejestr luk produktowych i pomysłów po etapie mobilki-wizytówki. Aktualizacja: 2026-10-22 (seed torów PL = zrobione).*

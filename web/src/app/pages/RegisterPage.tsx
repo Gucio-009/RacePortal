@@ -3,7 +3,7 @@
  *
  * Cel: utworzenie konta kierowcy (USER) z danymi profilu / licencji; opcjonalnie Google.
  * Wzorce: dwuetapowy UI (formularz → „sprawdź mail” gdy `requiresVerification`),
- * AuthContext (`register`, `resendCode`, `loginWithGoogle`); aktywacja przez `/verify-email?token=`.
+ * AuthContext (`register`, `resendCode`, `loginWithGoogle`); aktywacja przez `/verify-email/{token}` (query = legacy).
  * Auth/JWT: po kliknięciu linku AuthContext zapisuje JWT w `raceportal_token`.
  * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
  * Theme: `--race-accent`, `font-display`; link aktywacyjny idzie SMTP (prod Mailbux).

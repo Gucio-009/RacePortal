@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-21 17:15 (Oracle + Mailbux + PWA; link aktywacyjny; admin błędy; porządek docs)
+**Ostatnia synchronizacja:** 2026-10-22 (katalog torów PL; link `/verify-email/{token}`; wnioski org. UX; liczby testów; rate limit API)
 
 ---
 
@@ -56,7 +56,8 @@ Legenda statusu: **OK** · **Częściowo** · **Brak** · **Ponad**
 
 ### 2.3. Warunki odbioru (miało być)
 
-1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e) — **e2e automatyczne: PASS (51)**; patrz [`docs/testy/TESTY.md`](./testy/TESTY.md)  
+1. Funkcje **1–11** dostępne i przetestowane (manualne + podstawowe e2e) — Playwright: `web.spec` (× desktop/mobile viewport) + `mobile.spec`; patrz [`docs/testy/TESTY.md`](./testy/TESTY.md)  
+
 2. UX mobile-first — web responsive + Expo `mobile/`  
 3. Spójność z pitch / prezentacją  
 
@@ -87,14 +88,14 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
-| 4 | Panel admina | `/admin` — userzy, eventy, wnioski org., zgłoszenia błędów (status/CSV) | **OK** |
-| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja linkiem; zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
+| 4 | Panel admina | `/admin` — userzy, eventy, wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
+| 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
 | 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = URL nie upload | **Częściowo** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
-| 8 | Konto organizatora | Rola ORGANIZER + wniosek z `businessType` | **Częściowo** |
-| 9 | Narzędzia org. | `/organizer` — create UX: selecty, miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
-| 10 | Baza wydarzeń | MySQL + Spring Data JPA | **OK** |
-| 11 | Maile | SMTP Mailbux → skrzynka (link aktywacyjny, zgłoszenia, statusy, reset) | **OK** |
+| 8 | Konto organizatora | Rola ORGANIZER; wniosek `/zostan-organizatorem` (`businessType`) + status `GET /api/organizer/my-application`; CTA w dashboard/menu | **OK** |
+| 9 | Narzędzia org. | `/organizer` — create UX: selecty torów (`TRACK_PRESETS` / seed `GET /api/tracks`), miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
+| 10 | Baza wydarzeń | MySQL + Spring Data JPA; seed katalogu torów PL | **OK** |
+| 11 | Maile | SMTP Mailbux → skrzynka (link aktywacyjny path-based, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet w `/wydarzenia` (widok Mapa) + mobile markery | **OK** |
 | 13 | Google Maps trasa | OSRM domyślnie; Google tylko z `GOOGLE_MAPS_API_KEY` | **Częściowo** |
 | 14 | Archiwum | `/archiwum`, ARCHIVED + auto-archiwum przeszłych | **OK** |
@@ -110,12 +111,12 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 - [x] 2 Filtry i wyszukiwarka  
 - [x] 3 Szczegóły  
 - [x] 4 Panel admina  
-- [x] 5 Konto kierowcy  
-- [x] 6 Garaż  
+- [~] 5 Konto kierowcy — OK funkcjonalnie; luki Spec (imię/telefon)  
+- [~] 6 Garaż — OK funkcjonalnie; zdjęcia = URL (nie upload)  
 - [x] 7 System zgłoszeń  
-- [x] 8 Konto organizatora  
-- [x] 9 Narzędzia organizatora  
-- [x] 10 Baza danych  
+- [x] 8 Konto organizatora — wniosek + admin approve/reject  
+- [~] 9 Narzędzia organizatora — OK funkcjonalnie; plakat = URL (nie upload)  
+- [x] 10 Baza danych (+ katalog torów PL)  
 - [x] 11 Powiadomienia mailowe  
 
 ### Funkcje 12–15
@@ -138,7 +139,8 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 - [x] Bean Validation, nagłówki CSP + X-Frame-Options (nginx)  
 - [x] Polityka prywatności + nota RODO przy tworzeniu wydarzenia  
 - [x] Smoke / testy manualne ścieżek ról  
-- [x] Testy automatyczne API: JUnit MockMvc **20/20 PASS** + Playwright E2E — `docs/testy/TESTY.md`  
+- [x] Testy automatyczne: JUnit MockMvc (~27 scenariuszy w `ApiIntegrationTest` + unit JWT/handler); Playwright E2E (`web.spec` × 2 viewporty + `mobile.spec`); Vitest api-types / mobile — szczegóły i ostatni werdykt: `docs/testy/TESTY.md`, `docs/testy/wyniki/podsumowanie.md` (może być starszy niż kod)  
+
 
 ---
 
@@ -169,14 +171,15 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Trasa OSRM (#13 fallback) | Działa bez klucza Google; Google to opcja |
 | Auto-archiwizacja wydarzeń | Job przy starcie API + filtr archiwum dla minionych APPROVED |
 | Mailbux (prawdziwy SMTP) | Link aktywacyjny / statusy na skrzynkę użytkownika |
-| Link aktywacyjny + resume | Zamiast kodu 6-cyfrowego; `/verify-email?token=` |
+| Link aktywacyjny + resume | Token w path `/verify-email/{token}` (`PUBLIC_BASE_URL`); query `?token=` = legacy fallback |
 | Admin: błędy OPEN/DONE + CSV | Moderacja zgłoszeń z przycisku „Zgłoś błąd” |
 | Web PWA + bottom nav | Installable UI na telefonie bez store |
-| Oracle Always Free + Tunnel | Cały stack na jednej VM pod `raceportal.pl` |
+| Oracle Always Free + Tunnel | Cały stack na jednej VM pod `raceportal.pl` (TLS/HSTS po stronie Cloudflare) |
 | Seed 3 ról + pending event | Ułatwia demo admin/org/kierowca od razu po `compose up` |
-| Rate limiting + security headers na nginx | ASVS L1 basics ponad „gołe” CRUD |
+| Rate limiting API + security headers nginx | `AttemptRateLimiter` (verify/resend/bug); CSP / X-Frame-Options na nginx |
 | Volume backup + skrypt dzienny | Niezawodność wykraczająca poza samą bazę „w Dockerze” |
-| Panel wniosków organizatora end-to-end | Wniosek → mail/admin approve → rola ORGANIZER |
+| Panel wniosków organizatora end-to-end | `/zostan-organizatorem` → admin approve/reject → rola ORGANIZER (+ CTA dashboard/menu) |
+| Katalog torów PL | Seed MySQL + `GET /api/tracks`; UI org/filtry: `TRACK_PRESETS` w `packages/api-types` |
 | Galeria z API (upcoming + archive) | **Świadomie odłożona** — prosty podgląd zdjęć z eventów; bez mock-fallback przy błędzie |
 | Dokumentacja `changes.md` + ten plik porównawczy | Śledzenie plan vs stan |
 | Expo `mobile/` (wizytówka) | Katalog Eventów + CTA na web; poza samym responsive web |
@@ -197,7 +200,7 @@ MVP funkcje 1–11:     ████████████████░░�
 MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile + web PWA OK
 Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL+Mailbux; Oracle+TLS przez CF Tunnel
-Ponad MVP:            Mailbux, PWA, Oracle deploy, Expo wizytówka, api-types, markers
+Ponad MVP:            Mailbux, PWA, Oracle, Expo, api-types, markers, katalog torów PL
 ```
 
 ### Komendy
@@ -224,7 +227,7 @@ npm run test:api && npm run test:mobile-unit && npx playwright test
 | [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) | Proces i uzasadnienia decyzji (dyplom) |
 | [`pomysly-technologiczne.md`](./pomysly-technologiczne.md) | Alternatywy stacku (`Pomysł (alt)` w kodzie) |
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka i przypadki testowe |
-| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni werdykt API Spring **20/20 PASS** |
+| [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatni zapisany werdykt (może być starszy niż liczba `@Test` w kodzie) |
 | [`../README.md`](../README.md) | Szybki start + testy |
 | [`../mobile/README.md`](../mobile/README.md) | Expo + testy mobile |
 | [`README.md`](./README.md) | Indeks dokumentacji |
@@ -246,12 +249,10 @@ Nie kasuj sekcji „Co miało być” — to baza porównania.
 
 ---
 
-
-
-## 8. Wyrównanie do Dokumentacji (2026-08-02)
+## 9. Wyrównanie do Dokumentacji (2026-08-02)
 
 Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+web: statusy PENDING/ACCEPTED/CONFIRMED/CANCELED, wydarzenia płatne + proof przelewu, anulowanie zgłoszenia/wydarzenia, edycja garażu z blokadą przy otwartym zgłoszeniu, weryfikacja e-mail przy rejestracji. Poza MVP kodu: bramka płatności, upload binarny, Project X.
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-21.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-22.*

@@ -27,7 +27,7 @@
 \projectgoals{Celem projektu jest zaprojektowanie i~zaimplementowanie systemu RacePortal --- centralnego katalogu wydarzeń motorsportowych w~Polsce, umożliwiającego przeglądanie wydarzeń (lista, mapa, kalendarz), zarządzanie garażem pojazdów, zgłoszenia udziału oraz obsługę ról organizatora i~administratora, wraz z~aplikacją mobilną typu wizytówka oraz konteneryzowanym środowiskiem uruchomieniowym.}
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
-\successmeasure{Działający stos Docker Compose (web, API, MySQL, Mailpit, backup); realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
+\successmeasure{Działający stos Docker Compose (web, API, MySQL, backup) z~SMTP Mailbux; realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
 \projlimitations{Brak natywnej bramki płatności (PSP); upload plików zastąpiony adresami URL; aplikacja mobilna bez pełnej parity z~webem (świadoma wizytówka); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
 \date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
@@ -175,7 +175,7 @@ Poniżej karty udziałowców (środowisko \texttt{stakeholder} szablonu PJATK). 
 Jedno miejsce na odkrywanie startów, dopasowanie auta do wymagań wydarzenia i~obsługę statusu zgłoszenia --- z~osobnymi narzędziami dla organizatora i~administratora.
 
 \section{Kanały komunikacji i~dystrybucji}
-Aplikacja webowa jako kanał główny (\url{https://raceportal.pl}); e-mail (Mailpit w~dev, Mailbux w~prod); mobilna wizytówka jako kanał discovery z~konwersją na web; repozytorium GitHub jako kanał dystrybucji kodu.
+Aplikacja webowa jako kanał główny (\url{https://raceportal.pl}); e-mail SMTP \textbf{Mailbux} (Compose bez Mailpita); mobilna wizytówka jako kanał discovery z~konwersją na web; repozytorium GitHub jako kanał dystrybucji kodu.
 
 \section{Kluczowe zasoby i~działania}
 Zespół deweloperski, infrastruktura Docker, seed danych demo, dokumentacja (\texttt{docs/}), scenariusze prezentacji i~testy automatyczne.
@@ -321,12 +321,12 @@ Moduły domenowe: użytkownicy/auth, wydarzenia, zgłoszenia, garaż, organizato
 
 \section{Architektura fizyczna i wdrożeniowa}
 \label{sec:arch-fizyczna}
-Kontenery lokalne: \texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{mailhog} (Mailpit), \texttt{backup}. Mobile poza Compose.
+Kontenery lokalne: \texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{backup}. Mobile poza Compose. Maile --- SMTP Mailbux (poza Compose; \texttt{SMTP\_PASSWORD} w~\texttt{.env}).
 
-Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~Docker Compose; publiczny dostęp przez \textbf{Cloudflare Tunnel} (\texttt{cloudflared}) do nginx na porcie \texttt{:8081}. Domena \url{https://raceportal.pl} jest w~tym samym koncie Cloudflare --- TLS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages. Maile produkcyjne: SMTP Mailbux.
+Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~Docker Compose; publiczny dostęp przez \textbf{Cloudflare Tunnel} (\texttt{cloudflared}) do nginx na porcie \texttt{:8081}. Domena \url{https://raceportal.pl} jest w~tym samym koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages.
 
 \section{Projekt bazy danych}
-Encje m.in.: użytkownik, pojazd, wydarzenie, zgłoszenie, wniosek organizatora; statusy wydarzeń i~zgłoszeń; współrzędne geograficzne wydarzenia.
+Encje m.in.: użytkownik, pojazd, wydarzenie, zgłoszenie, wniosek organizatora, \textbf{tor} (katalog PL seedowany przy starcie API, odczyt \texttt{GET /api/tracks}); statusy wydarzeń i~zgłoszeń; współrzędne geograficzne. Wspólne presety torów dla UI: \texttt{TRACK\_PRESETS} w~\texttt{packages/api-types}.
 
 \subsection{Diagram klas}
 \label{sec:diagram-klas}
@@ -382,7 +382,7 @@ Pakiet \texttt{pl.raceportal} --- warstwy controller / service / repository / dt
 \section{Model domenowy i encje}
 Użytkownik (role), Car, Event, Registration oraz powiązane statusy i~flagi wymagań wydarzenia.
 \section{Rejestracja użytkowników i logowanie}
-Rejestracja z~opcjonalną weryfikacją e-mail (kod); logowanie hasłem; opcjonalna wymiana Google idToken $\rightarrow$ JWT.
+Rejestracja z~aktywacją linkiem \texttt{/verify-email/\{token\}} (\texttt{PUBLIC\_BASE\_URL}; query \texttt{?token=} jako fallback); logowanie hasłem; opcjonalna wymiana Google idToken $\rightarrow$ JWT; rate limit prób w~API (\texttt{AttemptRateLimiter}).
 \section{Zarządzanie profilami użytkowników}
 Aktualizacja danych profilu, hasła, deklaracji (m.in.\ PZM, prawo jazdy B), pól adresu / Instagram.
 \section{Obsługa wydarzeń}
@@ -415,7 +415,7 @@ Formularz pojazdu, walidacja pól wymaganych, edycja i~usuwanie (z~ograniczeniam
 \section{Panel organizatora}
 Tworzenie/edycja wydarzeń, lista zgłoszeń, zmiana statusów.
 \section{Panel administratora}
-Moderacja wydarzeń, wnioski organizatora, zarządzanie rolami.
+Moderacja wydarzeń, wnioski organizatora (zaakceptuj / odrzuć $\rightarrow$ rola \texttt{ORGANIZER}), zarządzanie rolami, zgłoszenia błędów. Formularz wniosku użytkownika: \texttt{/zostan-organizatorem}.
 \section{Mapa i elementy lokalizacyjne}
 Leaflet + kafelki CARTO; pickery lokalizacji; proxy trasy \texttt{/api/maps/route}.
 \section{Responsywność i doświadczenie użytkownika}
@@ -491,7 +491,7 @@ Demonstracja katalogu (3 widoki), zapisu kierowcy z~\texttt{carMatch}, paneli or
 \section{Scenariusz użycia z perspektywy kierowcy}
 Login seed $\rightarrow$ garaż $\rightarrow$ filtr/katalog $\rightarrow$ zapis $\rightarrow$ dashboard statusów.
 \section{Scenariusz użycia z perspektywy organizatora}
-Login org $\rightarrow$ wydarzenie $\rightarrow$ zgłoszenia $\rightarrow$ zmiana statusu $\rightarrow$ podgląd maila w~Mailpit.
+Login org $\rightarrow$ wydarzenie (presety torów) $\rightarrow$ zgłoszenia $\rightarrow$ zmiana statusu $\rightarrow$ podgląd maila na skrzynce (Mailbux).
 \section{Scenariusz użycia z perspektywy administratora}
 Login admin $\rightarrow$ moderacja wydarzenia / wniosku organizatora / ról.
 \section{Podsumowanie działania systemu}

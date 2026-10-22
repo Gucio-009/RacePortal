@@ -19,8 +19,8 @@ Mobile Expo osobno (`:8082` / Simulator).
 1. **Hook (30 s)** — katalog motorsportu PL: znajdź start → auto → org zarządza → admin moderuje.
 2. **Gość / katalog (2 min)** — `/wydarzenia`: Lista → Mapa → Kalendarz + filtry + detal.
 3. **Kierowca (3 min)** — garaż, zapis, `carMatch`, zgłoszenia.
-4. **Organizator (2 min)** — event + zgłoszenia + mail na skrzynkę kierowcy.
-5. **Admin (1 min)** — approve eventu / wniosku org.
+4. **Organizator (2 min)** — event (preset toru) + zgłoszenia + mail na skrzynkę kierowcy (Mailbux).
+5. **Admin (1 min)** — approve eventu / wniosku org. (`/admin` → Wnioski).
 6. **Telefon (1–1,5 min)** — web PWA (bottom nav) **lub** Expo wizytówka → CTA „Zapisz się na stronie”.
 7. **Domknięcie (30 s)** — Compose / Oracle, health (`db` + `smtp`), jeden API; uczciwie o lukach (upload = URL).
 

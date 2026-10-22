@@ -1,7 +1,7 @@
 # RacePortal — FAQ dla przeglądu / odbioru
 
 **Jedno miejsce na powtarzające się pytania.** Przed zgłoszeniem „usługa nie działa” / „gdzie seed?” przeczytaj poniższe.  
-Aktualizacja: **2026-10-21**.
+Aktualizacja: **2026-10-22**.
 
 ---
 
@@ -13,7 +13,7 @@ Aktualizacja: **2026-10-21**.
 | Mechanizm | Spring `CommandLineRunner` — uruchamia się **przy starcie API** |
 | Flaga | `SEED_ENABLED=true` (Compose) / `app.seed.enabled` |
 | Pierwszy start | Brak użytkownika `admin@raceportal.pl` → tworzy admin/org/kierowca + eventy demo |
-| Kolejne starty | Idempotentnie: `ensurePaidDemoEvents()`, `ensureDemoGarageCars()` |
+| Kolejne starty | Idempotentnie: `ensurePaidDemoEvents()`, `ensureDemoGarageCars()`, `ensurePolishTracks()` (katalog torów PL → `GET /api/tracks`) |
 | Logi | `docker compose logs api \| grep -i seed` |
 
 Nie ma osobnego skryptu SQL „seed.sql” — inicjalizacja jest w Java przy bootcie Springa.
@@ -129,7 +129,9 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Edycja wydarzenia | Panel organizatora → **Edytuj** (PATCH API) |
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
 | Galeria | Świadomie **odłożona** (brak w top-nav) — nie jest luką MVP do domknięcia teraz |
-| Aktywacja konta | Link w mailu (nie kod 6-cyfrowy); ponowna wysyłka: `/register?verify=1` |
+| Aktywacja konta | Link `/verify-email/{token}` (`PUBLIC_BASE_URL`); query `?token=` = legacy; ponowna wysyłka: `/register?verify=1` |
+| Wniosek organizatora | `/zostan-organizatorem` → admin `/admin` (Wnioski) approve/reject |
+| Katalog torów PL | Seed + `GET /api/tracks`; UI: `TRACK_PRESETS` w `packages/api-types` |
 | Admin → Błędy | Status OPEN/DONE, usuwanie, eksport CSV |
 | Mobile Expo | **Wizytówka** — tylko Eventy + CTA „Zapisz się na stronie” (web); bez logowania w app — [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
 | Upload plików (grafika/załączniki) | Nadal URL (nie multipart) — świadomy gap vs Spec → [`spec-conformity.md`](./spec-conformity.md) |

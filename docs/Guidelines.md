@@ -7,13 +7,14 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 - Frontend: `web/` — Vite + React + Tailwind v4 + shadcn/ui, font display **Oxanium** (PL), accent `var(--race-accent)`, dark UI
 - Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation (+ opcjonalnie Google OAuth)
 - Mobile: `mobile/` — Expo 57 **wizytówka** (katalog Eventów + CTA na web; bez auth/garażu); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
-- Shared: `packages/api-types` — typy + carMatch/avatary/kategorie (Vitest ≥500)
+- Shared: `packages/api-types` — typy + carMatch/avatary/kategorie/`TRACK_PRESETS` (Vitest ≥500)
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)
 - Docker Compose: `web`, `api`, `mysql`, `backup` (bez Mailpita)
-- Maile: SMTP **Mailbux** (`noreply@raceportal.pl`) — hasło w `.env` jako `SMTP_PASSWORD`
+- Maile: SMTP **Mailbux** (`noreply@raceportal.pl`) — hasło w `.env` jako `SMTP_PASSWORD`; link aktywacji `/verify-email/{token}` (`PUBLIC_BASE_URL`)
 - Produkcja: Oracle VM + Cloudflare Tunnel → `:8081` ([`oracle-deploy.md`](./oracle-deploy.md))
 - Web PWA: `web/public/manifest.webmanifest` + `sw.js`, bottom nav na telefonie
+- Katalog torów: seed API + `GET /api/tracks` (UI: shared presets)
 - Testy: JUnit/MockMvc/Testcontainers (API), Vitest (api-types + mobile), Playwright E2E
 - Alt-technologie: [`docs/pomysly-technologiczne.md`](./pomysly-technologiczne.md)
 - App lokalnie: http://127.0.0.1:8081/ (nie 8080); prod: https://raceportal.pl

@@ -794,7 +794,7 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 
 | Było | Jest | Dlaczego |
 |------|------|----------|
-| 6-cyfrowy kod w mailu + wpisywanie na `/register` | Token w linku `/verify-email?token=` (TTL 60 min) | Wygodniej na telefonie; mniej błędów wpisywania |
+| 6-cyfrowy kod w mailu + wpisywanie na `/register` | Token w linku (TTL 60 min); **preferowany path** `/verify-email/{token}` (query `?token=` = legacy / mniej przyjazny WAF) | Wygodniej na telefonie; mniej błędów wpisywania; mniej 403 na query |
 | `PUBLIC_BASE_URL` → localhost (bug prod) | Compose/docker default `https://raceportal.pl`; lokalnie nadpisz w `.env`; `/api/health` → `publicBaseUrl` | Link musi prowadzić na front, nie na API / localhost |
 
 Ta sama mechanika dla zmiany e-maila w `/konto`.
@@ -812,5 +812,17 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-21 — porządek docs + robots.txt.*
+## 50. Katalog torów + sync docs / dyplom (2026-10-22)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Tory ad-hoc w UI | Seed katalogu PL + `GET /api/tracks`; shared `TRACK_PRESETS` (`packages/api-types`) | Spójne lokalizacje / GPS na mapie i w formularzu org |
+| MVP sync 2026-10-21 17:15 | `MVP.md` 2026-10-22: path verify, torów, org. apply UX, rate limit API, liczby testów | Docs = stan kodu |
+| LaTeX: Mailpit w Compose | `RacePortal.tex`: Mailbux, Cloudflare Tunnel, torów, `/verify-email/{token}`, wnioski org. | Zgodność z prod / MVP |
+
+**Powiązane:** `docs/MVP.md`, `latex/pjatk_latex-main/RacePortal.tex`, FAQ / TESTY / pomysły rozwoju.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-22 — katalog torów + sync MVP/docs/LaTeX.*
 
