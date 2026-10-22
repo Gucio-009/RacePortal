@@ -293,22 +293,32 @@ export function EventsPage() {
               ))}
             </SelectContent>
           </Select>
-          <Input
-            type="date"
-            value={dateFrom}
-            onChange={(e) => setDateFrom(e.target.value)}
-            aria-label="Od daty"
-            title="Od daty"
-            className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
-          />
-          <Input
-            type="date"
-            value={dateTo}
-            onChange={(e) => setDateTo(e.target.value)}
-            aria-label="Do daty"
-            title="Do daty"
-            className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
-          />
+          <div className="space-y-1.5">
+            <label htmlFor="events-date-from" className="block text-xs font-semibold text-[#9ca3af]">
+              Data od
+            </label>
+            <Input
+              id="events-date-from"
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              aria-label="Data od"
+              className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label htmlFor="events-date-to" className="block text-xs font-semibold text-[#9ca3af]">
+              Data do
+            </label>
+            <Input
+              id="events-date-to"
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              aria-label="Data do"
+              className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+            />
+          </div>
           {isAuthenticated && (
             <Select value={carId} onValueChange={setCarId}>
               <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 lg:col-span-2">

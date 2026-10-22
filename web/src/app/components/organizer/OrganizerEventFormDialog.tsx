@@ -163,7 +163,7 @@ export function OrganizerEventFormDialog({
 
           <div className="space-y-2">
             <Label className="inline-flex items-baseline gap-0.5">
-              Data<span className="text-red-500 font-bold">*</span>
+              Data rozpoczęcia<span className="text-red-500 font-bold">*</span>
             </Label>
             <Input
               type="date"

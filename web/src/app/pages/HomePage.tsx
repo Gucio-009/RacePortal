@@ -208,8 +208,10 @@ export function HomePage() {
       <section id="o-nas" className="bg-[#1a1a1a] py-12 sm:py-16 mt-8 sm:mt-16 scroll-mt-24">
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 max-w-3xl mx-auto">
-            <h2 className="font-display text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-extrabold">
-              O <span className="text-[var(--race-accent)]">RACEPORTAL</span>
+            <h2 className="text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-extrabold">
+              {/* Oxanium „O” wygląda jak zero — łącznik w Montserrat, brand w display */}
+              <span className="font-sans tracking-wide">O </span>
+              <span className="font-display text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
             <p className="text-[#9ca3af] text-sm sm:text-lg">
               Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów —

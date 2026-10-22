@@ -153,7 +153,7 @@ export function EventDetailPage() {
     }
   };
 
-  /** Geolokalizacja przeglądarki → backend wylicza trasę (polyline + dystans). */
+  /** Od Twojej lokalizacji → do eventu (polyline + dystans). */
   const handleRoute = () => {
     if (!event?.lat || !event?.lng) {
       toast.error("Brak współrzędnych wydarzenia");
@@ -175,7 +175,7 @@ export function EventDetailPage() {
             toLng: event.lng,
           });
           setRoute(result);
-          toast.success(`Trasa: ${result.distanceText}, ${result.durationText}`);
+          toast.success(`Trasa do eventu: ${result.distanceText}, ${result.durationText}`);
         } catch (e) {
           toast.error(e instanceof ApiError ? e.message : "Nie udało się wytyczyć trasy");
         } finally {
@@ -183,7 +183,7 @@ export function EventDetailPage() {
         }
       },
       () => {
-        toast.error("Nie udało się ustalić Twojej lokalizacji");
+        toast.error("Nie udało się ustalić Twojej lokalizacji (punkt startowy trasy)");
         setRouteLoading(false);
       },
     );
@@ -282,7 +282,7 @@ export function EventDetailPage() {
                   ) : (
                     <Navigation className="w-4 h-4 mr-2" />
                   )}
-                  Trasa do mnie
+                  Trasa do eventu
                 </Button>
               </div>
               {route && (
