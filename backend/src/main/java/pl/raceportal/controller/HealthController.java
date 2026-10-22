@@ -1,5 +1,6 @@
 package pl.raceportal.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -33,10 +34,13 @@ public class HealthController {
 
     private final DataSource dataSource;
     private final JavaMailSenderImpl mailSender;
+    private final String publicBaseUrl;
 
-    public HealthController(DataSource dataSource, JavaMailSenderImpl mailSender) {
+    public HealthController(DataSource dataSource, JavaMailSenderImpl mailSender,
+                            @Value("${app.public-base-url:https://raceportal.pl}") String publicBaseUrl) {
         this.dataSource = dataSource;
         this.mailSender = mailSender;
+        this.publicBaseUrl = publicBaseUrl == null ? "" : publicBaseUrl.replaceAll("/+$", "");
     }
 
     /** Sprawdza żywotność JDBC (timeout 2s) i buduje JSON statusu. */
@@ -51,6 +55,7 @@ public class HealthController {
         body.put("time", Instant.now().toString());
         body.put("db", dbUp ? "up" : "down");
         body.put("smtp", smtpUp ? "up" : "down");
+        body.put("publicBaseUrl", publicBaseUrl);
 
         return ResponseEntity.status(dbUp ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE).body(body);
     }

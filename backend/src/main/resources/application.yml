@@ -65,7 +65,9 @@ spring:
       spec: maximumSize=500,expireAfterWrite=20s
 
 app:
-  # Bazowy URL frontu — linki aktywacyjne w mailach (prod: https://raceportal.pl).
+  # Bazowy URL frontu — linki aktywacyjne w mailach.
+  # Lokalnie (java / compose): PUBLIC_BASE_URL=http://localhost:8081
+  # Docker profile / prod: domyślnie https://raceportal.pl (patrz application-docker.yml).
   public-base-url: ${PUBLIC_BASE_URL:http://localhost:8081}
   cors:
     # W compose: lista originów web (8081) + Vite (5173) + Expo web (8082).

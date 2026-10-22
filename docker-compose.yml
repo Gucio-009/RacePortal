@@ -55,7 +55,8 @@ services:
       SMTP_AUTH: "true"
       SMTP_STARTTLS: "true"
       SMTP_FROM: "RACEPORTAL <noreply@raceportal.pl>"
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-http://localhost:8081}
+      # Linki w mailach (aktywacja). Lokalnie nadpisz w `.env`: PUBLIC_BASE_URL=http://localhost:8081
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://raceportal.pl}
       CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082,https://*.trycloudflare.com,https://*.pages.dev,https://raceportal.pl,https://www.raceportal.pl
       JWT_SECRET: raceportal-dev-secret-change-me
       SEED_ENABLED: "true"

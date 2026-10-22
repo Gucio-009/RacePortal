@@ -1,5 +1,7 @@
 package pl.raceportal.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -49,6 +51,8 @@ import java.time.temporal.ChronoUnit;
 @Service
 public class AuthService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthService.class);
+
     /** Czas ważności linku aktywacyjnego (minuty). */
     private static final int VERIFICATION_TOKEN_TTL_MINUTES = 60;
 
@@ -69,7 +73,7 @@ public class AuthService {
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
                         GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter,
-                        @Value("${app.public-base-url:http://localhost:8081}") String publicBaseUrl) {
+                        @Value("${app.public-base-url:https://raceportal.pl}") String publicBaseUrl) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.passwordEncoder = passwordEncoder;
@@ -78,6 +82,11 @@ public class AuthService {
         this.googleIdTokenService = googleIdTokenService;
         this.attemptRateLimiter = attemptRateLimiter;
         this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
+        log.info("Activation links base URL: {}", this.publicBaseUrl);
+        if (this.publicBaseUrl.contains("localhost") || this.publicBaseUrl.contains("127.0.0.1")) {
+            log.warn("PUBLIC_BASE_URL wskazuje na localhost — maile aktywacyjne nie zadziałają poza tą maszyną. "
+                    + "Na prod ustaw PUBLIC_BASE_URL=https://raceportal.pl i zrestartuj api.");
+        }
     }
 
     /**

@@ -159,6 +159,9 @@ Maile (link aktywacyjny, reset hasła, status zgłoszenia) idą SMTP. Nadawca: `
 ```bash
 SMTP_PASSWORD=haslo-skrzynki-albo-app-password
 PUBLIC_BASE_URL=https://raceportal.pl
+# Po zmianie: sudo docker compose up -d --force-recreate api
+# Sprawdź: curl -sS https://raceportal.pl/api/health | jq .publicBaseUrl
+# (musi być https://raceportal.pl — nie localhost)
 ```
 
 Potem `sudo docker compose up -d --force-recreate api`. Bez `SMTP_PASSWORD` API wstanie, ale `smtp` w health będzie `down`. Bez `PUBLIC_BASE_URL` linki aktywacyjne mogą wskazywać na localhost.

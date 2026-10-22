@@ -32,7 +32,8 @@ spring:
           writetimeout: 3000
 
 app:
-  public-base-url: ${PUBLIC_BASE_URL:http://localhost:8081}
+  # Prod default — lokalnie ustaw PUBLIC_BASE_URL=http://localhost:8081 w `.env`
+  public-base-url: ${PUBLIC_BASE_URL:https://raceportal.pl}
   mail:
     from: "${SMTP_FROM:RACEPORTAL <noreply@raceportal.pl>}"
   cors:
