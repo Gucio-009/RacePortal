@@ -439,7 +439,9 @@
 
 
 \newcommand{\makethesisattachments}{%
+\phantomsection
 \chapter*{Załączniki}
+\addcontentsline{toc}{chapter}{Załączniki}
 
 Płyta CD z następującą zawartością:
 \begin{itemize}
