@@ -795,7 +795,7 @@ Publiczny stack: Oracle + Cloudflare Tunnel + Mailbux SMTP. Seed kont (`admin123
 | Było | Jest | Dlaczego |
 |------|------|----------|
 | 6-cyfrowy kod w mailu + wpisywanie na `/register` | Token w linku `/verify-email?token=` (TTL 60 min) | Wygodniej na telefonie; mniej błędów wpisywania |
-| `PUBLIC_BASE_URL` brak | `app.public-base-url` (compose: localhost:8081 / VM: raceportal.pl) | Link musi prowadzić na front, nie na API |
+| `PUBLIC_BASE_URL` → localhost (bug prod) | Compose/docker default `https://raceportal.pl`; lokalnie nadpisz w `.env`; `/api/health` → `publicBaseUrl` | Link musi prowadzić na front, nie na API / localhost |
 
 Ta sama mechanika dla zmiany e-maila w `/konto`.
 

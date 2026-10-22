@@ -65,7 +65,7 @@ Seed: klasa `DataInitializer` przy starcie API — pełny opis w FAQ §1.
 | Logowanie | http://127.0.0.1:8081/login |
 | API health | http://127.0.0.1:8081/api/health |
 
-Maile (link aktywacyjny, reset hasła, statusy) idą SMTP przez `noreply@raceportal.pl` (Mailbux). W katalogu projektu: `.env` z `SMTP_PASSWORD=…`. Lokalnie linki używają `PUBLIC_BASE_URL` (domyślnie `http://localhost:8081`). Bez hasła SMTP health pokaże `smtp: down`.
+Maile (link aktywacyjny, reset hasła, statusy) idą SMTP przez `noreply@raceportal.pl` (Mailbux). W katalogu projektu: `.env` z `SMTP_PASSWORD=…` i opcjonalnie `PUBLIC_BASE_URL` (Docker/prod domyślnie `https://raceportal.pl`; lokalnie ustaw `http://localhost:8081`). Health: `smtp` + `publicBaseUrl`.
 
 ### 5. Konta testowe
 

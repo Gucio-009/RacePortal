@@ -164,7 +164,7 @@ PUBLIC_BASE_URL=https://raceportal.pl
 # (musi być https://raceportal.pl — nie localhost)
 ```
 
-Potem `sudo docker compose up -d --force-recreate api`. Bez `SMTP_PASSWORD` API wstanie, ale `smtp` w health będzie `down`. Bez `PUBLIC_BASE_URL` linki aktywacyjne mogą wskazywać na localhost.
+Potem `sudo docker compose up -d --force-recreate api`. Bez `SMTP_PASSWORD` API wstanie, ale `smtp` w health będzie `down`. Compose domyślnie ustawia `PUBLIC_BASE_URL=https://raceportal.pl`; nadpisz w `.env` tylko gdy potrzeba. Weryfikacja: `curl -sS https://raceportal.pl/api/health` → pole `publicBaseUrl` (nie `localhost`).
 
 ---
 
