@@ -187,6 +187,7 @@ export const router = createBrowserRouter([
       { path: "register", Component: RegisterPage },
       { path: "forgot-password", Component: ForgotPasswordPage },
       { path: "verify-email", Component: VerifyEmailPage },
+      { path: "verify-email/:token", Component: VerifyEmailPage },
       { path: "dashboard", Component: ProtectedDashboard },
       { path: "konto", Component: ProtectedAccount },
       { path: "ustawienia", Component: ProtectedSettings },

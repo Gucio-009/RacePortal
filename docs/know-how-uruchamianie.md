@@ -174,6 +174,7 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | API nie wstaje po „utwardzeniu” | `SEED_ENABLED=true` i `ALLOW_INSECURE_DEFAULTS=false` naraz są zabronione |
 | `smtp: down` / brak maila aktywacyjnego | Brak lub złe `SMTP_PASSWORD` w `.env`; sprawdź też `PUBLIC_BASE_URL` (link w mailu); restart `api` |
 | Link aktywacyjny → `localhost` | Na VM brak / złe `PUBLIC_BASE_URL`; compose domyślnie `https://raceportal.pl`. Ustaw w `.env`, `docker compose up -d --force-recreate api`, sprawdź `/api/health` → `publicBaseUrl` |
+| Link aktywacyjny → Chrome **403** | Często WAF/skaner na `?token=`. Nowe maile: `/verify-email/{token}`. Wyślij ponownie link; `git pull` + recreate `api`+`web` |
 | PWA nie instaluje się | Tylko HTTPS (produkcja) albo localhost; SW rejestruje się w buildzie produkcyjnym |
 | `robots.txt` = HTML | Brak pliku w `web/public/` albo stary obraz web — przebuduj `web` |
 

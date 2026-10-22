@@ -76,7 +76,7 @@ Zasada zapisu (jak w [`Guidelines.md`](./Guidelines.md)): każda istotna zmiana 
 |--|--|
 | **Kiedy** | 2026-10-21 |
 | **Problem** | Wpisywanie kodu na telefonie + zgubienie ekranu weryfikacji. |
-| **Decyzja** | Token w linku `/verify-email?token=` (`PUBLIC_BASE_URL`), TTL 60 min; ten sam wzorzec przy zmianie e-maila. |
+| **Decyzja** | Token w linku `/verify-email/{token}` (`PUBLIC_BASE_URL`), TTL 60 min; ten sam wzorzec przy zmianie e-maila (query `?token=` nadal obsługiwane). |
 | **Dlaczego** | Jedno kliknięcie z skrzynki; mniej błędów UX na demie. |
 
 ---

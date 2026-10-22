@@ -104,7 +104,7 @@ URL: http://127.0.0.1:8081/login
 | SMTP (Mailbux) | poza Compose | konfig w env API; hasło w `.env` → `SMTP_PASSWORD` |
 | Expo web | **nie** | 8082 (ręcznie) |
 
-Maile (link aktywacyjny `/verify-email?token=…`, reset hasła, statusy) idą na skrzynkę przez **Mailbux** (`noreply@raceportal.pl`). W `.env`: `SMTP_PASSWORD` + `PUBLIC_BASE_URL` (prod domyślnie `https://raceportal.pl`; lokalnie nadpisz `http://localhost:8081`). Health: `"smtp":"up"` oraz `"publicBaseUrl":"https://raceportal.pl"` — jeśli w health widać localhost, linki w mailu też będą złe.
+Maile (link aktywacyjny `/verify-email/{token}`, reset hasła, statusy) idą na skrzynkę przez **Mailbux** (`noreply@raceportal.pl`). W `.env`: `SMTP_PASSWORD` + `PUBLIC_BASE_URL` (prod domyślnie `https://raceportal.pl`; lokalnie nadpisz `http://localhost:8081`). Health: `"smtp":"up"` oraz `"publicBaseUrl":"https://raceportal.pl"` — jeśli w health widać localhost, linki w mailu też będą złe. Stare maile z `?token=` nadal działają.
 
 ---
 

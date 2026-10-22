@@ -392,7 +392,8 @@ public class AuthService {
         userRepository.save(user);
 
         String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
-        String link = publicBaseUrl + "/verify-email?token=" + token;
+        // Token w ścieżce (nie ?token=) — mniej blokad WAF/skanerów maili na query string → 403.
+        String link = publicBaseUrl + "/verify-email/" + token;
         String safeLink = escapeHtml(link);
         boolean emailChange = user.getPendingEmail() != null && !user.getPendingEmail().isBlank();
         String subject = emailChange ? "Potwierdź nowy e-mail RACEPORTAL" : "Aktywuj konto RACEPORTAL";

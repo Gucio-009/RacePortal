@@ -1,10 +1,11 @@
 /**
  * VerifyEmailPage — aktywacja konta / potwierdzenie e-maila z linku w mailu.
  *
- * Deep link: `/verify-email?token=…` (opcjonalnie `&email=`).
+ * Deep link (preferowany): `/verify-email/:token`
+ * Fallback (stare maile): `/verify-email?token=…` (+ opcjonalnie `&email=`).
  */
 import { useEffect, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { Flag, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
@@ -12,7 +13,15 @@ import { clearPendingVerifyEmail } from "../lib/pendingVerifyEmail";
 import { HERO_BG_TRACK } from "../lib/types";
 import { toast } from "sonner";
 
+function readTokenFromHash(): string {
+  const raw = window.location.hash.replace(/^#/, "");
+  if (!raw) return "";
+  const params = new URLSearchParams(raw.includes("=") ? raw : `token=${raw}`);
+  return params.get("token")?.trim() ?? "";
+}
+
 export function VerifyEmailPage() {
+  const { token: pathToken } = useParams();
   const [searchParams] = useSearchParams();
   const { verifyEmail } = useAuth();
   const navigate = useNavigate();
@@ -24,7 +33,11 @@ export function VerifyEmailPage() {
     if (ran.current) return;
     ran.current = true;
 
-    const token = searchParams.get("token")?.trim() ?? "";
+    const token =
+      pathToken?.trim() ||
+      searchParams.get("token")?.trim() ||
+      readTokenFromHash() ||
+      "";
     const email = searchParams.get("email")?.trim() || undefined;
     if (token.length < 20) {
       setStatus("error");
@@ -39,14 +52,15 @@ export function VerifyEmailPage() {
         setStatus("ok");
         setMessage("Konto aktywowane — przekierowujemy…");
         toast.success("Konto aktywowane!");
-        navigate("/dashboard", { replace: true });
+        // Lekki delay — localStorage JWT zdąży się zapisać przed AuthGate na /dashboard.
+        window.setTimeout(() => navigate("/dashboard", { replace: true }), 150);
       } else {
         setStatus("error");
         setMessage(result.message || "Nieprawidłowy lub wygasły link");
         toast.error(result.message || "Nie udało się aktywować konta");
       }
     })();
-  }, [searchParams, verifyEmail, navigate]);
+  }, [pathToken, searchParams, verifyEmail, navigate]);
 
   return (
     <div
