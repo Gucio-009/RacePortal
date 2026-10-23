@@ -70,9 +70,9 @@ export function AdminPanelPage() {
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  /** Równoległe załadowanie całego kokpitu admina. */
-  const loadAll = async () => {
-    setLoading(true);
+  /** Równoległe załadowanie całego kokpitu admina. `silent` = odświeżenie bez spinnera. */
+  const loadAll = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [s, u, pe, ae, apps] = await Promise.all([
         api.get<AdminStats>("/api/admin/stats"),
@@ -87,14 +87,22 @@ export function AdminPanelPage() {
       setApprovedEvents(ae);
       setApplications(apps);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować panelu");
+      if (!silent) toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować panelu");
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadAll();
+    void loadAll(false);
+    const id = window.setInterval(() => void loadAll(true), 30_000);
+    const onFocus = () => void loadAll(true);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount + poll
   }, []);
 
   /** APPROVED / REJECTED / ARCHIVED / CANCELLED. */

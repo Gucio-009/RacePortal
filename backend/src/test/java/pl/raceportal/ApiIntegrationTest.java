@@ -571,6 +571,22 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.users", greaterThanOrEqualTo(1)));
     }
 
+    /** Publiczne /api/stats: bez JWT; registeredUsers = ta sama liczba co admin stats.users. */
+    @Test
+    void publicStats_matchesAdminUserCount_withoutAuth() throws Exception {
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        String adminStats = mockMvc.perform(get("/api/admin/stats").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+        int users = objectMapper.readTree(adminStats).path("users").asInt();
+
+        mockMvc.perform(get("/api/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.registeredUsers").value(users));
+    }
+
     /**
      * Błąd 12: admin widzi APPROVED i może anulować (CANCELLED) z panelu —
      * PATCH /api/admin/events/{id}/status, nie tylko anulacja przez organizatora.

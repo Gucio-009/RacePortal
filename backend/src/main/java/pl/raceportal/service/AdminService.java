@@ -75,6 +75,7 @@ public class AdminService {
     private final EventService eventService;
     private final MailService mailService;
     private final NotificationService notificationService;
+    private final StatsService statsService;
 
     public AdminService(UserRepository userRepository, EventRepository eventRepository,
                          RegistrationRepository registrationRepository,
@@ -83,7 +84,8 @@ public class AdminService {
                          NotificationRepository notificationRepository,
                          BugReportRepository bugReportRepository,
                          EventService eventService, MailService mailService,
-                         NotificationService notificationService) {
+                         NotificationService notificationService,
+                         StatsService statsService) {
         this.userRepository = userRepository;
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
@@ -94,11 +96,12 @@ public class AdminService {
         this.eventService = eventService;
         this.mailService = mailService;
         this.notificationService = notificationService;
+        this.statsService = statsService;
     }
 
     @Transactional(readOnly = true)
     public StatsResponse stats() {
-        long users = userRepository.count();
+        long users = statsService.countRegisteredUsers();
         long events = eventRepository.count();
         long pendingEvents = eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING).size();
         long registrations = registrationRepository.count();

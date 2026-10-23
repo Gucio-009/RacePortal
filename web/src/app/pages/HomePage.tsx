@@ -10,7 +10,7 @@
  * Pomysł (alt): Next.js App Router RSC + ISR listy; CMS hero; Framer Motion;
  * A/B CTA w edge config.
  */
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { Calendar, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -21,14 +21,37 @@ import { Reveal } from "../components/Reveal";
 import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
-import type { ApiEvent } from "../lib/types";
+import type { ApiEvent, PublicStats } from "../lib/types";
 import { eventImage, HERO_BG_TRACK } from "../lib/types";
+
+const STATS_POLL_MS = 30_000;
 
 export function HomePage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [registeredUsers, setRegisteredUsers] = useState<number | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
+
+  const loadPublicStats = useCallback(async (silent = false) => {
+    if (!silent) setStatsLoading(true);
+    try {
+      const res = await api.get<PublicStats>("/api/stats");
+      if (typeof res.registeredUsers === "number" && Number.isFinite(res.registeredUsers)) {
+        setRegisteredUsers(res.registeredUsers);
+        setStatsError(false);
+      } else {
+        setStatsError(true);
+      }
+    } catch {
+      setStatsError(true);
+      // Nie zeruj poprzedniej poprawnej wartości przy błędzie odświeżenia.
+    } finally {
+      setStatsLoading(false);
+    }
+  }, []);
 
   // Teaser poniżej foldu – po idle, żeby nie konkurował z LCP (hero img).
   useEffect(() => {
@@ -50,6 +73,17 @@ export function HomePage() {
         .finally(() => setLoading(false));
     }, 2500);
   }, []);
+
+  useEffect(() => {
+    void loadPublicStats(false);
+    const id = window.setInterval(() => void loadPublicStats(true), STATS_POLL_MS);
+    const onFocus = () => void loadPublicStats(true);
+    window.addEventListener("focus", onFocus);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [loadPublicStats]);
 
   return (
     <div className="min-h-full">
@@ -230,20 +264,29 @@ export function HomePage() {
               wszystko w jednym miejscu.
             </p>
           </Reveal>
-          <div className="grid grid-cols-3 gap-3 sm:gap-8 text-center">
-            {[
-              { value: "250+", label: "WYŚCIGÓW ROCZNIE" },
-              { value: "50K+", label: "AKTYWNYCH UŻYTKOWNIKÓW" },
-              { value: "24/7", label: "LIVE COVERAGE" },
-            ].map((stat, i) => (
-              <Reveal key={stat.label} delay={i * 100}>
-                <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-2xl sm:text-4xl md:text-5xl font-extrabold">
-                  {stat.value}
+          <Reveal delay={100} className="flex justify-center text-center">
+            <div className="min-w-[10rem] max-w-sm">
+              {statsLoading && registeredUsers == null ? (
+                <div className="space-y-3" aria-busy="true" aria-label="Ładowanie liczby użytkowników">
+                  <div className="mx-auto h-10 sm:h-14 w-24 sm:w-32 rounded bg-[var(--race-muted-bg)] animate-pulse" />
+                  <div className="mx-auto h-4 w-48 rounded bg-[var(--race-muted-bg)] animate-pulse" />
                 </div>
-                <p className="text-[var(--race-muted)] text-[10px] sm:text-lg font-semibold leading-tight">{stat.label}</p>
-              </Reveal>
-            ))}
-          </div>
+              ) : registeredUsers != null ? (
+                <>
+                  <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-3xl sm:text-4xl md:text-5xl font-extrabold tabular-nums">
+                    {registeredUsers.toLocaleString("pl-PL")}
+                  </div>
+                  <p className="text-[var(--race-muted)] text-xs sm:text-lg font-semibold leading-tight">
+                    ZAREJESTROWANYCH UŻYTKOWNIKÓW
+                  </p>
+                </>
+              ) : statsError ? (
+                <p className="text-[var(--race-muted)] text-sm sm:text-base">
+                  Nie udało się pobrać liczby użytkowników.
+                </p>
+              ) : null}
+            </div>
+          </Reveal>
           <Reveal delay={200} className="text-center mt-10">
             <Link to="/wydarzenia">
               <Button

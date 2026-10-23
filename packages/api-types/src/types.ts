@@ -210,6 +210,14 @@ export interface AdminStats {
   pendingApps: number;
 }
 
+/**
+ * Publiczne zagregowane statystyki (`GET /api/stats`).
+ * `registeredUsers` = ta sama reguła co `AdminStats.users` (wszystkie konta w DB).
+ */
+export interface PublicStats {
+  registeredUsers: number;
+}
+
 export interface AdminUser {
   id: string;
   email: string;
