@@ -16,12 +16,17 @@ import "./boot/criticalAssets";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./app/App";
+import { CinematicIntro } from "./app/components/CinematicIntro";
 import "./styles/index.css";
 
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <>
+    {/* Poza StrictMode: intro ma jedną sekwencję, bez drugiego startu w dev. */}
+    <CinematicIntro />
+    <StrictMode>
+      <App />
+    </StrictMode>
+  </>,
 );
 
 /** PWA: manifest + SW po `load` — poza critical request chain Lighthouse. */

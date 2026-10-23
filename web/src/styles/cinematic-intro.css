@@ -1,0 +1,524 @@
+/**
+ * Cinematic intro — pierwszy paint sesji.
+ * Ruch tylko przez transform / opacity. Kolory z `--race-accent` i `data-accent`.
+ * Pit-stop i prefers-reduced-motion: statyczna klatka + krótki zanik.
+ */
+
+.cinematic-intro {
+  --intro-bg: #07080a;
+  --intro-fg: #f4f4f4;
+  --intro-muted: rgba(244, 244, 244, 0.62);
+  --intro-line: color-mix(in srgb, var(--race-accent) 78%, white);
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  overflow: hidden;
+  background: transparent;
+  color: var(--intro-fg);
+  pointer-events: auto;
+  user-select: none;
+  animation: intro-in 0.48s ease both;
+}
+
+html[data-accent="redline"] .cinematic-intro {
+  --intro-bg: #10080a;
+}
+
+html[data-accent="ice"] .cinematic-intro {
+  --intro-bg: #070e1a;
+}
+
+html[data-accent="arctic"] .cinematic-intro {
+  --intro-bg: #eef3f8;
+  --intro-fg: #17283d;
+  --intro-muted: rgba(23, 40, 61, 0.62);
+  --intro-line: color-mix(in srgb, var(--race-accent) 55%, #8aa0b8);
+}
+
+.cinematic-intro__half {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: calc(50% + 1px);
+  background: var(--intro-bg);
+  transform: translate3d(0, 0, 0);
+  transition: transform 640ms cubic-bezier(0.77, 0, 0.18, 1);
+}
+
+.cinematic-intro__half--left {
+  left: 0;
+}
+
+.cinematic-intro__half--right {
+  right: 0;
+}
+
+.cinematic-intro.is-exit .cinematic-intro__half--left {
+  transform: translate3d(-100%, 0, 0);
+}
+
+.cinematic-intro.is-exit .cinematic-intro__half--right {
+  transform: translate3d(100%, 0, 0);
+}
+
+.cinematic-intro__stage {
+  position: absolute;
+  inset: 0;
+  transition: opacity 420ms ease;
+}
+
+.cinematic-intro.is-exit .cinematic-intro__stage {
+  opacity: 0;
+}
+
+.cinematic-intro__wash {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 70% 46% at 50% 46%, color-mix(in srgb, var(--race-accent) 16%, transparent), transparent 68%);
+  pointer-events: none;
+  transition: opacity 420ms ease;
+}
+
+.cinematic-intro.is-exit .cinematic-intro__wash {
+  opacity: 0;
+}
+
+.cinematic-intro__vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 160px rgba(0, 0, 0, 0.5);
+}
+
+html[data-accent="arctic"] .cinematic-intro__vignette {
+  box-shadow: inset 0 0 120px rgba(23, 40, 61, 0.08);
+}
+
+.cinematic-intro__track-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  color: var(--race-accent);
+  opacity: 0.28;
+  pointer-events: none;
+}
+
+html[data-accent="arctic"] .cinematic-intro__track-art {
+  color: #8aa0b8;
+  opacity: 0.45;
+}
+
+.cinematic-intro__track-art path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.25;
+}
+
+.cinematic-intro__car {
+  position: absolute;
+  left: 50%;
+  bottom: 9%;
+  width: min(760px, 84vw);
+  color: var(--intro-fg);
+  opacity: 0.1;
+  transform: translate3d(-50%, 0, 0);
+  pointer-events: none;
+}
+
+html[data-accent="arctic"] .cinematic-intro__car {
+  opacity: 0.14;
+}
+
+.cinematic-intro__sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--race-accent) 32%, transparent),
+    transparent
+  );
+  transform: translate3d(-140%, 0, 0);
+  animation: intro-sweep 1.35s cubic-bezier(0.4, 0, 0.2, 1) 0.08s both;
+  pointer-events: none;
+}
+
+html[data-accent="arctic"] .cinematic-intro__sweep {
+  opacity: 0.55;
+}
+
+.cinematic-intro__telemetry {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-family: var(--font-family-display);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  color: var(--intro-muted);
+  pointer-events: none;
+}
+
+.cinematic-intro__telemetry--tl {
+  top: 1.6rem;
+  left: 1.6rem;
+}
+
+.cinematic-intro__telemetry--br {
+  right: 1.6rem;
+  bottom: 1.6rem;
+  text-align: right;
+}
+
+.cinematic-intro__telemetry span {
+  display: block;
+}
+
+.cinematic-intro__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  transform: translate3d(0, 0, 0);
+  transition:
+    transform 560ms cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 420ms ease;
+}
+
+.cinematic-intro.is-exit .cinematic-intro__scene {
+  opacity: 0;
+  transform: scale(0.96) translate3d(0, -10px, 0);
+}
+
+.cinematic-intro__brand-wrap {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cinematic-intro__startline {
+  position: relative;
+  width: min(720px, 78vw);
+  height: 1px;
+  margin: 0 0 1.35rem;
+  background: linear-gradient(90deg, transparent, var(--intro-line), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  animation: intro-line 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s forwards;
+}
+
+.cinematic-intro__startline::before,
+.cinematic-intro__startline::after {
+  content: "";
+  position: absolute;
+  top: -7px;
+  width: 1px;
+  height: 15px;
+  background: var(--intro-line);
+  opacity: 0;
+  animation: intro-in 0.4s ease 0.55s forwards;
+}
+
+.cinematic-intro__startline::before {
+  left: 12%;
+}
+
+.cinematic-intro__startline::after {
+  right: 12%;
+}
+
+.cinematic-intro__brand {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  font-family: var(--font-family-display);
+  font-weight: 800;
+  font-size: clamp(1.7rem, 6.2vw, 5.15rem);
+  line-height: 0.95;
+  letter-spacing: 0.08em;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.cinematic-intro__letter {
+  display: inline-block;
+  opacity: 0;
+  animation: intro-letter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(0.3s + var(--i) * 0.042s);
+}
+
+.cinematic-intro__portal .cinematic-intro__letter {
+  color: var(--race-accent);
+  animation-name: intro-letter, intro-glow;
+  animation-duration: 0.7s, 1s;
+  animation-delay: calc(0.3s + var(--i) * 0.042s), 1.05s;
+  animation-fill-mode: forwards, forwards;
+}
+
+.cinematic-intro__race {
+  color: var(--intro-fg);
+}
+
+.cinematic-intro__tagline {
+  margin: 1.15rem 0 0;
+  font-family: var(--font-family-primary);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
+  color: var(--intro-muted);
+  opacity: 0;
+  transform: translate3d(0, 8px, 0);
+  animation: intro-tag 0.55s cubic-bezier(0.16, 1, 0.3, 1) 0.98s forwards;
+}
+
+.cinematic-intro__progress {
+  margin-top: 1.7rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.cinematic-intro__lights {
+  display: flex;
+  gap: 0.72rem;
+}
+
+.cinematic-intro__light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--race-accent);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--race-accent) 70%, transparent);
+  opacity: 0.18;
+  transform: scale(0.8);
+  animation: intro-light 0.32s ease forwards;
+  animation-delay: calc(0.86s + var(--n) * 0.07s);
+}
+
+.cinematic-intro__track {
+  position: relative;
+  width: min(220px, 62vw);
+  height: 2px;
+  margin-top: 0.85rem;
+  background: color-mix(in srgb, var(--intro-fg) 16%, transparent);
+  overflow: hidden;
+}
+
+.cinematic-intro__shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 38%;
+  background: var(--race-accent);
+  transform: translate3d(-140%, 0, 0);
+  animation: intro-run 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.9s infinite;
+}
+
+.cinematic-intro.is-complete .cinematic-intro__shimmer {
+  opacity: 0;
+}
+
+.cinematic-intro__done {
+  position: absolute;
+  inset: 0;
+  background: var(--race-accent);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.cinematic-intro.is-complete .cinematic-intro__done {
+  transform: scaleX(1);
+  transition: transform 260ms ease;
+}
+
+.cinematic-boot {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  left: 0;
+  right: 0;
+  z-index: 80;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cinematic-boot__bar {
+  height: 100%;
+  width: 32%;
+  background: var(--race-accent);
+  transform: translate3d(-130%, 0, 0);
+  animation: intro-run 0.9s ease-in-out infinite;
+}
+
+@keyframes intro-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes intro-line {
+  to { transform: scaleX(1); }
+}
+
+@keyframes intro-sweep {
+  to { transform: translate3d(340%, 0, 0); }
+}
+
+@keyframes intro-letter {
+  from {
+    opacity: 0;
+    transform: translate3d(var(--spread), 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes intro-glow {
+  0% { text-shadow: 0 0 0 transparent; }
+  40% { text-shadow: 0 0 18px color-mix(in srgb, var(--race-accent) 75%, transparent); }
+  100% { text-shadow: 0 0 8px color-mix(in srgb, var(--race-accent) 35%, transparent); }
+}
+
+@keyframes intro-tag {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes intro-light {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes intro-run {
+  to { transform: translate3d(340%, 0, 0); }
+}
+
+@media (max-width: 640px) {
+  .cinematic-intro__telemetry,
+  .cinematic-intro__track-art {
+    display: none;
+  }
+
+  .cinematic-intro__car {
+    opacity: 0.12;
+    bottom: 8%;
+    width: min(420px, 88vw);
+  }
+
+  .cinematic-intro__brand {
+    font-size: clamp(1.35rem, 8vw, 2.35rem);
+    letter-spacing: 0.06em;
+  }
+
+  .cinematic-intro__tagline {
+    letter-spacing: 0.14em;
+    text-indent: 0.14em;
+    font-size: 0.58rem;
+    margin-top: 0.9rem;
+  }
+
+  .cinematic-intro__progress {
+    margin-top: 1.25rem;
+  }
+
+  .cinematic-intro__sweep {
+    width: 55%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinematic-intro,
+  .cinematic-intro *,
+  .cinematic-intro *::before,
+  .cinematic-intro *::after,
+  .cinematic-boot__bar {
+    animation: none !important;
+  }
+
+  .cinematic-intro__letter,
+  .cinematic-intro__tagline,
+  .cinematic-intro__light,
+  .cinematic-intro__startline,
+  .cinematic-intro__startline::before,
+  .cinematic-intro__startline::after {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .cinematic-intro__sweep,
+  .cinematic-intro__shimmer {
+    display: none !important;
+  }
+
+  .cinematic-intro.is-exit {
+    opacity: 0;
+    transition: opacity 180ms linear;
+  }
+
+  .cinematic-intro.is-exit .cinematic-intro__half,
+  .cinematic-intro.is-exit .cinematic-intro__scene {
+    transform: none;
+    opacity: 1;
+  }
+
+  .cinematic-boot__bar {
+    width: 100%;
+    opacity: 0.75;
+    transform: none;
+  }
+}
+
+.cinematic-intro.is-reduced,
+.cinematic-intro.is-reduced *,
+.cinematic-intro.is-reduced *::before,
+.cinematic-intro.is-reduced *::after {
+  animation: none !important;
+}
+
+.cinematic-intro.is-reduced .cinematic-intro__letter,
+.cinematic-intro.is-reduced .cinematic-intro__tagline,
+.cinematic-intro.is-reduced .cinematic-intro__light,
+.cinematic-intro.is-reduced .cinematic-intro__startline,
+.cinematic-intro.is-reduced .cinematic-intro__startline::before,
+.cinematic-intro.is-reduced .cinematic-intro__startline::after {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.cinematic-intro.is-reduced .cinematic-intro__sweep,
+.cinematic-intro.is-reduced .cinematic-intro__shimmer {
+  display: none !important;
+}
+
+.cinematic-intro.is-reduced.is-exit {
+  opacity: 0;
+  transition: opacity 180ms linear;
+}
+
+.cinematic-intro.is-reduced.is-exit .cinematic-intro__half,
+.cinematic-intro.is-reduced.is-exit .cinematic-intro__scene {
+  transform: none;
+  opacity: 1;
+}

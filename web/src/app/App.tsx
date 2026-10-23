@@ -19,6 +19,7 @@ import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
 import { applyUserSettings, loadSettings } from "./lib/userSettings";
 import { useAccent } from "./hooks/useAccent";
+import { BootPulse } from "./components/CinematicIntro";
 
 /** Jednorazowy bootstrap preferencji UI z localStorage (Ustawienia). */
 function SettingsBootstrap() {
@@ -44,6 +45,7 @@ export default function App() {
   return (
     <AuthProvider>
       <SettingsBootstrap />
+      <BootPulse />
       <RouterProvider router={router} />
       <AppToaster />
     </AuthProvider>
