@@ -1,8 +1,11 @@
 package pl.raceportal.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +29,8 @@ import java.util.UUID;
  */
 @Service
 public class UploadService {
+
+    private static final Logger log = LoggerFactory.getLogger(UploadService.class);
 
     private static final Set<String> ALLOWED_TYPES = Set.of(
             MediaType.IMAGE_JPEG_VALUE,
@@ -61,7 +66,7 @@ public class UploadService {
         if (file.getSize() > maxBytes) {
             throw ApiException.badRequest("Plik za duży (max " + (maxBytes / (1024 * 1024)) + " MB)");
         }
-        String contentType = normalizeType(file.getContentType());
+        String contentType = sniffedType(file);
         if (!ALLOWED_TYPES.contains(contentType)) {
             throw ApiException.badRequest("Dozwolone formaty: JPG, PNG, WebP");
         }
@@ -73,10 +78,14 @@ public class UploadService {
             throw ApiException.badRequest("Nieprawidłowa ścieżka");
         }
 
-        try (InputStream in = file.getInputStream()) {
-            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+        try {
+            Files.createDirectories(uploadDir);
+            try (InputStream in = file.getInputStream()) {
+                Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            }
         } catch (IOException e) {
-            throw ApiException.badRequest("Nie udało się zapisać pliku");
+            log.error("Nie udało się zapisać uploadu do {}", target, e);
+            throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, "Nie udało się zapisać pliku");
         }
 
         return new UploadResponse("/api/uploads/" + filename, contentType, file.getSize());
@@ -112,13 +121,35 @@ public class UploadService {
         return MediaType.IMAGE_JPEG;
     }
 
-    private static String normalizeType(String contentType) {
-        if (contentType == null) {
-            return "";
+    /** Typ z sygnatury pliku, nie z nagłówka przeglądarki (często pusty albo octet-stream). */
+    private static String sniffedType(MultipartFile file) {
+        byte[] head = new byte[16];
+        int read;
+        try (InputStream in = file.getInputStream()) {
+            read = in.read(head);
+        } catch (IOException e) {
+            throw ApiException.badRequest("Nie udało się odczytać pliku");
         }
-        String t = contentType.trim().toLowerCase(Locale.ROOT);
-        int semi = t.indexOf(';');
-        return semi >= 0 ? t.substring(0, semi).trim() : t;
+        if (read >= 3 && (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8 && (head[2] & 0xFF) == 0xFF) {
+            return MediaType.IMAGE_JPEG_VALUE;
+        }
+        if (read >= 8
+                && (head[0] & 0xFF) == 0x89
+                && head[1] == 0x50
+                && head[2] == 0x4E
+                && head[3] == 0x47
+                && head[4] == 0x0D
+                && head[5] == 0x0A
+                && head[6] == 0x1A
+                && head[7] == 0x0A) {
+            return MediaType.IMAGE_PNG_VALUE;
+        }
+        if (read >= 12
+                && head[0] == 'R' && head[1] == 'I' && head[2] == 'F' && head[3] == 'F'
+                && head[8] == 'W' && head[9] == 'E' && head[10] == 'B' && head[11] == 'P') {
+            return "image/webp";
+        }
+        return "";
     }
 
     private static String sanitizeFilename(String filename) {

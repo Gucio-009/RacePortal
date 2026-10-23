@@ -26,10 +26,13 @@ WORKDIR /app
 
 RUN addgroup --system spring && adduser --system --ingroup spring spring
 COPY --from=build /build/target/raceportal-backend.jar ./app.jar
-RUN mkdir -p /app/uploads && chown -R spring:spring /app
-USER spring
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN mkdir -p /app/uploads \
+    && chmod +x /app/docker-entrypoint.sh \
+    && chown -R spring:spring /app
+USER root
 
 EXPOSE 4000
 
 ENV JAVA_OPTS=""
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

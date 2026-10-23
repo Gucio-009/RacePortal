@@ -32,6 +32,7 @@ export function ImageUploadField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
+  const [previewBroken, setPreviewBroken] = useState(false);
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -40,6 +41,7 @@ export function ImageUploadField({
       const res = await api.uploadImage(file);
       onChange(res.url);
       setShowUrl(false);
+      setPreviewBroken(false);
       toast.success("Zdjęcie wgrane");
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się wgrać zdjęcia");
@@ -54,7 +56,7 @@ export function ImageUploadField({
       <input
         ref={inputRef}
         type="file"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
         className="hidden"
         onChange={(e) => void onFile(e.target.files?.[0])}
       />
@@ -80,17 +82,30 @@ export function ImageUploadField({
 
       {value && (
         <div className="relative w-full max-w-xs aspect-video rounded border border-[var(--race-border)] overflow-hidden bg-[var(--race-bg)]">
-          <img src={value} alt="Podgląd" className="w-full h-full object-cover" />
+          <img
+            src={value}
+            alt="Podgląd"
+            className="w-full h-full object-cover"
+            onLoad={() => setPreviewBroken(false)}
+            onError={() => setPreviewBroken(true)}
+          />
           <button
             type="button"
             aria-label="Usuń zdjęcie"
             title="Usuń"
-            onClick={() => onChange("")}
+            onClick={() => {
+              setPreviewBroken(false);
+              onChange("");
+            }}
             className="absolute top-1.5 right-1.5 p-1 rounded bg-black/70 text-[var(--race-fg)] hover:bg-black"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
+      )}
+
+      {previewBroken && (
+        <p className="text-xs text-red-400">Nie udało się wyświetlić zdjęcia. Sprawdź plik albo adres.</p>
       )}
 
       {allowUrl && (
@@ -106,7 +121,10 @@ export function ImageUploadField({
           {showUrl && (
             <Input
               value={value}
-              onChange={(e) => onChange(e.target.value)}
+              onChange={(e) => {
+                setPreviewBroken(false);
+                onChange(e.target.value);
+              }}
               className={`mt-2 ${inputClassName}`}
               placeholder={urlPlaceholder}
             />

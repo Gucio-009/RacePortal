@@ -23,6 +23,7 @@ import type { Registration, RegistrationStatus } from "../lib/types";
 import { registrationStatusLabel } from "../lib/types";
 import { OTHER } from "../lib/eventFormPresets";
 import { toast } from "sonner";
+import { validateImageReference } from "../lib/profileValidation";
 import {
   emptyForm,
   eventToForm,
@@ -90,6 +91,8 @@ export function OrganizerPanelPage() {
     if (form.paid && !form.bankAccount.trim()) {
       errors.bankAccount = "Dla płatnego wydarzenia podaj numer konta";
     }
+    const imageErr = validateImageReference(form.imageUrl, false);
+    if (imageErr) errors.imageUrl = imageErr;
     return errors;
   };
 

@@ -404,8 +404,12 @@ export function OrganizerEventFormDialog({
             {form.imageCustom && (
               <ImageUploadField
                 value={form.imageUrl}
-                onChange={(url) => setForm({ ...form, imageUrl: url, imageCustom: true })}
+                onChange={(url) => {
+                  setForm({ ...form, imageUrl: url, imageCustom: true });
+                  clearFieldError?.("imageUrl");
+                }}
                 className="mt-2 space-y-2"
+                error={fieldErrors.imageUrl}
               />
             )}
           </div>

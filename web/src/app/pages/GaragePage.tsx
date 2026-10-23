@@ -23,7 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES } from "../lib/carMatch";
-import { validateHttpUrl } from "../lib/profileValidation";
+import { validateImageReference } from "../lib/profileValidation";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { Reveal } from "../components/Reveal";
 import { toast } from "sonner";
@@ -165,7 +165,7 @@ function zeroFieldMessage(label: string) {
   return `Wartość w polu „${label}” nie może zaczynać się od cyfry 0 ani wynosić zero.`;
 }
 
-function validateGarageForm(form: typeof emptyForm): Record<string, string> {
+function validateGarageForm(form: typeof emptyForm, requireImage: boolean): Record<string, string> {
   const errors: Record<string, string> = {};
   const maxYear = new Date().getFullYear();
 
@@ -209,10 +209,8 @@ function validateGarageForm(form: typeof emptyForm): Record<string, string> {
     errors.weightKg = "„Masa (kg)” nie może być większe niż 10000";
   }
 
-  if (form.imageUrl.trim() && !form.imageUrl.startsWith("/api/uploads/")) {
-    const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
-    if (imageErr) errors.imageUrl = imageErr;
-  }
+  const imageErr = validateImageReference(form.imageUrl, requireImage);
+  if (imageErr) errors.imageUrl = imageErr;
 
   return errors;
 }
@@ -310,7 +308,7 @@ export function GaragePage() {
 
   /** POST nowe / PATCH istniejące – potem reload listy. */
   const handleSave = async () => {
-    const errors = validateGarageForm(form);
+    const errors = validateGarageForm(form, !editingId);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       toastAllFieldErrors(errors);
@@ -401,7 +399,14 @@ export function GaragePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {cars.map((car, index) => (
               <Reveal key={car.id} delay={Math.min(index * 100, 400)}>
-              <Card className="event-card-lift bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
+              <Card className="event-card-lift bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)] overflow-hidden">
+                {car.imageUrl && (
+                  <img
+                    src={car.imageUrl}
+                    alt={`${car.make} ${car.model}`}
+                    className="h-44 w-full object-cover"
+                  />
+                )}
                 <CardHeader>
                   <CardTitle className="font-display text-[var(--race-fg)] flex items-center gap-2" style={{ fontWeight: 800 }}>
                     <Car className="w-5 h-5 text-[var(--race-accent)]" />
@@ -643,7 +648,7 @@ export function GaragePage() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label className="text-[var(--race-fg)]">Zdjęcie (opcjonalnie)</Label>
+              <ReqLabel required={!editingId}>Zdjęcie</ReqLabel>
               <ImageUploadField
                 value={form.imageUrl}
                 onChange={(url) => setFormField("imageUrl", url)}

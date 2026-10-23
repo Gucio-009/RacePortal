@@ -106,6 +106,19 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 /** Max upload obrazu — zsynchronizowane z `app.upload.max-bytes` (5 MB). */
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 
+/** Typ z MIME albo rozszerzenia. Windows często zostawia file.type puste. */
+function resolveImageType(file: File): string | null {
+  const raw = file.type.trim().toLowerCase();
+  if (raw === "image/jpg" || raw === "image/pjpeg" || raw === "image/x-citrix-jpeg") return "image/jpeg";
+  if (raw === "image/x-png") return "image/png";
+  if (raw === "image/jpeg" || raw === "image/png" || raw === "image/webp") return raw;
+  const ext = file.name.split(".").pop()?.toLowerCase();
+  if (ext === "jpg" || ext === "jpeg") return "image/jpeg";
+  if (ext === "png") return "image/png";
+  if (ext === "webp") return "image/webp";
+  return null;
+}
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
@@ -116,13 +129,12 @@ export const api = {
     if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
       throw new ApiError(400, "Plik za duży (max 5 MB)");
     }
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) {
+    if (!resolveImageType(file)) {
       throw new ApiError(400, "Dozwolone formaty: JPG, PNG, WebP");
     }
     const token = getToken();
     const form = new FormData();
-    form.append("file", file);
+    form.append("file", file, file.name || "image");
     const headers: Record<string, string> = { Accept: "application/json" };
     if (token) headers.Authorization = `Bearer ${token}`;
     const res = await fetch(`${API_URL}/api/uploads/image`, { method: "POST", headers, body: form });
@@ -130,14 +142,15 @@ export const api = {
     try {
       data = await res.json();
     } catch {
-      /* empty */
+      /* HTML z proxy / nginx */
     }
     if (!res.ok) {
       if (res.status === 401 && token) {
         setToken(null);
         onAuthExpired?.();
       }
-      throw new ApiError(res.status, data.error || data.message || "Upload nie powiódł się");
+      const fallback = res.status === 413 ? "Plik za duży (max 5 MB)" : "Upload nie powiódł się";
+      throw new ApiError(res.status, data.error || data.message || fallback);
     }
     if (!data.url) {
       throw new ApiError(500, "Brak URL w odpowiedzi uploadu");

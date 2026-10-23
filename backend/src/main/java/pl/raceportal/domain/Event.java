@@ -89,7 +89,8 @@ public class Event {
     @Column(nullable = false, length = 80)
     private String voivodeship;
 
-    @Column(name = "image_url", length = 500)
+    /** TEXT — długi URL (CDN) albo krótka ścieżka /api/uploads/… */
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     /** Szerokość geograficzna — mapa / OSRM. */

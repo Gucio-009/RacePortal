@@ -53,8 +53,11 @@ services:
       SEED_ENABLED: ${SEED_ENABLED:-true}
       ALLOW_INSECURE_DEFAULTS: ${ALLOW_INSECURE_DEFAULTS:-false}
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
+      UPLOAD_DIR: /app/uploads
     ports:
       - "4000:4000"
+    volumes:
+      - raceportal_uploads_vm:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -95,3 +98,4 @@ services:
 volumes:
   raceportal_mysql_vm:
   raceportal_backups_vm:
+  raceportal_uploads_vm:

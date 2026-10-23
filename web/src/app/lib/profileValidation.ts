@@ -74,3 +74,14 @@ export function validateHttpUrl(value: string, label: string): string | null {
   }
   return null;
 }
+
+/** Plik z POST /api/uploads/image — ta sama maska co backend. */
+const UPLOADED_IMAGE = /^\/api\/uploads\/[a-f0-9]{32}\.(jpg|png|webp)$/;
+
+/** Pusty, wgrany plik albo link http(s). */
+export function validateImageReference(value: string, required: boolean): string | null {
+  const t = value.trim();
+  if (!t) return required ? "Zdjęcie jest wymagane" : null;
+  if (UPLOADED_IMAGE.test(t)) return null;
+  return validateHttpUrl(t, "Adres zdjęcia");
+}

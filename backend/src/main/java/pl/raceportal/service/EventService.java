@@ -361,7 +361,7 @@ public class EventService {
         event.setTrack(request.track());
         event.setCity(request.city());
         event.setVoivodeship(request.voivodeship());
-        event.setImageUrl((request.imageUrl() == null || request.imageUrl().isBlank()) ? null : request.imageUrl());
+        event.setImageUrl(ImageReferences.normalize(request.imageUrl(), false));
         event.setLat(request.lat());
         event.setLng(request.lng());
         event.setStatus(currentUser.getRole() == Role.ADMIN ? EventStatus.APPROVED : EventStatus.PENDING);
@@ -410,7 +410,7 @@ public class EventService {
         if (request.track() != null) event.setTrack(request.track());
         if (request.city() != null) event.setCity(request.city());
         if (request.voivodeship() != null) event.setVoivodeship(request.voivodeship());
-        if (request.imageUrl() != null) event.setImageUrl(request.imageUrl().isBlank() ? null : request.imageUrl());
+        if (request.imageUrl() != null) event.setImageUrl(ImageReferences.normalize(request.imageUrl(), false));
         if (request.lat() != null) event.setLat(request.lat());
         if (request.lng() != null) event.setLng(request.lng());
         if (request.paid() != null) event.setPaid(request.paid());

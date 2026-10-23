@@ -342,6 +342,10 @@ function buildCases(): Case[] {
     expect(eventImage({ imageUrl: null })).toBe(DEFAULT_EVENT_IMAGE);
     expect(eventImage({ imageUrl: "" })).toBe(DEFAULT_EVENT_IMAGE);
   });
+  add("eventImage keeps uploaded file path", () => {
+    const src = "/api/uploads/0123456789abcdef0123456789abcdef.jpg";
+    expect(eventImage({ imageUrl: src })).toBe(src);
+  });
   add("eventImage keeps custom non-unsplash url", () => {
     expect(eventImage({ imageUrl: "https://cdn.example/a.jpg" })).toBe("https://cdn.example/a.jpg");
   });
