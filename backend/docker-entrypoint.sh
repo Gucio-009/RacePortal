@@ -5,6 +5,6 @@ set -eu
 mkdir -p /app/uploads
 if [ "$(id -u)" = "0" ]; then
   chown spring:spring /app/uploads
-  exec su -s /bin/sh spring -c 'exec java $JAVA_OPTS -jar /app/app.jar'
+  exec gosu spring sh -c 'exec java $JAVA_OPTS -jar /app/app.jar'
 fi
 exec java $JAVA_OPTS -jar /app/app.jar

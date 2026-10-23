@@ -24,10 +24,15 @@ RUN mvn -B -q clean package -DskipTests
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-RUN addgroup --system spring && adduser --system --ingroup spring spring
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends gosu \
+    && rm -rf /var/lib/apt/lists/* \
+    && addgroup --system spring \
+    && adduser --system --ingroup spring spring
 COPY --from=build /build/target/raceportal-backend.jar ./app.jar
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN mkdir -p /app/uploads \
+    && sed -i 's/\r$//' /app/docker-entrypoint.sh \
     && chmod +x /app/docker-entrypoint.sh \
     && chown -R spring:spring /app
 USER root
