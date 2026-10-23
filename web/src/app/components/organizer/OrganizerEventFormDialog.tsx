@@ -24,6 +24,7 @@ import { Switch } from "../ui/switch";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { LocationMapPicker } from "../LocationMapPicker";
+import { ImageUploadField } from "../ImageUploadField";
 import { EVENT_CATEGORY_GROUPS } from "../../lib/eventCategories";
 import {
   OTHER,
@@ -398,14 +399,13 @@ export function OrganizerEventFormDialog({
               className="mt-2 border-[#2a2a2a] text-white"
               onClick={() => setForm({ ...form, imageCustom: true, imageUrl: form.imageCustom ? form.imageUrl : "" })}
             >
-              Własny URL zdjęcia…
+              Własne zdjęcie / URL…
             </Button>
             {form.imageCustom && (
-              <Input
+              <ImageUploadField
                 value={form.imageUrl}
-                onChange={(e) => setForm({ ...form, imageUrl: e.target.value, imageCustom: true })}
-                placeholder="https://…"
-                className="bg-[#121212] border-[#2a2a2a] text-white mt-2"
+                onChange={(url) => setForm({ ...form, imageUrl: url, imageCustom: true })}
+                className="mt-2 space-y-2"
               />
             )}
           </div>

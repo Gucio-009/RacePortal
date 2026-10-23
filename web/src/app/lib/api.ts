@@ -103,9 +103,45 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   return data as T;
 }
 
+/** Max upload obrazu — zsynchronizowane z `app.upload.max-bytes` (5 MB). */
+export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: (path: string) => request<void>("DELETE", path),
+  /** Multipart upload → `{ url }` (ścieżka `/api/uploads/...`). */
+  uploadImage: async (file: File): Promise<{ url: string; contentType: string; sizeBytes: number }> => {
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      throw new ApiError(400, "Plik za duży (max 5 MB)");
+    }
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) {
+      throw new ApiError(400, "Dozwolone formaty: JPG, PNG, WebP");
+    }
+    const token = getToken();
+    const form = new FormData();
+    form.append("file", file);
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_URL}/api/uploads/image`, { method: "POST", headers, body: form });
+    let data: { error?: string; message?: string; url?: string; contentType?: string; sizeBytes?: number } = {};
+    try {
+      data = await res.json();
+    } catch {
+      /* empty */
+    }
+    if (!res.ok) {
+      if (res.status === 401 && token) {
+        setToken(null);
+        onAuthExpired?.();
+      }
+      throw new ApiError(res.status, data.error || data.message || "Upload nie powiódł się");
+    }
+    if (!data.url) {
+      throw new ApiError(500, "Brak URL w odpowiedzi uploadu");
+    }
+    return { url: data.url, contentType: data.contentType || file.type, sizeBytes: data.sizeBytes ?? file.size };
+  },
 };

@@ -812,6 +812,16 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
+## 51. Powiadomienia UX + upload zdjęć + Zgłoś błąd (2026-10-22)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Powiadomienia bez usuwania / czasu / typu | X usuń, czas względny, etykiety+ikony (moderacja / OK / odrzucone / status) | Czytelność w dzwonku |
+| „Zgłoś błąd” na stopce | Wyżej (`md:bottom-28`) + padding stopki | Nie zasłania Polityki prywatności |
+| Zdjęcia tylko URL | `POST /api/uploads/image` JPG/PNG/WebP ≤5 MB (garaż, plakat, potwierdzenie); volume `raceportal_uploads` | Domknięcie luki Spec |
+
+---
+
 ## 50. Katalog torów + sync docs / dyplom (2026-10-22)
 
 | Było | Jest | Dlaczego |
@@ -824,5 +834,5 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-22 — katalog torów + sync MVP/docs/LaTeX.*
+*Ostatnia aktualizacja: 2026-10-22 — upload zdjęć, powiadomienia UX, Zgłoś błąd.*
 

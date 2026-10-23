@@ -36,3 +36,7 @@ latex/**/output.log
 # Local debug leftovers
 tmp-stadia-tile.png
 stadia-tile-check.png
+
+# Local image uploads (API)
+uploads/
+backend/uploads/

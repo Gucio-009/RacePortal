@@ -26,7 +26,7 @@ WORKDIR /app
 
 RUN addgroup --system spring && adduser --system --ingroup spring spring
 COPY --from=build /build/target/raceportal-backend.jar ./app.jar
-RUN chown -R spring:spring /app
+RUN mkdir -p /app/uploads && chown -R spring:spring /app
 USER spring
 
 EXPOSE 4000

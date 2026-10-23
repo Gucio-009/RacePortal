@@ -25,6 +25,10 @@ spring:
     name: raceportal-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:default}
+  servlet:
+    multipart:
+      max-file-size: ${UPLOAD_MAX_FILE:5MB}
+      max-request-size: ${UPLOAD_MAX_REQUEST:5MB}
   datasource:
     # Lokalnie: MySQL na 3306; w Docker Compose nadpisywane w application-docker.yml / env.
     url: ${DATABASE_URL:jdbc:mysql://localhost:3306/raceportal?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
@@ -90,6 +94,10 @@ app:
   seed:
     # Poza demo/test: false. Compose ustawia SEED_ENABLED=true.
     enabled: ${SEED_ENABLED:false}
+  upload:
+    # Katalog lokalny na JPG/PNG/WebP (garaż, plakat, potwierdzenie). Compose: volume.
+    dir: ${UPLOAD_DIR:uploads}
+    max-bytes: ${UPLOAD_MAX_BYTES:5242880}
 
 logging:
   level:

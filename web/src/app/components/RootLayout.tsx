@@ -379,9 +379,9 @@ export function RootLayout() {
       </main>
 
       <footer className="hidden md:block border-t border-[#2a2a2a] bg-[#1a1a1a] mt-20">
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#9ca3af]">
+        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#9ca3af] md:pr-40">
           <p>© 2026 RACEPORTAL. Wszystkie prawa zastrzeżone.</p>
-          <div className="flex flex-wrap gap-4 justify-center" style={{ fontSize: "14px" }}>
+          <div className="flex flex-wrap gap-4 justify-center md:justify-end" style={{ fontSize: "14px" }}>
             <Link to="/terms" className="hover:text-[var(--race-accent)]">
               Regulamin
             </Link>

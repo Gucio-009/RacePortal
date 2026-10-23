@@ -19,8 +19,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
-import { Input } from "../components/ui/input";
 import { api, ApiError } from "../lib/api";
+import { ImageUploadField } from "../components/ImageUploadField";
 import type { Car as GarageCar, Registration } from "../lib/types";
 import {
   registrationStatusLabel,
@@ -82,7 +82,7 @@ export function DashboardPage() {
   const attachProof = async (id: string) => {
     const url = (proofUrls[id] || "").trim();
     if (!url) {
-      toast.error("Podaj URL potwierdzenia przelewu");
+      toast.error("Wgraj zdjęcie lub podaj URL potwierdzenia przelewu");
       return;
     }
     try {
@@ -292,14 +292,13 @@ export function DashboardPage() {
                             {reg.paymentProofUrl ? (
                               <p className="text-sm text-green-400">Potwierdzenie dołączone</p>
                             ) : (
-                              <div className="flex flex-col sm:flex-row gap-2">
-                                <Input
-                                  placeholder="URL potwierdzenia przelewu"
+                              <div className="space-y-2">
+                                <ImageUploadField
                                   value={proofUrls[reg.id] || ""}
-                                  onChange={(e) =>
-                                    setProofUrls((prev) => ({ ...prev, [reg.id]: e.target.value }))
+                                  onChange={(url) =>
+                                    setProofUrls((prev) => ({ ...prev, [reg.id]: url }))
                                   }
-                                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                                  urlPlaceholder="URL lub wgraj skan / zdjęcie przelewu"
                                 />
                                 <Button
                                   size="sm"
@@ -307,7 +306,7 @@ export function DashboardPage() {
                                   className="bg-[var(--race-accent)] text-[#121212]"
                                   style={{ fontWeight: 700 }}
                                 >
-                                  Dołącz
+                                  Dołącz potwierdzenie
                                 </Button>
                               </div>
                             )}

@@ -44,14 +44,14 @@ Legenda: **OK** · **Minor** · **Major** · **Blocker**
 | Zarejestrowane → ukryj tablica/typ/KSS | WARUNKOWE | Web: ukrywa typ/KSS, **tablica nadal widoczna**; mobile: KSS przy każdym „zarejestrowane” | Minor–Major |
 | Typ rejestracji | standardowe / sportowe | `cywilne` / `sportowe` (nazwy inne niż w spec, sens OK) | Minor |
 | Klatka / OC / PT | WYMAGANE switch | Web+API; mobile toggle bez osobnej walidacji UX | OK / Minor |
-| Zdjęcia | **File upload** min. 1, ≤5 MB | **URL** wymagany (web/API); mobile **bez** pola zdjęcia | Blocker |
+| Zdjęcia | **File upload** min. 1, ≤5 MB | Web+API: upload JPG/PNG/WebP ≤5 MB (`/api/uploads/image`) **lub** URL; mobile **bez** pola zdjęcia | Minor (mobile) |
 | Social / video / mods | OPCJONALNE | Web OK; mobile tylko mods | Minor |
 
 ## 4. Formularz wydarzenia (organizator)
 
 | Pole (spec) | Spec | Stan w kodzie | Severity |
 |-------------|------|---------------|----------|
-| Plakat | WYMAGANE file upload | Preset / URL, nie upload pliku | Major |
+| Plakat | WYMAGANE file upload | Preset / upload ≤5 MB / URL | OK / Minor |
 | Data/godzina końca | WYMAGANE | Opcjonalne | Major |
 | Ulica | OPCJONALNE | W DTO, często brak w UI | Minor |
 | Wpisowe | WYMAGANE (0 = free) | Switch płatne/darmowe, nie zawsze jawne `0` | Minor |

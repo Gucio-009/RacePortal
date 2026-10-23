@@ -111,6 +111,13 @@ public class NotificationService {
         return new UnreadCountResponse(0);
     }
 
+    @Transactional
+    public void delete(String id, UserPrincipal currentUser) {
+        Notification n = notificationRepository.findByIdAndUser_Id(id, currentUser.getId())
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono powiadomienia"));
+        notificationRepository.delete(n);
+    }
+
     private NotificationResponse serialize(Notification n) {
         return new NotificationResponse(
                 n.getId(),

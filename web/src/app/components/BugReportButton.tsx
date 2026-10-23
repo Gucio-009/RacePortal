@@ -58,7 +58,7 @@ export function BugReportButton() {
       <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed z-40 right-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 bg-[var(--race-accent)] text-[#121212] hover:brightness-95 shadow-lg"
+        className="fixed z-40 right-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] md:bottom-28 md:right-6 bg-[var(--race-accent)] text-[#121212] hover:brightness-95 shadow-lg"
         style={{ fontWeight: 700 }}
       >
         <Bug className="w-4 h-4 mr-2" aria-hidden />

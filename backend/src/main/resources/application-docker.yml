@@ -38,6 +38,8 @@ app:
     from: "${SMTP_FROM:RACEPORTAL <noreply@raceportal.pl>}"
   cors:
     origin: ${CORS_ORIGIN:*}
+  upload:
+    dir: ${UPLOAD_DIR:/app/uploads}
 
 logging:
   level:

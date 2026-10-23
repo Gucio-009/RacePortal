@@ -24,6 +24,7 @@ import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES } from "../lib/carMatch";
 import { validateHttpUrl } from "../lib/profileValidation";
+import { ImageUploadField } from "../components/ImageUploadField";
 import { toast } from "sonner";
 
 const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
@@ -208,8 +209,8 @@ function validateGarageForm(form: typeof emptyForm): Record<string, string> {
   }
 
   if (!form.imageUrl.trim()) {
-    errors.imageUrl = "URL zdjęcia jest wymagany";
-  } else {
+    errors.imageUrl = "Zdjęcie jest wymagane (upload lub URL)";
+  } else if (!form.imageUrl.startsWith("/api/uploads/")) {
     const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
     if (imageErr) errors.imageUrl = imageErr;
   }
@@ -454,7 +455,7 @@ export function GaragePage() {
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
             <DialogDescription className="text-[#9ca3af]">
-              Wypełnij wymagane pola pojazdu. Zdjęcie — publiczny URL (http/https), max 2000 znaków.
+              Wypełnij wymagane pola pojazdu. Zdjęcie — wgraj plik (max 5 MB) albo podaj publiczny URL.
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
@@ -641,15 +642,13 @@ export function GaragePage() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <ReqLabel required>URL zdjęcia</ReqLabel>
-              <Input
+              <ReqLabel required>Zdjęcie</ReqLabel>
+              <ImageUploadField
                 value={form.imageUrl}
-                onChange={(e) => setFormField("imageUrl", e.target.value)}
-                className={fieldClass(!!fieldErrors.imageUrl)}
-                placeholder="https://..."
+                onChange={(url) => setFormField("imageUrl", url)}
+                inputClassName={fieldClass(!!fieldErrors.imageUrl)}
+                error={fieldErrors.imageUrl}
               />
-              {fieldErrors.imageUrl && <p className="text-xs text-red-400">{fieldErrors.imageUrl}</p>}
-              <p className="text-xs text-[#9ca3af]">Upload plików — w kolejnej iteracji; na razie wymagany URL JPG/PNG.</p>
             </div>
             <div className="space-y-2">
               <Label className="text-white">Profil społecznościowy</Label>

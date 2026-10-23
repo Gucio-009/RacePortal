@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-22 (katalog torów PL; link `/verify-email/{token}`; wnioski org. UX; liczby testów; rate limit API)
+**Ostatnia synchronizacja:** 2026-10-22 (upload zdjęć ≤5 MB; powiadomienia X+czas+etykiety; Zgłoś błąd wyżej)
 
 ---
 
@@ -90,10 +90,10 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
 | 4 | Panel admina | `/admin` — userzy, eventy, wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
-| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = URL nie upload | **Częściowo** |
+| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = **upload ≤5 MB** lub URL | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER; wniosek `/zostan-organizatorem` (`businessType`) + status `GET /api/organizer/my-application`; CTA w dashboard/menu | **OK** |
-| 9 | Narzędzia org. | `/organizer` — create UX: selecty torów (`TRACK_PRESETS` / seed `GET /api/tracks`), miniatury, chipy wpisowego; plakat URL nie file upload | **Częściowo** |
+| 9 | Narzędzia org. | `/organizer` — create UX: selecty torów, plakat preset/**upload ≤5 MB**/URL, chipy wpisowego | **OK** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA; seed katalogu torów PL | **OK** |
 | 11 | Maile | SMTP Mailbux → skrzynka (link aktywacyjny path-based, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet w `/wydarzenia` (widok Mapa) + mobile markery | **OK** |
@@ -112,10 +112,10 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 - [x] 3 Szczegóły  
 - [x] 4 Panel admina  
 - [~] 5 Konto kierowcy — OK funkcjonalnie; luki Spec (imię/telefon)  
-- [~] 6 Garaż — OK funkcjonalnie; zdjęcia = URL (nie upload)  
+- [x] 6 Garaż — upload zdjęć ≤5 MB lub URL  
 - [x] 7 System zgłoszeń  
 - [x] 8 Konto organizatora — wniosek + admin approve/reject  
-- [~] 9 Narzędzia organizatora — OK funkcjonalnie; plakat = URL (nie upload)  
+- [x] 9 Narzędzia organizatora — plakat preset / upload / URL  
 - [x] 10 Baza danych (+ katalog torów PL)  
 - [x] 11 Powiadomienia mailowe  
 
@@ -149,7 +149,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | Priorytet | Pozycja | Brak / luką |
 |-----------|---------|-------------|
 | **Wysoki (Spec)** | Profil rejestracja | Imię / nazwisko / telefon **wymagane** wg Spec — dziś opcjonalne; brak formatu litery/telefon → [`spec-conformity.md`](./spec-conformity.md) |
-| **Wysoki (Spec)** | Upload plików | Garaż + plakat eventu: Spec = file upload; kod = URL |
+| ~~**Wysoki (Spec)**~~ | ~~Upload plików~~ | **Zrobione (2026-10-22):** `/api/uploads/image` JPG/PNG/WebP ≤5 MB (garaż, plakat, potwierdzenie) |
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
 | Średni (Spec) | Hasło seed | Silne hasło przy rejestracji/zmianie; konta seed demo nadal słabe (`admin123`) — świadomie |
 | Średni (Spec) | Napęd 4WD + słownik marek | Brak w selectach garażu |
