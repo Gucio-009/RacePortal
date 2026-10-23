@@ -25,7 +25,7 @@
   --font-family-display: "Oxanium", "Oxanium Fallback", "Montserrat Fallback", sans-serif;
   --race-accent: #FFD700;
   --race-motion: 200ms;
-  /* Powierzchnie UI – ciemny default (Złoty / Redline / Ice); Arctic nadpisuje poniżej */
+  /* Powierzchnie UI – ciemny default (Złoty / Redline / Ice); jasne motywy nadpisują poniżej */
   --race-bg: #121212;
   --race-card: #1a1a1a;
   --race-border: #2a2a2a;
@@ -127,6 +127,102 @@ html[data-accent="arctic"] {
   color-scheme: light;
 }
 
+/* Desert Sand – jasne, ciepłe powierzchnie; akcent #B78D54 z JS */
+html[data-accent="sand"] {
+  --race-bg: #f7f3eb;
+  --race-card: #ffffff;
+  --race-border: #e3d8c8;
+  --race-muted: #6b6258;
+  --race-fg: #29241f;
+  --race-hover: #efe9de;
+  --race-muted-bg: #efe9de;
+  --race-on-accent: #29241f;
+  --race-overlay: linear-gradient(
+    180deg,
+    rgba(247, 243, 235, 0.78) 0%,
+    rgba(247, 243, 235, 0.58) 45%,
+    rgba(247, 243, 235, 0.86) 100%
+  );
+  --race-hero-fg: #29241f;
+  --race-hero-muted: #6b6258;
+  --race-card-shadow: 0 8px 24px rgba(41, 36, 31, 0.08);
+  --background: #f7f3eb;
+  --foreground: #29241f;
+  --card: #ffffff;
+  --card-foreground: #29241f;
+  --popover: #ffffff;
+  --popover-foreground: #29241f;
+  --primary: var(--race-accent);
+  --primary-foreground: #29241f;
+  --secondary: #efe9de;
+  --secondary-foreground: #29241f;
+  --muted: #efe9de;
+  --muted-foreground: #6b6258;
+  --accent: var(--race-accent);
+  --accent-foreground: #29241f;
+  --border: #e3d8c8;
+  --input: #e3d8c8;
+  --input-background: #ffffff;
+  --switch-background: #e3d8c8;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #29241f;
+  --sidebar-primary: var(--race-accent);
+  --sidebar-primary-foreground: #29241f;
+  --sidebar-accent: #efe9de;
+  --sidebar-accent-foreground: #29241f;
+  --sidebar-border: #e3d8c8;
+  --sidebar-ring: var(--race-accent);
+  color-scheme: light;
+}
+
+/* Blush Pink – jasne, różowe powierzchnie; akcent #C56B89 z JS */
+html[data-accent="blush"] {
+  --race-bg: #fff5f7;
+  --race-card: #ffffff;
+  --race-border: #eed5de;
+  --race-muted: #7a6570;
+  --race-fg: #342630;
+  --race-hover: #f8e8ed;
+  --race-muted-bg: #f8e8ed;
+  --race-on-accent: #342630;
+  --race-overlay: linear-gradient(
+    180deg,
+    rgba(255, 245, 247, 0.78) 0%,
+    rgba(255, 245, 247, 0.58) 45%,
+    rgba(255, 245, 247, 0.86) 100%
+  );
+  --race-hero-fg: #342630;
+  --race-hero-muted: #7a6570;
+  --race-card-shadow: 0 8px 24px rgba(52, 38, 48, 0.08);
+  --background: #fff5f7;
+  --foreground: #342630;
+  --card: #ffffff;
+  --card-foreground: #342630;
+  --popover: #ffffff;
+  --popover-foreground: #342630;
+  --primary: var(--race-accent);
+  --primary-foreground: #342630;
+  --secondary: #f8e8ed;
+  --secondary-foreground: #342630;
+  --muted: #f8e8ed;
+  --muted-foreground: #7a6570;
+  --accent: var(--race-accent);
+  --accent-foreground: #342630;
+  --border: #eed5de;
+  --input: #eed5de;
+  --input-background: #ffffff;
+  --switch-background: #eed5de;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #342630;
+  --sidebar-primary: var(--race-accent);
+  --sidebar-primary-foreground: #342630;
+  --sidebar-accent: #f8e8ed;
+  --sidebar-accent-foreground: #342630;
+  --sidebar-border: #eed5de;
+  --sidebar-ring: var(--race-accent);
+  color-scheme: light;
+}
+
 /* Preferencje z Ustawień → akcent + tryb pit-stop (minimalny ruch) */
 html[data-pit-stop="on"] *,
 html[data-pit-stop="on"] *::before,
@@ -184,6 +280,14 @@ html[data-pit-stop="on"] *::after {
   html[data-accent="arctic"] .event-card-lift:hover {
     box-shadow: 0 14px 32px rgba(23, 40, 61, 0.12);
   }
+
+  html[data-accent="sand"] .event-card-lift:hover {
+    box-shadow: 0 14px 32px rgba(41, 36, 31, 0.12);
+  }
+
+  html[data-accent="blush"] .event-card-lift:hover {
+    box-shadow: 0 14px 32px rgba(52, 38, 48, 0.12);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -206,6 +310,20 @@ html[data-accent="arctic"] .home-hero-cta-secondary {
 }
 
 html[data-accent="arctic"] .home-hero-cta-secondary:hover {
+  filter: brightness(0.95);
+  background: var(--race-accent);
+  color: var(--race-on-accent);
+}
+
+html[data-accent="sand"] .home-hero-cta-secondary,
+html[data-accent="blush"] .home-hero-cta-secondary {
+  background: var(--race-accent);
+  color: var(--race-on-accent);
+  border-color: var(--race-accent);
+}
+
+html[data-accent="sand"] .home-hero-cta-secondary:hover,
+html[data-accent="blush"] .home-hero-cta-secondary:hover {
   filter: brightness(0.95);
   background: var(--race-accent);
   color: var(--race-on-accent);

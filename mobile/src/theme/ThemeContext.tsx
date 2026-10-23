@@ -1,5 +1,5 @@
 /**
- * Motyw akcentu (gold / redline / ice / arctic) — lokalne ustawienia, bez API.
+ * Motyw akcentu (gold / redline / ice / arctic / sand / blush) — lokalne ustawienia, bez API.
  * StyleSheet.create zamraża kolory, więc komponenty UI czytają accentColor w renderze.
  */
 import {
@@ -16,13 +16,15 @@ import * as SecureStore from "expo-secure-store";
 
 const KEY = "raceportal_settings";
 
-export type AccentName = "gold" | "redline" | "ice" | "arctic";
+export type AccentName = "gold" | "redline" | "ice" | "arctic" | "sand" | "blush";
 
 export const ACCENT_HEX: Record<AccentName, string> = {
   gold: "#FFD700",
   redline: "#FF3B3B",
   ice: "#7DD3FC",
   arctic: "#266CB3",
+  sand: "#B78D54",
+  blush: "#C56B89",
 };
 
 type ThemeContextValue = {
@@ -42,13 +44,8 @@ async function readAccent(): Promise<AccentName> {
         : await SecureStore.getItemAsync(KEY);
     if (!raw) return "gold";
     const parsed = JSON.parse(raw) as { accent?: string };
-    if (
-      parsed.accent === "redline" ||
-      parsed.accent === "ice" ||
-      parsed.accent === "gold" ||
-      parsed.accent === "arctic"
-    ) {
-      return parsed.accent;
+    if (parsed.accent && parsed.accent in ACCENT_HEX) {
+      return parsed.accent as AccentName;
     }
   } catch {
     /* ignore */

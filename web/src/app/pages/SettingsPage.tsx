@@ -44,6 +44,7 @@ import {
   applyUserSettings,
   defaultSettings,
   loadSettings,
+  ACCENT_GROUPS,
   type AccentTheme,
   type UserSettings,
 } from "../lib/userSettings";
@@ -209,33 +210,52 @@ export function SettingsPage() {
                 Wygląd
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {(Object.keys(ACCENTS) as AccentTheme[]).map((key) => {
-                  const item = ACCENTS[key];
-                  const active = settings.accent === key;
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setAccent(key)}
-                      className={`rounded-lg border p-4 text-left transition-all ${
-                        active
-                          ? "bg-[var(--race-hover)]"
-                          : "border-[var(--race-border)] bg-[var(--race-bg)] hover:border-[var(--race-muted)]"
-                      }`}
-                      style={active ? { borderColor: item.color, boxShadow: `0 0 0 1px ${item.color}` } : undefined}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-full mb-3 border border-[var(--race-border)]"
-                        style={{ background: item.color }}
-                      />
-                      <div className="text-[var(--race-fg)] font-semibold mb-1">{item.label}</div>
-                      <div className="text-[var(--race-muted)] text-sm">{item.desc}</div>
-                    </button>
-                  );
-                })}
-              </div>
+            <CardContent className="space-y-6">
+              {ACCENT_GROUPS.map((group) => (
+                <section key={group.title} className="space-y-3">
+                  <h3 className="font-display text-[11px] tracking-[0.18em] text-[var(--race-muted)] uppercase">
+                    {group.title}
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {group.keys.map((key) => {
+                      const item = ACCENTS[key];
+                      const active = settings.accent === key;
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          aria-pressed={active}
+                          onClick={() => setAccent(key)}
+                          className={`rounded-lg border p-4 text-left transition-colors ${
+                            active
+                              ? "bg-[var(--race-hover)]"
+                              : "border-[var(--race-border)] bg-[var(--race-bg)] hover:border-[var(--race-muted)]"
+                          }`}
+                          style={
+                            active ? { borderColor: item.color, boxShadow: `0 0 0 1px ${item.color}` } : undefined
+                          }
+                        >
+                          <span
+                            className="mb-3 block h-9 rounded-md border border-[var(--race-border)]"
+                            style={{
+                              background: `linear-gradient(90deg, ${item.surface} 0 62%, ${item.color} 62% 100%)`,
+                            }}
+                            aria-hidden="true"
+                          />
+                          <div className="text-[var(--race-fg)] font-semibold mb-1">{item.label}</div>
+                          <div className="text-[var(--race-muted)] text-sm">{item.desc}</div>
+                          <div
+                            className="mt-2 text-[11px] font-display tracking-[0.14em] uppercase min-h-[1rem]"
+                            style={{ color: active ? item.color : "transparent" }}
+                          >
+                            Aktywny
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </section>
+              ))}
 
               <SettingRow
                 icon={<Moon className="w-4 h-4 text-[var(--race-accent)]" />}

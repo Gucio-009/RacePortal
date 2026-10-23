@@ -17,7 +17,7 @@ import { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
-import { applyUserSettings, loadSettings } from "./lib/userSettings";
+import { applyUserSettings, isLightAccent, loadSettings } from "./lib/userSettings";
 import { useAccent } from "./hooks/useAccent";
 import { BootPulse } from "./components/CinematicIntro";
 
@@ -34,7 +34,7 @@ function AppToaster() {
   return (
     <Toaster
       position="top-right"
-      theme={accent === "arctic" ? "light" : "dark"}
+      theme={isLightAccent(accent) ? "light" : "dark"}
       closeButton
       duration={3500}
     />

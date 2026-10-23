@@ -10,7 +10,7 @@
  * w aplikacji; dociąganie jej tylko do intra zwiększyłoby bundle.
  */
 
-import { Component, useCallback, useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { Component, useCallback, useEffect, useLayoutEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
 import { getToken } from "../lib/api";
 import { loadSettings } from "../lib/userSettings";
@@ -128,6 +128,10 @@ function Sequence({ reduced, onDone }: { reduced: boolean; onDone: () => void })
 
   useEffect(() => () => releaseIntro(), []);
 
+  useLayoutEffect(() => {
+    document.documentElement.classList.remove("intro-cover");
+  }, []);
+
   if (phase === "done") return null;
 
   const className = [
@@ -151,15 +155,6 @@ function Sequence({ reduced, onDone }: { reduced: boolean; onDone: () => void })
         <path d="M-40 430 C 200 300, 380 520, 680 360 S 1040 210, 1280 300" />
         <path d="M-40 470 C 220 350, 400 560, 700 400 S 1060 250, 1280 340" />
         <path d="M80 560 C 260 480, 520 600, 860 470" />
-      </svg>
-      <svg className="cinematic-intro__car" viewBox="0 0 880 210" aria-hidden="true">
-        <path
-          fill="currentColor"
-          fillRule="evenodd"
-          d="M168 132h34l8-16h22l-6 16h18l24-8 40-6 34-26c22-16 58-24 96-20 32 4 54 16 76 32l36 24 62 8c28 4 48 10 66 20l16 12H168zm132 28a26 26 0 1 0 .1 0zm0 0a12 12 0 1 1-.1 0zM612 160a26 26 0 1 0 .1 0zm0 0a12 12 0 1 1-.1 0z"
-        />
-        <path fill="currentColor" d="M186 104h40l-8 14h-26z" />
-        <path fill="currentColor" opacity="0.5" d="M392 92c26-2 46 12 58 26h-38c-8-12-16-20-20-20z" />
       </svg>
       <div className="cinematic-intro__sweep" aria-hidden="true" />
       <div className="cinematic-intro__telemetry cinematic-intro__telemetry--tl" aria-hidden="true">
@@ -205,6 +200,7 @@ class IntroBoundary extends Component<{ children: ReactNode }, { failed: boolean
 
   componentDidCatch() {
     releaseIntro();
+    document.documentElement.classList.remove("intro-cover");
   }
 
   render() {
@@ -219,6 +215,9 @@ export function CinematicIntro() {
   const [reduced] = useState(motionReduced);
   const [finished, setFinished] = useState(false);
   const finish = useCallback(() => setFinished(true), []);
+  useLayoutEffect(() => {
+    if (!play) document.documentElement.classList.remove("intro-cover");
+  }, [play]);
   if (!play || finished) return null;
   return (
     <IntroBoundary>

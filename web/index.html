@@ -31,6 +31,35 @@
         background: #f3f6fa;
         color: #17283d;
       }
+      html[data-accent="sand"],
+      html[data-accent="sand"] body {
+        background: #f7f3eb;
+        color: #29241f;
+      }
+      html[data-accent="blush"],
+      html[data-accent="blush"] body {
+        background: #fff5f7;
+        color: #342630;
+      }
+      html.intro-cover,
+      html.intro-cover body {
+        background: var(--boot-bg, #07080a);
+      }
+      html.intro-cover::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 500;
+        background: var(--boot-bg, #07080a);
+      }
+      html.intro-cover #root {
+        visibility: hidden;
+      }
+      html[data-accent="redline"] { --boot-bg: #10080a; }
+      html[data-accent="ice"] { --boot-bg: #070e1a; }
+      html[data-accent="arctic"] { --boot-bg: #eef3f8; }
+      html[data-accent="sand"] { --boot-bg: #f7f3eb; }
+      html[data-accent="blush"] { --boot-bg: #fff5f7; }
       html {
         overflow-x: auto;
       }
@@ -43,16 +72,29 @@
       try {
         var s = JSON.parse(localStorage.getItem("raceportal_settings") || "{}");
         var a = s.accent;
-        if (a === "gold" || a === "redline" || a === "ice" || a === "arctic") {
+        var colors = {
+          gold: "#FFD700",
+          redline: "#FF3B3B",
+          ice: "#7DD3FC",
+          arctic: "#266CB3",
+          sand: "#B78D54",
+          blush: "#C56B89"
+        };
+        var surfaces = { arctic: "#F3F6FA", sand: "#F7F3EB", blush: "#FFF5F7" };
+        if (colors[a]) {
           document.documentElement.dataset.accent = a;
-          var colors = { gold: "#FFD700", redline: "#FF3B3B", ice: "#7DD3FC", arctic: "#266CB3" };
           document.documentElement.style.setProperty("--race-accent", colors[a]);
-          if (a === "arctic") {
+          if (surfaces[a]) {
             var t = document.querySelector('meta[name="theme-color"]');
-            if (t) t.setAttribute("content", "#F3F6FA");
+            if (t) t.setAttribute("content", surfaces[a]);
             var c = document.querySelector('meta[name="color-scheme"]');
             if (c) c.setAttribute("content", "light");
           }
+        }
+      } catch (e) {}
+      try {
+        if (sessionStorage.getItem("raceportal_intro_seen") !== "1") {
+          document.documentElement.classList.add("intro-cover");
         }
       } catch (e) {}
     </script>

@@ -17,7 +17,6 @@
   color: var(--intro-fg);
   pointer-events: auto;
   user-select: none;
-  animation: intro-in 0.48s ease both;
 }
 
 html[data-accent="redline"] .cinematic-intro {
@@ -33,6 +32,20 @@ html[data-accent="arctic"] .cinematic-intro {
   --intro-fg: #17283d;
   --intro-muted: rgba(23, 40, 61, 0.62);
   --intro-line: color-mix(in srgb, var(--race-accent) 55%, #8aa0b8);
+}
+
+html[data-accent="sand"] .cinematic-intro {
+  --intro-bg: #f7f3eb;
+  --intro-fg: #29241f;
+  --intro-muted: rgba(41, 36, 31, 0.62);
+  --intro-line: color-mix(in srgb, var(--race-accent) 70%, #8a7356);
+}
+
+html[data-accent="blush"] .cinematic-intro {
+  --intro-bg: #fff5f7;
+  --intro-fg: #342630;
+  --intro-muted: rgba(52, 38, 48, 0.62);
+  --intro-line: color-mix(in srgb, var(--race-accent) 70%, #c48b9c);
 }
 
 .cinematic-intro__half {
@@ -95,6 +108,14 @@ html[data-accent="arctic"] .cinematic-intro__vignette {
   box-shadow: inset 0 0 120px rgba(23, 40, 61, 0.08);
 }
 
+html[data-accent="sand"] .cinematic-intro__vignette {
+  box-shadow: inset 0 0 120px rgba(41, 36, 31, 0.08);
+}
+
+html[data-accent="blush"] .cinematic-intro__vignette {
+  box-shadow: inset 0 0 120px rgba(52, 38, 48, 0.08);
+}
+
 .cinematic-intro__track-art {
   position: absolute;
   inset: 0;
@@ -110,25 +131,20 @@ html[data-accent="arctic"] .cinematic-intro__track-art {
   opacity: 0.45;
 }
 
+html[data-accent="sand"] .cinematic-intro__track-art {
+  color: #c4b39a;
+  opacity: 0.55;
+}
+
+html[data-accent="blush"] .cinematic-intro__track-art {
+  color: #e2b7c4;
+  opacity: 0.6;
+}
+
 .cinematic-intro__track-art path {
   fill: none;
   stroke: currentColor;
   stroke-width: 1.25;
-}
-
-.cinematic-intro__car {
-  position: absolute;
-  left: 50%;
-  bottom: 9%;
-  width: min(760px, 84vw);
-  color: var(--intro-fg);
-  opacity: 0.1;
-  transform: translate3d(-50%, 0, 0);
-  pointer-events: none;
-}
-
-html[data-accent="arctic"] .cinematic-intro__car {
-  opacity: 0.14;
 }
 
 .cinematic-intro__sweep {
@@ -148,7 +164,9 @@ html[data-accent="arctic"] .cinematic-intro__car {
   pointer-events: none;
 }
 
-html[data-accent="arctic"] .cinematic-intro__sweep {
+html[data-accent="arctic"] .cinematic-intro__sweep,
+html[data-accent="sand"] .cinematic-intro__sweep,
+html[data-accent="blush"] .cinematic-intro__sweep {
   opacity: 0.55;
 }
 
@@ -419,12 +437,6 @@ html[data-accent="arctic"] .cinematic-intro__sweep {
   .cinematic-intro__telemetry,
   .cinematic-intro__track-art {
     display: none;
-  }
-
-  .cinematic-intro__car {
-    opacity: 0.12;
-    bottom: 8%;
-    width: min(420px, 88vw);
   }
 
   .cinematic-intro__brand {

@@ -3,13 +3,11 @@
  * Reaguje na zmianę motywu bez przeładowania strony.
  */
 import { useEffect, useState } from "react";
-import { loadSettings, type AccentTheme } from "../lib/userSettings";
+import { ACCENTS, loadSettings, type AccentTheme } from "../lib/userSettings";
 
 function readAccent(): AccentTheme {
   const fromDom = document.documentElement.dataset.accent;
-  if (fromDom === "gold" || fromDom === "redline" || fromDom === "ice" || fromDom === "arctic") {
-    return fromDom;
-  }
+  if (fromDom && fromDom in ACCENTS) return fromDom as AccentTheme;
   return loadSettings().accent;
 }
 
