@@ -834,5 +834,21 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-22 — upload zdjęć, powiadomienia UX, Zgłoś błąd.*
+## 52. Intro sesji + naprawa zdjęć (2026-10-23)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Wejście od razu w SPA | `CinematicIntro` raz na sesję karty (`sessionStorage`); pasek tylko gdy `/me` jeszcze trwa po intrze | Start bez sztucznego procentu i bez blokady po błędzie API |
+| Garaż odrzucał `/api/uploads/…` (wymagał http/https) po udanym wgraniu | `ImageReferences`: ścieżka uploadu albo link http(s), max 2000 znaków. Tworzenie auta wymaga zdjęcia; edycja może je wyczyścić. Karta w garażu pokazuje plik | Zdjęcie zostaje po odświeżeniu |
+| Nginx serwował `*.jpg`/`*.png` ze statyków SPA, więc GET uploadu dawał 404 | `location ^~ /api/` wygrywa z regexem rozszerzeń | Odczyt pliku idzie do API |
+| Typ pliku tylko z nagłówka przeglądarki | Sygnatura JPG/PNG/WebP; front akceptuje pusty MIME, gdy rozszerzenie się zgadza | Windows często nie podaje `image/jpeg` |
+| `events.image_url` VARCHAR(500) | TEXT (`EventImageUrlColumn` robi `ALTER` przy starcie, bo Hibernate `update` kolumny nie poszerza) | Długi wklejony URL |
+| Entrypoint `su` (brak w obrazie JRE) → API unhealthy | `gosu spring` po `chown` katalogu `/app/uploads`. Limit żądania 6 MB, pliku 5 MB | Kontener wstaje i może zapisać plik |
+| `docker-compose.vm.yml` bez volume uploadów | `raceportal_uploads_vm` + `UPLOAD_DIR` | Wariant API-only nie gubi plików przy recreate |
+
+**Weryfikacja:** `UploadServiceTest` 4/4, Vitest api-types 601, `npm run build:web`. Zapis na żywo (VM) nie był sprawdzony w tej sesji — API padało na `su` przed poprawką `gosu`.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-23 — intro sesji, upload zdjęć (plik albo URL), entrypoint `gosu`.*
 

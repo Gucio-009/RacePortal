@@ -22,7 +22,7 @@ Mobile Expo osobno (`:8082` / Simulator).
 4. **Organizator (2 min)** — event (preset toru) + zgłoszenia + mail na skrzynkę kierowcy (Mailbux).
 5. **Admin (1 min)** — approve eventu / wniosku org. (`/admin` → Wnioski).
 6. **Telefon (1–1,5 min)** — web PWA (bottom nav) **lub** Expo wizytówka → CTA „Zapisz się na stronie”.
-7. **Domknięcie (30 s)** — Compose / Oracle, health (`db` + `smtp`), jeden API; uczciwie o lukach (upload = URL).
+7. **Domknięcie (30 s)** — Compose / Oracle, health (`db` + `smtp`), jeden API; uczciwie o lukach (mobile bez zdjęcia w garażu, część pól Spec).
 
 **Plan B:** nagranie 60–90 s (eventy → zapis → mail → PWA/mobile), konta seed na kartce.
 
@@ -59,19 +59,19 @@ Mobile Expo osobno (`:8082` / Simulator).
 
 - Dashboard — aktywne / nadchodzące zgłoszenia
 - **Garaż** — CRUD auta, kategoria/klasa, napęd, wymagane pola, clear-on-edit
-- Zdjęcie auta (URL) + deklaracje (klatka, OC, PZM niezależnie od prawa jazdy B)
+- Zdjęcie auta wymagane przy dodaniu (plik JPG/PNG/WebP albo URL), widoczne na karcie; deklaracje (klatka, OC, PZM niezależnie od prawa jazdy B)
 - Zapis na event z **wyborem auta**
 - **`carMatch`** — proponowane / inne auta vs kategoria eventu (nazwać na głos)
 - Filtr eventów **po aucie z garażu** (`carId`) — „pokaż tylko to, na co pasuję”
 - Statusy zgłoszenia (PENDING → APPROVED / …)
-- Dowód płatności (URL) przy evencie płatnym
+- Dowód płatności (plik albo URL) przy evencie płatnym
 - Anulowanie zgłoszenia
 - Konto: adres, Instagram, PZM, zmiana hasła, avatar
 
 ### Organizator
 
 - Wniosek „Zostań organizatorem” (typ działalności)
-- Panel: tworzenie / edycja eventu (presety, kategorie, wpisowe, lokalizacja, plakat URL)
+- Panel: tworzenie / edycja eventu (presety, kategorie, wpisowe, lokalizacja, plakat: preset, plik albo URL)
 - Lista zgłoszeń do swojego eventu + zmiana statusów
 - Mail do kierowcy po zmianie statusu → **skrzynka użytkownika (Mailbux)**
 - Nota RODO przy tworzeniu eventu
@@ -123,7 +123,7 @@ Mobile Expo osobno (`:8082` / Simulator).
 
 ## Luki (nazwać uczciwie, 15 s)
 
-- Upload plików = URL (nie multipart)
+- Mobile garaż bez pola zdjęcia (web: plik albo URL)
 - Spec formularzy: część pól opcjonalna vs wymagana — [`spec-conformity.md`](./spec-conformity.md)
 - Galeria odłożona
 - Brak App Store / Play (jest PWA weba)

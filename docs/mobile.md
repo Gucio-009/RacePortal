@@ -248,7 +248,7 @@ npm --prefix mobile test                        # unit
 - Clear-on-edit numerów w garażu; większy gap na „Moje”  
 - Profil: adres, Instagram, PZM niezależny; wniosek org. z `businessType`  
 
-Luki względem Spec (upload plików, wymagane imię/telefon itd.): [`spec-conformity.md`](./spec-conformity.md).
+Luki względem Spec (mobile bez pola zdjęcia, wymagane imię/telefon itd.): [`spec-conformity.md`](./spec-conformity.md).
 
 ### Etap H — Mobilka-wizytówka (2026-09-14)
 

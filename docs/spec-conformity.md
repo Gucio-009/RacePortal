@@ -1,7 +1,8 @@
 # Specyfikacja Formularzy — zgodność z kodem
 
 Źródło: `Dokumentacja/Dokumenty/Specyfikacja Formularzy.docx`  
-Porównanie z kodem (web / mobile / API): **2026-09-14 ~18:50**.
+Porównanie z kodem (web / mobile / API): **2026-09-14 ~18:50**.  
+Wiersze zdjęć garażu i plakatu oraz decyzja P0 o uploadzie sprawdzone ponownie **2026-10-23**.
 
 Ten plik **nie naprawia** luk — tylko je rejestruje, żeby decyzja (naprawiać / świadomie odłożyć) była jasna.
 
@@ -44,14 +45,14 @@ Legenda: **OK** · **Minor** · **Major** · **Blocker**
 | Zarejestrowane → ukryj tablica/typ/KSS | WARUNKOWE | Web: ukrywa typ/KSS, **tablica nadal widoczna**; mobile: KSS przy każdym „zarejestrowane” | Minor–Major |
 | Typ rejestracji | standardowe / sportowe | `cywilne` / `sportowe` (nazwy inne niż w spec, sens OK) | Minor |
 | Klatka / OC / PT | WYMAGANE switch | Web+API; mobile toggle bez osobnej walidacji UX | OK / Minor |
-| Zdjęcia | **File upload** min. 1, ≤5 MB | Web+API: **opcjonalne** — upload JPG/PNG/WebP ≤5 MB lub URL; mobile **bez** pola zdjęcia | Minor (spec wymaga min. 1; produktowo opcjonalne) |
+| Zdjęcia | **File upload** min. 1, ≤5 MB | Web+API: przy **tworzeniu** wymagane jedno zdjęcie — plik JPG/PNG/WebP ≤5 MB albo adres http(s) (max 2000 znaków). Zapis: `/api/uploads/…` lub link. Edycja: puste pole usuwa zdjęcie, karta auta je pokazuje. Mobile **bez** pola | Minor (spec chce sam plik; produkt przyjmuje też URL; mobile bez pola) |
 | Social / video / mods | OPCJONALNE | Web OK; mobile tylko mods | Minor |
 
 ## 4. Formularz wydarzenia (organizator)
 
 | Pole (spec) | Spec | Stan w kodzie | Severity |
 |-------------|------|---------------|----------|
-| Plakat | WYMAGANE file upload | Preset / upload ≤5 MB / URL | OK / Minor |
+| Plakat | WYMAGANE file upload | Opcjonalny: preset, plik JPG/PNG/WebP ≤5 MB albo adres http(s). Kolumna `events.image_url` to TEXT | OK / Minor |
 | Data/godzina końca | WYMAGANE | Opcjonalne | Major |
 | Ulica | OPCJONALNE | W DTO, często brak w UI | Minor |
 | Wpisowe | WYMAGANE (0 = free) | Switch płatne/darmowe, nie zawsze jawne `0` | Minor |
@@ -77,10 +78,10 @@ Legenda: **OK** · **Minor** · **Major** · **Blocker**
 | Priorytet | Temat | Opcje |
 |-----------|-------|--------|
 | P0 | Imię / nazwisko / telefon wymagane + format | A) Dostosować UI+API do spec · B) Zmienić spec na „opcjonalne przy rejestracji” |
-| P0 | Upload zdjęć (garaż / plakat) | A) Multipart + storage · B) Spec: „URL lub upload w v2” |
+| P0 | Upload zdjęć (garaż / plakat) | **Zrobione na web+API (2026-10-23):** plik albo URL. Zostaje mobile (brak pola) i avatar organizatora |
 | P1 | Hasło min. 8 + reguły na backendzie | Zsynchronizować Bean Validation z UI |
 | P1 | 4WD + słownik marek | Dodać do selectów / seed słownika |
 | P2 | Pełna rejestracja organizatora wg §2 | Osobny flow vs obecny wniosek USER→ORG |
-| P2 | Event: end datetime + plakat upload | Uzupełnić OrganizerEventFormDialog |
+| P2 | Event: end datetime | Koniec wydarzenia nadal opcjonalny. Plakat (preset / plik / URL) jest |
 
-**Werdykt na dziś:** funkcjonalnie MVP działa; **pełna zgodność ze Specyfikacją Formularzy — nie**. Największe rozjazdy: wymagalność danych osobowych, upload plików, napęd 4WD, mobile garaż vs API.
+**Werdykt na dziś:** funkcjonalnie MVP działa; **pełna zgodność ze Specyfikacją Formularzy — nie**. Największe rozjazdy: wymagalność danych osobowych, napęd 4WD, mobile garaż vs API (w tym brak zdjęcia). Upload plików na web+API jest domknięty.

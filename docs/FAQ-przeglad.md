@@ -134,7 +134,7 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Katalog torów PL | Seed + `GET /api/tracks`; UI: `TRACK_PRESETS` w `packages/api-types` |
 | Admin → Błędy | Status OPEN/DONE, usuwanie, eksport CSV |
 | Mobile Expo | **Wizytówka** — tylko Eventy + CTA „Zapisz się na stronie” (web); bez logowania w app — [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
-| Upload plików (grafika/załączniki) | Nadal URL (nie multipart) — świadomy gap vs Spec → [`spec-conformity.md`](./spec-conformity.md) |
+| Upload zdjęć (garaż, plakat, dowód przelewu) | Web+API: plik JPG/PNG/WebP ≤5 MB albo URL http(s). Garaż wymaga zdjęcia przy dodaniu auta. Mobile bez pola. Avatar organizatora nadal brak → [`spec-conformity.md`](./spec-conformity.md) |
 | Specyfikacja Formularzy | Pełna tabela zgodności: [`spec-conformity.md`](./spec-conformity.md) (imię/telefon wymagane w Spec, opcjonalne w UI itd.) |
 
 ---

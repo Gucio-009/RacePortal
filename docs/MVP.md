@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-22 (upload zdjęć ≤5 MB; powiadomienia X+czas+etykiety; Zgłoś błąd wyżej)
+**Ostatnia synchronizacja:** 2026-10-23 (zdjęcie garażu wymagane przy dodaniu; plik albo URL; intro raz na sesję)
 
 ---
 
@@ -90,7 +90,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
 | 4 | Panel admina | `/admin` — userzy, eventy, wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
-| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie opcjonalne (upload ≤5 MB lub URL) | **OK** |
+| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie **wymagane przy dodaniu** (plik JPG/PNG/WebP ≤5 MB albo URL), na karcie; przy edycji puste pole je usuwa | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER; wniosek `/zostan-organizatorem` (`businessType`) + status `GET /api/organizer/my-application`; CTA w dashboard/menu | **OK** |
 | 9 | Narzędzia org. | `/organizer` — create UX: selecty torów, plakat preset/**upload ≤5 MB**/URL, chipy wpisowego | **OK** |
@@ -112,7 +112,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 - [x] 3 Szczegóły  
 - [x] 4 Panel admina  
 - [~] 5 Konto kierowcy — OK funkcjonalnie; luki Spec (imię/telefon)  
-- [x] 6 Garaż — upload zdjęć ≤5 MB lub URL  
+- [x] 6 Garaż — zdjęcie wymagane przy dodaniu: plik ≤5 MB albo URL; widoczne na karcie  
 - [x] 7 System zgłoszeń  
 - [x] 8 Konto organizatora — wniosek + admin approve/reject  
 - [x] 9 Narzędzia organizatora — plakat preset / upload / URL  
@@ -149,7 +149,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | Priorytet | Pozycja | Brak / luką |
 |-----------|---------|-------------|
 | **Wysoki (Spec)** | Profil rejestracja | Imię / nazwisko / telefon **wymagane** wg Spec — dziś opcjonalne; brak formatu litery/telefon → [`spec-conformity.md`](./spec-conformity.md) |
-| ~~**Wysoki (Spec)**~~ | ~~Upload plików~~ | **Zrobione (2026-10-22):** `/api/uploads/image` JPG/PNG/WebP ≤5 MB (garaż, plakat, potwierdzenie) |
+| ~~**Wysoki (Spec)**~~ | ~~Upload plików~~ | **Zrobione (2026-10-23):** `/api/uploads/image` JPG/PNG/WebP ≤5 MB albo URL http(s) (garaż, plakat, potwierdzenie). Garaż wymaga zdjęcia przy tworzeniu |
 | Wysoki (jakość) | Wydajność | Brak testu 10k rekordów / 50 RPS i pomiaru P95 |
 | Średni (Spec) | Hasło seed | Silne hasło przy rejestracji/zmianie; konta seed demo nadal słabe (`admin123`) — świadomie |
 | Średni (Spec) | Napęd 4WD + słownik marek | Brak w selectach garażu |
@@ -190,6 +190,7 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Google Sign-In (opcjonalny Client ID) | Prawdziwa weryfikacja ID tokenu; poza ścisłym MVP social |
 | `packages/api-types` | Wspólne typy/helpers web+mobile |
 | `GET /api/events/markers` | Pełny zestaw pod mapę/kalendarz bez limitu listy |
+| Ekran startowy „START YOUR ENGINE” | Raz na sesję karty (`sessionStorage`); znika, gdy powłoka aplikacji jest gotowa. Motyw i reduced-motion |
 
 ---
 
@@ -251,8 +252,8 @@ Nie kasuj sekcji „Co miało być” — to baza porównania.
 
 ## 9. Wyrównanie do Dokumentacji (2026-08-02)
 
-Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+web: statusy PENDING/ACCEPTED/CONFIRMED/CANCELED, wydarzenia płatne + proof przelewu, anulowanie zgłoszenia/wydarzenia, edycja garażu z blokadą przy otwartym zgłoszeniu, weryfikacja e-mail przy rejestracji. Poza MVP kodu: bramka płatności, upload binarny, Project X.
+Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+web: statusy PENDING/ACCEPTED/CONFIRMED/CANCELED, wydarzenia płatne + proof przelewu, anulowanie zgłoszenia/wydarzenia, edycja garażu z blokadą przy otwartym zgłoszeniu, weryfikacja e-mail przy rejestracji. Poza MVP kodu na tamten dzień: bramka płatności, upload binarny, Project X. Upload zdjęć (plik albo URL) jest w web+API od 2026-10-23; poza kodem zostają bramka płatności i Project X.
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-22.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-23.*

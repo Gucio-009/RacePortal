@@ -25,6 +25,7 @@ https://www.raceportal.pl
 |-------|--------|------------------|
 | Front i API | Oracle `raceportal`, Docker Compose | **Martwe** — domena nie odpowiada |
 | Baza | volume Dockera na dysku VM | Zostaje |
+| Zdjęcia | volume `raceportal_uploads` (`/app/uploads`) | Zostają. `docker compose down -v` kasuje je razem z bazą |
 | Tunnel `cloudflared` | systemd na VM | Wstaje sam po **Start** |
 | Kontenery | `restart: unless-stopped` | Wstają same po starcie Dockera |
 
@@ -50,7 +51,9 @@ docker compose up --build -d
 | API health | http://127.0.0.1:4000/api/health |
 | MySQL | host `3307` (TCP, nie HTTP) |
 
-Lokalnie nginx na `:8081` proxy’uje `/api`. `VITE_API_URL` nie jest potrzebne.
+Lokalnie nginx na `:8081` proxy’uje `/api` (`location ^~ /api/`, żeby jpg/png z uploadu nie szły w statyki SPA). `VITE_API_URL` nie jest potrzebne.
+
+API przy starcie oddaje `/app/uploads` użytkownikowi `spring` (`gosu`) i dopiero wtedy wstaje JVM. Pliki są pod `/api/uploads/`.
 
 Maile: SMTP Mailbux (`noreply@raceportal.pl`). W katalogu projektu plik `.env` z `SMTP_PASSWORD=…`. Health: `"smtp":"up"`.
 
@@ -67,8 +70,8 @@ Web jest **PWA** (manifest + SW): na telefonie „Dodaj do ekranu początkowego�
 ### Stop lokalnie
 
 ```bash
-docker compose down          # kontenery stop, dane w volume zostają
-docker compose down -v       # kasuje volumes razem z bazą
+docker compose down          # kontenery stop; baza i zdjęcia w volume zostają
+docker compose down -v       # kasuje volumes: baza i wgrane zdjęcia
 ```
 
 ---
@@ -185,7 +188,7 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | Plik | Po co |
 |------|--------|
 | `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile SMTP Mailbux |
-| `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle |
+| `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle. Ma volume `raceportal_uploads_vm`, gdyby ktoś go odpalił |
 | `deploy/vm/.env.vm.example` | Szablon sekretów (gdy ktoś odpala wariant VM compose) |
 | `web/public/manifest.webmanifest` + `sw.js` | PWA |
 | `web/public/robots.txt` + `sitemap.xml` | SEO (nie SPA fallback) |
