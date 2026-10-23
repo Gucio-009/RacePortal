@@ -90,7 +90,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
 | 4 | Panel admina | `/admin` — userzy, eventy, wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
-| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcia = **upload ≤5 MB** lub URL | **OK** |
+| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie opcjonalne (upload ≤5 MB lub URL) | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER; wniosek `/zostan-organizatorem` (`businessType`) + status `GET /api/organizer/my-application`; CTA w dashboard/menu | **OK** |
 | 9 | Narzędzia org. | `/organizer` — create UX: selecty torów, plakat preset/**upload ≤5 MB**/URL, chipy wpisowego | **OK** |

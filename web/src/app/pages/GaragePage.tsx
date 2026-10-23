@@ -208,9 +208,7 @@ function validateGarageForm(form: typeof emptyForm): Record<string, string> {
     errors.weightKg = "„Masa (kg)” nie może być większe niż 10000";
   }
 
-  if (!form.imageUrl.trim()) {
-    errors.imageUrl = "Zdjęcie jest wymagane (upload lub URL)";
-  } else if (!form.imageUrl.startsWith("/api/uploads/")) {
+  if (form.imageUrl.trim() && !form.imageUrl.startsWith("/api/uploads/")) {
     const imageErr = validateHttpUrl(form.imageUrl, "URL zdjęcia");
     if (imageErr) errors.imageUrl = imageErr;
   }
@@ -455,7 +453,7 @@ export function GaragePage() {
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
             <DialogDescription className="text-[#9ca3af]">
-              Wypełnij wymagane pola pojazdu. Zdjęcie — wgraj plik (max 5 MB) albo podaj publiczny URL.
+              Wypełnij wymagane pola pojazdu. Zdjęcie jest opcjonalne — wgraj plik z dysku (max 5 MB).
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
@@ -642,7 +640,7 @@ export function GaragePage() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <ReqLabel required>Zdjęcie</ReqLabel>
+              <Label className="text-white">Zdjęcie (opcjonalnie)</Label>
               <ImageUploadField
                 value={form.imageUrl}
                 onChange={(url) => setFormField("imageUrl", url)}

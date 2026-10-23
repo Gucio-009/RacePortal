@@ -298,7 +298,7 @@ export function DashboardPage() {
                                   onChange={(url) =>
                                     setProofUrls((prev) => ({ ...prev, [reg.id]: url }))
                                   }
-                                  urlPlaceholder="URL lub wgraj skan / zdjęcie przelewu"
+                                  urlPlaceholder="https://…"
                                 />
                                 <Button
                                   size="sm"

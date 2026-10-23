@@ -1,9 +1,9 @@
 /**
- * ImageUploadField — wybór pliku JPG/PNG/WebP (max 5 MB) → POST /api/uploads/image.
- * Opcjonalnie zostawia też ręczne pole URL.
+ * ImageUploadField — wgrywanie pliku JPG/PNG/WebP (max 5 MB) → POST /api/uploads/image.
+ * URL jest opcjonalnym fallbackiem (ukryty za „Wklej URL”).
  */
 import { useRef, useState } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus, Loader2, Link2, X } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, MAX_IMAGE_UPLOAD_BYTES } from "../lib/api";
 import { Button } from "./ui/button";
@@ -12,8 +12,8 @@ import { Input } from "./ui/input";
 interface ImageUploadFieldProps {
   value: string;
   onChange: (url: string) => void;
-  /** Pokazuj pole URL obok uploadu (domyślnie tak). */
-  showUrlInput?: boolean;
+  /** Pokazuj opcję wklejenia URL (domyślnie tak, zwinięta). */
+  allowUrl?: boolean;
   urlPlaceholder?: string;
   className?: string;
   inputClassName?: string;
@@ -23,14 +23,15 @@ interface ImageUploadFieldProps {
 export function ImageUploadField({
   value,
   onChange,
-  showUrlInput = true,
-  urlPlaceholder = "https://… lub wgraj plik",
+  allowUrl = true,
+  urlPlaceholder = "https://…",
   className,
   inputClassName = "bg-[#121212] border-[#2a2a2a] text-white",
   error,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [showUrl, setShowUrl] = useState(false);
 
   const onFile = async (file: File | undefined) => {
     if (!file) return;
@@ -38,6 +39,7 @@ export function ImageUploadField({
     try {
       const res = await api.uploadImage(file);
       onChange(res.url);
+      setShowUrl(false);
       toast.success("Zdjęcie wgrane");
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się wgrać zdjęcia");
@@ -49,46 +51,70 @@ export function ImageUploadField({
 
   return (
     <div className={className ?? "space-y-2"}>
-      <div className="flex flex-col sm:flex-row gap-2">
-        {showUrlInput && (
-          <Input
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            className={`flex-1 ${inputClassName}`}
-            placeholder={urlPlaceholder}
-          />
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => void onFile(e.target.files?.[0])}
+      />
+
+      <button
+        type="button"
+        disabled={uploading}
+        onClick={() => inputRef.current?.click()}
+        className="w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#3a3a3a] bg-[#121212] hover:border-[var(--race-accent)]/60 hover:bg-[#161616] px-4 py-6 text-center transition disabled:opacity-60"
+      >
+        {uploading ? (
+          <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
+        ) : (
+          <ImagePlus className="w-8 h-8 text-[var(--race-accent)]" />
         )}
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          onChange={(e) => void onFile(e.target.files?.[0])}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          disabled={uploading}
-          className="border-[#2a2a2a] text-white shrink-0"
-          onClick={() => inputRef.current?.click()}
-        >
-          {uploading ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : (
-            <ImagePlus className="w-4 h-4 mr-2" />
-          )}
-          {uploading ? "Wgrywanie…" : "Wgraj zdjęcie"}
-        </Button>
-      </div>
+        <span className="text-white text-sm font-semibold">
+          {uploading ? "Wgrywanie…" : "Wybierz plik ze zdjęciem"}
+        </span>
+        <span className="text-xs text-[#9ca3af]">
+          JPG / PNG / WebP · max {MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB
+        </span>
+      </button>
+
       {value && (
-        <div className="mt-2 w-full max-w-xs aspect-video rounded border border-[#2a2a2a] overflow-hidden bg-[#121212]">
+        <div className="relative w-full max-w-xs aspect-video rounded border border-[#2a2a2a] overflow-hidden bg-[#121212]">
           <img src={value} alt="Podgląd" className="w-full h-full object-cover" />
+          <button
+            type="button"
+            aria-label="Usuń zdjęcie"
+            title="Usuń"
+            onClick={() => onChange("")}
+            className="absolute top-1.5 right-1.5 p-1 rounded bg-black/70 text-white hover:bg-black"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
         </div>
       )}
+
+      {allowUrl && (
+        <div>
+          <button
+            type="button"
+            className="text-xs text-[#9ca3af] hover:text-[var(--race-accent)] inline-flex items-center gap-1"
+            onClick={() => setShowUrl((v) => !v)}
+          >
+            <Link2 className="w-3 h-3" />
+            {showUrl ? "Ukryj pole URL" : "Albo wklej URL"}
+          </button>
+          {showUrl && (
+            <Input
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              className={`mt-2 ${inputClassName}`}
+              placeholder={urlPlaceholder}
+            />
+          )}
+        </div>
+      )}
+
       {error && <p className="text-xs text-red-400">{error}</p>}
-      <p className="text-xs text-[#9ca3af]">
-        JPG / PNG / WebP, max {MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB. Możesz też wkleić publiczny URL.
-      </p>
     </div>
   );
 }

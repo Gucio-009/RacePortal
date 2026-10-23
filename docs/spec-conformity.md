@@ -44,7 +44,7 @@ Legenda: **OK** · **Minor** · **Major** · **Blocker**
 | Zarejestrowane → ukryj tablica/typ/KSS | WARUNKOWE | Web: ukrywa typ/KSS, **tablica nadal widoczna**; mobile: KSS przy każdym „zarejestrowane” | Minor–Major |
 | Typ rejestracji | standardowe / sportowe | `cywilne` / `sportowe` (nazwy inne niż w spec, sens OK) | Minor |
 | Klatka / OC / PT | WYMAGANE switch | Web+API; mobile toggle bez osobnej walidacji UX | OK / Minor |
-| Zdjęcia | **File upload** min. 1, ≤5 MB | Web+API: upload JPG/PNG/WebP ≤5 MB (`/api/uploads/image`) **lub** URL; mobile **bez** pola zdjęcia | Minor (mobile) |
+| Zdjęcia | **File upload** min. 1, ≤5 MB | Web+API: **opcjonalne** — upload JPG/PNG/WebP ≤5 MB lub URL; mobile **bez** pola zdjęcia | Minor (spec wymaga min. 1; produktowo opcjonalne) |
 | Social / video / mods | OPCJONALNE | Web OK; mobile tylko mods | Minor |
 
 ## 4. Formularz wydarzenia (organizator)
