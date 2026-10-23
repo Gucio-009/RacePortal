@@ -118,7 +118,7 @@ export function RootLayout() {
   const isAdmin = user?.role === "ADMIN";
 
   return (
-    <div className="min-h-dvh bg-[#121212] flex flex-col">
+    <div className="min-h-dvh min-w-[360px] bg-[#121212] flex flex-col">
       <header className="border-b border-[#2a2a2a] bg-[#1a1a1a]/95 backdrop-blur-md sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
         <nav className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-3">
           {/* Brand: font-display = Oxanium (--font-family-display w theme.css) */}

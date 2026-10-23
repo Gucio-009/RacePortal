@@ -160,15 +160,22 @@ html[data-pit-stop="on"] *::after {
     @apply border-border outline-ring/50;
   }
 
+  /*
+   * Floor szerokości: poniżej ~360px layout się rozjeżdża (nav, CTA, bottom bar).
+   * Wąskie okno przeglądarki → poziomy scroll zamiast „zgniatania” UI.
+   */
   html {
     font-size: var(--font-size);
     -webkit-tap-highlight-color: transparent;
+    min-width: 360px;
+    overflow-x: auto;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-family-primary);
     overscroll-behavior-y: none;
+    min-width: 360px;
   }
 
   /* Standalone PWA: pełna wysokość z safe-area */

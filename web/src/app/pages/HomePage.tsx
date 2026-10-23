@@ -80,17 +80,17 @@ export function HomePage() {
             {!authLoading && !isAuthenticated && (
               <Link to="/register" className="w-full sm:w-auto">
                 <Button
-                  className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-6 text-base sm:text-lg font-extrabold"
+                  className="w-full h-14 sm:h-14 bg-[var(--race-accent)] text-[#121212] hover:brightness-95 px-8 py-0 text-base sm:text-lg font-extrabold leading-none"
                 >
                   ZAREJESTRUJ SIĘ
-                  <ChevronRight className="ml-2 w-5 h-5" />
+                  <ChevronRight className="w-5 h-5" />
                 </Button>
               </Link>
             )}
             <Link to="/wydarzenia" className="w-full sm:w-auto sm:hidden">
               <Button
                 variant="outline"
-                className="w-full border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6 text-base font-extrabold"
+                className="w-full h-14 border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-0 text-base font-extrabold leading-none"
               >
                 KALENDARZ
               </Button>
@@ -98,7 +98,7 @@ export function HomePage() {
             <a href="#o-nas" className="w-full sm:w-auto hidden sm:block">
               <Button
                 variant="outline"
-                className="w-full border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-6 text-base sm:text-lg font-extrabold"
+                className="w-full h-14 sm:h-14 border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212] px-8 py-0 text-base sm:text-lg font-extrabold leading-none"
               >
                 POZNAJ WIĘCEJ
               </Button>
