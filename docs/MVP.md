@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-23 (zdjęcie garażu wymagane przy dodaniu; plik albo URL; intro raz na sesję)
+**Ostatnia synchronizacja:** 2026-10-23 (sześć motywów: ciemny i jasny; intro bez błysku treści i bez auta)
 
 ---
 
@@ -190,7 +190,8 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Google Sign-In (opcjonalny Client ID) | Prawdziwa weryfikacja ID tokenu; poza ścisłym MVP social |
 | `packages/api-types` | Wspólne typy/helpers web+mobile |
 | `GET /api/events/markers` | Pełny zestaw pod mapę/kalendarz bez limitu listy |
-| Ekran startowy „START YOUR ENGINE” | Raz na sesję karty (`sessionStorage`); znika, gdy powłoka aplikacji jest gotowa. Motyw i reduced-motion |
+| Sześć motywów w `/ustawienia` | Tryb ciemny: Złoty tor, Redline, Ice cold (palety bez zmian). Tryb jasny: Arctic White (bez zmian), Desert Sand, Blush Pink. Wybór w `raceportal_settings` |
+| Ekran startowy raz na sesję karty | HTML zasłania stronę zanim wstanie JS (`intro-cover`), potem `CinematicIntro`. Bez grafiki auta. Kolory z aktywnego motywu; pit-stop i reduced-motion skracają ruch |
 
 ---
 
@@ -201,7 +202,7 @@ MVP funkcje 1–11:     ████████████████░░�
 MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile + web PWA OK
 Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL+Mailbux; Oracle+TLS przez CF Tunnel
-Ponad MVP:            Mailbux, PWA, Oracle, Expo, api-types, markers, katalog torów PL
+Ponad MVP:            Mailbux, PWA, Oracle, Expo, api-types, markers, katalog torów PL, sześć motywów
 ```
 
 ### Komendy

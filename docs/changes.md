@@ -850,5 +850,21 @@ Ta sama mechanika dla zmiany e-maila w `/konto`.
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-23 — intro sesji, upload zdjęć (plik albo URL), entrypoint `gosu`.*
+## 53. Sześć motywów + intro bez błysku (2026-10-23)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Cztery akcenty na jednej liście (Gold, Redline, Ice, Arctic) | `/ustawienia` → Wygląd: **Tryb ciemny** (Złoty tor, Redline, Ice cold) i **Tryb jasny** (Arctic White, Desert Sand, Blush Pink). Kafelki bez ikon; aktywny ma podpis | Wybór motywu od razu, obie grupy naraz |
+| Tylko Arctic był jasny | Desert Sand (`#F7F3EB` / `#B78D54` / `#29241F`) i Blush Pink (`#FFF5F7` / `#C56B89` / `#342630`). Złoty tor, Redline, Ice i Arctic White bez zmiany palety | Czytelny tekst na przyciskach jasnych akcentów |
+| Intro startowało z przezroczystością 0, więc mignęła strona | `index.html` dodaje `intro-cover` przed JS i chowa `#root`. React zdejmuje zasłonę, gdy intro jest już namalowane | Brak błysku treści przy pierwszej wizycie |
+| Sylwetka auta na dole intra | Zostają logo, linia startu, światła i pasek. Auto usunięte | Spokojniejszy pierwszy kadr |
+| Nieznany akcent w Expo spadał do gold | `ThemeContext` zna też `sand` i `blush` | Wspólny `raceportal_settings` nie gubi wyboru |
+
+Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie i kolejne logowanie w tej przeglądarce go trzymają. Intro nadal raz na sesję karty (`sessionStorage`).
+
+**Weryfikacja:** `npm run build:web`. Strona główna i login: sześć motywów oraz intro bez auta. `/ustawienia` nieklikane — API na `:4000` było wyłączone.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-23 — sześć motywów, intro bez błysku i bez auta.*
 

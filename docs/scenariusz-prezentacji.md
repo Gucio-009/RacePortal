@@ -91,9 +91,9 @@ Mobile Expo osobno (`:8082` / Simulator).
 
 ### Ustawienia / UX „polishing”
 
-- Motyw / akcent kolorystyczny (`--race-accent`)
+- Motyw: tryb ciemny (Złoty tor, Redline, Ice cold) i tryb jasny (Arctic White, Desert Sand, Blush Pink)
 - Responsywność (telefon / DevTools)
-- Spójny dark UI + font display (Oxanium)
+- Domyślnie ciemny Złoty tor + font display (Oxanium)
 
 ### Backend / infrastruktura (krótko, ale efektownie)
 

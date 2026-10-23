@@ -3,7 +3,7 @@
 Dokument zbiera **całą historię prac nad `mobile/`** (Expo), decyzje technologiczne, stan przed/po oraz efekty widoczne dla użytkownika i recenzenta.  
 Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronologia całego projektu: [`changes.md`](./changes.md).
 
-**Ostatnia aktualizacja:** 2026-10-21 (web PWA osobno od Expo wizytówki).
+**Ostatnia aktualizacja:** 2026-10-23 (`ThemeContext` zna sześć akcentów weba).
 
 ---
 
@@ -256,6 +256,10 @@ Luki względem Spec (mobile bez pola zdjęcia, wymagane imię/telefon itd.): [`s
 **Jest:** tylko stack Eventy; detal z CTA `Linking` → web `/wydarzenia/:id`; usunięte ekrany auth/ról i `AuthContext`.
 
 **Efekt:** katalog publiczny bez konta; konwersja zapisu na webie Compose `:8081`.
+
+### Etap I — Akcenty z weba (2026-10-23)
+
+`ThemeContext` czyta ten sam `raceportal_settings` co strona. Oprócz gold / redline / ice / arctic rozpoznaje Desert Sand i Blush Pink, więc wspólny zapis nie wraca do złotego. Ekran zostaje katalogiem wydarzeń — pełne jasne powierzchnie są na webie.
 
 ---
 
