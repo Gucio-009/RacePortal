@@ -84,8 +84,19 @@ public class DataInitializer implements CommandLineRunner {
 
         // Always keep a visible set of paid demo events (idempotent by name).
         ensurePaidDemoEvents();
+        // Gęsty kalendarz demo (mapa / lista / archiwum) – idempotentny po nazwie [Demo]…
+        ensureFilledCalendar();
         // Always ensure test driver has one car per race category.
         ensureDemoGarageCars();
+    }
+
+    /** Dużo wydarzeń APPROVED (2026-10→2027-12) + ARCHIVED – różne tory i kategorie. */
+    private void ensureFilledCalendar() {
+        User organizer = userRepository.findByEmailIgnoreCase("org@raceportal.pl").orElse(null);
+        if (organizer == null) {
+            return;
+        }
+        FilledCalendarSeed.ensure(eventRepository, organizer);
     }
 
     /** Upsert pełnego katalogu torów / miejsc eventowych w Polsce. */
