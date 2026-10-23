@@ -41,8 +41,8 @@ import { applyTrackPreset, type FormState } from "./organizerEventForm";
 
 function fieldClass(hasError: boolean) {
   return hasError
-    ? "bg-[#121212] border-red-500 text-white ring-1 ring-red-500/60"
-    : "bg-[#121212] border-[#2a2a2a] text-white";
+    ? "bg-[var(--race-bg)] border-red-500 text-[var(--race-fg)] ring-1 ring-red-500/60"
+    : "bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]";
 }
 
 /** Native date picker – biała ikona kalendarza. */
@@ -80,12 +80,12 @@ export function OrganizerEventFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
             {editingId ? "Edytuj wydarzenie" : "Nowe wydarzenie"}
           </DialogTitle>
-          <DialogDescription className="text-[#9ca3af]">
+          <DialogDescription className="text-[var(--race-muted)]">
             Większość pól wybierasz z listy – „Inne…” tylko gdy potrzebujesz własnej wartości.
           </DialogDescription>
         </DialogHeader>
@@ -137,7 +137,7 @@ export function OrganizerEventFormDialog({
               <SelectTrigger className={fieldClass(!!fieldErrors.category)}>
                 <SelectValue placeholder="Wybierz kategorię" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+              <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
                 {EVENT_CATEGORY_GROUPS.map((g) => (
                   <SelectGroup key={g.group}>
                     <SelectLabel className="text-[var(--race-accent)]">{g.group}</SelectLabel>
@@ -183,10 +183,10 @@ export function OrganizerEventFormDialog({
                 setForm({ ...form, time: v, timeOther: v === OTHER ? form.timeOther : "" })
               }
             >
-              <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+              <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
                 <SelectValue placeholder="Wybierz godzinę" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                 {START_TIMES.map((t) => (
                   <SelectItem key={t} value={t}>
                     {t}
@@ -200,7 +200,7 @@ export function OrganizerEventFormDialog({
                 type="time"
                 value={form.timeOther}
                 onChange={(e) => setForm({ ...form, timeOther: e.target.value })}
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
               />
             )}
           </div>
@@ -219,7 +219,7 @@ export function OrganizerEventFormDialog({
               <SelectTrigger className={fieldClass(!!fieldErrors.track)}>
                 <SelectValue placeholder="Wybierz tor" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                 {TRACK_PRESETS.map((t) => (
                   <SelectItem key={t.track} value={t.track}>
                     {t.track}
@@ -238,7 +238,7 @@ export function OrganizerEventFormDialog({
             )}
             {fieldErrors.track && <p className="text-xs text-red-400">{fieldErrors.track}</p>}
             {form.trackKey && form.trackKey !== OTHER && (
-              <p className="text-xs text-[#9ca3af]">
+              <p className="text-xs text-[var(--race-muted)]">
                 Auto: {form.city}, {form.voivodeship}
                 {form.lat && form.lng ? ` · mapa ${form.lat}, ${form.lng}` : ""}
               </p>
@@ -275,7 +275,7 @@ export function OrganizerEventFormDialog({
                   <SelectTrigger className={fieldClass(!!fieldErrors.city)}>
                     <SelectValue placeholder="Wybierz miasto" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                     {Array.from(new Set(TRACK_PRESETS.map((t) => t.city)))
                       .sort((a, b) => a.localeCompare(b, "pl"))
                       .map((city) => (
@@ -299,7 +299,7 @@ export function OrganizerEventFormDialog({
               <Input
                 value={form.city}
                 readOnly
-                className="bg-[#121212]/60 border-[#2a2a2a] text-[#9ca3af]"
+                className="bg-[var(--race-bg)]/60 border-[var(--race-border)] text-[var(--race-muted)]"
               />
             )}
             {fieldErrors.city && <p className="text-xs text-red-400">{fieldErrors.city}</p>}
@@ -317,7 +317,7 @@ export function OrganizerEventFormDialog({
               <SelectTrigger className={`${fieldClass(!!fieldErrors.voivodeship)} disabled:opacity-60`}>
                 <SelectValue placeholder="Wybierz województwo" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                 {VOIVODESHIPS.map((v) => (
                   <SelectItem key={v} value={v}>
                     {v}
@@ -338,14 +338,14 @@ export function OrganizerEventFormDialog({
                 Lokalizacja na mapie
               </Label>
               {form.lat && form.lng ? (
-                <span className="text-xs text-[#9ca3af] font-mono">
+                <span className="text-xs text-[var(--race-muted)] font-mono">
                   {form.lat}, {form.lng}
                 </span>
               ) : (
-                <span className="text-xs text-[#9ca3af]">Kliknij mapę lub wybierz tor</span>
+                <span className="text-xs text-[var(--race-muted)]">Kliknij mapę lub wybierz tor</span>
               )}
             </div>
-            <p className="text-xs text-[#9ca3af]">
+            <p className="text-xs text-[var(--race-muted)]">
               Wybór toru ustawia pinezkę automatycznie. Możesz też kliknąć mapę albo przeciągnąć marker.
             </p>
             {open && (
@@ -362,7 +362,7 @@ export function OrganizerEventFormDialog({
                 type="button"
                 size="sm"
                 variant="outline"
-                className="border-[#2a2a2a] text-[#9ca3af]"
+                className="border-[var(--race-border)] text-[var(--race-muted)]"
                 onClick={() => setForm({ ...form, lat: "", lng: "" })}
               >
                 Usuń pinezkę
@@ -383,7 +383,7 @@ export function OrganizerEventFormDialog({
                     className={`relative aspect-video overflow-hidden rounded border transition ${
                       selected
                         ? "border-[var(--race-accent)] ring-1 ring-[var(--race-accent)]"
-                        : "border-[#2a2a2a] hover:border-[var(--race-accent)]/50"
+                        : "border-[var(--race-border)] hover:border-[var(--race-accent)]/50"
                     }`}
                     title={img.label}
                   >
@@ -396,7 +396,7 @@ export function OrganizerEventFormDialog({
               type="button"
               variant="outline"
               size="sm"
-              className="mt-2 border-[#2a2a2a] text-white"
+              className="mt-2 border-[var(--race-border)] text-[var(--race-fg)]"
               onClick={() => setForm({ ...form, imageCustom: true, imageUrl: form.imageCustom ? form.imageUrl : "" })}
             >
               Własne zdjęcie / URL…
@@ -410,10 +410,10 @@ export function OrganizerEventFormDialog({
             )}
           </div>
 
-          <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+          <div className="sm:col-span-2 flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden">
             <div className="flex-1 min-w-0 pr-1">
-              <Label className="text-white">Przyjmuj zgłoszenia na stronie</Label>
-              <p className="text-xs text-[#9ca3af] truncate">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
+              <Label className="text-[var(--race-fg)]">Przyjmuj zgłoszenia na stronie</Label>
+              <p className="text-xs text-[var(--race-muted)] truncate">Kierowcy mogą zapisywać się od razu po akceptacji admina</p>
             </div>
             <Switch
               className="shrink-0"
@@ -423,7 +423,7 @@ export function OrganizerEventFormDialog({
           </div>
 
           {form.acceptRegistrations && (
-            <div className="sm:col-span-2 space-y-3 border border-[#2a2a2a] rounded-md p-3">
+            <div className="sm:col-span-2 space-y-3 border border-[var(--race-border)] rounded-md p-3">
               <p className="text-sm text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                 Wymagania dla kierowców
               </p>
@@ -438,8 +438,8 @@ export function OrganizerEventFormDialog({
                     ["requireRegistered", "Zarejestrowane auto"],
                   ] as const
                 ).map(([key, label]) => (
-                  <div key={key} className="flex items-center gap-3 rounded border border-[#2a2a2a] px-3 py-2 box-border overflow-hidden">
-                    <Label className="text-white text-sm flex-1 min-w-0 truncate pr-1">{label}</Label>
+                  <div key={key} className="flex items-center gap-3 rounded border border-[var(--race-border)] px-3 py-2 box-border overflow-hidden">
+                    <Label className="text-[var(--race-fg)] text-sm flex-1 min-w-0 truncate pr-1">{label}</Label>
                     <Switch
                       className="shrink-0"
                       checked={form[key]}
@@ -467,7 +467,7 @@ export function OrganizerEventFormDialog({
               type="time"
               value={form.endTime}
               onChange={(e) => setForm({ ...form, endTime: e.target.value })}
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
             />
           </div>
           <div className="space-y-2">
@@ -479,7 +479,7 @@ export function OrganizerEventFormDialog({
               value={form.spectatorFee}
               onChange={(e) => setForm({ ...form, spectatorFee: e.target.value })}
               placeholder="np. 50"
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
             />
           </div>
           <div className="space-y-2 sm:col-span-2">
@@ -488,15 +488,15 @@ export function OrganizerEventFormDialog({
               value={form.externalUrl}
               onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
               placeholder="https://organizator.pl/wydarzenie"
-              className="bg-[#121212] border-[#2a2a2a] text-white"
+              className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
             />
           </div>
 
           {/* Płatne: flow ACCEPTED → proof → CONFIRMED (patrz OrganizerRegistrationsList). */}
-          <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+          <div className="sm:col-span-2 flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden">
             <div className="flex-1 min-w-0 pr-1">
-              <Label className="text-white">Wydarzenie płatne</Label>
-              <p className="text-xs text-[#9ca3af] truncate">Wpisowe + weryfikacja przelewu</p>
+              <Label className="text-[var(--race-fg)]">Wydarzenie płatne</Label>
+              <p className="text-xs text-[var(--race-muted)] truncate">Wpisowe + weryfikacja przelewu</p>
             </div>
             <Switch
               className="shrink-0"
@@ -520,7 +520,7 @@ export function OrganizerEventFormDialog({
                       className={
                         !form.entryFeeOther && form.entryFee === fee
                           ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
-                          : "border-[#2a2a2a] text-white"
+                          : "border-[var(--race-border)] text-[var(--race-fg)]"
                       }
                     >
                       {fee} zł
@@ -534,7 +534,7 @@ export function OrganizerEventFormDialog({
                     className={
                       form.entryFeeOther
                         ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
-                        : "border-[#2a2a2a] text-white"
+                        : "border-[var(--race-border)] text-[var(--race-fg)]"
                     }
                   >
                     Inna kwota…
@@ -546,7 +546,7 @@ export function OrganizerEventFormDialog({
                     value={form.entryFee}
                     onChange={(e) => setForm({ ...form, entryFee: e.target.value })}
                     placeholder="Kwota w PLN"
-                    className="bg-[#121212] border-[#2a2a2a] text-white mt-2"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] mt-2"
                   />
                 )}
               </div>
@@ -567,7 +567,7 @@ export function OrganizerEventFormDialog({
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="border-[#2a2a2a] text-[var(--race-accent)]"
+                  className="border-[var(--race-border)] text-[var(--race-accent)]"
                   onClick={() => patch({ bankAccount: DEMO_BANK_ACCOUNT }, "bankAccount")}
                 >
                   Wstaw konto demo
@@ -579,10 +579,10 @@ export function OrganizerEventFormDialog({
                   value={form.paymentDeadlineHours}
                   onValueChange={(v) => setForm({ ...form, paymentDeadlineHours: v })}
                 >
-                  <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                     {PAYMENT_DEADLINE_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
                         {o.label}
@@ -597,10 +597,10 @@ export function OrganizerEventFormDialog({
                   value={form.freeCancelDays}
                   onValueChange={(v) => setForm({ ...form, freeCancelDays: v })}
                 >
-                  <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                  <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                     {FREE_CANCEL_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value}>
                         {o.label}
@@ -612,7 +612,7 @@ export function OrganizerEventFormDialog({
             </>
           )}
 
-          <p className="sm:col-span-2 text-xs text-[#9ca3af] leading-relaxed">
+          <p className="sm:col-span-2 text-xs text-[var(--race-muted)] leading-relaxed">
             Dodając wydarzenie, potwierdzasz, że dane organizatora i wydarzenia będą przetwarzane zgodnie z{" "}
             <a href="/privacy" className="text-[var(--race-accent)] hover:underline">
               polityką prywatności
@@ -621,10 +621,10 @@ export function OrganizerEventFormDialog({
           </p>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[#2a2a2a] text-white">
+          <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[var(--race-border)] text-[var(--race-fg)]">
             Anuluj
           </Button>
-          <Button onClick={onSave} disabled={saving} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+          <Button onClick={onSave} disabled={saving} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
             {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Utwórz"}
           </Button>
         </DialogFooter>

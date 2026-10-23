@@ -58,7 +58,7 @@ export function BugReportButton() {
       <Button
         type="button"
         onClick={() => setOpen(true)}
-        className="fixed z-40 right-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] md:bottom-28 md:right-6 bg-[var(--race-accent)] text-[#121212] hover:brightness-95 shadow-lg"
+        className="fixed z-40 right-3 bottom-[calc(5.75rem+env(safe-area-inset-bottom))] md:bottom-28 md:right-6 bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 shadow-lg"
         style={{ fontWeight: 700 }}
       >
         <Bug className="w-4 h-4 mr-2" aria-hidden />
@@ -66,10 +66,10 @@ export function BugReportButton() {
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
           <DialogHeader>
             <DialogTitle className="font-display">Zgłoś błąd</DialogTitle>
-            <DialogDescription className="text-[#9ca3af]">
+            <DialogDescription className="text-[var(--race-muted)]">
               {isAuthenticated
                 ? `Zgłoszenie przypiszemy do konta ${user?.username ?? ""}.`
                 : "Możesz wysłać bez konta. E-mail jest opcjonalny, jeśli chcesz, żebyśmy odpisali."}
@@ -77,7 +77,7 @@ export function BugReportButton() {
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="bug-message" className="text-white">
+              <Label htmlFor="bug-message" className="text-[var(--race-fg)]">
                 Co nie działa
               </Label>
               <Textarea
@@ -86,12 +86,12 @@ export function BugReportButton() {
                 onChange={(e) => setMessage(e.target.value)}
                 maxLength={2000}
                 placeholder="Np. po zapisie na wydarzenie wraca pusta lista zgłoszeń."
-                className="bg-[#121212] border-[#2a2a2a] text-white min-h-[120px]"
+                className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] min-h-[120px]"
               />
             </div>
             {!isAuthenticated && (
               <div className="space-y-2">
-                <Label htmlFor="bug-email" className="text-white">
+                <Label htmlFor="bug-email" className="text-[var(--race-fg)]">
                   E-mail (opcjonalnie)
                 </Label>
                 <Input
@@ -101,7 +101,7 @@ export function BugReportButton() {
                   onChange={(e) => setEmail(e.target.value)}
                   maxLength={160}
                   autoComplete="email"
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
               </div>
             )}
@@ -109,7 +109,7 @@ export function BugReportButton() {
               <Button
                 type="submit"
                 disabled={sending}
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {sending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

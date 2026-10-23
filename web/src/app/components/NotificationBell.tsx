@@ -53,7 +53,7 @@ function notificationMeta(type: string): {
       return {
         label: "Powiadomienie",
         icon: Info,
-        className: "bg-[#2a2a2a] text-[#9ca3af] border-[#3a3a3a]",
+        className: "bg-[var(--race-muted-bg)] text-[var(--race-muted)] border-[#3a3a3a]",
       };
   }
 }
@@ -191,19 +191,19 @@ export function NotificationBell() {
           setOpen((v) => !v);
           if (!open) void loadList();
         }}
-        className="relative text-white hover:bg-[#2a2a2a] border border-[#2a2a2a] h-9 w-9 p-0"
+        className="relative text-[var(--race-fg)] hover:bg-[var(--race-hover)] border border-[var(--race-border)] h-9 w-9 p-0"
       >
         <Bell className="w-4 h-4 text-[var(--race-accent)]" />
         {unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--race-accent)] text-[#121212] text-[10px] flex items-center justify-center font-bold">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--race-accent)] text-[var(--race-on-accent)] text-[10px] flex items-center justify-center font-bold">
             {unread > 99 ? "99+" : unread}
           </span>
         )}
       </Button>
 
       {open && (
-        <div className="absolute right-0 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] text-white shadow-xl z-[200] overflow-hidden">
-          <div className="px-3 py-2.5 border-b border-[#2a2a2a] flex items-center justify-between gap-2">
+        <div className="absolute right-0 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] text-[var(--race-fg)] shadow-xl z-[200] overflow-hidden">
+          <div className="px-3 py-2.5 border-b border-[var(--race-border)] flex items-center justify-between gap-2">
             <span className="font-semibold text-sm">Powiadomienia</span>
             {unread > 0 && (
               <button
@@ -217,7 +217,7 @@ export function NotificationBell() {
           </div>
           <div className="max-h-80 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="text-[#9ca3af] text-sm px-3 py-6 text-center">Brak powiadomień.</p>
+              <p className="text-[var(--race-muted)] text-sm px-3 py-6 text-center">Brak powiadomień.</p>
             ) : (
               items.map((n) => {
                 const meta = notificationMeta(n.type);
@@ -225,7 +225,7 @@ export function NotificationBell() {
                 return (
                   <div
                     key={n.id}
-                    className={`border-b border-[#2a2a2a] hover:bg-[#222] ${n.read ? "opacity-75" : ""}`}
+                    className={`border-b border-[var(--race-border)] hover:bg-[#222] ${n.read ? "opacity-75" : ""}`}
                   >
                     <div className="flex items-start gap-1 pr-1">
                       <button
@@ -252,7 +252,7 @@ export function NotificationBell() {
                               </span>
                             </div>
                             <p className="text-sm font-semibold">{n.title}</p>
-                            <p className="text-xs text-[#9ca3af] mt-0.5 whitespace-pre-wrap">{n.body}</p>
+                            <p className="text-xs text-[var(--race-muted)] mt-0.5 whitespace-pre-wrap">{n.body}</p>
                           </div>
                         </div>
                       </button>
@@ -261,7 +261,7 @@ export function NotificationBell() {
                         aria-label="Usuń powiadomienie"
                         title="Usuń"
                         onClick={(e) => void removeItem(n, e)}
-                        className="mt-2 mr-1 p-1.5 rounded text-[#6b7280] hover:text-white hover:bg-[#2a2a2a] shrink-0"
+                        className="mt-2 mr-1 p-1.5 rounded text-[#6b7280] hover:text-[var(--race-fg)] hover:bg-[var(--race-hover)] shrink-0"
                       >
                         <X className="w-4 h-4" />
                       </button>

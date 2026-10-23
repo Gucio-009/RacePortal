@@ -98,12 +98,12 @@ export function BecomeOrganizerPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-16">
+      <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-16">
         <div className="container mx-auto px-4 max-w-2xl">
-          <h1 className="font-display text-white mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
+          <h1 className="font-display text-[var(--race-fg)] mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
             ZOSTAŃ <span className="text-[var(--race-accent)]">ORGANIZATOREM</span>
           </h1>
-          <p className="text-[#9ca3af]">
+          <p className="text-[var(--race-muted)]">
             Organizujesz wyścigi, track daye lub eventy motorsportowe? Wyślij wniosek i zarządzaj wydarzeniami w
             RACEPORTAL.
           </p>
@@ -112,55 +112,55 @@ export function BecomeOrganizerPage() {
 
       <section className="container mx-auto px-4 py-10 max-w-2xl space-y-6">
         {checking ? (
-          <div className="flex items-center justify-center gap-3 text-[#9ca3af] py-16">
+          <div className="flex items-center justify-center gap-3 text-[var(--race-muted)] py-16">
             <Loader2 className="w-6 h-6 animate-spin text-[var(--race-accent)]" />
             Sprawdzanie statusu wniosku...
           </div>
         ) : alreadyOrganizer ? (
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+          <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-white" style={{ fontWeight: 700 }}>
+            <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
               Masz już uprawnienia organizatora
             </p>
-            <p className="text-[#9ca3af]">Możesz tworzyć i zarządzać wydarzeniami w panelu organizatora.</p>
+            <p className="text-[var(--race-muted)]">Możesz tworzyć i zarządzać wydarzeniami w panelu organizatora.</p>
             <Link to="/organizer">
-              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                 Panel organizatora
               </Button>
             </Link>
           </div>
         ) : showPending ? (
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+          <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <Clock className="w-12 h-12 text-[var(--race-accent)] mx-auto" />
-            <p className="text-white" style={{ fontWeight: 700 }}>
+            <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
               Wniosek oczekuje na decyzję
             </p>
-            <p className="text-[#9ca3af]">
+            <p className="text-[var(--race-muted)]">
               {existing?.company ? (
                 <>
-                  Firma: <span className="text-white">{existing.company}</span>
+                  Firma: <span className="text-[var(--race-fg)]">{existing.company}</span>
                   {existing.businessType ? ` · ${existing.businessType}` : ""}.{" "}
                 </>
               ) : null}
               Administrator rozpatrzy wniosek wkrótce – dostaniesz dostęp do panelu organizatora po akceptacji.
             </p>
             <Link to="/dashboard">
-              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                 Wróć do profilu
               </Button>
             </Link>
           </div>
         ) : existing?.status === "APPROVED" ? (
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+          <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
-            <p className="text-white" style={{ fontWeight: 700 }}>
+            <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
               Wniosek został zaakceptowany
             </p>
-            <p className="text-[#9ca3af]">
+            <p className="text-[var(--race-muted)]">
               Odśwież sesję (wyloguj i zaloguj ponownie), jeśli nie widzisz panelu organizatora.
             </p>
             <Link to="/organizer">
-              <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                 Panel organizatora
               </Button>
             </Link>
@@ -168,17 +168,17 @@ export function BecomeOrganizerPage() {
         ) : null}
 
         {existing?.status === "REJECTED" && showForm && (
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6 text-center space-y-2">
+          <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-6 text-center space-y-2">
             <XCircle className="w-10 h-10 text-red-400 mx-auto" />
-            <p className="text-white" style={{ fontWeight: 700 }}>
+            <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
               Poprzedni wniosek został odrzucony
             </p>
-            <p className="text-[#9ca3af] text-sm">Możesz złożyć nowy wniosek z aktualnymi danymi.</p>
+            <p className="text-[var(--race-muted)] text-sm">Możesz złożyć nowy wniosek z aktualnymi danymi.</p>
           </div>
         )}
 
         {showForm && (
-          <form onSubmit={handleSubmit} className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 space-y-6">
+          <form onSubmit={handleSubmit} className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 space-y-6">
             {!isAuthenticated && (
               <p className="text-[var(--race-accent)] text-sm">
                 Musisz być zalogowany.{" "}
@@ -188,7 +188,7 @@ export function BecomeOrganizerPage() {
               </p>
             )}
             <div className="space-y-2">
-              <Label htmlFor="org-apply-company" className="text-white flex items-center gap-2">
+              <Label htmlFor="org-apply-company" className="text-[var(--race-fg)] flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-[var(--race-accent)]" />
                 Firma / organizacja *
               </Label>
@@ -198,13 +198,13 @@ export function BecomeOrganizerPage() {
                 required
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
-                className="bg-[#121212] border-[#2a2a2a] text-white h-12"
+                className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12"
                 placeholder="np. Tor Racing Sp. z o.o."
                 autoComplete="organization"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="org-apply-businessType" className="text-white">
+              <Label htmlFor="org-apply-businessType" className="text-[var(--race-fg)]">
                 Typ działalności <span className="text-red-500 font-bold">*</span>
               </Label>
               <select
@@ -213,7 +213,7 @@ export function BecomeOrganizerPage() {
                 required
                 value={businessType}
                 onChange={(e) => setBusinessType(e.target.value)}
-                className="w-full h-12 rounded-md bg-[#121212] border border-[#2a2a2a] text-white px-3"
+                className="w-full h-12 rounded-md bg-[var(--race-bg)] border border-[var(--race-border)] text-[var(--race-fg)] px-3"
               >
                 <option value="">Wybierz typ…</option>
                 {BUSINESS_TYPES.map((t) => (
@@ -224,7 +224,7 @@ export function BecomeOrganizerPage() {
               </select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="org-apply-message" className="text-white flex items-center gap-2">
+              <Label htmlFor="org-apply-message" className="text-[var(--race-fg)] flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-[var(--race-accent)]" />
                 Wiadomość *
               </Label>
@@ -235,14 +235,14 @@ export function BecomeOrganizerPage() {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={6}
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 placeholder="Opisz doświadczenie, planowane wydarzenia..."
               />
             </div>
             <Button
               type="submit"
               disabled={loading || !isAuthenticated}
-              className="w-full bg-[var(--race-accent)] text-[#121212] h-12"
+              className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] h-12"
               style={{ fontWeight: 800 }}
             >
               {loading ? (

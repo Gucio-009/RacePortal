@@ -192,7 +192,7 @@ export function RegisterPage() {
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_RACE}')`,
       }}
     >
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md" data-reveal="">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Flag className="w-16 h-16 text-[var(--race-accent)]" />
@@ -208,13 +208,13 @@ export function RegisterPage() {
           </p>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 shadow-2xl">
+        <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
           {verifyMode ? (
             <form onSubmit={handleResend} className="space-y-5">
-              <p className="text-[#9ca3af] text-sm">
+              <p className="text-[var(--race-muted)] text-sm">
                 {pendingEmail ? (
                   <>
-                    Wysłaliśmy link aktywacyjny na <span className="text-white">{pendingEmail}</span>.
+                    Wysłaliśmy link aktywacyjny na <span className="text-[var(--race-fg)]">{pendingEmail}</span>.
                     Otwórz wiadomość i kliknij przycisk (sprawdź też spam). Link jest ważny 60 minut.
                   </>
                 ) : (
@@ -222,11 +222,11 @@ export function RegisterPage() {
                 )}
               </p>
               <div className="space-y-2">
-                <Label htmlFor="verify-email" className="text-white" style={{ fontWeight: 600 }}>
+                <Label htmlFor="verify-email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                   E-mail
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                   <Input
                     id="verify-email"
                     type="email"
@@ -235,7 +235,7 @@ export function RegisterPage() {
                       setEmail(e.target.value);
                       setPendingEmail(null);
                     }}
-                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                     required
                     autoComplete="email"
                   />
@@ -244,7 +244,7 @@ export function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+                className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontSize: "16px", fontWeight: 800 }}
               >
                 {isLoading ? "WYSYŁANIE..." : "WYŚLIJ PONOWNIE LINK"}
@@ -253,14 +253,14 @@ export function RegisterPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
+                  className="w-full border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)] h-12"
                 >
                   Mam już aktywne konto – logowanie
                 </Button>
               </Link>
               <button
                 type="button"
-                className="w-full text-sm text-[#9ca3af] hover:text-[var(--race-accent)]"
+                className="w-full text-sm text-[var(--race-muted)] hover:text-[var(--race-accent)]"
                 onClick={leaveVerifyStep}
               >
                 Wróć do rejestracji
@@ -270,36 +270,36 @@ export function RegisterPage() {
             <>
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="username" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="username" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Nazwa użytkownika
                   </Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                     <Input
                       id="username"
                       type="text"
                       placeholder="twoja_nazwa"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Email
                   </Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                     <Input
                       id="email"
                       type="email"
                       placeholder="twoj@email.com"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                       required
                     />
                   </div>
@@ -307,7 +307,7 @@ export function RegisterPage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="firstName" className="text-white" style={{ fontWeight: 600 }}>
+                    <Label htmlFor="firstName" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                       Imię
                     </Label>
                     <Input
@@ -316,11 +316,11 @@ export function RegisterPage() {
                       placeholder="Jan"
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}
-                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="lastName" className="text-white" style={{ fontWeight: 600 }}>
+                    <Label htmlFor="lastName" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                       Nazwisko
                     </Label>
                     <Input
@@ -329,30 +329,30 @@ export function RegisterPage() {
                       placeholder="Kowalski"
                       value={lastName}
                       onChange={(e) => setLastName(e.target.value)}
-                      className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="phone" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Telefon
                   </Label>
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                     <Input
                       id="phone"
                       type="tel"
                       placeholder="+48 600 000 000"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="address" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Adres zamieszkania
                   </Label>
                   <Input
@@ -361,12 +361,12 @@ export function RegisterPage() {
                     placeholder="Ulica, kod, miasto"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
-                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="instagram" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="instagram" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Instagram (opcjonalnie)
                   </Label>
                   <Input
@@ -375,46 +375,46 @@ export function RegisterPage() {
                     placeholder="https://instagram.com/..."
                     value={instagramUrl}
                     onChange={(e) => setInstagramUrl(e.target.value)}
-                    className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="password" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Hasło
                   </Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="pl-10 pr-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
                     >
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  <p className="text-xs text-[#9ca3af]">
+                  <p className="text-xs text-[var(--race-muted)]">
                     Min. 8 znaków, wielka litera, cyfra i znak specjalny (np. !@#$)
                   </p>
                 </div>
 
-                <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
+                <div className="space-y-3 border border-[var(--race-border)] rounded-md p-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <Label htmlFor="licenseB" className="text-white flex items-center gap-2" style={{ fontWeight: 600 }}>
+                      <Label htmlFor="licenseB" className="text-[var(--race-fg)] flex items-center gap-2" style={{ fontWeight: 600 }}>
                         <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
                         Prawo jazdy kat. B
                       </Label>
-                      <p className="text-xs text-[#9ca3af]">Posiadam ważne prawo jazdy</p>
+                      <p className="text-xs text-[var(--race-muted)]">Posiadam ważne prawo jazdy</p>
                     </div>
                     <Switch
                       id="licenseB"
@@ -422,12 +422,12 @@ export function RegisterPage() {
                       onCheckedChange={setHasDrivingLicenseB}
                     />
                   </div>
-                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2a2a2a]">
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--race-border)]">
                     <div>
-                      <Label htmlFor="hasPzm" className="text-white" style={{ fontWeight: 600 }}>
+                      <Label htmlFor="hasPzm" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                         Licencja PZM
                       </Label>
-                      <p className="text-xs text-[#9ca3af]">Niezależnie od prawa jazdy</p>
+                      <p className="text-xs text-[var(--race-muted)]">Niezależnie od prawa jazdy</p>
                     </div>
                     <Switch
                       id="hasPzm"
@@ -440,7 +440,7 @@ export function RegisterPage() {
                   </div>
                   {hasPzmLicense && (
                     <div className="space-y-2">
-                      <Label htmlFor="pzmLicense" className="text-white text-sm">
+                      <Label htmlFor="pzmLicense" className="text-[var(--race-fg)] text-sm">
                         Numer licencji PZM
                       </Label>
                       <Input
@@ -449,31 +449,31 @@ export function RegisterPage() {
                         placeholder="Numer licencji PZM"
                         value={pzmLicense}
                         onChange={(e) => setPzmLicense(e.target.value)}
-                        className="bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-10"
+                        className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-10"
                       />
                     </div>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-white" style={{ fontWeight: 600 }}>
+                  <Label htmlFor="confirmPassword" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                     Powtórz hasło
                   </Label>
                   <div className="relative">
-                    <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                    <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       placeholder="••••••••"
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                      className="pl-10 pr-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
                     >
                       {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
@@ -485,11 +485,11 @@ export function RegisterPage() {
                     id="terms"
                     checked={acceptTerms}
                     onCheckedChange={(checked) => setAcceptTerms(checked as boolean)}
-                    className="mt-1 border-[#2a2a2a] data-[state=checked]:bg-[var(--race-accent)] data-[state=checked]:border-[var(--race-accent)]"
+                    className="mt-1 border-[var(--race-border)] data-[state=checked]:bg-[var(--race-accent)] data-[state=checked]:border-[var(--race-accent)]"
                   />
                   <Label
                     htmlFor="terms"
-                    className="text-[#9ca3af] cursor-pointer leading-relaxed"
+                    className="text-[var(--race-muted)] cursor-pointer leading-relaxed"
                     style={{ fontSize: "14px" }}
                   >
                     Akceptuję{" "}
@@ -506,7 +506,7 @@ export function RegisterPage() {
                 <Button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+                  className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                   style={{ fontSize: "16px", fontWeight: 800 }}
                 >
                   {isLoading ? "TWORZENIE KONTA..." : "STWÓRZ KONTO"}
@@ -516,9 +516,9 @@ export function RegisterPage() {
               {googleEnabled ? (
                 <>
                   <div className="relative my-6">
-                    <Separator className="bg-[#2a2a2a]" />
+                    <Separator className="bg-[var(--race-muted-bg)]" />
                     <span
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] px-4 text-[#9ca3af]"
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)]"
                       style={{ fontSize: "14px" }}
                     >
                       lub
@@ -541,7 +541,7 @@ export function RegisterPage() {
 
           <div className="mt-6 text-center space-y-2">
             {!verifyMode && (
-              <p className="text-[#9ca3af]">
+              <p className="text-[var(--race-muted)]">
                 Nie dostałeś linku aktywacyjnego?{" "}
                 <button
                   type="button"
@@ -552,7 +552,7 @@ export function RegisterPage() {
                 </button>
               </p>
             )}
-            <p className="text-[#9ca3af]">
+            <p className="text-[var(--race-muted)]">
               Masz już konto?{" "}
               <Link to="/login" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
                 Zaloguj się

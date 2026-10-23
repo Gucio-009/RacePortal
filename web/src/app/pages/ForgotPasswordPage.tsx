@@ -50,7 +50,7 @@ export function ForgotPasswordPage() {
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md" data-reveal="">
         <div className="text-center mb-8">
           <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
           <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
@@ -59,18 +59,18 @@ export function ForgotPasswordPage() {
           <p className="text-[#9ca3af]">Podaj email powiązany z kontem</p>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8">
+        <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
           {sent ? (
             <div className="text-center space-y-4">
-              <p className="text-white" style={{ fontWeight: 600 }}>
+              <p className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                 Sprawdź skrzynkę
               </p>
-              <p className="text-[#9ca3af]" style={{ fontSize: "14px" }}>
+              <p className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
                 Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje,
                 wysłaliśmy tymczasowe hasło. Zaloguj się nim i zmień hasło w Dane konta.
               </p>
               <Link to="/login">
-                <Button className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12" style={{ fontWeight: 800 }}>
+                <Button className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12" style={{ fontWeight: 800 }}>
                   Wróć do logowania
                 </Button>
               </Link>
@@ -78,11 +78,11 @@ export function ForgotPasswordPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-white" style={{ fontWeight: 600 }}>
+                <Label htmlFor="email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                   Email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                   <Input
                     id="email"
                     type="email"
@@ -90,19 +90,19 @@ export function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="twoj@email.com"
-                    className="pl-10 bg-[#121212] border-[#2a2a2a] text-white h-12"
+                    className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12"
                   />
                 </div>
               </div>
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+                className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
                 {isLoading ? "WYSYŁANIE..." : "WYŚLIJ HASŁO"}
               </Button>
-              <Link to="/login" className="flex items-center justify-center gap-2 text-[#9ca3af] hover:text-[var(--race-accent)]">
+              <Link to="/login" className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]">
                 <ArrowLeft className="w-4 h-4" />
                 Wróć do logowania
               </Link>

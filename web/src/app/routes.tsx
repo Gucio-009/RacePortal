@@ -109,7 +109,7 @@ function AuthGate({
 
   if (isLoading || roleRefreshing) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
+      <div className="min-h-[50vh] flex items-center justify-center text-[var(--race-muted)]">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
       </div>
     );

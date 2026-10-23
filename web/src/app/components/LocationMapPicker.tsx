@@ -111,7 +111,7 @@ export function LocationMapPicker({ lat, lng, onChange, height = "260px", classN
   const center: [number, number] = hasPin ? [lat, lng] : POLAND_CENTER;
 
   return (
-    <div className={`rounded-lg overflow-hidden border border-[#2a2a2a] ${className}`} style={{ height }}>
+    <div className={`rounded-lg overflow-hidden border border-[var(--race-border)] ${className}`} style={{ height }}>
       <MapContainer
         center={center}
         zoom={hasPin ? 12 : 6}

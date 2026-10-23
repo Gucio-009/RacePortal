@@ -159,55 +159,55 @@ export function AccountPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212]">
+    <div className="min-h-screen bg-[var(--race-bg)]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div>
             <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KONTO</p>
-            <h1 className="font-display text-white mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
+            <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
               DANE KONTA
             </h1>
-            <p className="text-[#9ca3af]">Zmień nazwę, awatar, e-mail, dane kierowcy lub hasło.</p>
+            <p className="text-[var(--race-muted)]">Zmień nazwę, awatar, e-mail, dane kierowcy lub hasło.</p>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[var(--race-accent)]">
               <AvatarImage src={user?.avatar ?? undefined} />
-              <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
+              <AvatarFallback className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
                 {userInitials(user ?? {})}
               </AvatarFallback>
             </Avatar>
             <div className="space-y-1">
-              <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+              <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                 <Shield className="w-3 h-3 mr-1" />
                 {roleLabel}
               </Badge>
               {user?.email ? (
-                <p className="text-[#9ca3af] text-sm">{user.email}</p>
+                <p className="text-[var(--race-muted)] text-sm">{user.email}</p>
               ) : null}
             </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <User className="w-5 h-5 text-[var(--race-accent)]" />
                 Profil
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-white">Nazwa użytkownika</Label>
+                <Label className="text-[var(--race-fg)]">Nazwa użytkownika</Label>
                 <Input
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="account-firstName" className="text-white">
+                  <Label htmlFor="account-firstName" className="text-[var(--race-fg)]">
                     Imię
                   </Label>
                   <Input
@@ -217,11 +217,11 @@ export function AccountPage() {
                     onChange={(e) => setFirstName(e.target.value)}
                     maxLength={50}
                     autoComplete="given-name"
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="account-lastName" className="text-white">
+                  <Label htmlFor="account-lastName" className="text-[var(--race-fg)]">
                     Nazwisko
                   </Label>
                   <Input
@@ -231,12 +231,12 @@ export function AccountPage() {
                     onChange={(e) => setLastName(e.target.value)}
                     maxLength={50}
                     autoComplete="family-name"
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="account-phone" className="text-white flex items-center gap-2">
+                <Label htmlFor="account-phone" className="text-[var(--race-fg)] flex items-center gap-2">
                   <Phone className="w-4 h-4 text-[var(--race-accent)]" />
                   Telefon
                 </Label>
@@ -249,12 +249,12 @@ export function AccountPage() {
                   maxLength={16}
                   autoComplete="tel"
                   placeholder="+48 600 100 200"
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
-                <p className="text-xs text-[#9ca3af]">9–15 cyfr (z kierunkowym), max 16 znaków w polu.</p>
+                <p className="text-xs text-[var(--race-muted)]">9–15 cyfr (z kierunkowym), max 16 znaków w polu.</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="account-address" className="text-white">
+                <Label htmlFor="account-address" className="text-[var(--race-fg)]">
                   Adres zamieszkania
                 </Label>
                 <Input
@@ -264,11 +264,11 @@ export function AccountPage() {
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Ulica, kod, miasto"
                   autoComplete="street-address"
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="account-instagram" className="text-white">
+                <Label htmlFor="account-instagram" className="text-[var(--race-fg)]">
                   Instagram
                 </Label>
                 <Input
@@ -278,23 +278,23 @@ export function AccountPage() {
                   value={instagramUrl}
                   onChange={(e) => setInstagramUrl(e.target.value)}
                   placeholder="https://www.instagram.com/nazwa/"
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
               </div>
-              <div className="space-y-3 border border-[#2a2a2a] rounded-md p-3">
+              <div className="space-y-3 border border-[var(--race-border)] rounded-md p-3">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <Label className="text-white flex items-center gap-2">
+                    <Label className="text-[var(--race-fg)] flex items-center gap-2">
                       <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
                       Prawo jazdy kat. B
                     </Label>
                   </div>
                   <Switch checked={hasDrivingLicenseB} onCheckedChange={setHasDrivingLicenseB} />
                 </div>
-                <div className="flex items-center justify-between gap-3 pt-2 border-t border-[#2a2a2a]">
+                <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--race-border)]">
                   <div>
-                    <Label className="text-white">Licencja PZM</Label>
-                    <p className="text-xs text-[#9ca3af]">Niezależnie od prawa jazdy</p>
+                    <Label className="text-[var(--race-fg)]">Licencja PZM</Label>
+                    <p className="text-xs text-[var(--race-muted)]">Niezależnie od prawa jazdy</p>
                   </div>
                   <Switch
                     checked={hasPzmLicense}
@@ -306,18 +306,18 @@ export function AccountPage() {
                 </div>
                 {hasPzmLicense && (
                   <div className="space-y-2">
-                    <Label className="text-white text-sm">Numer licencji PZM</Label>
+                    <Label className="text-[var(--race-fg)] text-sm">Numer licencji PZM</Label>
                     <Input
                       value={pzmLicense}
                       onChange={(e) => setPzmLicense(e.target.value)}
                       placeholder="Numer licencji PZM"
-                      className="bg-[#121212] border-[#2a2a2a] text-white"
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                     />
                   </div>
                 )}
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Awatar</Label>
+                <Label className="text-[var(--race-fg)]">Awatar</Label>
                 <AvatarPicker
                   value={avatar}
                   onChange={setAvatar}
@@ -329,7 +329,7 @@ export function AccountPage() {
               <Button
                 onClick={saveProfile}
                 disabled={savingProfile}
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {savingProfile ? (
@@ -344,19 +344,19 @@ export function AccountPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Mail className="w-5 h-5 text-[var(--race-accent)]" />
                 Zmiana e-maila
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-[#9ca3af] text-sm">
-                Obecny adres: <span className="text-white">{user?.email}</span>
+              <p className="text-[var(--race-muted)] text-sm">
+                Obecny adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
               </p>
               <div className="space-y-2">
-                <Label className="text-white">Nowy e-mail</Label>
+                <Label className="text-[var(--race-fg)]">Nowy e-mail</Label>
                 <Input
                   type="email"
                   value={newEmail}
@@ -364,19 +364,19 @@ export function AccountPage() {
                     setNewEmail(e.target.value);
                     setEmailLinkSent(false);
                   }}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   autoComplete="email"
                 />
               </div>
               {emailLinkSent && (
-                <p className="text-[#9ca3af] text-sm">
+                <p className="text-[var(--race-muted)] text-sm">
                   Sprawdź skrzynkę nowego adresu i kliknij link potwierdzający (ważny 60 minut).
                 </p>
               )}
               <Button
                 onClick={sendEmailChangeLink}
                 disabled={savingEmail}
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {savingEmail ? (
@@ -393,49 +393,49 @@ export function AccountPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
                 Zmiana hasła
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-white">Obecne hasło</Label>
+                <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
                 <Input
                   type="password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   autoComplete="current-password"
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Nowe hasło</Label>
+                <Label className="text-[var(--race-fg)]">Nowe hasło</Label>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   autoComplete="new-password"
                 />
-                <p className="text-[#9ca3af] text-xs">{STRONG_PASSWORD_HINT}</p>
+                <p className="text-[var(--race-muted)] text-xs">{STRONG_PASSWORD_HINT}</p>
               </div>
               <div className="space-y-2">
-                <Label className="text-white">Potwierdź nowe hasło</Label>
+                <Label className="text-[var(--race-fg)]">Potwierdź nowe hasło</Label>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   autoComplete="new-password"
                 />
               </div>
               <Button
                 onClick={savePassword}
                 disabled={savingPassword}
-                className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                 style={{ fontWeight: 700 }}
               >
                 {savingPassword ? (
@@ -451,15 +451,15 @@ export function AccountPage() {
           </Card>
 
           {user?.role === "USER" && (
-            <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+            <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
               <CardContent className="pt-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
                 <div>
-                  <p className="text-white font-semibold mb-1">Chcesz organizować wydarzenia?</p>
-                  <p className="text-[#9ca3af] text-sm">Złóż wniosek o konto organizatora.</p>
+                  <p className="text-[var(--race-fg)] font-semibold mb-1">Chcesz organizować wydarzenia?</p>
+                  <p className="text-[var(--race-muted)] text-sm">Złóż wniosek o konto organizatora.</p>
                 </div>
                 <Link to="/zostan-organizatorem">
                   <Button
-                    className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+                    className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                     style={{ fontWeight: 700 }}
                   >
                     ZOSTAŃ ORGANIZATOREM
@@ -471,12 +471,12 @@ export function AccountPage() {
 
           <div className="flex flex-wrap gap-3">
             <Link to="/dashboard">
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
+              <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
                 Moje konto (dashboard)
               </Button>
             </Link>
             <Link to="/ustawienia">
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
+              <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
                 Preferencje UI
               </Button>
             </Link>

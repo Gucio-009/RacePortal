@@ -26,7 +26,7 @@ export function ImageUploadField({
   allowUrl = true,
   urlPlaceholder = "https://…",
   className,
-  inputClassName = "bg-[#121212] border-[#2a2a2a] text-white",
+  inputClassName = "bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]",
   error,
 }: ImageUploadFieldProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,30 +63,30 @@ export function ImageUploadField({
         type="button"
         disabled={uploading}
         onClick={() => inputRef.current?.click()}
-        className="w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#3a3a3a] bg-[#121212] hover:border-[var(--race-accent)]/60 hover:bg-[#161616] px-4 py-6 text-center transition disabled:opacity-60"
+        className="w-full flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-[#3a3a3a] bg-[var(--race-bg)] hover:border-[var(--race-accent)]/60 hover:bg-[#161616] px-4 py-6 text-center transition disabled:opacity-60"
       >
         {uploading ? (
           <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
         ) : (
           <ImagePlus className="w-8 h-8 text-[var(--race-accent)]" />
         )}
-        <span className="text-white text-sm font-semibold">
+        <span className="text-[var(--race-fg)] text-sm font-semibold">
           {uploading ? "Wgrywanie…" : "Wybierz plik ze zdjęciem"}
         </span>
-        <span className="text-xs text-[#9ca3af]">
+        <span className="text-xs text-[var(--race-muted)]">
           JPG / PNG / WebP · max {MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB
         </span>
       </button>
 
       {value && (
-        <div className="relative w-full max-w-xs aspect-video rounded border border-[#2a2a2a] overflow-hidden bg-[#121212]">
+        <div className="relative w-full max-w-xs aspect-video rounded border border-[var(--race-border)] overflow-hidden bg-[var(--race-bg)]">
           <img src={value} alt="Podgląd" className="w-full h-full object-cover" />
           <button
             type="button"
             aria-label="Usuń zdjęcie"
             title="Usuń"
             onClick={() => onChange("")}
-            className="absolute top-1.5 right-1.5 p-1 rounded bg-black/70 text-white hover:bg-black"
+            className="absolute top-1.5 right-1.5 p-1 rounded bg-black/70 text-[var(--race-fg)] hover:bg-black"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -97,7 +97,7 @@ export function ImageUploadField({
         <div>
           <button
             type="button"
-            className="text-xs text-[#9ca3af] hover:text-[var(--race-accent)] inline-flex items-center gap-1"
+            className="text-xs text-[var(--race-muted)] hover:text-[var(--race-accent)] inline-flex items-center gap-1"
             onClick={() => setShowUrl((v) => !v)}
           >
             <Link2 className="w-3 h-3" />

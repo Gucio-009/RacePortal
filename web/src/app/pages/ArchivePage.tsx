@@ -16,6 +16,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
+import { Reveal } from "../components/Reveal";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, PaginatedEvents } from "../lib/types";
 import { eventImage, eventStatusLabel, HERO_BG_RACE, IMAGE_WIDTH_CARD } from "../lib/types";
@@ -54,26 +55,29 @@ export function ArchivePage() {
         }}
       >
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
-            ARCHIWUM <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
-          </h1>
-          <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
-            Zakończone wyścigi i wydarzenia z poprzednich sezonów.
-          </p>
+          <Reveal>
+            <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
+              ARCHIWUM <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
+            </h1>
+            <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
+              Zakończone wyścigi i wydarzenia z poprzednich sezonów.
+            </p>
+          </Reveal>
         </div>
       </section>
 
       <section className="container mx-auto px-4 py-10 space-y-6">
         {loading ? (
-          <p className="text-center text-[#9ca3af] py-16">Ładowanie archiwum...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie archiwum...</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : items.length === 0 ? (
-          <p className="text-center text-[#9ca3af] py-16">Brak zarchiwizowanych wydarzeń.</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Brak zarchiwizowanych wydarzeń.</p>
         ) : (
           <>
-            {items.map((event: ApiEvent) => (
-              <Card key={event.id} className="bg-[#1a1a1a] border-[#2a2a2a] overflow-hidden">
+            {items.map((event: ApiEvent, index: number) => (
+              <Reveal key={event.id} delay={Math.min(index * 90, 360)}>
+              <Card className="event-card-lift bg-[var(--race-card)] border-[var(--race-border)] overflow-hidden">
                 <CardContent className="p-0">
                   <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-0">
                     <div className="h-48 md:h-full min-h-[180px]">
@@ -85,28 +89,28 @@ export function ArchivePage() {
                     </div>
                     <div className="p-6">
                       <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+                        <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                           {event.category}
                         </Badge>
-                        <Badge variant="outline" className="border-[#2a2a2a] text-white">
+                        <Badge variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
                           {eventStatusLabel(event.status)}
                         </Badge>
-                        <span className="text-[#9ca3af]" style={{ fontSize: "14px" }}>
+                        <span className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
                           {event.dateLabel}
                         </span>
                       </div>
-                      <h2 className="font-display text-white mb-2" style={{ fontSize: "24px", fontWeight: 800 }}>
+                      <h2 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "24px", fontWeight: 800 }}>
                         {event.name}
                       </h2>
-                      <div className="flex items-center gap-2 text-[#9ca3af] mb-4">
+                      <div className="flex items-center gap-2 text-[var(--race-muted)] mb-4">
                         <MapPin className="w-4 h-4" />
                         {event.track}, {event.city}
                       </div>
-                      <p className="text-[#9ca3af] mb-4 line-clamp-2">{event.description}</p>
+                      <p className="text-[var(--race-muted)] mb-4 line-clamp-2">{event.description}</p>
                       <Link to={`/wydarzenia/${event.id}`}>
                         <Button
                           variant="outline"
-                          className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
+                          className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                           style={{ fontWeight: 700 }}
                         >
                           SZCZEGÓŁY
@@ -117,6 +121,7 @@ export function ArchivePage() {
                   </div>
                 </CardContent>
               </Card>
+              </Reveal>
             ))}
 
             {data && data.totalPages > 1 && (
@@ -125,19 +130,19 @@ export function ArchivePage() {
                   variant="outline"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="border-[#2a2a2a] text-white"
+                  className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
                   Poprzednia
                 </Button>
-                <span className="text-[#9ca3af]">
+                <span className="text-[var(--race-muted)]">
                   Strona {page} / {data.totalPages}
                 </span>
                 <Button
                   variant="outline"
                   disabled={page >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="border-[#2a2a2a] text-white"
+                  className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
                   Następna
                   <ChevronRight className="w-4 h-4 ml-1" />

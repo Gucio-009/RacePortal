@@ -88,7 +88,7 @@ export function LoginPage() {
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md" data-reveal="">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
             <Flag className="w-16 h-16 text-[var(--race-accent)]" />
@@ -104,45 +104,45 @@ export function LoginPage() {
           </p>
         </div>
 
-        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 shadow-2xl">
+        <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-white" style={{ fontWeight: 600 }}>
+              <Label htmlFor="email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                 Email
               </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="twoj@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-white" style={{ fontWeight: 600 }}>
+              <Label htmlFor="password" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                 Hasło
               </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 bg-[#121212] border-[#2a2a2a] text-white focus:border-[var(--race-accent)] h-12"
+                  className="pl-10 pr-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-12"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[var(--race-accent)]"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -162,7 +162,7 @@ export function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95 h-12"
+              className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
               style={{ fontSize: '16px', fontWeight: 800 }}
             >
               {isLoading ? "LOGOWANIE..." : "ZALOGUJ SIĘ"}
@@ -172,8 +172,8 @@ export function LoginPage() {
           {googleEnabled ? (
             <>
               <div className="relative my-6">
-                <Separator className="bg-[#2a2a2a]" />
-                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#1a1a1a] px-4 text-[#9ca3af]" style={{ fontSize: '14px' }}>
+                <Separator className="bg-[var(--race-muted-bg)]" />
+                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)]" style={{ fontSize: '14px' }}>
                   lub
                 </span>
               </div>
@@ -186,7 +186,7 @@ export function LoginPage() {
           ) : null}
 
           <div className="mt-6 text-center space-y-3">
-            <p className="text-[#9ca3af]">
+            <p className="text-[var(--race-muted)]">
               Nie dostałeś linku aktywacyjnego?{" "}
               <Link
                 to={
@@ -203,7 +203,7 @@ export function LoginPage() {
                 Wyślij ponownie
               </Link>
             </p>
-            <p className="text-[#9ca3af]">
+            <p className="text-[var(--race-muted)]">
               Nie masz konta?{" "}
               <Link to="/register" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
                 Zarejestruj się

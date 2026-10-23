@@ -78,21 +78,21 @@ export function GalleryPage() {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
+      <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-12">
         <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
-            <h1 className="font-display text-white mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
+            <h1 className="font-display text-[var(--race-fg)] mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
               GALERIA <span className="text-[var(--race-accent)]">(ODŁOŻONA)</span>
             </h1>
-            <p className="text-[#9ca3af] max-w-2xl">
+            <p className="text-[var(--race-muted)] max-w-2xl">
               Zgodnie z uwagami przeglądu – rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
             </p>
           </div>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-full md:w-56 bg-[#121212] border-[#2a2a2a] text-white h-12">
+            <SelectTrigger className="w-full md:w-56 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12">
               <SelectValue placeholder="Kategoria" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
               {categories.map((cat) => (
                 <SelectItem key={cat} value={cat}>
                   {cat === "all" ? "Wszystkie" : cat}
@@ -105,11 +105,11 @@ export function GalleryPage() {
 
       <section className="container mx-auto px-4 py-10">
         {loading ? (
-          <p className="text-center text-[#9ca3af] py-16">Ładowanie galerii...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie galerii...</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-[#9ca3af] py-16">Brak zdjęć z wydarzeń (galeria odłożona – podgląd z API).</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Brak zdjęć z wydarzeń (galeria odłożona – podgląd z API).</p>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((item) => (
@@ -117,7 +117,7 @@ export function GalleryPage() {
               key={item.id}
               type="button"
               onClick={() => setSelectedId(item.id)}
-              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[#2a2a2a] hover:border-[var(--race-accent)] transition-all text-left"
+              className="group relative aspect-[4/3] overflow-hidden rounded-lg border border-[var(--race-border)] hover:border-[var(--race-accent)] transition-all text-left"
             >
               <ImageWithFallback
                 src={item.image}
@@ -126,10 +126,10 @@ export function GalleryPage() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-90" />
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <Badge className="bg-[var(--race-accent)] text-[#121212] mb-2" style={{ fontWeight: 700 }}>
+                <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)] mb-2" style={{ fontWeight: 700 }}>
                   {item.category}
                 </Badge>
-                <p className="text-white" style={{ fontWeight: 700 }}>
+                <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
                   {item.title}
                 </p>
               </div>
@@ -140,7 +140,7 @@ export function GalleryPage() {
       </section>
 
       <Dialog open={!!selected} onOpenChange={(open) => !open && setSelectedId(null)}>
-        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-3xl p-0 overflow-hidden">
+        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-3xl p-0 overflow-hidden">
           {selected && (
             <>
               <div className="aspect-video w-full">
@@ -148,10 +148,10 @@ export function GalleryPage() {
               </div>
               <div className="p-6">
                 <DialogHeader>
-                  <DialogTitle className="font-display text-white" style={{ fontSize: "24px", fontWeight: 800 }}>
+                  <DialogTitle className="font-display text-[var(--race-fg)]" style={{ fontSize: "24px", fontWeight: 800 }}>
                     {selected.title}
                   </DialogTitle>
-                  <DialogDescription className="text-[#9ca3af]">
+                  <DialogDescription className="text-[var(--race-muted)]">
                     {selected.event} · {selected.date}
                   </DialogDescription>
                 </DialogHeader>

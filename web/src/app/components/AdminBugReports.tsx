@@ -134,7 +134,7 @@ export function AdminBugReports() {
   };
 
   if (loading) {
-    return <p className="text-[#9ca3af] text-center py-8">Ładowanie zgłoszeń…</p>;
+    return <p className="text-[var(--race-muted)] text-center py-8">Ładowanie zgłoszeń…</p>;
   }
 
   const openCount = reports.filter((r) => r.status === "OPEN").length;
@@ -157,8 +157,8 @@ export function AdminBugReports() {
               variant={filter === value ? "default" : "outline"}
               className={
                 filter === value
-                  ? "bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
-                  : "border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+                  ? "bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
+                  : "border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
               }
               onClick={() => setFilter(value)}
             >
@@ -169,7 +169,7 @@ export function AdminBugReports() {
         <Button
           size="sm"
           variant="outline"
-          className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+          className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
           disabled={visible.length === 0}
           onClick={() => {
             downloadCsv(visible);
@@ -182,7 +182,7 @@ export function AdminBugReports() {
       </div>
 
       {visible.length === 0 ? (
-        <p className="text-[#9ca3af] text-center py-8">
+        <p className="text-[var(--race-muted)] text-center py-8">
           {reports.length === 0 ? "Brak zgłoszonych błędów." : "Brak zgłoszeń w tym filtrze."}
         </p>
       ) : (
@@ -192,16 +192,16 @@ export function AdminBugReports() {
           return (
             <Card
               key={report.id}
-              className={`bg-[#1a1a1a] border-[#2a2a2a] ${done ? "opacity-80" : ""}`}
+              className={`bg-[var(--race-card)] border-[var(--race-border)] ${done ? "opacity-80" : ""}`}
             >
               <CardContent className="p-6 space-y-3">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-sm text-[#9ca3af]">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 text-sm text-[var(--race-muted)]">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge
                       className={
                         done
                           ? "bg-green-800/40 text-green-300 border border-green-800"
-                          : "bg-[var(--race-accent)] text-[#121212]"
+                          : "bg-[var(--race-accent)] text-[var(--race-on-accent)]"
                       }
                     >
                       {done ? "Zrobione" : "Otwarte"}
@@ -215,7 +215,7 @@ export function AdminBugReports() {
                 {report.pageUrl && (
                   <p className="text-xs text-[var(--race-accent)] break-all">{report.pageUrl}</p>
                 )}
-                <p className={`text-white whitespace-pre-wrap ${done ? "line-through decoration-[#9ca3af]/60" : ""}`}>
+                <p className={`text-[var(--race-fg)] whitespace-pre-wrap ${done ? "line-through decoration-[#9ca3af]/60" : ""}`}>
                   {report.message}
                 </p>
                 <div className="flex flex-wrap gap-2 pt-1">
@@ -224,7 +224,7 @@ export function AdminBugReports() {
                       size="sm"
                       variant="outline"
                       disabled={busy}
-                      className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+                      className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
                       onClick={() => setStatus(report.id, "OPEN")}
                     >
                       {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Przywróć jako otwarte"}
@@ -233,7 +233,7 @@ export function AdminBugReports() {
                     <Button
                       size="sm"
                       disabled={busy}
-                      className="bg-green-700 hover:bg-green-600 text-white"
+                      className="bg-green-700 hover:bg-green-600 text-[var(--race-fg)]"
                       onClick={() => setStatus(report.id, "DONE")}
                     >
                       {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Oznacz jako zrobione"}

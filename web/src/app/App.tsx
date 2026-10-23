@@ -18,6 +18,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
 import { Toaster } from "./components/ui/sonner";
 import { applyUserSettings, loadSettings } from "./lib/userSettings";
+import { useAccent } from "./hooks/useAccent";
 
 /** Jednorazowy bootstrap preferencji UI z localStorage (Ustawienia). */
 function SettingsBootstrap() {
@@ -27,12 +28,24 @@ function SettingsBootstrap() {
   return null;
 }
 
+function AppToaster() {
+  const accent = useAccent();
+  return (
+    <Toaster
+      position="top-right"
+      theme={accent === "arctic" ? "light" : "dark"}
+      closeButton
+      duration={3500}
+    />
+  );
+}
+
 export default function App() {
   return (
     <AuthProvider>
       <SettingsBootstrap />
       <RouterProvider router={router} />
-      <Toaster position="top-right" theme="dark" closeButton duration={3500} />
+      <AppToaster />
     </AuthProvider>
   );
 }

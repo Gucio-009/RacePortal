@@ -25,6 +25,20 @@
   --font-family-display: "Oxanium", "Oxanium Fallback", "Montserrat Fallback", sans-serif;
   --race-accent: #FFD700;
   --race-motion: 200ms;
+  /* Powierzchnie UI – ciemny default (Złoty / Redline / Ice); Arctic nadpisuje poniżej */
+  --race-bg: #121212;
+  --race-card: #1a1a1a;
+  --race-border: #2a2a2a;
+  --race-muted: #9ca3af;
+  --race-fg: #ffffff;
+  --race-hover: #2a2a2a;
+  --race-muted-bg: #2a2a2a;
+  --race-on-accent: #121212;
+  --race-overlay: rgba(18, 18, 18, 0.7);
+  /* Hero na zdjęciu: zawsze czytelny na ciemnej nakładce (Złoty tor = wzorzec) */
+  --race-hero-fg: #ffffff;
+  --race-hero-muted: #9ca3af;
+  --race-card-shadow: 0 0 0 transparent;
   --background: #121212;
   --foreground: #ffffff;
   --card: #1a1a1a;
@@ -32,13 +46,13 @@
   --popover: #1a1a1a;
   --popover-foreground: #ffffff;
   --primary: var(--race-accent);
-  --primary-foreground: #121212;
+  --primary-foreground: var(--race-on-accent);
   --secondary: #2a2a2a;
   --secondary-foreground: #ffffff;
   --muted: #2a2a2a;
   --muted-foreground: #9ca3af;
   --accent: var(--race-accent);
-  --accent-foreground: #121212;
+  --accent-foreground: var(--race-on-accent);
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   --border: #2a2a2a;
@@ -57,11 +71,60 @@
   --sidebar: #1a1a1a;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: var(--race-accent);
-  --sidebar-primary-foreground: #121212;
+  --sidebar-primary-foreground: var(--race-on-accent);
   --sidebar-accent: #2a2a2a;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2a2a2a;
   --sidebar-ring: var(--race-accent);
+  color-scheme: dark;
+}
+
+/* Arctic White – jasne powierzchnie; --race-accent ustawiane z JS (#266CB3) */
+html[data-accent="arctic"] {
+  --race-bg: #f3f6fa;
+  --race-card: #ffffff;
+  --race-border: #dce4ed;
+  --race-muted: #64748b;
+  --race-fg: #17283d;
+  --race-hover: #edf3f9;
+  --race-muted-bg: #edf3f9;
+  --race-on-accent: #ffffff;
+  --race-overlay: linear-gradient(
+    180deg,
+    rgba(243, 246, 250, 0.72) 0%,
+    rgba(243, 246, 250, 0.55) 45%,
+    rgba(243, 246, 250, 0.82) 100%
+  );
+  --race-hero-fg: #17283d;
+  --race-hero-muted: #64748b;
+  --race-card-shadow: 0 8px 24px rgba(23, 40, 61, 0.08);
+  --background: #f3f6fa;
+  --foreground: #17283d;
+  --card: #ffffff;
+  --card-foreground: #17283d;
+  --popover: #ffffff;
+  --popover-foreground: #17283d;
+  --primary: var(--race-accent);
+  --primary-foreground: #ffffff;
+  --secondary: #edf3f9;
+  --secondary-foreground: #17283d;
+  --muted: #edf3f9;
+  --muted-foreground: #64748b;
+  --accent: var(--race-accent);
+  --accent-foreground: #ffffff;
+  --border: #dce4ed;
+  --input: #dce4ed;
+  --input-background: #ffffff;
+  --switch-background: #dce4ed;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #17283d;
+  --sidebar-primary: var(--race-accent);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #edf3f9;
+  --sidebar-accent-foreground: #17283d;
+  --sidebar-border: #dce4ed;
+  --sidebar-ring: var(--race-accent);
+  color-scheme: light;
 }
 
 /* Preferencje z Ustawień → akcent + tryb pit-stop (minimalny ruch) */
@@ -72,6 +135,80 @@ html[data-pit-stop="on"] *::after {
   animation-iteration-count: 1 !important;
   transition-duration: 0.01ms !important;
   scroll-behavior: auto !important;
+}
+
+/*
+ * Scroll Reveal – opacity + translateY (GPU-friendly).
+ * Bez JS elementy są widoczne; JS dodaje .reveal-ready, potem .reveal-in.
+ */
+[data-reveal].reveal-ready {
+  opacity: 0;
+  transform: translateY(28px);
+  will-change: opacity, transform;
+}
+
+[data-reveal].reveal-in {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 560ms ease-out,
+    transform 560ms ease-out;
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal].reveal-ready,
+  [data-reveal].reveal-in {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+/* Karty wydarzeń – delikatne uniesienie (bez zmiany layoutu) */
+.event-card-lift {
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+  box-shadow: var(--race-card-shadow);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .event-card-lift:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.35);
+  }
+
+  html[data-accent="arctic"] .event-card-lift:hover {
+    box-shadow: 0 14px 32px rgba(23, 40, 61, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .event-card-lift,
+  .event-card-lift:hover {
+    transform: none !important;
+    transition: border-color 220ms ease, box-shadow 220ms ease !important;
+  }
+}
+
+/* Home hero – ten sam markup co Złoty tor; Arctic tylko tokeny / te klasy */
+.home-hero-overlay {
+  background: var(--race-overlay);
+}
+
+html[data-accent="arctic"] .home-hero-cta-secondary {
+  background: var(--race-accent);
+  color: var(--race-on-accent);
+  border-color: var(--race-accent);
+}
+
+html[data-accent="arctic"] .home-hero-cta-secondary:hover {
+  filter: brightness(0.95);
+  background: var(--race-accent);
+  color: var(--race-on-accent);
 }
 
 .dark {

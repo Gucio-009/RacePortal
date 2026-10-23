@@ -9,7 +9,7 @@ import { useAuth } from "../context/AuthContext";
 
 const itemClass = ({ isActive }: { isActive: boolean }) =>
   `flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 text-[10px] font-bold tracking-wide transition-colors ${
-    isActive ? "text-[var(--race-accent)]" : "text-[#9ca3af]"
+    isActive ? "text-[var(--race-accent)]" : "text-[var(--race-muted)]"
   }`;
 
 export function MobileBottomNav() {
@@ -19,7 +19,7 @@ export function MobileBottomNav() {
   return (
     <nav
       aria-label="Nawigacja mobilna"
-      className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-[#2a2a2a] bg-[#1a1a1a]/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
+      className="md:hidden fixed bottom-0 inset-x-0 z-50 border-t border-[var(--race-border)] bg-[var(--race-card)]/95 backdrop-blur-md pb-[env(safe-area-inset-bottom)]"
     >
       <div className="flex items-stretch max-w-lg mx-auto px-1">
         <NavLink to="/" end className={itemClass}>

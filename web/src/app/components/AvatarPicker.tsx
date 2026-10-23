@@ -31,7 +31,7 @@ export function AvatarPicker({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-[#9ca3af]">
+      <p className="text-sm text-[var(--race-muted)]">
         Domyślnie awatar z inicjałów. Wybierz gotowy styl albo wróć do inicjałów.
       </p>
       <div className="flex flex-wrap gap-3">
@@ -41,13 +41,13 @@ export function AvatarPicker({
           onClick={() => onChange("")}
           className={cn(
             "rounded-full border-2 p-0.5 transition-all",
-            isInitials ? "border-[var(--race-accent)] ring-2 ring-[color-mix(in_srgb,var(--race-accent)_40%,transparent)]" : "border-[#2a2a2a] hover:border-[color-mix(in_srgb,var(--race-accent)_60%,transparent)]",
+            isInitials ? "border-[var(--race-accent)] ring-2 ring-[color-mix(in_srgb,var(--race-accent)_40%,transparent)]" : "border-[var(--race-border)] hover:border-[color-mix(in_srgb,var(--race-accent)_60%,transparent)]",
           )}
           title="Inicjały"
           aria-label="Awatar z inicjałów"
         >
           <Avatar className="w-14 h-14">
-            <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
+            <AvatarFallback className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
               {initials}
             </AvatarFallback>
           </Avatar>
@@ -61,14 +61,14 @@ export function AvatarPicker({
               onClick={() => onChange(preset.url)}
               className={cn(
                 "rounded-full border-2 p-0.5 transition-all",
-                selected ? "border-[var(--race-accent)] ring-2 ring-[color-mix(in_srgb,var(--race-accent)_40%,transparent)]" : "border-[#2a2a2a] hover:border-[color-mix(in_srgb,var(--race-accent)_60%,transparent)]",
+                selected ? "border-[var(--race-accent)] ring-2 ring-[color-mix(in_srgb,var(--race-accent)_40%,transparent)]" : "border-[var(--race-border)] hover:border-[color-mix(in_srgb,var(--race-accent)_60%,transparent)]",
               )}
               title={preset.label}
               aria-label={`Awatar ${preset.label}`}
             >
               <Avatar className="w-14 h-14">
                 <AvatarImage src={preset.url} alt={preset.label} />
-                <AvatarFallback className="bg-[#2a2a2a] text-white text-xs">{preset.label.slice(0, 2)}</AvatarFallback>
+                <AvatarFallback className="bg-[var(--race-muted-bg)] text-[var(--race-fg)] text-xs">{preset.label.slice(0, 2)}</AvatarFallback>
               </Avatar>
             </button>
           );

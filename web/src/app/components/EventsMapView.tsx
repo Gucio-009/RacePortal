@@ -97,7 +97,7 @@ export function EventsMapView({
   height = "500px",
 }: EventsMapViewProps) {
   return (
-    <div className={`rounded-lg overflow-hidden border border-[#2a2a2a] ${className}`} style={{ height }}>
+    <div className={`rounded-lg overflow-hidden border border-[var(--race-border)] ${className}`} style={{ height }}>
       <MapContainer center={center} zoom={zoom} scrollWheelZoom className="h-full w-full z-0">
         <TileLayer attribution={MAP_TILE_ATTRIBUTION} url={MAP_TILE_URL} />
         <FitBounds markers={markers} polyline={polyline} />

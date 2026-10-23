@@ -69,21 +69,24 @@ export function VerifyEmailPage() {
         backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
       }}
     >
-      <div className="w-full max-w-md bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-8 text-center space-y-4">
+      <div
+        className="w-full max-w-md bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4 shadow-[var(--race-card-shadow)]"
+        data-reveal=""
+      >
         <Flag className="w-12 h-12 text-[var(--race-accent)] mx-auto" />
-        <h1 className="font-display text-white text-2xl font-extrabold">AKTYWACJA KONTA</h1>
-        <div className="flex items-center justify-center gap-2 text-[#9ca3af]">
+        <h1 className="font-display text-[var(--race-fg)] text-2xl font-extrabold">AKTYWACJA KONTA</h1>
+        <div className="flex items-center justify-center gap-2 text-[var(--race-muted)]">
           {status === "working" && <Loader2 className="w-5 h-5 animate-spin text-[var(--race-accent)]" />}
           <p>{message}</p>
         </div>
         {status === "error" && (
           <div className="space-y-3 pt-2">
             <Link to="/register?verify=1">
-              <Button className="w-full bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 800 }}>
+              <Button className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 800 }}>
                 Wyślij nowy link
               </Button>
             </Link>
-            <Link to="/login" className="block text-sm text-[#9ca3af] hover:text-[var(--race-accent)]">
+            <Link to="/login" className="block text-sm text-[var(--race-muted)] hover:text-[var(--race-accent)]">
               Wróć do logowania
             </Link>
           </div>

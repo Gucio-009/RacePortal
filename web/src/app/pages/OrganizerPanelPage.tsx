@@ -14,6 +14,7 @@
  */
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
+import { Reveal } from "../components/Reveal";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { api, ApiError } from "../lib/api";
@@ -256,24 +257,24 @@ export function OrganizerPanelPage() {
 
   return (
     <div className="min-h-screen pb-16">
-      <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
-        <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
+      <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-12">
+        <Reveal className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-white mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
+            <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
               PANEL <span className="text-[var(--race-accent)]">ORGANIZATORA</span>
             </h1>
-            <p className="text-[#9ca3af]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
+            <p className="text-[var(--race-muted)]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
           </div>
-          <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
+          <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
             <Plus className="w-4 h-4 mr-2" />
             NOWE WYDARZENIE
           </Button>
-        </div>
+        </Reveal>
       </section>
 
       <section className="container mx-auto px-4 py-10">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-[#1a1a1a] border border-[#2a2a2a] mb-6">
+          <TabsList className="bg-[var(--race-card)] border border-[var(--race-border)] mb-6">
             <TabsTrigger value="events">Moje wydarzenia</TabsTrigger>
             <TabsTrigger value="registrations" disabled={!selectedEventId}>
               Zgłoszenia {selectedEventId ? "" : "(wybierz wydarzenie)"}

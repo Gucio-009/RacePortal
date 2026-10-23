@@ -20,6 +20,7 @@
 import { Outlet, Link, useNavigate, NavLink } from "react-router";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useScrollReveal } from "../hooks/useScrollReveal";
 import {
   Flag,
   User,
@@ -45,7 +46,7 @@ import { MobileBottomNav } from "./MobileBottomNav";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `${isActive ? "text-[var(--race-accent)]" : "text-[#9ca3af] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
+  `${isActive ? "text-[var(--race-accent)]" : "text-[var(--race-muted)] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
 
 function roleLabel(role?: string) {
   if (role === "ADMIN") return "Administrator";
@@ -59,6 +60,8 @@ export function RootLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const mainRef = useRef<HTMLElement>(null);
+  useScrollReveal(mainRef);
 
   // Zamykanie menu konta: klik poza + Escape (bez zewnętrznej biblioteki popover).
   useEffect(() => {
@@ -118,13 +121,13 @@ export function RootLayout() {
   const isAdmin = user?.role === "ADMIN";
 
   return (
-    <div className="min-h-dvh min-w-[360px] bg-[#121212] flex flex-col">
-      <header className="border-b border-[#2a2a2a] bg-[#1a1a1a]/95 backdrop-blur-md sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
+    <div className="min-h-dvh min-w-[360px] bg-[var(--race-bg)] flex flex-col">
+      <header className="border-b border-[var(--race-border)] bg-[var(--race-card)]/95 backdrop-blur-md sticky top-0 z-50 pt-[env(safe-area-inset-top)]">
         <nav className="container mx-auto px-3 sm:px-4 py-3 flex items-center justify-between gap-3">
           {/* Brand: font-display = Oxanium (--font-family-display w theme.css) */}
           <Link to="/" className="flex items-center gap-2 sm:gap-3 shrink-0 min-w-0">
             <Flag className="w-7 h-7 sm:w-8 sm:h-8 text-[var(--race-accent)] shrink-0" />
-            <span className="font-display tracking-wider text-lg sm:text-2xl font-extrabold truncate">
+            <span className="font-display tracking-wider text-lg sm:text-2xl font-extrabold truncate text-[var(--race-fg)]">
               RACEPORTAL
             </span>
           </Link>
@@ -171,11 +174,11 @@ export function RootLayout() {
                     aria-haspopup="menu"
                     aria-expanded={menuOpen}
                     onClick={() => setMenuOpen((v) => !v)}
-                    className="flex items-center gap-2 hover:bg-[#2a2a2a] text-white border border-[#2a2a2a] rounded-full pl-1 pr-3 py-1 h-auto"
+                    className="flex items-center gap-2 hover:bg-[var(--race-hover)] text-[var(--race-fg)] border border-[var(--race-border)] rounded-full pl-1 pr-3 py-1 h-auto"
                   >
                     <Avatar className="w-8 h-8 border-2 border-[var(--race-accent)]">
                       <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                      <AvatarFallback className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 800 }}>
+                      <AvatarFallback className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
                         {userInitials(user ?? {})}
                       </AvatarFallback>
                     </Avatar>
@@ -190,18 +193,18 @@ export function RootLayout() {
                   {menuOpen && (
                     <div
                       role="menu"
-                      className="absolute right-0 mt-2 w-64 rounded-lg border border-[#2a2a2a] bg-[#1a1a1a] text-white shadow-xl z-[200] overflow-hidden"
+                      className="absolute right-0 mt-2 w-64 rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] text-[var(--race-fg)] shadow-xl z-[200] overflow-hidden"
                     >
-                      <div className="px-3 py-3 border-b border-[#2a2a2a]">
-                        <div className="text-white font-semibold truncate">{user?.username}</div>
-                        <div className="text-[#9ca3af] text-xs truncate">{user?.email}</div>
+                      <div className="px-3 py-3 border-b border-[var(--race-border)]">
+                        <div className="text-[var(--race-fg)] font-semibold truncate">{user?.username}</div>
+                        <div className="text-[var(--race-muted)] text-xs truncate">{user?.email}</div>
                         <div className="text-[var(--race-accent)] text-xs mt-1 tracking-wide">{roleLabel(user?.role)}</div>
                       </div>
 
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                         onClick={() => go("/dashboard")}
                       >
                         <User className="h-4 w-4 text-[var(--race-accent)]" />
@@ -210,7 +213,7 @@ export function RootLayout() {
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                         onClick={() => go("/konto")}
                       >
                         <KeyRound className="h-4 w-4 text-[var(--race-accent)]" />
@@ -219,7 +222,7 @@ export function RootLayout() {
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                         onClick={() => go("/ustawienia")}
                       >
                         <Settings className="h-4 w-4 text-[var(--race-accent)]" />
@@ -228,7 +231,7 @@ export function RootLayout() {
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                         onClick={() => go("/garaz")}
                       >
                         <Car className="h-4 w-4 text-[var(--race-accent)]" />
@@ -238,7 +241,7 @@ export function RootLayout() {
                         <button
                           type="button"
                           role="menuitem"
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                           onClick={() => go("/zostan-organizatorem")}
                         >
                           <Flag className="h-4 w-4 text-[var(--race-accent)]" />
@@ -249,7 +252,7 @@ export function RootLayout() {
                         <button
                           type="button"
                           role="menuitem"
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                           onClick={() => go("/organizer")}
                         >
                           <LayoutDashboard className="h-4 w-4 text-[var(--race-accent)]" />
@@ -260,7 +263,7 @@ export function RootLayout() {
                         <button
                           type="button"
                           role="menuitem"
-                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[#2a2a2a] hover:text-[var(--race-accent)]"
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
                           onClick={() => go("/admin")}
                         >
                           <Shield className="h-4 w-4 text-[var(--race-accent)]" />
@@ -268,11 +271,11 @@ export function RootLayout() {
                         </button>
                       )}
 
-                      <div className="border-t border-[#2a2a2a]" />
+                      <div className="border-t border-[var(--race-border)]" />
                       <button
                         type="button"
                         role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[#ff8a8a] hover:bg-[#2a2a2a] hover:text-[#ff6b6b]"
+                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left text-[#ff8a8a] hover:bg-[var(--race-hover)] hover:text-[#ff6b6b]"
                         onClick={handleLogout}
                       >
                         <LogOut className="h-4 w-4" />
@@ -283,7 +286,7 @@ export function RootLayout() {
                 </div>
               ) : (
                 <Link to="/login">
-                  <Button className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95" style={{ fontWeight: 700 }}>
+                  <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 700 }}>
                     ZALOGUJ SIĘ
                   </Button>
                 </Link>
@@ -297,7 +300,7 @@ export function RootLayout() {
               aria-label={moreOpen ? "Zamknij menu" : "Więcej"}
               aria-expanded={moreOpen}
               onClick={() => setMoreOpen((v) => !v)}
-              className="md:hidden text-white hover:bg-[#2a2a2a] h-10 w-10"
+              className="md:hidden text-[var(--race-fg)] hover:bg-[var(--race-hover)] h-10 w-10"
             >
               {moreOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -306,48 +309,48 @@ export function RootLayout() {
 
         {/* Mobile slide-down: linki drugorzędne */}
         {moreOpen && (
-          <div className="md:hidden border-t border-[#2a2a2a] bg-[#1a1a1a] px-3 py-3 space-y-1 animate-in fade-in slide-in-from-top-2">
+          <div className="md:hidden border-t border-[var(--race-border)] bg-[var(--race-card)] px-3 py-3 space-y-1 animate-in fade-in slide-in-from-top-2">
             {isAuthenticated && (
-              <div className="flex items-center gap-3 px-2 py-2 mb-1 border-b border-[#2a2a2a]">
+              <div className="flex items-center gap-3 px-2 py-2 mb-1 border-b border-[var(--race-border)]">
                 <Avatar className="w-9 h-9 border-2 border-[var(--race-accent)]">
                   <AvatarImage src={user?.avatar ?? undefined} alt={user?.username} />
-                  <AvatarFallback className="bg-[var(--race-accent)] text-[#121212] font-extrabold">
+                  <AvatarFallback className="bg-[var(--race-accent)] text-[var(--race-on-accent)] font-extrabold">
                     {userInitials(user ?? {})}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                  <div className="text-white font-semibold truncate text-sm">{user?.username}</div>
+                  <div className="text-[var(--race-fg)] font-semibold truncate text-sm">{user?.username}</div>
                   <div className="text-[var(--race-accent)] text-xs">{roleLabel(user?.role)}</div>
                 </div>
               </div>
             )}
-            <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/archiwum")}>
+            <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/archiwum")}>
               <Archive className="w-4 h-4 text-[var(--race-accent)]" /> Archiwum
             </button>
             {isUser && (
-              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/zostan-organizatorem")}>
+              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/zostan-organizatorem")}>
                 <Flag className="w-4 h-4 text-[var(--race-accent)]" /> Zostań organizatorem
               </button>
             )}
             {isOrganizer && (
-              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/organizer")}>
+              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/organizer")}>
                 <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> Panel organizatora
               </button>
             )}
             {isAdmin && (
-              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/admin")}>
+              <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/admin")}>
                 <Shield className="w-4 h-4 text-[var(--race-accent)]" /> Panel admina
               </button>
             )}
             {isAuthenticated && (
               <>
-                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/ustawienia")}>
+                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/ustawienia")}>
                   <Settings className="w-4 h-4 text-[var(--race-accent)]" /> Ustawienia
                 </button>
-                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-white hover:bg-[#2a2a2a]" onClick={() => go("/konto")}>
+                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/konto")}>
                   <KeyRound className="w-4 h-4 text-[var(--race-accent)]" /> Dane konta
                 </button>
-                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[#ff8a8a] hover:bg-[#2a2a2a]" onClick={handleLogout}>
+                <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[#ff8a8a] hover:bg-[var(--race-hover)]" onClick={handleLogout}>
                   <LogOut className="w-4 h-4" /> Wyloguj
                 </button>
               </>
@@ -355,7 +358,7 @@ export function RootLayout() {
             {!isAuthenticated && (
               <button
                 type="button"
-                className="w-full mt-2 py-3 rounded-lg bg-[var(--race-accent)] text-[#121212] font-extrabold"
+                className="w-full mt-2 py-3 rounded-lg bg-[var(--race-accent)] text-[var(--race-on-accent)] font-extrabold"
                 onClick={() => go("/register")}
               >
                 Zarejestruj się
@@ -366,10 +369,10 @@ export function RootLayout() {
       </header>
 
       {/* Główna treść — Suspense dla lazy() stron (poza Home) */}
-      <main className="flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
+      <main ref={mainRef} className="flex-1 pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">
         <Suspense
           fallback={
-            <div className="min-h-[40vh] flex items-center justify-center text-[#9ca3af]">
+            <div className="min-h-[40vh] flex items-center justify-center text-[var(--race-muted)]">
               <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
             </div>
           }
@@ -378,8 +381,8 @@ export function RootLayout() {
         </Suspense>
       </main>
 
-      <footer className="hidden md:block border-t border-[#2a2a2a] bg-[#1a1a1a] mt-20">
-        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[#9ca3af] md:pr-40">
+      <footer className="hidden md:block border-t border-[var(--race-border)] bg-[var(--race-card)] mt-20">
+        <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[var(--race-muted)] md:pr-40">
           <p>© 2026 RACEPORTAL. Wszystkie prawa zastrzeżone.</p>
           <div className="flex flex-wrap gap-4 justify-center md:justify-end" style={{ fontSize: "14px" }}>
             <Link to="/terms" className="hover:text-[var(--race-accent)]">

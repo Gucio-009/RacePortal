@@ -39,27 +39,27 @@ export function OrganizerRegistrationsList({
   onUpdateStatus,
 }: OrganizerRegistrationsListProps) {
   if (registrations.length === 0) {
-    return <p className="text-[#9ca3af] text-center py-8">Brak zgłoszeń dla tego wydarzenia.</p>;
+    return <p className="text-[var(--race-muted)] text-center py-8">Brak zgłoszeń dla tego wydarzenia.</p>;
   }
 
   return (
     <>
       {registrations.map((reg) => (
-        <Card key={reg.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
+        <Card key={reg.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div>
-                <p className="text-white" style={{ fontWeight: 700 }}>
+                <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
                   {reg.user?.username ?? "Kierowca"}
                 </p>
-                <p className="text-[#9ca3af] text-sm">{reg.user?.email}</p>
+                <p className="text-[var(--race-muted)] text-sm">{reg.user?.email}</p>
                 {reg.car && (
-                  <p className="text-[#9ca3af] text-sm">
+                  <p className="text-[var(--race-muted)] text-sm">
                     Auto: {reg.car.make} {reg.car.model}
                     {reg.car.className ? ` · ${reg.car.className}` : ""}
                   </p>
                 )}
-                {reg.note && <p className="text-[#9ca3af] text-sm italic">{reg.note}</p>}
+                {reg.note && <p className="text-[var(--race-muted)] text-sm italic">{reg.note}</p>}
                 {reg.paymentProofUrl && (
                   <a
                     href={reg.paymentProofUrl}
@@ -71,16 +71,16 @@ export function OrganizerRegistrationsList({
                   </a>
                 )}
                 {reg.organizerComment && (
-                  <p className="text-sm text-[#9ca3af] mt-1">Komentarz: {reg.organizerComment}</p>
+                  <p className="text-sm text-[var(--race-muted)] mt-1">Komentarz: {reg.organizerComment}</p>
                 )}
-                <Badge className="mt-2 bg-[#2a2a2a] text-white">{registrationStatusLabel(reg.status)}</Badge>
+                <Badge className="mt-2 bg-[var(--race-muted-bg)] text-[var(--race-fg)]">{registrationStatusLabel(reg.status)}</Badge>
               </div>
               <div className="flex flex-col gap-2 min-w-[200px]">
                 <Input
                   placeholder="Komentarz (opcjonalnie)"
                   value={comments[reg.id] || ""}
                   onChange={(e) => setComments((prev) => ({ ...prev, [reg.id]: e.target.value }))}
-                  className="bg-[#121212] border-[#2a2a2a] text-white"
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
                 {/* PENDING: płatne → ACCEPTED; bezpłatne → od razu CONFIRMED */}
                 {reg.status === "PENDING" && (

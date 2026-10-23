@@ -25,6 +25,7 @@ import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES } from "../lib/carMatch";
 import { validateHttpUrl } from "../lib/profileValidation";
 import { ImageUploadField } from "../components/ImageUploadField";
+import { Reveal } from "../components/Reveal";
 import { toast } from "sonner";
 
 const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
@@ -83,7 +84,7 @@ function digitsOnly(value: string) {
 
 function ReqLabel({ children, required }: { children: string; required?: boolean }) {
   return (
-    <Label className="text-white inline-flex items-baseline gap-0.5 max-w-full">
+    <Label className="text-[var(--race-fg)] inline-flex items-baseline gap-0.5 max-w-full">
       <span className="truncate">{children}</span>
       {required ? (
         <span className="text-red-500 font-bold shrink-0 leading-none" aria-hidden>
@@ -249,8 +250,8 @@ function formatGarageApiError(e: ApiError): { message: string; fields: Record<st
 
 function fieldClass(hasError: boolean) {
   return hasError
-    ? "bg-[#121212] border-red-500 text-white ring-1 ring-red-500/60"
-    : "bg-[#121212] border-[#2a2a2a] text-white";
+    ? "bg-[var(--race-bg)] border-red-500 text-[var(--race-fg)] ring-1 ring-red-500/60"
+    : "bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]";
 }
 
 export function GaragePage() {
@@ -359,54 +360,55 @@ export function GaragePage() {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-[#1a1a1a] border-b border-[#2a2a2a] py-12">
-        <div className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
+      <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-12">
+        <Reveal className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="font-display text-white mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
+            <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
               MÓJ <span className="text-[var(--race-accent)]">GARAŻ</span>
             </h1>
-            <p className="text-[#9ca3af]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
+            <p className="text-[var(--race-muted)]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
           </div>
           <Button
             onClick={openAdd}
-            className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+            className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
             style={{ fontWeight: 800 }}
           >
             <Plus className="w-4 h-4 mr-2" />
             DODAJ AUTO
           </Button>
-        </div>
+        </Reveal>
       </section>
 
       <section className="container mx-auto px-4 py-10">
         {loading ? (
-          <div className="text-center py-16 text-[#9ca3af]">
+          <div className="text-center py-16 text-[var(--race-muted)]">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
             Ładowanie garażu...
           </div>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : cars.length === 0 ? (
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
             <CardContent className="py-16 text-center">
               <Car className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
-              <p className="text-[#9ca3af] mb-6">Twój garaż jest pusty. Dodaj pierwsze auto!</p>
-              <Button onClick={openAdd} className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+              <p className="text-[var(--race-muted)] mb-6">Twój garaż jest pusty. Dodaj pierwsze auto!</p>
+              <Button onClick={openAdd} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
                 Dodaj auto
               </Button>
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {cars.map((car) => (
-              <Card key={car.id} className="bg-[#1a1a1a] border-[#2a2a2a]">
+            {cars.map((car, index) => (
+              <Reveal key={car.id} delay={Math.min(index * 100, 400)}>
+              <Card className="event-card-lift bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
                 <CardHeader>
-                  <CardTitle className="font-display text-white flex items-center gap-2" style={{ fontWeight: 800 }}>
+                  <CardTitle className="font-display text-[var(--race-fg)] flex items-center gap-2" style={{ fontWeight: 800 }}>
                     <Car className="w-5 h-5 text-[var(--race-accent)]" />
                     {car.make} {car.model}
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 text-[#9ca3af]">
+                <CardContent className="space-y-2 text-[var(--race-muted)]">
                   {car.year && <p>Rocznik: {car.year}</p>}
                   {car.driveType && <p>Napęd: {car.driveType}</p>}
                   {car.powerHp && <p>Moc: {car.powerHp} KM</p>}
@@ -424,7 +426,7 @@ export function GaragePage() {
                       variant="outline"
                       size="sm"
                       onClick={() => openEdit(car)}
-                      className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[#121212]"
+                      className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                     >
                       <Pencil className="w-4 h-4 mr-2" />
                       Edytuj
@@ -441,18 +443,19 @@ export function GaragePage() {
                   </div>
                 </CardContent>
               </Card>
+              </Reveal>
             ))}
           </div>
         )}
       </section>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="bg-[#0A0A0A] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
-            <DialogDescription className="text-[#9ca3af]">
+            <DialogDescription className="text-[var(--race-muted)]">
               Wypełnij wymagane pola pojazdu. Zdjęcie jest opcjonalne – wgraj plik z dysku (max 5 MB).
             </DialogDescription>
           </DialogHeader>
@@ -486,7 +489,7 @@ export function GaragePage() {
                 <SelectTrigger className={fieldClass(!!fieldErrors.driveType)}>
                   <SelectValue placeholder="Wybierz napęd" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                   <SelectItem value="none">–</SelectItem>
                   {DRIVE_TYPES.map((dt) => (
                     <SelectItem key={dt} value={dt}>
@@ -528,15 +531,15 @@ export function GaragePage() {
               {fieldErrors.weightKg && <p className="text-xs text-red-400">{fieldErrors.weightKg}</p>}
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Kategoria / klasa</Label>
+              <Label className="text-[var(--race-fg)]">Kategoria / klasa</Label>
               <Select
                 value={form.className || "none"}
                 onValueChange={(v) => setForm({ ...form, className: v === "none" ? "" : v })}
               >
-                <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
                   <SelectValue placeholder="Wybierz kategorię" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                   <SelectItem value="none">Bez kategorii</SelectItem>
                   {CAR_CATEGORIES.map((cat) => (
                     <SelectItem key={cat} value={cat}>
@@ -551,14 +554,14 @@ export function GaragePage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Tablica rejestracyjna</Label>
-              <Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" />
+              <Label className="text-[var(--race-fg)]">Tablica rejestracyjna</Label>
+              <Input value={form.plate} onChange={(e) => setForm({ ...form, plate: e.target.value })} className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]" />
             </div>
 
-            <div className="sm:col-span-2 flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden">
+            <div className="sm:col-span-2 flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden">
               <div className="flex-1 min-w-0 pr-1">
                 <ReqLabel required>Zarejestrowane</ReqLabel>
-                <p className="text-xs text-[#9ca3af] truncate">Auto posiada ważną rejestrację</p>
+                <p className="text-xs text-[var(--race-muted)] truncate">Auto posiada ważną rejestrację</p>
               </div>
               <Switch
                 className="shrink-0"
@@ -577,7 +580,7 @@ export function GaragePage() {
             {form.registered && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-white">Typ rejestracji</Label>
+                  <Label className="text-[var(--race-fg)]">Typ rejestracji</Label>
                   <Select
                     value={form.registrationType || "none"}
                     onValueChange={(v) =>
@@ -588,10 +591,10 @@ export function GaragePage() {
                       })
                     }
                   >
-                    <SelectTrigger className="bg-[#121212] border-[#2a2a2a] text-white">
+                    <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
                       <SelectValue placeholder="Wybierz typ" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+                    <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                       <SelectItem value="none">–</SelectItem>
                       {REGISTRATION_TYPES.map((rt) => (
                         <SelectItem key={rt} value={rt}>
@@ -603,12 +606,12 @@ export function GaragePage() {
                 </div>
                 {form.registrationType === "sportowe" && (
                   <div className="space-y-2">
-                    <Label className="text-white">Numer KSS</Label>
+                    <Label className="text-[var(--race-fg)]">Numer KSS</Label>
                     <Input
                       value={form.kssNumber}
                       onChange={(e) => setForm({ ...form, kssNumber: e.target.value })}
                       placeholder="np. KSS/2024/12345"
-                      className="bg-[#121212] border-[#2a2a2a] text-white"
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                     />
                   </div>
                 )}
@@ -625,7 +628,7 @@ export function GaragePage() {
               ).map(([key, label]) => (
                 <div
                   key={key}
-                  className="flex items-center gap-3 border border-[#2a2a2a] rounded-md px-3 py-2.5 box-border overflow-hidden"
+                  className="flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden"
                 >
                   <div className="flex-1 min-w-0 pr-1">
                     <ReqLabel required>{label}</ReqLabel>
@@ -640,7 +643,7 @@ export function GaragePage() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <Label className="text-white">Zdjęcie (opcjonalnie)</Label>
+              <Label className="text-[var(--race-fg)]">Zdjęcie (opcjonalnie)</Label>
               <ImageUploadField
                 value={form.imageUrl}
                 onChange={(url) => setFormField("imageUrl", url)}
@@ -649,21 +652,21 @@ export function GaragePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Profil społecznościowy</Label>
-              <Input value={form.socialUrl} onChange={(e) => setForm({ ...form, socialUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://instagram.com/..." />
+              <Label className="text-[var(--race-fg)]">Profil społecznościowy</Label>
+              <Input value={form.socialUrl} onChange={(e) => setForm({ ...form, socialUrl: e.target.value })} className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]" placeholder="https://instagram.com/..." />
             </div>
             <div className="space-y-2">
-              <Label className="text-white">Link do wideo</Label>
-              <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className="bg-[#121212] border-[#2a2a2a] text-white" placeholder="https://youtube.com/..." />
+              <Label className="text-[var(--race-fg)]">Link do wideo</Label>
+              <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]" placeholder="https://youtube.com/..." />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label className="text-white">Modyfikacje</Label>
+              <Label className="text-[var(--race-fg)]">Modyfikacje</Label>
               <Textarea
                 value={form.modifications}
                 onChange={(e) => setForm({ ...form, modifications: e.target.value })}
                 rows={3}
                 placeholder="Opis modyfikacji, tuning, wyposażenie wyścigowe…"
-                className="bg-[#121212] border-[#2a2a2a] text-white"
+                className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
               />
             </div>
           </div>
@@ -671,14 +674,14 @@ export function GaragePage() {
             <Button
               variant="outline"
               onClick={() => setDialogOpen(false)}
-              className="flex-1 h-11 border-[#2a2a2a] text-white"
+              className="flex-1 h-11 border-[var(--race-border)] text-[var(--race-fg)]"
             >
               Anuluj
             </Button>
             <Button
               onClick={handleSave}
               disabled={saving}
-              className="flex-1 h-11 bg-[var(--race-accent)] text-[#121212]"
+              className="flex-1 h-11 bg-[var(--race-accent)] text-[var(--race-on-accent)]"
               style={{ fontWeight: 700 }}
             >
               {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Dodaj"}

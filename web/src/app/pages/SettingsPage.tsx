@@ -47,6 +47,7 @@ import {
   type AccentTheme,
   type UserSettings,
 } from "../lib/userSettings";
+import { Reveal } from "../components/Reveal";
 
 export function SettingsPage() {
   const { user } = useAuth();
@@ -123,7 +124,7 @@ export function SettingsPage() {
 
   if (!ready) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center text-[#9ca3af]">
+      <div className="min-h-[50vh] flex items-center justify-center text-[var(--race-muted)]">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)]" />
       </div>
     );
@@ -133,19 +134,19 @@ export function SettingsPage() {
     user?.role === "ADMIN" ? "ADMINISTRATOR" : user?.role === "ORGANIZER" ? "ORGANIZATOR" : "KIEROWCA";
 
   return (
-    <div className="min-h-screen bg-[#121212]">
+    <div className="min-h-screen bg-[var(--race-bg)]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
-        <div className="mb-8">
+        <Reveal className="mb-8">
           <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KOKPIT</p>
-          <h1 className="font-display text-white mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
+          <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
             USTAWIENIA
           </h1>
-          <p className="text-[#9ca3af]">
-            Preferencje lokalne konta <span className="text-white">{user?.username}</span> – zapisują się w tej
+          <p className="text-[var(--race-muted)]">
+            Preferencje lokalne konta <span className="text-[var(--race-fg)]">{user?.username}</span> – zapisują się w tej
             przeglądarce.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Badge className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>
+            <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
               <Trophy className="w-3 h-3 mr-1" />
               {roleLabel}
             </Badge>
@@ -156,12 +157,13 @@ export function SettingsPage() {
               </Badge>
             ) : null}
           </div>
-        </div>
+        </Reveal>
 
         <div className="space-y-6">
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Reveal delay={60}>
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Bell className="w-5 h-5 text-[var(--race-accent)]" />
                 Powiadomienia
               </CardTitle>
@@ -197,16 +199,18 @@ export function SettingsPage() {
               />
             </CardContent>
           </Card>
+          </Reveal>
 
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Reveal delay={120}>
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Palette className="w-5 h-5 text-[var(--race-accent)]" />
                 Wygląd
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {(Object.keys(ACCENTS) as AccentTheme[]).map((key) => {
                   const item = ACCENTS[key];
                   const active = settings.accent === key;
@@ -216,13 +220,18 @@ export function SettingsPage() {
                       type="button"
                       onClick={() => setAccent(key)}
                       className={`rounded-lg border p-4 text-left transition-all ${
-                        active ? "bg-[#161616]" : "border-[#2a2a2a] bg-[#121212] hover:border-[#444]"
+                        active
+                          ? "bg-[var(--race-hover)]"
+                          : "border-[var(--race-border)] bg-[var(--race-bg)] hover:border-[var(--race-muted)]"
                       }`}
                       style={active ? { borderColor: item.color, boxShadow: `0 0 0 1px ${item.color}` } : undefined}
                     >
-                      <div className="w-8 h-8 rounded-full mb-3 border border-white/20" style={{ background: item.color }} />
-                      <div className="text-white font-semibold mb-1">{item.label}</div>
-                      <div className="text-[#9ca3af] text-sm">{item.desc}</div>
+                      <div
+                        className="w-8 h-8 rounded-full mb-3 border border-[var(--race-border)]"
+                        style={{ background: item.color }}
+                      />
+                      <div className="text-[var(--race-fg)] font-semibold mb-1">{item.label}</div>
+                      <div className="text-[var(--race-muted)] text-sm">{item.desc}</div>
                     </button>
                   );
                 })}
@@ -239,21 +248,23 @@ export function SettingsPage() {
               />
             </CardContent>
           </Card>
+          </Reveal>
 
-          <Card className="bg-[#1a1a1a] border-[#2a2a2a]">
+          <Reveal delay={180}>
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2 font-display">
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Sparkles className="w-5 h-5 text-[var(--race-accent)]" />
                 Flair zespołu
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-[#9ca3af] text-sm">
+              <p className="text-[var(--race-muted)] text-sm">
                 Krótka etykieta widoczna przy ustawieniach (np. „Team Gold”, „Night Drift”). Max 32 znaki.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 space-y-2">
-                  <Label htmlFor="flair" className="text-white">
+                  <Label htmlFor="flair" className="text-[var(--race-fg)]">
                     Nazwa flairu
                   </Label>
                   <Input
@@ -262,12 +273,12 @@ export function SettingsPage() {
                     onChange={(e) => setTeamDraft(e.target.value)}
                     maxLength={32}
                     placeholder="np. Redline Crew"
-                    className="bg-[#121212] border-[#2a2a2a] text-white"
+                    className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                   />
                 </div>
                 <Button
                   onClick={saveFlair}
-                  className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95 self-end"
+                  className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 self-end"
                   style={{ fontWeight: 700 }}
                 >
                   ZAPISZ FLAIR
@@ -275,23 +286,24 @@ export function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+          </Reveal>
 
           <div className="flex flex-wrap gap-3">
             <Button
               onClick={celebrate}
-              className="bg-[var(--race-accent)] text-[#121212] hover:brightness-95"
+              className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
               style={{ fontWeight: 700 }}
             >
               <Sparkles className="w-4 h-4 mr-2" />
               CHECKERED FLAG
             </Button>
             <Link to="/dashboard">
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
+              <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
                 Wróć do konta
               </Button>
             </Link>
             <Link to="/privacy">
-              <Button variant="outline" className="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
+              <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
                 Polityka prywatności
               </Button>
             </Link>
@@ -320,8 +332,8 @@ function SettingRow({
       <div className="flex items-start gap-3">
         <div className="mt-1">{icon}</div>
         <div>
-          <div className="text-white font-semibold">{title}</div>
-          <div className="text-[#9ca3af] text-sm">{desc}</div>
+          <div className="text-[var(--race-fg)] font-semibold">{title}</div>
+          <div className="text-[var(--race-muted)] text-sm">{desc}</div>
         </div>
       </div>
       <Switch checked={checked} onCheckedChange={onChange} />

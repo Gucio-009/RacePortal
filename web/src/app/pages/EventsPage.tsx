@@ -30,6 +30,7 @@ import type { Car, EventMarker, EventMarkersResponse, PaginatedEvents } from "..
 import { eventImage, HERO_BG_EVENTS, IMAGE_WIDTH_CARD } from "../lib/types";
 import { EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import { VOIVODESHIPS, TRACK_PRESETS } from "../lib/eventFormPresets";
+import { Reveal } from "../components/Reveal";
 import "react-day-picker/dist/style.css";
 
 type ViewMode = "list" | "map" | "calendar";
@@ -180,12 +181,14 @@ export function EventsPage() {
         }}
       >
         <div className="container mx-auto px-4">
-          <h1 className="font-display text-white mb-2 sm:mb-3 text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
-            KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
-          </h1>
-          <p className="text-[#9ca3af] max-w-2xl text-sm sm:text-lg">
-            Lista, mapa i kalendarz – wspólne filtry dla każdego widoku.
-          </p>
+          <Reveal>
+            <h1 className="font-display text-white mb-2 sm:mb-3 text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
+              KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
+            </h1>
+            <p className="text-[#9ca3af] max-w-2xl text-sm sm:text-lg">
+              Lista, mapa i kalendarz – wspólne filtry dla każdego widoku.
+            </p>
+          </Reveal>
         </div>
       </section>
 
@@ -206,7 +209,7 @@ export function EventsPage() {
               className={
                 view === id
                   ? "border-[var(--race-accent)] bg-[color-mix(in_srgb,var(--race-accent)_15%,transparent)] text-[var(--race-accent)]"
-                  : "border-[#2a2a2a] text-white"
+                  : "border-[var(--race-border)] text-[var(--race-fg)]"
               }
             >
               <Icon className="w-4 h-4 sm:mr-2" />
@@ -218,19 +221,19 @@ export function EventsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6 items-end">
           <div className="relative lg:col-span-2">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#9ca3af]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Szukaj toru, miasta lub nazwy..."
-              className="pl-10 bg-[#1a1a1a] border-[#2a2a2a] text-white h-11"
+              className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11"
             />
           </div>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11">
+            <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
               <SelectValue placeholder="Kategoria" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
               <SelectItem value="all">Wszystkie kategorie</SelectItem>
               {EVENT_CATEGORY_GROUPS.map((g) => (
                 <SelectGroup key={g.group}>
@@ -245,20 +248,20 @@ export function EventsPage() {
             </SelectContent>
           </Select>
           <Select value={paidFilter} onValueChange={setPaidFilter}>
-            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11">
+            <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
               <SelectValue placeholder="Płatność" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
               <SelectItem value="all">Wszystkie</SelectItem>
               <SelectItem value="true">Płatne</SelectItem>
               <SelectItem value="false">Darmowe</SelectItem>
             </SelectContent>
           </Select>
           <Select value={voivodeship} onValueChange={setVoivodeship}>
-            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11">
+            <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
               <SelectValue placeholder="Województwo" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
               <SelectItem value="all">Wszystkie województwa</SelectItem>
               {VOIVODESHIPS.map((v) => (
                 <SelectItem key={v} value={v}>
@@ -268,10 +271,10 @@ export function EventsPage() {
             </SelectContent>
           </Select>
           <Select value={track} onValueChange={setTrack}>
-            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11">
+            <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
               <SelectValue placeholder="Tor" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
               <SelectItem value="all">Wszystkie tory</SelectItem>
               {TRACK_PRESETS.map((t) => (
                 <SelectItem key={t.track} value={t.track}>
@@ -281,10 +284,10 @@ export function EventsPage() {
             </SelectContent>
           </Select>
           <Select value={city || "all"} onValueChange={(v) => setCity(v === "all" ? "" : v)}>
-            <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11">
+            <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
               <SelectValue placeholder="Miasto" />
             </SelectTrigger>
-            <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-72">
+            <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
               <SelectItem value="all">Wszystkie miasta</SelectItem>
               {cities.map((c) => (
                 <SelectItem key={c} value={c}>
@@ -294,7 +297,7 @@ export function EventsPage() {
             </SelectContent>
           </Select>
           <div className="space-y-1.5">
-            <label htmlFor="events-date-from" className="block text-xs font-semibold text-[#9ca3af]">
+            <label htmlFor="events-date-from" className="block text-xs font-semibold text-[var(--race-muted)]">
               Data od
             </label>
             <Input
@@ -303,11 +306,11 @@ export function EventsPage() {
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
               aria-label="Data od"
-              className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+              className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 [color-scheme:dark]"
             />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor="events-date-to" className="block text-xs font-semibold text-[#9ca3af]">
+            <label htmlFor="events-date-to" className="block text-xs font-semibold text-[var(--race-muted)]">
               Data do
             </label>
             <Input
@@ -316,15 +319,15 @@ export function EventsPage() {
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
               aria-label="Data do"
-              className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 [color-scheme:dark]"
+              className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 [color-scheme:dark]"
             />
           </div>
           {isAuthenticated && (
             <Select value={carId} onValueChange={setCarId}>
-              <SelectTrigger className="bg-[#1a1a1a] border-[#2a2a2a] text-white h-11 lg:col-span-2">
+              <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 lg:col-span-2">
                 <SelectValue placeholder="Dopasuj do auta" />
               </SelectTrigger>
-              <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
+              <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                 <SelectItem value="all">Bez filtra garażu</SelectItem>
                 {cars.map((car) => (
                   <SelectItem key={car.id} value={car.id}>
@@ -338,7 +341,7 @@ export function EventsPage() {
           <Button
             type="button"
             variant="outline"
-            className="h-11 border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+            className="h-11 border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
             onClick={() => {
               setQuery("");
               setCategory("all");
@@ -357,18 +360,18 @@ export function EventsPage() {
         </div>
 
         {loading ? (
-          <p className="text-center text-[#9ca3af] py-16">Ładowanie wydarzeń...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie wydarzeń...</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : view === "map" ? (
           markers.length === 0 ? (
-            <p className="text-center text-[#9ca3af] py-16">Brak wydarzeń z GPS dla wybranych filtrów.</p>
+            <p className="text-center text-[var(--race-muted)] py-16">Brak wydarzeń z GPS dla wybranych filtrów.</p>
           ) : (
             <EventsMapView markers={markers} height="560px" />
           )
         ) : view === "calendar" ? (
           <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-4 text-white rdp-dark overflow-x-auto">
+            <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-4 text-[var(--race-fg)] rdp-dark overflow-x-auto">
               <DayPicker
                 mode="single"
                 locale={pl}
@@ -383,38 +386,39 @@ export function EventsPage() {
               />
               <style>{`
                 .rdp-has-event:not([disabled]) { background: color-mix(in srgb, var(--race-accent) 25%, transparent); border-radius: 6px; color: var(--race-accent); font-weight: 700; }
-                .rdp { --rdp-accent-color: var(--race-accent); --rdp-background-color: #1a1a1a; color: #fff; }
-                .rdp-dark .rdp-nav_button, .rdp-dark .rdp-nav_icon, .rdp-dark svg { color: #fff; fill: #fff; }
+                .rdp { --rdp-accent-color: var(--race-accent); --rdp-background-color: var(--race-card); color: var(--race-fg); }
+                .rdp-nav_button, .rdp-nav_icon, .rdp svg { color: var(--race-fg); fill: var(--race-fg); }
               `}</style>
             </div>
             <div className="space-y-3">
-              <h3 className="text-white font-display" style={{ fontWeight: 800 }}>
+              <h3 className="text-[var(--race-fg)] font-display" style={{ fontWeight: 800 }}>
                 {selectedDay ? format(selectedDay, "d MMMM yyyy", { locale: pl }) : "Wybierz dzień"}
               </h3>
               {!selectedDay ? (
-                <p className="text-[#9ca3af]">Dni ze złotym tłem mają wydarzenia.</p>
+                <p className="text-[var(--race-muted)]">Dni ze złotym tłem mają wydarzenia.</p>
               ) : dayEvents.length === 0 ? (
-                <p className="text-[#9ca3af]">Brak wydarzeń w tym dniu (dla filtrów).</p>
+                <p className="text-[var(--race-muted)]">Brak wydarzeń w tym dniu (dla filtrów).</p>
               ) : (
                 dayEvents.map((event) => (
-                  <Link key={event.id} to={`/wydarzenia/${event.id}`} className="block border border-[#2a2a2a] rounded-md p-4 hover:border-[var(--race-accent)]">
-                    <p className="text-white" style={{ fontWeight: 700 }}>{event.name}</p>
-                    <p className="text-[#9ca3af] text-sm">{event.category} · {event.track} · {event.time}</p>
+                  <Link key={event.id} to={`/wydarzenia/${event.id}`} className="block border border-[var(--race-border)] rounded-md p-4 hover:border-[var(--race-accent)]">
+                    <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>{event.name}</p>
+                    <p className="text-[var(--race-muted)] text-sm">{event.category} · {event.track} · {event.time}</p>
                   </Link>
                 ))
               )}
             </div>
           </div>
         ) : items.length === 0 ? (
-          <p className="text-center text-[#9ca3af] py-16">Brak wydarzeń dla wybranych filtrów.</p>
+          <p className="text-center text-[var(--race-muted)] py-16">Brak wydarzeń dla wybranych filtrów.</p>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {items.map((event) => (
-                <Link key={event.id} to={`/wydarzenia/${event.id}`}>
+              {items.map((event, index) => (
+                <Reveal key={event.id} delay={Math.min(index * 100, 400)}>
+                <Link to={`/wydarzenia/${event.id}`}>
                   <Card
-                    className={`bg-[#1a1a1a] overflow-hidden hover:border-[var(--race-accent)] transition-all duration-300 group h-full ${
-                      event.paid ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)] shadow-[0_0_0_1px_color-mix(in_srgb,var(--race-accent)_15%,transparent)]" : "border-[#2a2a2a]"
+                    className={`event-card-lift bg-[var(--race-card)] overflow-hidden hover:border-[var(--race-accent)] group h-full ${
+                      event.paid ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)] shadow-[0_0_0_1px_color-mix(in_srgb,var(--race-accent)_15%,transparent)]" : "border-[var(--race-border)]"
                     }`}
                   >
                     <div className="relative h-48 overflow-hidden">
@@ -424,19 +428,19 @@ export function EventsPage() {
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
                       <PaidEventBadge event={event} variant="overlay" />
-                      <div className="absolute top-4 right-4 bg-[var(--race-accent)] text-[#121212] px-3 py-1 rounded" style={{ fontWeight: 700 }}>
+                      <div className="absolute top-4 right-4 bg-[var(--race-accent)] text-[var(--race-on-accent)] px-3 py-1 rounded" style={{ fontWeight: 700 }}>
                         {event.category}
                       </div>
                     </div>
                     <CardContent className="p-6">
-                      <div className="flex items-center gap-2 text-white mb-2 text-sm">
-                        <CalendarIcon className="w-4 h-4 text-white" />
+                      <div className="flex items-center gap-2 text-[var(--race-fg)] mb-2 text-sm">
+                        <CalendarIcon className="w-4 h-4 text-[var(--race-fg)]" />
                         {event.dateLabel || event.date}
                       </div>
-                      <h3 className="text-white mb-2 font-display group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
+                      <h3 className="text-[var(--race-fg)] mb-2 font-display group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
                         {event.name}
                       </h3>
-                      <div className="flex items-center gap-2 text-[#9ca3af] text-sm mb-4">
+                      <div className="flex items-center gap-2 text-[var(--race-muted)] text-sm mb-4">
                         <MapPin className="w-4 h-4" />
                         {event.track}, {event.city}
                       </div>
@@ -446,6 +450,7 @@ export function EventsPage() {
                     </CardContent>
                   </Card>
                 </Link>
+                </Reveal>
               ))}
             </div>
             {data && data.totalPages > 1 && (
@@ -454,18 +459,18 @@ export function EventsPage() {
                   variant="outline"
                   disabled={page <= 1}
                   onClick={() => setPage((p) => p - 1)}
-                  className="border-[#2a2a2a] text-white"
+                  className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-[#9ca3af]">
+                <span className="text-[var(--race-muted)]">
                   {page} / {data.totalPages}
                 </span>
                 <Button
                   variant="outline"
                   disabled={page >= data.totalPages}
                   onClick={() => setPage((p) => p + 1)}
-                  className="border-[#2a2a2a] text-white"
+                  className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </Button>

@@ -34,8 +34,9 @@ export function PaidEventBadge({ event, variant = "inline", className = "" }: Pr
           fontWeight: 800,
           fontSize: "12px",
           letterSpacing: "0.04em",
-          background: "linear-gradient(135deg, var(--race-accent) 0%, #f5a623 100%)",
-          color: "#121212",
+          background:
+            "linear-gradient(135deg, var(--race-accent) 0%, color-mix(in srgb, var(--race-accent) 75%, #ffffff) 100%)",
+          color: "var(--race-on-accent)",
         }}
       >
         <Banknote className="w-3.5 h-3.5" />
@@ -50,8 +51,9 @@ export function PaidEventBadge({ event, variant = "inline", className = "" }: Pr
       style={{
         fontWeight: 800,
         fontSize: "12px",
-        background: "linear-gradient(135deg, var(--race-accent) 0%, #f5a623 100%)",
-        color: "#121212",
+        background:
+          "linear-gradient(135deg, var(--race-accent) 0%, color-mix(in srgb, var(--race-accent) 75%, #ffffff) 100%)",
+        color: "var(--race-on-accent)",
       }}
     >
       <Banknote className="w-3.5 h-3.5" />
