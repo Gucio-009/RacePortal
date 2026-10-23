@@ -1,7 +1,7 @@
 /**
- * GalleryPage — tymczasowy podgląd zdjęć wydarzeń (galeria ODŁOŻONA / „później”).
+ * GalleryPage – tymczasowy podgląd zdjęć wydarzeń (galeria ODŁOŻONA / „później”).
  *
- * Cel: zgodnie z review — pełna galeria odroczona; tu prosty grid imageUrl z API
+ * Cel: zgodnie z review – pełna galeria odroczona; tu prosty grid imageUrl z API
  * (nadchodzące + archiwum), filtr kategorii, dialog lightbox.
  * Wzorce: Promise.all dwóch list `/api/events`, deduplikacja Map po id, Select filtra.
  * Auth: publiczna (bez JWT). Theme: `--race-accent`, `font-display`.
@@ -85,7 +85,7 @@ export function GalleryPage() {
               GALERIA <span className="text-[var(--race-accent)]">(ODŁOŻONA)</span>
             </h1>
             <p className="text-[#9ca3af] max-w-2xl">
-              Zgodnie z uwagami przeglądu — rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
+              Zgodnie z uwagami przeglądu – rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
             </p>
           </div>
           <Select value={category} onValueChange={setCategory}>
@@ -109,7 +109,7 @@ export function GalleryPage() {
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-[#9ca3af] py-16">Brak zdjęć z wydarzeń (galeria odłożona — podgląd z API).</p>
+          <p className="text-center text-[#9ca3af] py-16">Brak zdjęć z wydarzeń (galeria odłożona – podgląd z API).</p>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((item) => (

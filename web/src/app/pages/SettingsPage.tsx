@@ -1,16 +1,16 @@
 /**
- * SettingsPage — lokalne preferencje UI użytkownika (kokpit).
+ * SettingsPage – lokalne preferencje UI użytkownika (kokpit).
  *
  * Cel: pozwala kierowcy / organizatorowi / adminowi ustawić powiadomienia (demo),
  * akcent kolorystyczny, tryb pit-stop (minimalne animacje) oraz flair zespołu.
- * Ustawienia żyją wyłącznie w przeglądarce — nie idą na backend.
+ * Ustawienia żyją wyłącznie w przeglądarce – nie idą na backend.
  *
  * Wzorce: React useState/useEffect, AuthContext (tylko odczyt user.role),
  * localStorage pod kluczem `raceportal_settings`, CSS variables na <html>.
  * Theme: `--race-accent` (kolor marki), `font-display` (Oxanium przez CSS),
  * `data-accent` / `data-pit-stop` na documentElement; pit-stop ustawia `--race-motion`.
  * Auth: strona zakłada zalogowanego usera (gate w routerze); JWT nie jest tu czytany.
- * Docker/nginx: SPA — deep link `/settings` wymaga try_files → index.html.
+ * Docker/nginx: SPA – deep link `/settings` wymaga try_files → index.html.
  *
  * Pomysł (alt): Next.js App Router + cookies/server prefs; Zustand/persisted store;
  * TanStack Query niepotrzebny (brak API); sync ustawień z backendem /api/users/me/settings.
@@ -54,7 +54,7 @@ export function SettingsPage() {
   const [ready, setReady] = useState(false);
   const [teamDraft, setTeamDraft] = useState("");
 
-  // Hydratacja z localStorage po mount (unikamy SSR/hydration mismatch — tu Vite SPA).
+  // Hydratacja z localStorage po mount (unikamy SSR/hydration mismatch – tu Vite SPA).
   useEffect(() => {
     const loaded = loadSettings();
     setSettings(loaded);
@@ -74,7 +74,7 @@ export function SettingsPage() {
   const toggle = (key: keyof UserSettings, message: string) => {
     const next = { ...settings, [key]: !settings[key] } as UserSettings;
     persist(next, message);
-    // Demo dźwięku UI — Web Audio API (nie backend).
+    // Demo dźwięku UI – Web Audio API (nie backend).
     if (key === "soundFx" && next.soundFx) {
       try {
         const ctx = new AudioContext();
@@ -141,7 +141,7 @@ export function SettingsPage() {
             USTAWIENIA
           </h1>
           <p className="text-[#9ca3af]">
-            Preferencje lokalne konta <span className="text-white">{user?.username}</span> — zapisują się w tej
+            Preferencje lokalne konta <span className="text-white">{user?.username}</span> – zapisują się w tej
             przeglądarce.
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -231,7 +231,7 @@ export function SettingsPage() {
               <SettingRow
                 icon={<Moon className="w-4 h-4 text-[var(--race-accent)]" />}
                 title="Tryb pit-stop"
-                desc="Minimalne animacje — jak w boksach przed wyjazdem"
+                desc="Minimalne animacje – jak w boksach przed wyjazdem"
                 checked={settings.pitStopMode}
                 onChange={() =>
                   toggle("pitStopMode", settings.pitStopMode ? "Pełne animacje" : "Tryb pit-stop włączony")

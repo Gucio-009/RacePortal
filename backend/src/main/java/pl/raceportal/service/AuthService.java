@@ -42,7 +42,7 @@ import java.time.temporal.ChronoUnit;
  * </p>
  * Reguły kluczowe: konto lokalne startuje niezweryfikowane (link aktywacyjny, TTL 60 min);
  * login wymaga {@code emailVerified}; rejestracja organizatora tworzy też wniosek PENDING
- * (rola ORGANIZER dopiero po akceptacji admina); Google — find-or-create, email już verified.
+ * (rola ORGANIZER dopiero po akceptacji admina); Google – find-or-create, email już verified.
  * <p>
  * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu tokenów;
  * pełny flow resetu hasła z tokenem zamiast MVP maila.
@@ -84,14 +84,14 @@ public class AuthService {
         this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
         log.info("Activation links base URL: {}", this.publicBaseUrl);
         if (this.publicBaseUrl.contains("localhost") || this.publicBaseUrl.contains("127.0.0.1")) {
-            log.warn("PUBLIC_BASE_URL wskazuje na localhost — maile aktywacyjne nie zadziałają poza tą maszyną. "
+            log.warn("PUBLIC_BASE_URL wskazuje na localhost – maile aktywacyjne nie zadziałają poza tą maszyną. "
                     + "Na prod ustaw PUBLIC_BASE_URL=https://raceportal.pl i zrestartuj api.");
         }
     }
 
     /**
      * Rejestracja kierowcy: konto USER niezweryfikowane + mail z linkiem aktywacyjnym.
-     * Nie wydaje JWT — klient musi otworzyć link ({@link #verifyEmail}).
+     * Nie wydaje JWT – klient musi otworzyć link ({@link #verifyEmail}).
      */
     @Transactional
     public RegisterResponse register(RegisterRequest request) {
@@ -134,7 +134,7 @@ public class AuthService {
 
     /**
      * Potwierdza token z linku aktywacyjnego (rejestracja lub zmiana e-maila) i wydaje JWT.
-     * Ponowne kliknięcie przy już zweryfikowanym koncie bez pending — idempotentnie loguje.
+     * Ponowne kliknięcie przy już zweryfikowanym koncie bez pending – idempotentnie loguje.
      */
     @Transactional
     public AuthResponse verifyEmail(String email, String rawToken) {
@@ -149,7 +149,7 @@ public class AuthService {
     }
 
     /**
-     * Ponowna wysyłka linku — soft-fail (brak błędu gdy email nie istnieje),
+     * Ponowna wysyłka linku – soft-fail (brak błędu gdy email nie istnieje),
      * żeby nie ujawniać, które adresy są w bazie. Rate-limit po emailu.
      */
     @Transactional
@@ -174,7 +174,7 @@ public class AuthService {
 
         if (!user.isEmailVerified()) {
             throw new ApiException(HttpStatus.FORBIDDEN,
-                    "Aktywuj konto linkiem z e-maila przed zalogowaniem — sprawdź skrzynkę lub poproś o nowy link.");
+                    "Aktywuj konto linkiem z e-maila przed zalogowaniem – sprawdź skrzynkę lub poproś o nowy link.");
         }
 
         String token = jwtService.generateToken(user);
@@ -187,7 +187,7 @@ public class AuthService {
 
     /**
      * Google Sign-In: weryfikacja ID tokenu, find-or-create użytkownika (email już verified przez Google),
-     * wydanie JWT RacePortal. Hasło lokalne to losowy hash — logowanie hasłem wymaga resetu/ustawienia.
+     * wydanie JWT RacePortal. Hasło lokalne to losowy hash – logowanie hasłem wymaga resetu/ustawienia.
      */
     @Transactional
     public AuthResponse loginWithGoogle(String idToken) {
@@ -211,7 +211,7 @@ public class AuthService {
             if (familyName != null) user.setLastName(familyName);
             user = userRepository.save(user);
         } else {
-            // Konto lokalne niezweryfikowane: Google udowadnia skrzynkę — unieważnij hasło
+            // Konto lokalne niezweryfikowane: Google udowadnia skrzynkę – unieważnij hasło
             // atakującego, który zarejestrował email ofiary przed jej pierwszym logowaniem.
             if (!user.isEmailVerified()) {
                 user.setEmailVerified(true);
@@ -304,7 +304,7 @@ public class AuthService {
 
     /**
      * Reset hasła: generuje silne tymczasowe hasło, zapisuje hash, wysyła mail (soft-fail SMTP).
-     * Nie ujawnia istnienia konta — zawsze ten sam komunikat z kontrolera.
+     * Nie ujawnia istnienia konta – zawsze ten sam komunikat z kontrolera.
      */
     @Transactional
     public void forgotPassword(String email) {
@@ -392,7 +392,7 @@ public class AuthService {
         userRepository.save(user);
 
         String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
-        // Token w ścieżce (nie ?token=) — mniej blokad WAF/skanerów maili na query string → 403.
+        // Token w ścieżce (nie ?token=) – mniej blokad WAF/skanerów maili na query string → 403.
         String link = publicBaseUrl + "/verify-email/" + token;
         String safeLink = escapeHtml(link);
         boolean emailChange = user.getPendingEmail() != null && !user.getPendingEmail().isBlank();
@@ -476,7 +476,7 @@ public class AuthService {
         return trimmed;
     }
 
-    /** Silne tymczasowe hasło (wielka, mała, cyfra, znak specjalny) — jak przy rejestracji. */
+    /** Silne tymczasowe hasło (wielka, mała, cyfra, znak specjalny) – jak przy rejestracji. */
     private String generateTemporaryPassword() {
         final String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
         final String lower = "abcdefghijkmnopqrstuvwxyz";

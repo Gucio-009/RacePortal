@@ -1,5 +1,5 @@
 /**
- * RegisterPage — rejestracja konta + oczekiwanie na link aktywacyjny z e-maila.
+ * RegisterPage – rejestracja konta + oczekiwanie na link aktywacyjny z e-maila.
  *
  * Cel: utworzenie konta kierowcy (USER) z danymi profilu / licencji; opcjonalnie Google.
  * Wzorce: dwuetapowy UI (formularz → „sprawdź mail” gdy `requiresVerification`),
@@ -7,7 +7,7 @@
  * Auth/JWT: po kliknięciu linku AuthContext zapisuje JWT w `raceportal_token`.
  * Walidacja hasła po stronie klienta (silne hasło); regulamin wymagany też przy Google.
  * Theme: `--race-accent`, `font-display`; link aktywacyjny idzie SMTP (prod Mailbux).
- * Docker/nginx: `/register` jako deep link SPA — nginx try_files.
+ * Docker/nginx: `/register` jako deep link SPA – nginx try_files.
  *
  * Pomysł (alt): Clerk/Auth0; Zod + React Hook Form; Next.js server actions.
  */
@@ -48,7 +48,7 @@ export function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  // Gdy backend wymaga weryfikacji — przełączamy UI na formularz kodu (też po powrocie z sessionStorage / ?verify=).
+  // Gdy backend wymaga weryfikacji – przełączamy UI na formularz kodu (też po powrocie z sessionStorage / ?verify=).
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
   /** Tryb „czekam na link” / ponowna wysyłka (np. po logowaniu bez aktywacji). */
   const [verifyMode, setVerifyMode] = useState(false);
@@ -173,7 +173,7 @@ export function RegisterPage() {
       try {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
-          toast.success("Konto Google połączone — jesteś zalogowany");
+          toast.success("Konto Google połączone – jesteś zalogowany");
           navigate("/dashboard");
         } else {
           toast.error(result.message || "Nie udało się kontynuować z Google");
@@ -218,7 +218,7 @@ export function RegisterPage() {
                     Otwórz wiadomość i kliknij przycisk (sprawdź też spam). Link jest ważny 60 minut.
                   </>
                 ) : (
-                  <>Podaj e-mail z rejestracji — wyślemy nowy link aktywacyjny.</>
+                  <>Podaj e-mail z rejestracji – wyślemy nowy link aktywacyjny.</>
                 )}
               </p>
               <div className="space-y-2">
@@ -255,7 +255,7 @@ export function RegisterPage() {
                   variant="outline"
                   className="w-full border-[#2a2a2a] text-white hover:bg-[#2a2a2a] h-12"
                 >
-                  Mam już aktywne konto — logowanie
+                  Mam już aktywne konto – logowanie
                 </Button>
               </Link>
               <button

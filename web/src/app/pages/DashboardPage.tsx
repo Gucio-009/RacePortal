@@ -1,5 +1,5 @@
 /**
- * DashboardPage — kokpit zalogowanego użytkownika (zgłoszenia + skrót garażu + profil).
+ * DashboardPage – kokpit zalogowanego użytkownika (zgłoszenia + skrót garażu + profil).
  *
  * Cel: przegląd własnych Registration, anulowanie, dołączanie proof płatności.
  * Edycja profilu / hasła / e-maila: `/konto` (jedno miejsce zamiast dialogu na dashboardzie).
@@ -161,7 +161,7 @@ export function DashboardPage() {
                 <div>
                   <p className="text-white font-semibold mb-1">Chcesz organizować wydarzenia?</p>
                   <p className="text-[#9ca3af] text-sm">
-                    Złóż wniosek o konto organizatora — administrator rozpatrzy go w panelu.
+                    Złóż wniosek o konto organizatora – administrator rozpatrzy go w panelu.
                   </p>
                 </div>
               </div>
@@ -367,7 +367,7 @@ export function DashboardPage() {
                           {car.make} {car.model}
                         </h4>
                         <p className="text-[#9ca3af] text-sm">
-                          {car.year ?? "—"}
+                          {car.year ?? "–"}
                           {car.className ? ` · ${car.className}` : ""}
                         </p>
                       </div>

@@ -24,7 +24,7 @@ import java.time.LocalDate;
 /**
  * Seed danych demo przy starcie aplikacji ({@link CommandLineRunner}).
  * <p>
- * Rola w architekturze: ułatwia lokalny rozwój i demo — konta admin/org/kierowca,
+ * Rola w architekturze: ułatwia lokalny rozwój i demo – konta admin/org/kierowca,
  * wydarzenia (APPROVED/PENDING/ARCHIVED), płatne imprezy oraz garaż z autami per kategoria.
  * Sterowane flagą {@code app.seed.enabled} (domyślnie false; demo/compose/test włączają).
  * Technologie: Spring Boot, JPA/MySQL, BCrypt.
@@ -69,7 +69,7 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        // Katalog torów — zawsze (nawet bez app.seed.enabled); to słownik lokalizacji, nie demo.
+        // Katalog torów – zawsze (nawet bez app.seed.enabled); to słownik lokalizacji, nie demo.
         ensurePolishTracks();
 
         if (!seedEnabled) {
@@ -125,7 +125,7 @@ public class DataInitializer implements CommandLineRunner {
                 52.3312, 16.8491, EventStatus.APPROVED));
 
         eventRepository.save(event(organizer, "Poland Racing Festival",
-                "Festiwal wyścigowy z klasami touring, historic i open — wstęp i zgłoszenie bez wpisowego.",
+                "Festiwal wyścigowy z klasami touring, historic i open – wstęp i zgłoszenie bez wpisowego.",
                 "Racing", LocalDate.of(2026, 9, 26), "13:00", "Autodrom Most", "Most", "Dolnośląskie",
                 "https://images.unsplash.com/photo-1752449096739-83ac1ef2c0dd?auto=format&fit=crop&w=960&q=70&fm=webp",
                 50.5031, 13.636, EventStatus.APPROVED));
@@ -137,7 +137,7 @@ public class DataInitializer implements CommandLineRunner {
                 51.627, 22.108, EventStatus.APPROVED));
 
         eventRepository.save(event(organizer, "Nocny Drift Cup (oczekuje)",
-                "Nocna runda driftowa — wniosek organizatora oczekuje na akceptację admina.",
+                "Nocna runda driftowa – wniosek organizatora oczekuje na akceptację admina.",
                 "Drift", LocalDate.of(2026, 11, 7), "20:00", "Tor Słomczyn", "Słomczyn", "Mazowieckie",
                 "https://images.unsplash.com/photo-1638909486348-82ae8d57dfd7?auto=format&fit=crop&w=960&q=70&fm=webp",
                 52.0376, 20.7589, EventStatus.PENDING));
@@ -169,13 +169,13 @@ public class DataInitializer implements CommandLineRunner {
                 54.1985, 18.5986, new BigDecimal("890.00"));
 
         upsertPaid(organizer, "Drift Masters Polish Grand Prix",
-                "Polska runda Drift Masters — battle 1v1 i freestyle. Wpisowe płatne przelewem przed startem.",
+                "Polska runda Drift Masters – battle 1v1 i freestyle. Wpisowe płatne przelewem przed startem.",
                 "Drift", LocalDate.of(2026, 9, 12), "16:00", "Tor Słomczyn", "Słomczyn", "Mazowieckie",
                 "https://images.unsplash.com/photo-1638909486348-82ae8d57dfd7?auto=format&fit=crop&w=960&q=70&fm=webp",
                 52.0376, 20.7589, new BigDecimal("650.00"));
 
         upsertPaid(organizer, "Runda Rajdowa Rally Sprint Cup",
-                "Płatna runda rajdowa — wpisowe płatne przelewem na konto organizatora, potwierdzenie przelewu wymagane w zgłoszeniu.",
+                "Płatna runda rajdowa – wpisowe płatne przelewem na konto organizatora, potwierdzenie przelewu wymagane w zgłoszeniu.",
                 "Rally", LocalDate.of(2026, 9, 5), "09:00", "Ośrodek Rajdowy Radom", "Radom", "Mazowieckie",
                 "https://images.unsplash.com/photo-1600661653561-629509216228?auto=format&fit=crop&w=960&q=70&fm=webp",
                 51.4027, 21.1471, new BigDecimal("450.00"));
@@ -187,7 +187,7 @@ public class DataInitializer implements CommandLineRunner {
                 50.575, 18.083, new BigDecimal("1200.00"));
 
         upsertPaid(organizer, "Night Street Legal Time Attack",
-                "Nocny time attack na zamkniętym torze. Limitowane miejsca — wpisowe potwierdzane przelewem.",
+                "Nocny time attack na zamkniętym torze. Limitowane miejsca – wpisowe potwierdzane przelewem.",
                 "Time Attack", LocalDate.of(2026, 10, 17), "19:30", "Tor Kielce", "Kielce", "Świętokrzyskie",
                 "https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=960&q=70&fm=webp",
                 50.8661, 20.6286, new BigDecimal("320.00"));

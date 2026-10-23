@@ -1,5 +1,5 @@
 /**
- * GaragePage — CRUD pojazdów użytkownika (garaż).
+ * GaragePage – CRUD pojazdów użytkownika (garaż).
  *
  * Cel: auta używane przy zgłoszeniach (klasa/kategoria, OC/PT, klatka, rejestracja).
  * Wzorce: fetch `/api/garage` on mount, Dialog create/edit, PATCH/POST/DELETE z JWT
@@ -151,7 +151,7 @@ const GARAGE_FIELD_LABELS: Record<string, string> = {
   imageUrl: "URL zdjęcia",
 };
 
-/** 0 albo wiodące zero (np. 01, 00) — osobna walidacja od pustego pola. */
+/** 0 albo wiodące zero (np. 01, 00) – osobna walidacja od pustego pola. */
 function isZeroOrLeadingZero(raw: string): boolean {
   const t = raw.trim();
   if (!t) return false;
@@ -216,7 +216,7 @@ function validateGarageForm(form: typeof emptyForm): Record<string, string> {
   return errors;
 }
 
-/** Osobny toast na każde pole — jeden pod drugim (prawy górny róg). */
+/** Osobny toast na każde pole – jeden pod drugim (prawy górny róg). */
 function toastAllFieldErrors(errors: Record<string, string>) {
   Object.values(errors).forEach((msg) => toast.error(msg));
 }
@@ -307,7 +307,7 @@ export function GaragePage() {
     });
   };
 
-  /** POST nowe / PATCH istniejące — potem reload listy. */
+  /** POST nowe / PATCH istniejące – potem reload listy. */
   const handleSave = async () => {
     const errors = validateGarageForm(form);
     if (Object.keys(errors).length > 0) {
@@ -453,7 +453,7 @@ export function GaragePage() {
               {editingId ? "Edytuj auto" : "Dodaj auto"}
             </DialogTitle>
             <DialogDescription className="text-[#9ca3af]">
-              Wypełnij wymagane pola pojazdu. Zdjęcie jest opcjonalne — wgraj plik z dysku (max 5 MB).
+              Wypełnij wymagane pola pojazdu. Zdjęcie jest opcjonalne – wgraj plik z dysku (max 5 MB).
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
@@ -487,7 +487,7 @@ export function GaragePage() {
                   <SelectValue placeholder="Wybierz napęd" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-                  <SelectItem value="none">—</SelectItem>
+                  <SelectItem value="none">–</SelectItem>
                   {DRIVE_TYPES.map((dt) => (
                     <SelectItem key={dt} value={dt}>
                       {dt}
@@ -592,7 +592,7 @@ export function GaragePage() {
                       <SelectValue placeholder="Wybierz typ" />
                     </SelectTrigger>
                     <SelectContent className="bg-[#1a1a1a] border-[#2a2a2a] text-white">
-                      <SelectItem value="none">—</SelectItem>
+                      <SelectItem value="none">–</SelectItem>
                       {REGISTRATION_TYPES.map((rt) => (
                         <SelectItem key={rt} value={rt}>
                           {rt}

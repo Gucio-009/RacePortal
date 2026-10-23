@@ -1,7 +1,7 @@
 /**
- * HomePage — landing RACEPORTAL (hero + teaser wydarzeń + sekcja O nas).
+ * HomePage – landing RACEPORTAL (hero + teaser wydarzeń + sekcja O nas).
  *
- * Cel: pierwsza strona dla gości — CTA rejestracja / kalendarz, podgląd 6 wydarzeń.
+ * Cel: pierwsza strona dla gości – CTA rejestracja / kalendarz, podgląd 6 wydarzeń.
  * Wzorce: fetch on mount `/api/events?limit=6`, React Router Link, pełnoekranowy hero.
  * Auth: publiczna (bez JWT). Theme: `--race-accent`, `font-display` (Oxanium) w hero.
  * Docker/nginx: `/` to index.html; kotwica `#o-nas` działa client-side.
@@ -28,7 +28,7 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Teaser poniżej foldu — po idle, żeby nie konkurował z LCP (hero img).
+  // Teaser poniżej foldu – po idle, żeby nie konkurował z LCP (hero img).
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
@@ -54,7 +54,7 @@ export function HomePage() {
       <section className="relative min-h-[70svh] sm:min-h-[600px] flex items-center justify-center overflow-hidden">
         {/*
           LCP: prawdziwy <img> (nie CSS background) + preload w index.html.
-          loading=eager / fetchPriority=high — bez lazy.
+          loading=eager / fetchPriority=high – bez lazy.
         */}
         <img
           src={HERO_BG_TRACK}
@@ -209,12 +209,12 @@ export function HomePage() {
         <div className="container mx-auto px-4">
           <div className="text-center mb-8 sm:mb-12 max-w-3xl mx-auto">
             <h2 className="text-white mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-extrabold">
-              {/* Oxanium „O” wygląda jak zero — łącznik w Montserrat, brand w display */}
+              {/* Oxanium „O” wygląda jak zero – łącznik w Montserrat, brand w display */}
               <span className="font-sans tracking-wide">O </span>
               <span className="font-display text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
             <p className="text-[#9ca3af] text-sm sm:text-lg">
-              Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów —
+              Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów –
               wszystko w jednym miejscu.
             </p>
           </div>

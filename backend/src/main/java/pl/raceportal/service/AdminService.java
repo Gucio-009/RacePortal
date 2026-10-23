@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Panel administratora: statystyki, role użytkowników, moderacja wydarzeń i wniosków organizatora.
  * <p>
- * Rola w architekturze: RBAC {@code ROLE_ADMIN} — kontroler wymaga JWT admina.
+ * Rola w architekturze: RBAC {@code ROLE_ADMIN} – kontroler wymaga JWT admina.
  * Zmiana statusu wydarzenia invaliduje cache listy; APPROVE wniosku ustawia rolę ORGANIZER.
  * Technologie: Spring Cache, JPA, Spring Mail.
  * </p>
@@ -200,7 +200,7 @@ public class AdminService {
         return eventService.serializeAll(eventRepository.findByStatusOrderByCreatedAtAsc(EventStatus.PENDING));
     }
 
-    /** Ostatnie zatwierdzone wydarzenia — do anulowania z panelu admina. */
+    /** Ostatnie zatwierdzone wydarzenia – do anulowania z panelu admina. */
     @Transactional(readOnly = true)
     public List<EventResponse> approvedEvents() {
         return eventService.serializeAll(
@@ -210,7 +210,7 @@ public class AdminService {
     /**
      * Moderacja statusu wydarzenia (APPROVED/REJECTED/…); czyści cache {@code events};
      * powiadamia organizatora mailem. CANCELLED → pełna anulacja ze zgłoszeniami.
-     * Przejścia ograniczone FSM — brak „wskrzeszania” CANCELLED.
+     * Przejścia ograniczone FSM – brak „wskrzeszania” CANCELLED.
      */
     @Transactional
     @CacheEvict(cacheNames = "events", allEntries = true)
@@ -279,7 +279,7 @@ public class AdminService {
             String title = "Wydarzenie zaakceptowane";
             String body = "Twoje wydarzenie \"" + eventName + "\" zostało zaakceptowane i jest widoczne publicznie.";
             notificationService.notifyUser(organizer, "EVENT_APPROVED", title, body, event.getId());
-            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie zaakceptowane — " + eventName,
+            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie zaakceptowane – " + eventName,
                     "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>zaakceptowane</strong>.</p>"
                             + "<p>Jest już widoczne w kalendarzu RacePortal.</p>");
             return;
@@ -289,7 +289,7 @@ public class AdminService {
             String title = "Wydarzenie odrzucone";
             String body = "Twoje wydarzenie \"" + eventName + "\" zostało odrzucone. Powód: " + reason;
             notificationService.notifyUser(organizer, "EVENT_REJECTED", title, body, event.getId());
-            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie odrzucone — " + eventName,
+            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie odrzucone – " + eventName,
                     "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>odrzucone</strong>.</p>"
                             + "<p><strong>Powód:</strong> " + safeReason + "</p>"
                             + "<p>Możesz poprawić wydarzenie w panelu organizatora i wysłać je ponownie do moderacji.</p>");
@@ -299,7 +299,7 @@ public class AdminService {
         String title = "Status wydarzenia: " + target.name();
         String body = "Wydarzenie \"" + eventName + "\" ma teraz status: " + target.name() + ".";
         notificationService.notifyUser(organizer, "EVENT_STATUS", title, body, event.getId());
-        mailService.send(organizer.getEmail(), "RACEPORTAL: status wydarzenia — " + eventName,
+        mailService.send(organizer.getEmail(), "RACEPORTAL: status wydarzenia – " + eventName,
                 "<p>Wydarzenie <strong>" + safeName + "</strong> ma teraz status: <strong>"
                         + escapeHtml(target.name()) + "</strong>.</p>");
     }

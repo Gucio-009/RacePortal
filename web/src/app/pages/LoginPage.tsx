@@ -1,5 +1,5 @@
 /**
- * LoginPage — formularz logowania email/hasło + opcjonalnie Google OAuth.
+ * LoginPage – formularz logowania email/hasło + opcjonalnie Google OAuth.
  *
  * Cel: wejście użytkownika do konta; po sukcesie redirect na `/dashboard`.
  * Wzorce: React Router (`useNavigate`, `Link`), AuthContext (`login`, `loginWithGoogle`),
@@ -49,7 +49,7 @@ export function LoginPage() {
       } else {
         const msg = result.message || "Nieprawidłowy email lub hasło";
         toast.error(msg);
-        // Konto istnieje, ale bez aktywacji — wróć do ponownej wysyłki linku.
+        // Konto istnieje, ale bez aktywacji – wróć do ponownej wysyłki linku.
         if (/weryfikuj|zweryfikuj|kod|link|aktyw/i.test(msg) && email.includes("@")) {
           setPendingVerifyEmail(email);
           navigate(`/register?verify=1&email=${encodeURIComponent(email.trim().toLowerCase())}`);
@@ -211,7 +211,7 @@ export function LoginPage() {
             </p>
             <p className="text-[#6b7280] text-xs">
               {import.meta.env.DEV
-                ? "DEV — demo: test@wp.pl / test123 · admin@raceportal.pl / admin123 · org@raceportal.pl / org123"
+                ? "DEV – demo: test@wp.pl / test123 · admin@raceportal.pl / admin123 · org@raceportal.pl / org123"
                 : null}
             </p>
           </div>

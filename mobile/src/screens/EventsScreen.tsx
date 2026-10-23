@@ -1,5 +1,5 @@
 /**
- * Lista wydarzeń — filtry, tryby Lista / Kalendarz / Mapa (mobilka-wizytówka).
+ * Lista wydarzeń – filtry, tryby Lista / Kalendarz / Mapa (mobilka-wizytówka).
  *
  * Publiczny katalog bez logowania. Query: `/api/events` lub `/api/events/markers`
  * (q, paid, category, województwo, miasto, tor, daty).
@@ -358,7 +358,7 @@ export function EventsScreen() {
           }
           ListHeaderComponent={
             <Text style={styles.mapHint}>
-              Mapa lokalizacji — otwórz w aplikacji map (Leaflet WebView opcjonalnie później).
+              Mapa lokalizacji – otwórz w aplikacji map (Leaflet WebView opcjonalnie później).
             </Text>
           }
           ListEmptyComponent={<Text style={styles.empty}>Brak wydarzeń z GPS dla filtrów.</Text>}

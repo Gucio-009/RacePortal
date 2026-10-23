@@ -8,7 +8,7 @@
  * Pomysł (alt): Zod/io-ts do walidacji runtime odpowiedzi API zamiast samego typing.
  */
 
-/** Role użytkownika — USER (zawodnik), ORGANIZER (organizator), ADMIN. */
+/** Role użytkownika – USER (zawodnik), ORGANIZER (organizator), ADMIN. */
 export type UserRole = "USER" | "ORGANIZER" | "ADMIN";
 
 /**
@@ -25,7 +25,7 @@ export type EventStatus =
 
 /**
  * Statusy rejestracji (zgłoszenia na event) + aliasy legacy nadal akceptowane przez API.
- * Np. APPROVED ≈ ACCEPTED, CANCELLED ≈ CANCELED — UI mapuje je wspólnymi labelkami.
+ * Np. APPROVED ≈ ACCEPTED, CANCELLED ≈ CANCELED – UI mapuje je wspólnymi labelkami.
  */
 export type RegistrationStatus =
   | "PENDING"
@@ -45,7 +45,7 @@ export interface User {
   email: string;
   username: string;
   role: UserRole;
-  /** URL presetu Dicebear lub null — wtedy UI pokazuje inicjały (patrz avatars.ts). */
+  /** URL presetu Dicebear lub null – wtedy UI pokazuje inicjały (patrz avatars.ts). */
   avatar?: string | null;
   memberSince: string;
   firstName?: string | null;
@@ -65,7 +65,7 @@ export interface ApiEvent {
   /** Nazwa kategorii z EVENT_CATEGORY_GROUPS / ALL_EVENT_CATEGORIES. */
   category: string;
   date: string;
-  /** Gotowa etykieta PL z backendu; jeśli brak — formatEventDate(date). */
+  /** Gotowa etykieta PL z backendu; jeśli brak – formatEventDate(date). */
   dateLabel?: string;
   time: string;
   track: string;
@@ -144,7 +144,7 @@ export interface PaginatedEvents {
 }
 
 /**
- * Auto w garażu użytkownika — className to klasa/kategoria sportowa
+ * Auto w garażu użytkownika – className to klasa/kategoria sportowa
  * (CAR_CLASS_OPTIONS), używana przy dopasowaniu do kategorii eventu (carMatch).
  */
 export interface Car {
@@ -191,7 +191,7 @@ export interface Registration {
   user?: { id: string; username: string; email: string; avatar?: string | null };
 }
 
-/** Wynik trasy (np. OSRM/Google) — polyline jako pary [lat, lng]. */
+/** Wynik trasy (np. OSRM/Google) – polyline jako pary [lat, lng]. */
 export interface RouteResult {
   provider: string;
   distanceMeters: number;
@@ -272,11 +272,11 @@ const DEFAULT_EVENT_PHOTO =
 /** Domyślne zdjęcie wydarzenia (Unsplash WebP) gdy brak imageUrl. */
 export const DEFAULT_EVENT_IMAGE = optimizeRemoteImageUrl(DEFAULT_EVENT_PHOTO, IMAGE_WIDTH_CARD);
 
-/** Krótszy URL Unsplash tego samego assetu — mobile / awatar. */
+/** Krótszy URL Unsplash tego samego assetu – mobile / awatar. */
 export const DEFAULT_IMAGE = optimizeRemoteImageUrl(DEFAULT_EVENT_PHOTO, 800);
 
 /**
- * Tła hero (auth / home) — WebP, ~1280px.
+ * Tła hero (auth / home) – WebP, ~1280px.
  * HERO_BG_TRACK = LCP home: trzymaj sync z `<link rel="preload">` w web/index.html.
  */
 export const HERO_BG_TRACK = optimizeRemoteImageUrl(
@@ -347,7 +347,7 @@ export function eventDateLabel(event: { dateLabel?: string; date?: string }): st
 }
 
 /**
- * Etykiety statusu zgłoszenia — aliasy legacy (APPROVED/CANCELLED) mapowane
+ * Etykiety statusu zgłoszenia – aliasy legacy (APPROVED/CANCELLED) mapowane
  * tak samo jak ACCEPTED / CANCELED.
  */
 export function registrationStatusLabel(status: RegistrationStatus): string {
@@ -356,7 +356,7 @@ export function registrationStatusLabel(status: RegistrationStatus): string {
       return "Oczekujące";
     case "ACCEPTED":
     case "APPROVED":
-      return "Zaakceptowane — czekam na płatność";
+      return "Zaakceptowane – czekam na płatność";
     case "CONFIRMED":
       return "Potwierdzone";
     case "CANCELED":

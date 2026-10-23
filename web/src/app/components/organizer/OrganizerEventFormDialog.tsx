@@ -1,13 +1,13 @@
 /**
- * OrganizerEventFormDialog — dialog tworzenia / edycji wydarzenia (panel org.).
+ * OrganizerEventFormDialog – dialog tworzenia / edycji wydarzenia (panel org.).
  *
  * Wzorzec UX: większość pól z Select (presety) + wartość specjalna `OTHER` („Inne…”)
  * na własne stringi. Presety: `eventFormPresets.ts` + kategorie z `eventCategories.ts`.
  *
  * Tor preset → `applyTrackPreset` wypełnia city / województwo / lat / lng.
  * Mapa: `LocationMapPicker` montowany tylko gdy `open` (invalidateSize w pickerze).
- * Płatne: wpisowe, IBAN, termin wpłaty, darmowa anulacja — widoczne przy `form.paid`.
- * Wymagania kierowcy (PJ, PZM, OC…) — tylko gdy `acceptRegistrations`.
+ * Płatne: wpisowe, IBAN, termin wpłaty, darmowa anulacja – widoczne przy `form.paid`.
+ * Wymagania kierowcy (PJ, PZM, OC…) – tylko gdy `acceptRegistrations`.
  *
  * Stan formularza trzymany w rodzicu (`OrganizerPanelPage`); tu tylko UI + setForm.
  *
@@ -45,7 +45,7 @@ function fieldClass(hasError: boolean) {
     : "bg-[#121212] border-[#2a2a2a] text-white";
 }
 
-/** Native date picker — biała ikona kalendarza. */
+/** Native date picker – biała ikona kalendarza. */
 const DATE_INPUT_CLASS =
   "[color-scheme:dark] [&::-webkit-calendar-picker-indicator]:invert [&::-webkit-calendar-picker-indicator]:cursor-pointer";
 
@@ -86,7 +86,7 @@ export function OrganizerEventFormDialog({
             {editingId ? "Edytuj wydarzenie" : "Nowe wydarzenie"}
           </DialogTitle>
           <DialogDescription className="text-[#9ca3af]">
-            Większość pól wybierasz z listy — „Inne…” tylko gdy potrzebujesz własnej wartości.
+            Większość pól wybierasz z listy – „Inne…” tylko gdy potrzebujesz własnej wartości.
           </DialogDescription>
         </DialogHeader>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
@@ -330,7 +330,7 @@ export function OrganizerEventFormDialog({
             )}
           </div>
 
-          {/* Mapa tylko przy open — unika Leaflet w ukrytym dialogu (zerowy size). */}
+          {/* Mapa tylko przy open – unika Leaflet w ukrytym dialogu (zerowy size). */}
           <div className="space-y-2 sm:col-span-2">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <Label className="flex items-center gap-2">

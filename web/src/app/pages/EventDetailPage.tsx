@@ -1,12 +1,12 @@
 /**
- * EventDetailPage — szczegóły wydarzenia + zgłoszenie + mapa/trasa.
+ * EventDetailPage – szczegóły wydarzenia + zgłoszenie + mapa/trasa.
  *
  * Cel: opis wydarzenia, status, wpisowe; zalogowany user może wysłać Registration
- * z wybranym autem z garażu (partitionCarsForEvent — proponowane vs pozostałe).
+ * z wybranym autem z garażu (partitionCarsForEvent – proponowane vs pozostałe).
  * Wzorce: useParams(`id`), fetch `/api/events/:id`, geolocation + POST `/api/maps/route`,
  * EventsMapView z polyline trasy.
  * Auth: publiczny odczyt; zapis wymaga JWT (`raceportal_token`); redirect do `/login`.
- * Deep link `/wydarzenia/:id` — krytyczne dla nginx SPA (try_files → index.html).
+ * Deep link `/wydarzenia/:id` – krytyczne dla nginx SPA (try_files → index.html).
  * Theme: `--race-accent`, `font-display`.
  *
  * Pomysł (alt): TanStack Query; Google Directions zamiast własnego /api/maps/route;
@@ -356,7 +356,7 @@ export function EventDetailPage() {
                       ) : cars.length > 0 ? (
                         <>
                           Brak aut klasy{" "}
-                          <span className="text-[var(--race-accent)]">{event.category}</span> — masz {cars.length} w
+                          <span className="text-[var(--race-accent)]">{event.category}</span> – masz {cars.length} w
                           garażu
                         </>
                       ) : (
@@ -449,7 +449,7 @@ export function EventDetailPage() {
             </Button>
             {myRegistration && (
               <p className="text-xs text-[#9ca3af] text-center mt-1">
-                Masz aktywne zgłoszenie — nie możesz zapisać się ponownie.
+                Masz aktywne zgłoszenie – nie możesz zapisać się ponownie.
               </p>
             )}
             {!isAuthenticated && (

@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Serwis zgłoszeń zawodników na wydarzenia — statusy, płatności, anulowanie.
+ * Serwis zgłoszeń zawodników na wydarzenia – statusy, płatności, anulowanie.
  * <p>
  * Rola w architekturze: rdzeń reguł biznesowych dyplomu (Statusy zgłoszenia):
  * tworzenie zgłoszenia, decyzja organizatora, dowód płatności, rezygnacja kierowcy.
@@ -37,7 +37,7 @@ import java.util.Locale;
  * </p>
  * Przepływ płatny: PENDING → ACCEPTED (+{@code paymentDueAt}) → dowód → CONFIRMED;
  * darmowy: PENDING → CONFIRMED. Alias {@code APPROVED} mapowany „smart” wg {@code event.paid}.
- * RBAC: lista/zmiana statusu — organizator-właściciel lub ADMIN; anulowanie/proof — właściciel zgłoszenia.
+ * RBAC: lista/zmiana statusu – organizator-właściciel lub ADMIN; anulowanie/proof – właściciel zgłoszenia.
  * <p>
  * Pomysł (alt): maszyna stanów Spring State Machine; bramka PayU/Stripe zamiast ręcznego dowodu;
  * outbox do maili.
@@ -75,7 +75,7 @@ public class RegistrationService {
 
     /**
      * Tworzenie zgłoszenia (diagram „Proces tworzenia zgłoszenia”): wydarzenie APPROVED
-     * i otwarte na zgłoszenia; opcjonalne auto — walidacja klasy vs kategorii (CategoryMatcher).
+     * i otwarte na zgłoszenia; opcjonalne auto – walidacja klasy vs kategorii (CategoryMatcher).
      * Nowe zgłoszenie lub ponowne tylko ze statusu {@code CANCELED} (nie resetuje CONFIRMED/ACCEPTED).
      */
     @Transactional
@@ -113,7 +113,7 @@ public class RegistrationService {
             if (registration.getStatus() != RegistrationStatus.CANCELED) {
                 throw ApiException.conflict("Masz już aktywne zgłoszenie na to wydarzenie");
             }
-            // Re-apply po anulowaniu — czyścimy decyzje / płatność.
+            // Re-apply po anulowaniu – czyścimy decyzje / płatność.
         } else {
             registration = new Registration();
             registration.setUser(user);
@@ -136,7 +136,7 @@ public class RegistrationService {
     }
 
     /**
-     * Lista zgłoszeń na wydarzenie — tylko organizator-właściciel lub ADMIN (RBAC).
+     * Lista zgłoszeń na wydarzenie – tylko organizator-właściciel lub ADMIN (RBAC).
      */
     @Transactional(readOnly = true)
     public List<RegistrationResponse> listForEvent(String eventId, UserPrincipal currentUser) {
@@ -305,7 +305,7 @@ public class RegistrationService {
         }
         if (to == RegistrationStatus.CONFIRMED && from == RegistrationStatus.ACCEPTED
                 && (registration.getPaymentProofUrl() == null || registration.getPaymentProofUrl().isBlank())) {
-            throw ApiException.badRequest("Brak potwierdzenia przelewu — nie można potwierdzić zgłoszenia");
+            throw ApiException.badRequest("Brak potwierdzenia przelewu – nie można potwierdzić zgłoszenia");
         }
     }
 

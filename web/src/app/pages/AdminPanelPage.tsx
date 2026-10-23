@@ -1,5 +1,5 @@
 /**
- * AdminPanelPage — panel roli ADMIN (AuthGate roles=["ADMIN"]).
+ * AdminPanelPage – panel roli ADMIN (AuthGate roles=["ADMIN"]).
  *
  * Cel: przegląd statystyk, akceptacja/odrzucanie wydarzeń (z powodem),
  * zmiana ról użytkowników, rozpatrywanie wniosków „zostań organizatorem”.
@@ -105,9 +105,9 @@ export function AdminPanelPage() {
       });
       toast.success(
         status === "APPROVED"
-          ? "Wydarzenie zaakceptowane — organizator został powiadomiony"
+          ? "Wydarzenie zaakceptowane – organizator został powiadomiony"
           : status === "REJECTED"
-            ? "Wydarzenie odrzucone — organizator został powiadomiony"
+            ? "Wydarzenie odrzucone – organizator został powiadomiony"
             : `Status wydarzenia: ${status}`,
       );
       setPendingEvents((prev) => prev.filter((e) => e.id !== id));
@@ -182,7 +182,7 @@ export function AdminPanelPage() {
       await api.patch(`/api/admin/organizer-applications/${id}`, { status });
       toast.success(
         status === "APPROVED"
-          ? "Wniosek zaakceptowany — użytkownik ma teraz rolę organizatora"
+          ? "Wniosek zaakceptowany – użytkownik ma teraz rolę organizatora"
           : "Wniosek odrzucony",
       );
       setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
@@ -285,7 +285,7 @@ export function AdminPanelPage() {
                             {event.name}
                           </h3>
                           <p className="text-[#9ca3af] text-sm">
-                            {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "—"}
+                            {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
                           </p>
                           <p className="text-[#9ca3af] text-sm">
                             {event.dateLabel || formatEventDate(event.date)} · {event.time}
@@ -338,25 +338,25 @@ export function AdminPanelPage() {
                         <div className="border-t border-[#2a2a2a] pt-4 space-y-3 text-sm">
                           <div>
                             <p className="text-[var(--race-accent)] font-semibold mb-1">Opis</p>
-                            <p className="text-[#9ca3af] whitespace-pre-wrap">{event.description || "—"}</p>
+                            <p className="text-[#9ca3af] whitespace-pre-wrap">{event.description || "–"}</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[#9ca3af]">
                             <p>
                               <span className="text-white">Województwo:</span> {event.voivodeship}
                             </p>
                             <p>
-                              <span className="text-white">Ulica:</span> {event.street || "—"}
+                              <span className="text-white">Ulica:</span> {event.street || "–"}
                             </p>
                             <p>
                               <span className="text-white">Wpisowe:</span>{" "}
-                              {event.paid ? formatEntryFee(event.entryFee) ?? "—" : "Bezpłatne"}
+                              {event.paid ? formatEntryFee(event.entryFee) ?? "–" : "Bezpłatne"}
                             </p>
                             <p>
-                              <span className="text-white">Konto:</span> {event.bankAccount || "—"}
+                              <span className="text-white">Konto:</span> {event.bankAccount || "–"}
                             </p>
                             <p>
                               <span className="text-white">Koniec:</span>{" "}
-                              {event.endDate ? `${event.endDate}${event.endTime ? ` ${event.endTime}` : ""}` : "—"}
+                              {event.endDate ? `${event.endDate}${event.endTime ? ` ${event.endTime}` : ""}` : "–"}
                             </p>
                             <p>
                               <span className="text-white">Link:</span>{" "}
@@ -365,7 +365,7 @@ export function AdminPanelPage() {
                                   {event.externalUrl}
                                 </a>
                               ) : (
-                                "—"
+                                "–"
                               )}
                             </p>
                           </div>
@@ -411,7 +411,7 @@ export function AdminPanelPage() {
                         {event.name}
                       </h3>
                       <p className="text-[#9ca3af] text-sm">
-                        {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "—"}
+                        {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

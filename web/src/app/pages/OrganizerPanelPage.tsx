@@ -1,5 +1,5 @@
 /**
- * OrganizerPanelPage — panel roli ORGANIZER (oraz ADMIN przez AuthGate).
+ * OrganizerPanelPage – panel roli ORGANIZER (oraz ADMIN przez AuthGate).
  *
  * Cel: CRUD wydarzeń organizatora + zarządzanie statusami zgłoszeń kierowców.
  * Wzorce: fetch on mount (`/api/organizer/events`), Tabs (wydarzenia / zgłoszenia),
@@ -44,7 +44,7 @@ export function OrganizerPanelPage() {
   const [activeTab, setActiveTab] = useState("events");
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  // Komentarze per zgłoszenie — wysyłane przy zmianie statusu.
+  // Komentarze per zgłoszenie – wysyłane przy zmianie statusu.
   const [comments, setComments] = useState<Record<string, string>>({});
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
@@ -149,7 +149,7 @@ export function OrganizerPanelPage() {
     setCreateOpen(true);
   };
 
-  /** Create (POST) lub update (PATCH) — nowe wydarzenie czeka na akceptację admina. */
+  /** Create (POST) lub update (PATCH) – nowe wydarzenie czeka na akceptację admina. */
   const handleSave = async () => {
     const errors = validateEventForm();
     if (Object.keys(errors).length > 0) {
@@ -194,7 +194,7 @@ export function OrganizerPanelPage() {
         toast.success("Wydarzenie zaktualizowane");
       } else {
         await api.post("/api/events", payload);
-        toast.success("Wydarzenie utworzone — oczekuje na akceptację admina");
+        toast.success("Wydarzenie utworzone – oczekuje na akceptację admina");
       }
       setCreateOpen(false);
       setForm(emptyForm);
@@ -226,7 +226,7 @@ export function OrganizerPanelPage() {
     }
   };
 
-  /** Anulowanie wydarzenia po stronie organizatora — kasuje otwarte zgłoszenia na backendzie. */
+  /** Anulowanie wydarzenia po stronie organizatora – kasuje otwarte zgłoszenia na backendzie. */
   const cancelEvent = async (eventId: string) => {
     if (!confirm("Na pewno anulować wydarzenie? Wszystkie otwarte zgłoszenia zostaną anulowane.")) {
       return;

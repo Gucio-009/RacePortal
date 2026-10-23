@@ -1,5 +1,5 @@
 /**
- * EventsPage — publiczny kalendarz wydarzeń (lista / mapa / DayPicker).
+ * EventsPage – publiczny kalendarz wydarzeń (lista / mapa / DayPicker).
  *
  * Cel: wyszukiwanie i przeglądanie nadchodzących wydarzeń z bogatymi filtrami.
  * Wzorce: debounce 300ms na filtry, paginacja listy (`/api/events`), markery
@@ -80,7 +80,7 @@ export function EventsPage() {
   const [calendarMonth, setCalendarMonth] = useState<Date>(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>();
 
-  // Auta z garażu — tylko dla zalogowanych (filtr dopasowania carId).
+  // Auta z garażu – tylko dla zalogowanych (filtr dopasowania carId).
   useEffect(() => {
     if (!isAuthenticated) {
       setCars([]);
@@ -184,7 +184,7 @@ export function EventsPage() {
             KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
           </h1>
           <p className="text-[#9ca3af] max-w-2xl text-sm sm:text-lg">
-            Lista, mapa i kalendarz — wspólne filtry dla każdego widoku.
+            Lista, mapa i kalendarz – wspólne filtry dla każdego widoku.
           </p>
         </div>
       </section>

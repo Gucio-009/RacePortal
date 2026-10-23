@@ -1,5 +1,5 @@
 /**
- * BecomeOrganizerPage — wniosek USER → ORGANIZER (rozpatrywany w AdminPanel).
+ * BecomeOrganizerPage – wniosek USER → ORGANIZER (rozpatrywany w AdminPanel).
  *
  * Cel: zalogowany kierowca wysyła firmę + opis doświadczenia; admin zatwierdza.
  * Wzorce: formularz POST `/api/organizer/apply` z JWT; status GET `/api/organizer/my-application`.
@@ -58,7 +58,7 @@ export function BecomeOrganizerPage() {
         if (!cancelled && app) setExisting(app);
       })
       .catch(() => {
-        /* brak wniosku lub błąd — pokaż formularz */
+        /* brak wniosku lub błąd – pokaż formularz */
       })
       .finally(() => {
         if (!cancelled) setChecking(false);
@@ -142,7 +142,7 @@ export function BecomeOrganizerPage() {
                   {existing.businessType ? ` · ${existing.businessType}` : ""}.{" "}
                 </>
               ) : null}
-              Administrator rozpatrzy wniosek wkrótce — dostaniesz dostęp do panelu organizatora po akceptacji.
+              Administrator rozpatrzy wniosek wkrótce – dostaniesz dostęp do panelu organizatora po akceptacji.
             </p>
             <Link to="/dashboard">
               <Button className="bg-[var(--race-accent)] text-[#121212]" style={{ fontWeight: 700 }}>

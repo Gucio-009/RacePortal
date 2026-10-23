@@ -63,7 +63,7 @@ public class NotificationService {
 
         for (User admin : userRepository.findByRole(Role.ADMIN)) {
             notifyUser(admin, "EVENT_PENDING_REVIEW", title, body, event.getId());
-            mailService.send(admin.getEmail(), "RACEPORTAL: wydarzenie do akceptacji — " + eventName,
+            mailService.send(admin.getEmail(), "RACEPORTAL: wydarzenie do akceptacji – " + eventName,
                     "<p>Nowe wydarzenie oczekuje na moderację.</p>"
                             + "<p><strong>" + safeName + "</strong> (organizator: " + safeOrg + ")</p>"
                             + "<p>Otwórz panel admina i zaakceptuj lub odrzuć wniosek.</p>");

@@ -1,5 +1,5 @@
 /**
- * VerifyEmailPage — aktywacja konta / potwierdzenie e-maila z linku w mailu.
+ * VerifyEmailPage – aktywacja konta / potwierdzenie e-maila z linku w mailu.
  *
  * Deep link (preferowany): `/verify-email/:token`
  * Fallback (stare maile): `/verify-email?token=…` (+ opcjonalnie `&email=`).
@@ -50,9 +50,9 @@ export function VerifyEmailPage() {
       if (result.ok) {
         clearPendingVerifyEmail();
         setStatus("ok");
-        setMessage("Konto aktywowane — przekierowujemy…");
+        setMessage("Konto aktywowane – przekierowujemy…");
         toast.success("Konto aktywowane!");
-        // Lekki delay — localStorage JWT zdąży się zapisać przed AuthGate na /dashboard.
+        // Lekki delay – localStorage JWT zdąży się zapisać przed AuthGate na /dashboard.
         window.setTimeout(() => navigate("/dashboard", { replace: true }), 150);
       } else {
         setStatus("error");
