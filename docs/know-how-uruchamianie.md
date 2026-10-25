@@ -99,7 +99,7 @@ Poczekaj, aż status będzie Running, skopiuj nowy publiczny IP i sprawdź z zew
 curl -sS https://raceportal.pl/api/health
 ```
 
-Oczekiwane: `"db":"up"`. Potem otwórz `https://raceportal.pl`.
+Oczekiwane: `{"status":"ok"}` (publicznie bez `db`/`smtp` — pentest #10). Szczegóły: `GET /api/health/details` z JWT admina. Potem otwórz `https://raceportal.pl`.
 
 Gdy health nie wstaje:
 
@@ -150,14 +150,14 @@ sudo docker stats --no-stream
 
 ### B6. Maile
 
-Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`noreply@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). `GET /api/health` pokazuje `smtp: up`, gdy serwer przyjmie logowanie.
+Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`noreply@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). Stan SMTP: `GET /api/health/details` (ADMIN) → `smtp: up`.
 
 ---
 
 ## C) Checklista przed demo
 
 1. Oracle → **Start** instancji `raceportal`.
-2. `curl -sS https://raceportal.pl/api/health` → `db:up`.
+2. `curl -sS https://raceportal.pl/api/health` → `{"status":"ok"}` (szczegóły: `/api/health/details` jako admin).
 3. `https://raceportal.pl` → login `admin@raceportal.pl` / `admin123` (dopóki seed jest włączony i hasło nie zostało zmienione).
 4. Po demo → **Stop**.
 

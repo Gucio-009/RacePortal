@@ -916,5 +916,15 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:25 — testy rotacji refresh (#9).*
+## 59. Okrojony publiczny health (#10) (2026-10-25 19:30)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `GET /api/health` → service, db, smtp, publicBaseUrl, time | Publicznie tylko `status`; pełne pole w `GET /api/health/details` (ADMIN) | Brak darmowego rekonesansu zaplecza |
+
+**Weryfikacja:** `health_publicReturnsOnlyStatus`, `healthDetails_requiresAdmin`. Diagnostyka SMTP: `/api/health/details` jako admin.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:30 — health disclosure (#10).*
 

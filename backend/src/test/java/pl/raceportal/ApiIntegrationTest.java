@@ -122,14 +122,37 @@ class ApiIntegrationTest {
     private record AuthSession(String accessToken, String refreshToken) {
     }
 
-    /** Healthcheck publiczny — status ok + db up. */
+    /** Pentest #10: publiczny health tylko status (bez db/smtp/URL). */
     @Test
-    void health_returnsOkWithDatabaseUp() throws Exception {
+    void health_publicReturnsOnlyStatus() throws Exception {
         mockMvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status", is("ok")))
+                .andExpect(jsonPath("$.db").doesNotExist())
+                .andExpect(jsonPath("$.smtp").doesNotExist())
+                .andExpect(jsonPath("$.service").doesNotExist())
+                .andExpect(jsonPath("$.publicBaseUrl").doesNotExist())
+                .andExpect(jsonPath("$.time").doesNotExist());
+    }
+
+    /** Pentest #10: szczegóły tylko dla ADMIN. */
+    @Test
+    void healthDetails_requiresAdmin() throws Exception {
+        mockMvc.perform(get("/api/health/details"))
+                .andExpect(status().isUnauthorized());
+
+        String userToken = login("test@wp.pl", "test123");
+        mockMvc.perform(get("/api/health/details").header("Authorization", "Bearer " + userToken))
+                .andExpect(status().isForbidden());
+
+        String adminToken = login("admin@raceportal.pl", "admin123");
+        mockMvc.perform(get("/api/health/details").header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("ok")))
+                .andExpect(jsonPath("$.db", is("up")))
+                .andExpect(jsonPath("$.smtp", notNullValue()))
                 .andExpect(jsonPath("$.service", is("raceportal-api")))
-                .andExpect(jsonPath("$.db", is("up")));
+                .andExpect(jsonPath("$.publicBaseUrl", notNullValue()));
     }
 
     /** Seed: admin, organizer i kierowca mogą się zalogować. */

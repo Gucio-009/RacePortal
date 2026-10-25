@@ -30,7 +30,7 @@ import java.util.List;
  * <p>
  * Reguły dostępu (skrót):
  * <ul>
- *   <li>publiczne: health, login/register/OAuth/verify, GET wydarzeń, POST trasy map;</li>
+ *   <li>publiczne: health (tylko status), login/register/OAuth/verify, GET wydarzeń, POST trasy map;</li>
  *   <li>pozostałe: wymagają ważnego Bearer JWT.</li>
  * </ul>
  * Pomysł (alt): Keycloak / OAuth2 Resource Server zamiast własnego filtra JWT;

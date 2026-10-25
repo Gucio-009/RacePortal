@@ -105,7 +105,7 @@ npx playwright test
 | Usługa | Adres |
 |--------|--------|
 | Web | http://127.0.0.1:8081/ |
-| API health | http://127.0.0.1:4000/api/health (`db` + `smtp`) |
+| API health | http://127.0.0.1:4000/api/health (`status`); szczegóły ADMIN: `/api/health/details` |
 | MySQL | localhost:3307 |
 | Maile | SMTP Mailbux (nie UI lokalne) — skrzynka odbiorcy |
 | Expo web | http://127.0.0.1:8082/ |
