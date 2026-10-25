@@ -33,7 +33,19 @@ public class GlobalExceptionHandler {
     /** Wyjątki biznesowe rzucane świadomie w serwisach. */
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
-        return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(ex.getMessage(), ex.getDetails()));
+        if (ex.getStatus() != HttpStatus.TOO_MANY_REQUESTS) {
+            return ResponseEntity.status(ex.getStatus()).body(new ErrorResponse(ex.getMessage(), ex.getDetails()));
+        }
+        long retryAfter = 60;
+        if (ex.getDetails() instanceof Map<?, ?> map) {
+            Object raw = map.get("retryAfterSeconds");
+            if (raw instanceof Number n) {
+                retryAfter = Math.max(1, n.longValue());
+            }
+        }
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header("Retry-After", String.valueOf(retryAfter))
+                .body(new ErrorResponse(ex.getMessage(), ex.getDetails()));
     }
 
     /** Błędy {@code @Valid} na body requestu — mapa pole → komunikat. */

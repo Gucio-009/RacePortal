@@ -62,6 +62,14 @@ public class AuthService {
     private static final int RESEND_MAX_ATTEMPTS = 3;
     private static final Duration AUTH_CODE_WINDOW = Duration.ofMinutes(15);
 
+    /** Nieudane logowania na jedno konto (email) w oknie. */
+    private static final int LOGIN_MAX_PER_EMAIL = 5;
+    /** Nieudane logowania z jednego IP w oknie (password stuffing). */
+    private static final int LOGIN_MAX_PER_IP = 20;
+    private static final Duration LOGIN_WINDOW = Duration.ofMinutes(15);
+
+    private static final int FORGOT_MAX_PER_IP = 10;
+
     private final UserRepository userRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
     private final PasswordEncoder passwordEncoder;
@@ -164,18 +172,26 @@ public class AuthService {
     }
 
     /**
-     * Logowanie email+hasło: BCrypt match, wymaga zweryfikowanego e-mail, zwraca access+refresh.
+     * Logowanie email+hasło z limitem nieudanych prób (konto + IP) → 429.
      */
     @Transactional
-    public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmailIgnoreCase(request.email())
-                .orElseThrow(() -> ApiException.unauthorized("Nieprawidłowy email lub hasło"));
+    public AuthResponse login(LoginRequest request, String clientIp) {
+        String emailNorm = request.email() == null ? "" : request.email().trim().toLowerCase();
+        String emailKey = "login:email:" + emailNorm;
+        String ipKey = "login:ip:" + (clientIp == null || clientIp.isBlank() ? "unknown" : clientIp.trim());
 
-        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        attemptRateLimiter.ensureAllowed(emailKey, LOGIN_MAX_PER_EMAIL, LOGIN_WINDOW);
+        attemptRateLimiter.ensureAllowed(ipKey, LOGIN_MAX_PER_IP, LOGIN_WINDOW);
+
+        User user = userRepository.findByEmailIgnoreCase(emailNorm).orElse(null);
+        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            attemptRateLimiter.record(emailKey, LOGIN_WINDOW);
+            attemptRateLimiter.record(ipKey, LOGIN_WINDOW);
             throw ApiException.unauthorized("Nieprawidłowy email lub hasło");
         }
 
         if (!user.isEmailVerified()) {
+            // Nie liczymy jako brute-force hasła — konto istnieje, hasło OK.
             throw new ApiException(HttpStatus.FORBIDDEN,
                     "Aktywuj konto linkiem z e-maila przed zalogowaniem – sprawdź skrzynkę lub poproś o nowy link.");
         }
@@ -192,7 +208,10 @@ public class AuthService {
      * wydanie JWT RacePortal. Hasło lokalne to losowy hash – logowanie hasłem wymaga resetu/ustawienia.
      */
     @Transactional
-    public AuthResponse loginWithGoogle(String idToken) {
+    public AuthResponse loginWithGoogle(String idToken, String clientIp) {
+        String ipKey = "oauth:ip:" + (clientIp == null || clientIp.isBlank() ? "unknown" : clientIp.trim());
+        attemptRateLimiter.ensureAllowed(ipKey, LOGIN_MAX_PER_IP, LOGIN_WINDOW);
+
         var payload = googleIdTokenService.verify(idToken);
         String email = payload.getEmail().toLowerCase();
         String name = (String) payload.get("name");
@@ -332,11 +351,15 @@ public class AuthService {
      * Nie ujawnia istnienia konta – zawsze ten sam komunikat z kontrolera.
      */
     @Transactional
-    public void forgotPassword(String email) {
-        String key = "forgot:" + email.trim().toLowerCase();
-        attemptRateLimiter.check(key, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+    public void forgotPassword(String email, String clientIp) {
+        String emailNorm = email == null ? "" : email.trim().toLowerCase();
+        attemptRateLimiter.check("forgot:" + emailNorm, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW,
+                "Zbyt wiele próśb o reset hasła dla tego adresu. Spróbuj ponownie za kilka minut.");
+        attemptRateLimiter.check("forgot:ip:" + (clientIp == null || clientIp.isBlank() ? "unknown" : clientIp.trim()),
+                FORGOT_MAX_PER_IP, AUTH_CODE_WINDOW,
+                "Zbyt wiele próśb o reset hasła z tej sieci. Spróbuj ponownie za kilka minut.");
 
-        userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
+        userRepository.findByEmailIgnoreCase(emailNorm).ifPresent(user -> {
             String token = generateVerificationToken();
             user.setPasswordResetToken(token);
             user.setPasswordResetExpires(Instant.now().plus(PASSWORD_RESET_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));

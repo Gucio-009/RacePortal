@@ -34,6 +34,7 @@ import pl.raceportal.dto.AuthDtos.VerifyEmailRequest;
 import pl.raceportal.security.AuthCookies;
 import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.service.AuthService;
+import pl.raceportal.web.ClientIp;
 
 /**
  * Auth HTTP: rejestracja, login, cookies httpOnly (access+refresh), logout, profil.
@@ -75,8 +76,10 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
+                                               HttpServletRequest requestHttp,
                                                HttpServletResponse response) {
-        return ResponseEntity.ok(attachCookies(authService.login(request), response));
+        return ResponseEntity.ok(attachCookies(
+                authService.login(request, ClientIp.from(requestHttp)), response));
     }
 
     @GetMapping("/oauth/providers")
@@ -86,13 +89,16 @@ public class AuthController {
 
     @PostMapping("/oauth/google")
     public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request,
+                                                         HttpServletRequest requestHttp,
                                                          HttpServletResponse response) {
-        return ResponseEntity.ok(attachCookies(authService.loginWithGoogle(request.idToken()), response));
+        return ResponseEntity.ok(attachCookies(
+                authService.loginWithGoogle(request.idToken(), ClientIp.from(requestHttp)), response));
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
-        authService.forgotPassword(request.email());
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request,
+                                                           HttpServletRequest requestHttp) {
+        authService.forgotPassword(request.email(), ClientIp.from(requestHttp));
         return ResponseEntity.ok(new MessageResponse(
                 "Jeśli konto istnieje, wysłaliśmy link do ustawienia nowego hasła."));
     }

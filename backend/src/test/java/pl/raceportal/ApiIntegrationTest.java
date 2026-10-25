@@ -31,6 +31,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -151,6 +152,25 @@ class ApiIntegrationTest {
                         .content(body))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error", notNullValue()));
+    }
+
+    /** Pentest: brute-force logowania → 429 po limicie nieudanych prób na konto. */
+    @Test
+    void login_rateLimitsFailedAttemptsWith429() throws Exception {
+        String email = "brute-" + UUID.randomUUID() + "@example.com";
+        String body = objectMapper.writeValueAsString(new LoginPayload(email, "wrong-password"));
+        for (int i = 0; i < 5; i++) {
+            mockMvc.perform(post("/api/auth/login")
+                            .contentType("application/json")
+                            .content(body))
+                    .andExpect(status().isUnauthorized());
+        }
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(body))
+                .andExpect(status().isTooManyRequests())
+                .andExpect(header().string("Retry-After", notNullValue()))
+                .andExpect(jsonPath("$.error", containsString("Zbyt wiele")));
     }
 
     /** Pentest: externalUrl javascript: musi być odrzucony przy zapisie (stored XSS). */

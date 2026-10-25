@@ -51,6 +51,16 @@ public class ApiException extends RuntimeException {
         return new ApiException(HttpStatus.CONFLICT, message);
     }
 
+    public static ApiException tooManyRequests(String message) {
+        return new ApiException(HttpStatus.TOO_MANY_REQUESTS, message);
+    }
+
+    /** 429 z sugerowanym Retry-After (sekundy) w {@code details}. */
+    public static ApiException tooManyRequests(String message, long retryAfterSeconds) {
+        return new ApiException(HttpStatus.TOO_MANY_REQUESTS, message,
+                java.util.Map.of("retryAfterSeconds", Math.max(1, retryAfterSeconds)));
+    }
+
     /** Używane m.in. przy błędach proxy do OSRM / zewnętrznych API. */
     public static ApiException badGateway(String message) {
         return new ApiException(HttpStatus.BAD_GATEWAY, message);
