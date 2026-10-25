@@ -52,8 +52,9 @@ public class MailService {
      * @param to       adres odbiorcy
      * @param subject  temat
      * @param bodyHtml treść (akapity {@code <p>}, {@code <strong>}); owijana w szablon
+     * @return {@code true} gdy SMTP przyjął wiadomość; {@code false} przy błędzie (soft-fail)
      */
-    public void send(String to, String subject, String bodyHtml) {
+    public boolean send(String to, String subject, String bodyHtml) {
         try {
             String html = layout(subject, bodyHtml);
             MimeMessage message = mailSender.createMimeMessage();
@@ -63,8 +64,10 @@ public class MailService {
             helper.setSubject(subject);
             helper.setText(toPlain(bodyHtml), html);
             mailSender.send(message);
+            return true;
         } catch (Exception ex) {
             log.warn("[mail] Failed to send email to {}: {}", to, ex.getMessage());
+            return false;
         }
     }
 

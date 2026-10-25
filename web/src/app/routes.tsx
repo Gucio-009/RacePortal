@@ -120,6 +120,9 @@ const GalleryPage = lazyPage(() =>
 const ForgotPasswordPage = lazyPage(() =>
   import("./pages/ForgotPasswordPage").then((m) => ({ default: m.ForgotPasswordPage })),
 );
+const ResetPasswordPage = lazyPage(() =>
+  import("./pages/ResetPasswordPage").then((m) => ({ default: m.ResetPasswordPage })),
+);
 const VerifyEmailPage = lazyPage(() =>
   import("./pages/VerifyEmailPage").then((m) => ({ default: m.VerifyEmailPage })),
 );
@@ -264,6 +267,7 @@ export const router = createBrowserRouter([
       { path: "login", Component: LoginPage },
       { path: "register", Component: RegisterPage },
       { path: "forgot-password", Component: ForgotPasswordPage },
+      { path: "reset-password/:token", Component: ResetPasswordPage },
       { path: "verify-email", Component: VerifyEmailPage },
       { path: "verify-email/:token", Component: VerifyEmailPage },
       { path: "dashboard", Component: ProtectedDashboard },

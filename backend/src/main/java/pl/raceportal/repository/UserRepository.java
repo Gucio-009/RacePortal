@@ -24,6 +24,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     /** Aktywacja konta / zmiana e-maila po tokenie z linku. */
     Optional<User> findByEmailVerificationCode(String emailVerificationCode);
 
+    /** Reset hasła po tokenie z linku (bez ujawniania e-maila w URL). */
+    Optional<User> findByPasswordResetToken(String passwordResetToken);
+
     /** Unikalność email przy rejestracji. */
     boolean existsByEmailIgnoreCase(String email);
 

@@ -44,8 +44,7 @@ import java.time.temporal.ChronoUnit;
  * login wymaga {@code emailVerified}; rejestracja organizatora tworzy też wniosek PENDING
  * (rola ORGANIZER dopiero po akceptacji admina); Google – find-or-create, email już verified.
  * <p>
- * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu tokenów;
- * pełny flow resetu hasła z tokenem zamiast MVP maila.
+ * Pomysł (alt): Keycloak zamiast własnego auth; Redis do rate-limitu tokenów.
  * </p>
  */
 @Service
@@ -55,6 +54,9 @@ public class AuthService {
 
     /** Czas ważności linku aktywacyjnego (minuty). */
     private static final int VERIFICATION_TOKEN_TTL_MINUTES = 60;
+
+    /** Czas ważności linku resetu hasła (minuty) — krótki TTL (pentest #1). */
+    private static final int PASSWORD_RESET_TOKEN_TTL_MINUTES = 30;
 
     private static final int VERIFY_MAX_ATTEMPTS = 10;
     private static final int RESEND_MAX_ATTEMPTS = 3;
@@ -303,7 +305,9 @@ public class AuthService {
     }
 
     /**
-     * Reset hasła: generuje silne tymczasowe hasło, zapisuje hash, wysyła mail (soft-fail SMTP).
+     * Start resetu hasła: jednorazowy link (TTL {@link #PASSWORD_RESET_TOKEN_TTL_MINUTES} min).
+     * Hasło NIE jest zmieniane, dopóki użytkownik nie wyśle nowego na {@link #resetPassword}.
+     * Soft-fail SMTP: przy błędzie dostawy hasło bez zmian (token wygasa / kolejna prośba nadpisuje).
      * Nie ujawnia istnienia konta – zawsze ten sam komunikat z kontrolera.
      */
     @Transactional
@@ -312,17 +316,57 @@ public class AuthService {
         attemptRateLimiter.check(key, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
         userRepository.findByEmailIgnoreCase(email).ifPresent(user -> {
-            String tempPassword = generateTemporaryPassword();
-            user.setPasswordHash(passwordEncoder.encode(tempPassword));
+            String token = generateVerificationToken();
+            user.setPasswordResetToken(token);
+            user.setPasswordResetExpires(Instant.now().plus(PASSWORD_RESET_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
             userRepository.save(user);
 
             String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
-            mailService.send(user.getEmail(), "Tymczasowe hasło RACEPORTAL",
+            String link = publicBaseUrl + "/reset-password/" + token;
+            String safeLink = escapeHtml(link);
+            boolean sent = mailService.send(user.getEmail(), "Reset hasła RACEPORTAL",
                     "<p>Cześć " + safeName + ",</p>" +
-                            "<p>Otrzymaliśmy prośbę o reset hasła. Twoje tymczasowe hasło:</p>" +
-                            mailService.codeBox(tempPassword) +
-                            "<p>Zaloguj się nim, a następnie zmień hasło w <strong>Dane konta</strong>.</p>");
+                            "<p>Otrzymaliśmy prośbę o reset hasła. Kliknij poniższy przycisk, aby ustawić nowe hasło." +
+                            " Link jest jednorazowy i ważny przez " + PASSWORD_RESET_TOKEN_TTL_MINUTES + " minut.</p>" +
+                            "<p style=\"margin:18px 0;\">" +
+                            "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
+                            "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
+                            "text-decoration:none;padding:14px 22px;border-radius:8px;\">USTAW NOWE HASŁO</a></p>" +
+                            "<p style=\"font-size:13px;color:#9ca3af;\">Jeśli nie prosiłeś o reset, zignoruj tę wiadomość – " +
+                            "hasło pozostaje bez zmian.<br>Jeśli przycisk nie działa, wklej adres:<br>" +
+                            "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>");
+            if (!sent) {
+                log.warn("Password reset mail failed for user {}; password unchanged", user.getId());
+            }
         });
+    }
+
+    /**
+     * Kończy reset: waliduje jednorazowy token, ustawia nowe hasło, kasuje token.
+     */
+    @Transactional
+    public void resetPassword(String rawToken, String newPassword) {
+        String token = rawToken == null ? "" : rawToken.trim();
+        attemptRateLimiter.check("reset-token:" + token, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
+
+        if (token.isBlank()) {
+            throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
+        }
+
+        User user = userRepository.findByPasswordResetToken(token)
+                .orElseThrow(() -> ApiException.badRequest("Nieprawidłowy lub wygasły link"));
+
+        if (user.getPasswordResetExpires() == null
+                || Instant.now().isAfter(user.getPasswordResetExpires())
+                || user.getPasswordResetToken() == null
+                || !user.getPasswordResetToken().equals(token)) {
+            throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetExpires(null);
+        userRepository.save(user);
     }
 
     /**
@@ -474,31 +518,6 @@ public class AuthService {
             trimmed = trimmed.substring(0, trimmed.length() - 1);
         }
         return trimmed;
-    }
-
-    /** Silne tymczasowe hasło (wielka, mała, cyfra, znak specjalny) – jak przy rejestracji. */
-    private String generateTemporaryPassword() {
-        final String upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-        final String lower = "abcdefghijkmnopqrstuvwxyz";
-        final String digits = "23456789";
-        final String special = "!@#$%&*";
-        StringBuilder sb = new StringBuilder(12);
-        sb.append(upper.charAt(random.nextInt(upper.length())));
-        sb.append(lower.charAt(random.nextInt(lower.length())));
-        sb.append(digits.charAt(random.nextInt(digits.length())));
-        sb.append(special.charAt(random.nextInt(special.length())));
-        String all = upper + lower + digits + special;
-        for (int i = 0; i < 8; i++) {
-            sb.append(all.charAt(random.nextInt(all.length())));
-        }
-        char[] chars = sb.toString().toCharArray();
-        for (int i = chars.length - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            char tmp = chars[i];
-            chars[i] = chars[j];
-            chars[j] = tmp;
-        }
-        return new String(chars);
     }
 
     private static String escapeHtml(String value) {

@@ -104,6 +104,14 @@ public class User {
     @Column(name = "pending_email", length = 190)
     private String pendingEmail;
 
+    /** Jednorazowy token resetu hasła (link w mailu); hasło zmienia się dopiero po użyciu. */
+    @Column(name = "password_reset_token", length = 64)
+    private String passwordResetToken;
+
+    /** Termin ważności tokenu resetu hasła. */
+    @Column(name = "password_reset_expires")
+    private Instant passwordResetExpires;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -258,6 +266,22 @@ public class User {
 
     public void setPendingEmail(String pendingEmail) {
         this.pendingEmail = pendingEmail;
+    }
+
+    public String getPasswordResetToken() {
+        return passwordResetToken;
+    }
+
+    public void setPasswordResetToken(String passwordResetToken) {
+        this.passwordResetToken = passwordResetToken;
+    }
+
+    public Instant getPasswordResetExpires() {
+        return passwordResetExpires;
+    }
+
+    public void setPasswordResetExpires(Instant passwordResetExpires) {
+        this.passwordResetExpires = passwordResetExpires;
     }
 
     public Instant getCreatedAt() {

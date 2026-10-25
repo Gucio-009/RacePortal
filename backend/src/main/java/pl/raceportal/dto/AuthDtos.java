@@ -107,6 +107,15 @@ public final class AuthDtos {
     ) {
     }
 
+    /** Ustawienie nowego hasła po kliknięciu linku z maila (token w ścieżce / body). */
+    public record ResetPasswordRequest(
+            @NotBlank @Size(min = 20, max = 64) String token,
+            @NotBlank @Size(min = 8, max = 100)
+            @Pattern(regexp = STRONG_PASSWORD_REGEXP, message = STRONG_PASSWORD_MESSAGE)
+            String newPassword
+    ) {
+    }
+
     /** Start zmiany e-maila — kod idzie na nowy adres. */
     public record RequestEmailChangeRequest(
             @NotBlank @Email @Size(max = 190) String newEmail

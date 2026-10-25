@@ -1,0 +1,155 @@
+/**
+ * ResetPasswordPage — ustawienie nowego hasła po kliknięciu linku z maila.
+ *
+ * Deep link: `/reset-password/:token` (token w ścieżce, jak verify-email).
+ * Hasło zmienia się dopiero po submit; stary login działa do tego momentu.
+ */
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router";
+import { Flag, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { isStrongPassword, STRONG_PASSWORD_HINT } from "../lib/profileValidation";
+import { HERO_BG_TRACK } from "../lib/types";
+import { toast } from "sonner";
+
+export function ResetPasswordPage() {
+  const { token: pathToken } = useParams();
+  const token = pathToken?.trim() ?? "";
+  const { resetPassword } = useAuth();
+  const navigate = useNavigate();
+
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const tokenOk = token.length >= 20;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tokenOk) {
+      toast.error("Brak prawidłowego linku resetującego");
+      return;
+    }
+    if (!isStrongPassword(password)) {
+      toast.error(STRONG_PASSWORD_HINT);
+      return;
+    }
+    if (password !== confirmPassword) {
+      toast.error("Hasła nie są takie same");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const result = await resetPassword(token, password);
+      if (result.ok) {
+        toast.success(result.message);
+        navigate("/login", { replace: true });
+      } else {
+        toast.error(result.message);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center px-4 bg-cover bg-center"
+      style={{
+        backgroundImage: `linear-gradient(rgba(18, 18, 18, 0.9), rgba(18, 18, 18, 0.9)), url('${HERO_BG_TRACK}')`,
+      }}
+    >
+      <div className="w-full max-w-md" data-reveal="">
+        <div className="text-center mb-8">
+          <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
+          <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
+            NOWE <span className="text-[var(--race-accent)]">HASŁO</span>
+          </h1>
+          <p className="text-[#9ca3af]">Ustaw hasło do konta RacePortal</p>
+        </div>
+
+        <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
+          {!tokenOk ? (
+            <div className="text-center space-y-4">
+              <p className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
+                Link jest nieprawidłowy lub niekompletny. Poproś o nowy reset hasła.
+              </p>
+              <Link to="/forgot-password">
+                <Button
+                  className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
+                  style={{ fontWeight: 800 }}
+                >
+                  Wyślij nowy link
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
+                  Nowe hasło
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    className="pl-10 pr-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--race-muted)]"
+                    aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+                <p className="text-[var(--race-muted)] text-xs">{STRONG_PASSWORD_HINT}</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
+                  Powtórz hasło
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
+                  <Input
+                    id="confirm"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    className="pl-10 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12"
+                  />
+                </div>
+              </div>
+              <Button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
+                style={{ fontWeight: 800 }}
+              >
+                {isLoading ? "ZAPISYWANIE..." : "ZMIEŃ HASŁO"}
+              </Button>
+              <Link
+                to="/login"
+                className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Wróć do logowania
+              </Link>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

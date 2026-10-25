@@ -18,6 +18,7 @@ import pl.raceportal.dto.AuthDtos.ForgotPasswordRequest;
 import pl.raceportal.dto.AuthDtos.GoogleLoginRequest;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
 import pl.raceportal.dto.AuthDtos.MessageResponse;
+import pl.raceportal.dto.AuthDtos.ResetPasswordRequest;
 import pl.raceportal.dto.AuthDtos.OAuthProvidersResponse;
 import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
 import pl.raceportal.dto.AuthDtos.RegisterRequest;
@@ -93,12 +94,19 @@ public class AuthController {
         return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
     }
 
-    /** Forgot password — tymczasowe hasło mailem; soft-fail, bez ujawniania istnienia konta. */
+    /** Forgot password — link resetujący mailem; hasło bez zmian do kliknięcia; anti-enumeration. */
     @PostMapping("/forgot-password")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.email());
         return ResponseEntity.ok(new MessageResponse(
-                "Jeśli konto istnieje, wysłaliśmy tymczasowe hasło na podany adres."));
+                "Jeśli konto istnieje, wysłaliśmy link do ustawienia nowego hasła."));
+    }
+
+    /** Ustawienie nowego hasła tokenem z maila (jednorazowy, krótki TTL). */
+    @PostMapping("/reset-password")
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok(new MessageResponse("Hasło zostało zmienione. Możesz się zalogować."));
     }
 
     /** Profil zalogowanego użytkownika (wymaga JWT). */

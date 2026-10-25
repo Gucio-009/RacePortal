@@ -146,6 +146,54 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
 
+    /**
+     * Pentest #1: forgot-password nie zmienia hasła; dopiero reset-password z tokenem z maila.
+     */
+    @Test
+    void forgotPassword_doesNotChangePasswordUntilResetTokenUsed() throws Exception {
+        String email = "reset-" + UUID.randomUUID() + "@example.com";
+        String oldPassword = "OldPass1!";
+        String newPassword = "NewPass1!";
+
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new RegisterPayload("ResetUser", email, oldPassword))))
+                .andExpect(status().isCreated());
+
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        user.setEmailVerified(true);
+        user.setEmailVerificationCode(null);
+        user.setEmailVerificationExpires(null);
+        userRepository.save(user);
+
+        assertNotBlank(login(email, oldPassword));
+
+        mockMvc.perform(post("/api/auth/forgot-password")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new ForgotPasswordPayload(email))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", containsString("link")));
+
+        assertNotBlank(login(email, oldPassword));
+
+        user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        assertNotBlank(user.getPasswordResetToken());
+
+        mockMvc.perform(post("/api/auth/reset-password")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new ResetPasswordPayload(user.getPasswordResetToken(), newPassword))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/auth/login")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new LoginPayload(email, oldPassword))))
+                .andExpect(status().isUnauthorized());
+
+        assertNotBlank(login(email, newPassword));
+    }
+
     @Test
     void me_withoutToken_returns401() throws Exception {
         mockMvc.perform(get("/api/auth/me"))
@@ -995,6 +1043,12 @@ class ApiIntegrationTest {
     }
 
     private record LoginPayload(String email, String password) {
+    }
+
+    private record ForgotPasswordPayload(String email) {
+    }
+
+    private record ResetPasswordPayload(String token, String newPassword) {
     }
 
     private record RegisterPayload(String username, String email, String password) {

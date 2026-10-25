@@ -1,16 +1,13 @@
 /**
- * ForgotPasswordPage — prośba o tymczasowe hasło mailem.
+ * ForgotPasswordPage — prośba o link resetujący hasło.
  *
  * Cel: użytkownik podaje e-mail; AuthContext.forgotPassword woła API (bez ujawniania
- * czy konto istnieje). Backend generuje silne tymczasowe hasło i wysyła SMTP.
+ * czy konto istnieje). Backend wysyła jednorazowy link; hasło bez zmian do kliknięcia.
  * Wzorce: kontrolowany formularz, toast, Link do `/login`.
  * Auth: publiczna; nie ustawia JWT. Theme: `--race-accent`, `font-display`.
  * Docker/nginx: deep link `/forgot-password` → SPA try_files.
- *
- * Pomysł (alt): token w URL `/reset-password?token=` na tej samej stronie;
- * Auth.js email provider; rate-limit UI + CAPTCHA.
  */
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { Flag, Mail, ArrowLeft } from "lucide-react";
@@ -26,7 +23,6 @@ export function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false);
   const { forgotPassword } = useAuth();
 
-  /** Wywołanie resetu — backend wysyła tymczasowe hasło (SMTP). */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -67,10 +63,14 @@ export function ForgotPasswordPage() {
               </p>
               <p className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
                 Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje,
-                wysłaliśmy tymczasowe hasło. Zaloguj się nim i zmień hasło w Dane konta.
+                wysłaliśmy link do ustawienia nowego hasła (ważny 30 minut). Do kliknięcia linku możesz
+                logować się dotychczasowym hasłem.
               </p>
               <Link to="/login">
-                <Button className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12" style={{ fontWeight: 800 }}>
+                <Button
+                  className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
+                  style={{ fontWeight: 800 }}
+                >
                   Wróć do logowania
                 </Button>
               </Link>
@@ -100,9 +100,12 @@ export function ForgotPasswordPage() {
                 className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
-                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ HASŁO"}
+                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ LINK"}
               </Button>
-              <Link to="/login" className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]">
+              <Link
+                to="/login"
+                className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
+              >
                 <ArrowLeft className="w-4 h-4" />
                 Wróć do logowania
               </Link>

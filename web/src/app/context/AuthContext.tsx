@@ -66,6 +66,7 @@ interface AuthContextType {
     newPassword: string,
   ) => Promise<{ ok: boolean; message?: string }>;
   forgotPassword: (email: string) => Promise<{ ok: boolean; message: string }>;
+  resetPassword: (token: string, newPassword: string) => Promise<{ ok: boolean; message: string }>;
   requestEmailChange: (newEmail: string) => Promise<{ ok: boolean; message?: string }>;
   confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
   /** Odświeża JWT + user z DB (po nadaniu roli ORGANIZER / zmianie roli). */
@@ -301,6 +302,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const resetPassword = async (token: string, newPassword: string) => {
+    try {
+      const res = await api.post<{ message: string }>("/api/auth/reset-password", {
+        token,
+        newPassword,
+      });
+      return { ok: true, message: res.message };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się zmienić hasła";
+      return { ok: false, message };
+    }
+  };
+
   const requestEmailChange = async (newEmail: string) => {
     try {
       const res = await api.post<{ message: string }>("/api/auth/me/email-change", { newEmail });
@@ -350,6 +364,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updateProfile,
         changePassword,
         forgotPassword,
+        resetPassword,
         requestEmailChange,
         confirmEmailChange,
         refreshSession,
