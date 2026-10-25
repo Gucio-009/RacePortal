@@ -1,23 +1,13 @@
 /**
- * AuthContext — sesja użytkownika oparta o JWT RacePortal.
+ * AuthContext — sesja użytkownika (httpOnly cookies rp_at / rp_rt).
  *
- * Token: klucz `raceportal_token` w localStorage (`lib/api` TOKEN_KEY).
- * Bootstrap przy mount: jeśli jest token → GET `/api/auth/me`; błąd → wyczyszczenie sesji.
- * persistAuth(user, token): ustawia state + zapis/usunięcie JWT.
- *
- * Login: POST `/api/auth/login` → { token, user }.
- * Register: może zwrócić `requiresVerification` (kod e-mail) zanim wyda JWT.
- * Google: `loginWithGoogle(idToken)` → POST `/api/auth/oauth/google` (wymiana idToken GSI
- * na JWT RacePortal) — patrz GoogleSignInButton.
- *
- * isAuthenticated = !!user (nie sam fakt posiadania tokena — dopiero po udanym /me lub loginie).
- * AuthGate w routes.tsx czeka na `isLoading` zanim zdecyduje o redirect.
- *
- * Pomysł (alt): httpOnly cookie zamiast localStorage; refresh token / sliding session.
+ * Bootstrap: GET `/api/auth/me` z credentials (bez localStorage JWT).
+ * Login / verify / Google ustawiają cookies po stronie API.
+ * Logout: POST `/api/auth/logout` + clear state.
  */
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { api, setToken, getToken, setOnAuthExpired, ApiError } from "../lib/api";
+import { api, clearLegacyToken, setOnAuthExpired, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { User } from "../lib/types";
 
@@ -69,7 +59,6 @@ interface AuthContextType {
   resetPassword: (token: string, newPassword: string) => Promise<{ ok: boolean; message: string }>;
   requestEmailChange: (newEmail: string) => Promise<{ ok: boolean; message?: string }>;
   confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
-  /** Odświeża JWT + user z DB (po nadaniu roli ORGANIZER / zmianie roli). */
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   isAuthenticated: boolean;
 }
@@ -88,26 +77,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  /** Zapis sesji: user w React state + JWT w localStorage (lub clear przy null). */
-  const persistAuth = useCallback((nextUser: User | null, token?: string) => {
+  const persistAuth = useCallback((nextUser: User | null) => {
     setUser(nextUser);
-    if (token) setToken(token);
-    if (!nextUser) setToken(null);
+    if (!nextUser) clearLegacyToken();
   }, []);
 
-  // Bootstrap /me poza critical path LCP (idle); bez tokena od razu.
   useEffect(() => {
-    if (!getToken()) {
-      setIsLoading(false);
-      return;
-    }
+    clearLegacyToken();
     return deferUntilIdle(() => {
       void (async () => {
         try {
           const me = await api.get<User>("/api/auth/me");
           setUser(me);
         } catch {
-          setToken(null);
           setUser(null);
         } finally {
           setIsLoading(false);
@@ -116,38 +98,36 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }, 2000);
   }, []);
 
-  // 401 z api.ts → wyczyść user (token już usunięty)
   useEffect(() => {
     setOnAuthExpired(() => setUser(null));
     return () => setOnAuthExpired(null);
   }, []);
 
-  // Po APPROVE wniosku org. w innej karcie — odśwież rolę USER przy powrocie do okna
   useEffect(() => {
     let lastAt = 0;
     const onVisible = () => {
       if (document.visibilityState !== "visible") return;
-      if (!getToken()) return;
+      if (!user) return;
       const now = Date.now();
       if (now - lastAt < 15_000) return;
       lastAt = now;
       void (async () => {
         try {
-          const res = await api.post<{ token: string; user: User }>("/api/auth/refresh");
-          persistAuth(res.user, res.token);
+          const res = await api.post<{ user: User }>("/api/auth/refresh", {});
+          persistAuth(res.user);
         } catch {
-          /* ignore — 401 obsługuje interceptor */
+          /* 401 → interceptor */
         }
       })();
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => document.removeEventListener("visibilitychange", onVisible);
-  }, [persistAuth]);
+  }, [persistAuth, user]);
 
   const login = async (email: string, password: string) => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/login", { email, password });
-      persistAuth(res.user, res.token);
+      const res = await api.post<{ user: User }>("/api/auth/login", { email, password });
+      persistAuth(res.user);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nieprawidłowy email lub hasło";
@@ -174,7 +154,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         requiresVerification?: boolean;
         email?: string;
         message?: string;
-        token?: string;
         user?: User;
       }>("/api/auth/register", {
         username,
@@ -189,7 +168,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         pzmLicense: profile?.pzmLicense?.trim() || undefined,
       });
 
-      // Ścieżka z weryfikacją e-mail (MailHog w Docker) — JWT dopiero po verifyEmail
       if (res.requiresVerification) {
         return {
           ok: true,
@@ -199,9 +177,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         };
       }
 
-      if (res.token && res.user) {
-        persistAuth(res.user, res.token);
-      }
+      if (res.user) persistAuth(res.user);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się utworzyć konta";
@@ -211,11 +187,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const verifyEmail = async (token: string, email?: string) => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/verify-email", {
+      const res = await api.post<{ user: User }>("/api/auth/verify-email", {
         token,
         ...(email ? { email } : {}),
       });
-      persistAuth(res.user, res.token);
+      persistAuth(res.user);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nieprawidłowy lub wygasły link";
@@ -233,11 +209,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  /** Wymiana Google idToken (GSI credential) na JWT RacePortal. */
   const loginWithGoogle = async (idToken: string) => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/oauth/google", { idToken });
-      persistAuth(res.user, res.token);
+      const res = await api.post<{ user: User }>("/api/auth/oauth/google", { idToken });
+      persistAuth(res.user);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się zalogować przez Google";
@@ -245,7 +220,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const logout = () => persistAuth(null);
+  const logout = () => {
+    void (async () => {
+      try {
+        await api.post("/api/auth/logout", {});
+      } catch {
+        /* ignore */
+      } finally {
+        persistAuth(null);
+      }
+    })();
+  };
 
   const updateProfile = async (data: {
     username?: string;
@@ -284,6 +269,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         currentPassword,
         newPassword,
       });
+      persistAuth(null);
       return { ok: true, message: res.message };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się zmienić hasła";
@@ -327,10 +313,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const confirmEmailChange = async (token: string) => {
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/me/email-change/confirm", {
-        token,
-      });
-      persistAuth(res.user, res.token);
+      const res = await api.post<{ user: User }>("/api/auth/me/email-change/confirm", { token });
+      persistAuth(res.user);
       return { ok: true, message: "Adres e-mail został zmieniony" };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się potwierdzić zmiany e-maila";
@@ -339,10 +323,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const refreshSession = useCallback(async () => {
-    if (!getToken()) return { ok: false, message: "Brak sesji" };
     try {
-      const res = await api.post<{ token: string; user: User }>("/api/auth/refresh");
-      persistAuth(res.user, res.token);
+      const res = await api.post<{ user: User }>("/api/auth/refresh", {});
+      persistAuth(res.user);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się odświeżyć sesji";

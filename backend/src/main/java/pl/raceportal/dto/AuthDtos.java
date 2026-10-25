@@ -178,10 +178,20 @@ public final class AuthDtos {
     ) {
     }
 
-    /** Sukces logowania / verify / OAuth — Bearer token + user. */
+    /**
+     * Sukces logowania / verify / OAuth — access + refresh (+ user).
+     * Web trzyma je w httpOnly cookies; body zostaje dla klientów bez cookie (np. testy).
+     */
     public record AuthResponse(
             String token,
+            String refreshToken,
             UserDto user
+    ) {
+    }
+
+    /** Opcjonalny refresh w body (mobile / gdy brak cookie). */
+    public record RefreshRequest(
+            String refreshToken
     ) {
     }
 

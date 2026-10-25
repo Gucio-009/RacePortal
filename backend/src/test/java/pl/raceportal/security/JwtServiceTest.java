@@ -25,7 +25,7 @@ class JwtServiceTest {
 
   @BeforeEach
   void setUp() {
-    jwtService = new JwtService("unit-test-secret-value-please-change", 7);
+    jwtService = new JwtService("unit-test-secret-value-please-change", 15);
   }
 
   /** Round-trip: User → token → claims → UserPrincipal z rolą ADMIN. */

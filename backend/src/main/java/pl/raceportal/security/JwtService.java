@@ -18,32 +18,21 @@ import java.time.Instant;
 import java.util.Date;
 
 /**
- * Serwis wystawiania i weryfikacji tokenów JWT (JJWT).
- * <p>
- * Rola w architekturze: po udanym logowaniu / OAuth generuje Bearer token;
- * {@link JwtAuthFilter} parsuje claims i buduje {@link UserPrincipal}.
- * Technologie: JJWT (HMAC-SHA), Spring Boot ({@code app.jwt.secret}, expiration).
- * </p>
- * Claims: {@code id}, {@code email}, {@code username}, {@code role} — rola trafia
- * do authorities jako {@code ROLE_*}. Sekret jest hashowany SHA-256 do klucza HMAC.
- * <p>
- * Pomysł (alt): Keycloak / Spring Authorization Server; refresh tokens w Redis;
- * asymetryczne RS256 zamiast HMAC.
- * </p>
+ * Krótko żyjące access JWT (minuty) z claimem {@code tv} (tokenVersion użytkownika).
+ * Refresh tokeny są osobne (DB + cookie) — patrz {@code RefreshTokenService}.
  */
 @Service
 public class JwtService {
 
     private final SecretKey key;
-    private final long expirationMillis;
+    private final Duration accessTtl;
 
     public JwtService(@Value("${app.jwt.secret}") String secret,
-                       @Value("${app.jwt.expiration-days:7}") long expirationDays) {
+                       @Value("${app.jwt.access-token-minutes:15}") long accessTokenMinutes) {
         this.key = Keys.hmacShaKeyFor(sha256(secret));
-        this.expirationMillis = Duration.ofDays(expirationDays).toMillis();
+        this.accessTtl = Duration.ofMinutes(Math.max(1, accessTokenMinutes));
     }
 
-    /** Normalizuje sekret konfiguracyjny do 256-bitowego klucza HMAC. */
     private static byte[] sha256(String value) {
         try {
             return MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
@@ -52,9 +41,11 @@ public class JwtService {
         }
     }
 
-    /**
-     * Generuje podpisany JWT dla zalogowanego użytkownika (subject = id użytkownika).
-     */
+    public Duration getAccessTtl() {
+        return accessTtl;
+    }
+
+    /** Access token — subject = user id, claim tv = tokenVersion. */
     public String generateToken(User user) {
         Instant now = Instant.now();
         return Jwts.builder()
@@ -63,15 +54,13 @@ public class JwtService {
                 .claim("email", user.getEmail())
                 .claim("username", user.getUsername())
                 .claim("role", user.getRole().name())
+                .claim("tv", user.getTokenVersion())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(expirationMillis)))
+                .expiration(Date.from(now.plus(accessTtl)))
                 .signWith(key)
                 .compact();
     }
 
-    /**
-     * Weryfikuje podpis i ważność tokenu; rzuca {@link JwtException} przy błędzie.
-     */
     public Claims parseClaims(String token) throws JwtException {
         return Jwts.parser()
                 .verifyWith(key)
@@ -80,10 +69,11 @@ public class JwtService {
                 .getPayload();
     }
 
-    /**
-     * Mapuje claims JWT na {@link UserPrincipal} używany w SecurityContext
-     * (bez passwordHash — nie jest potrzebny w filtrze).
-     */
+    public int tokenVersion(Claims claims) {
+        Number tv = claims.get("tv", Number.class);
+        return tv == null ? 0 : tv.intValue();
+    }
+
     public UserPrincipal toPrincipal(Claims claims) {
         String id = claims.get("id", String.class);
         String email = claims.get("email", String.class);

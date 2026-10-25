@@ -66,6 +66,7 @@ public class AuthService {
     private final OrganizerApplicationRepository organizerApplicationRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
     private final MailService mailService;
     private final GoogleIdTokenService googleIdTokenService;
     private final AttemptRateLimiter attemptRateLimiter;
@@ -73,13 +74,15 @@ public class AuthService {
     private final String publicBaseUrl;
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
-                        PasswordEncoder passwordEncoder, JwtService jwtService, MailService mailService,
-                        GoogleIdTokenService googleIdTokenService, AttemptRateLimiter attemptRateLimiter,
+                        PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
+                        MailService mailService, GoogleIdTokenService googleIdTokenService,
+                        AttemptRateLimiter attemptRateLimiter,
                         @Value("${app.public-base-url:https://raceportal.pl}") String publicBaseUrl) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
         this.mailService = mailService;
         this.googleIdTokenService = googleIdTokenService;
         this.attemptRateLimiter = attemptRateLimiter;
@@ -145,9 +148,7 @@ public class AuthService {
 
         User user = resolveUserForToken(email, token);
         applyVerificationToken(user, token);
-
-        String jwt = jwtService.generateToken(user);
-        return new AuthResponse(jwt, toUserDto(user));
+        return issueSession(user);
     }
 
     /**
@@ -163,9 +164,9 @@ public class AuthService {
     }
 
     /**
-     * Logowanie email+hasło: BCrypt match, wymaga zweryfikowanego e-mail, zwraca JWT.
+     * Logowanie email+hasło: BCrypt match, wymaga zweryfikowanego e-mail, zwraca access+refresh.
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailIgnoreCase(request.email())
                 .orElseThrow(() -> ApiException.unauthorized("Nieprawidłowy email lub hasło"));
@@ -179,8 +180,7 @@ public class AuthService {
                     "Aktywuj konto linkiem z e-maila przed zalogowaniem – sprawdź skrzynkę lub poproś o nowy link.");
         }
 
-        String token = jwtService.generateToken(user);
-        return new AuthResponse(token, toUserDto(user));
+        return issueSession(user);
     }
 
     public boolean isGoogleOAuthEnabled() {
@@ -228,8 +228,7 @@ public class AuthService {
             user = userRepository.save(user);
         }
 
-        String token = jwtService.generateToken(user);
-        return new AuthResponse(token, toUserDto(user));
+        return issueSession(user);
     }
 
     /** Generuje unikalny username z nazwy Google lub lokalnej części emaila. */
@@ -267,13 +266,34 @@ public class AuthService {
     }
 
     /**
-     * Odświeża JWT na podstawie aktualnej roli w DB (np. po APPROVE wniosku organizatora).
+     * Rotacja refresh tokena → nowy access + nowy refresh (stary unieważniony).
+     * Reuse starego refresh po rotacji unieważnia wszystkie sesje użytkownika.
      */
-    @Transactional(readOnly = true)
-    public AuthResponse refreshSession(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
-        return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
+    @Transactional
+    public AuthResponse refreshSession(String rawRefreshToken) {
+        var rotated = refreshTokenService.rotate(rawRefreshToken);
+        String access = jwtService.generateToken(rotated.user());
+        return new AuthResponse(access, rotated.rawRefresh(), toUserDto(rotated.user()));
+    }
+
+    /**
+     * Wylogowanie: revoke wszystkie refresh użytkownika + bump tokenVersion
+     * (access JWT przestaje działać od razu).
+     */
+    @Transactional
+    public void logout(String userIdOrNull, String rawRefreshToken) {
+        User user = null;
+        if (userIdOrNull != null && !userIdOrNull.isBlank()) {
+            user = userRepository.findById(userIdOrNull).orElse(null);
+        }
+        if (user == null && rawRefreshToken != null && !rawRefreshToken.isBlank()) {
+            user = refreshTokenService.findUserByRaw(rawRefreshToken).orElse(null);
+        }
+        if (user != null) {
+            refreshTokenService.revokeAllAndBump(user);
+        } else if (rawRefreshToken != null) {
+            refreshTokenService.revokeRaw(rawRefreshToken);
+        }
     }
 
     @Transactional
@@ -302,6 +322,7 @@ public class AuthService {
         }
         user.setPasswordHash(passwordEncoder.encode(request.newPassword()));
         userRepository.save(user);
+        refreshTokenService.revokeAllAndBump(user);
     }
 
     /**
@@ -367,6 +388,7 @@ public class AuthService {
         user.setPasswordResetToken(null);
         user.setPasswordResetExpires(null);
         userRepository.save(user);
+        refreshTokenService.revokeAllAndBump(user);
     }
 
     /**
@@ -404,7 +426,22 @@ public class AuthService {
             throw ApiException.badRequest("Brak oczekującej zmiany e-maila");
         }
         applyVerificationToken(user, token == null ? "" : token.trim());
-        return new AuthResponse(jwtService.generateToken(user), toUserDto(user));
+        return issueSession(user);
+    }
+
+    /** Access JWT + nowy refresh (do cookie / body). */
+    private AuthResponse issueSession(User user) {
+        String access = jwtService.generateToken(user);
+        String refresh = refreshTokenService.issue(user);
+        return new AuthResponse(access, refresh, toUserDto(user));
+    }
+
+    public Duration accessTokenTtl() {
+        return jwtService.getAccessTtl();
+    }
+
+    public Duration refreshTokenTtl() {
+        return refreshTokenService.getRefreshTtl();
     }
 
     /** Tworzy użytkownika z {@code emailVerified=false} i zahashowanym hasłem. */

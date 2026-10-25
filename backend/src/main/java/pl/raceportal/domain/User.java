@@ -112,6 +112,13 @@ public class User {
     @Column(name = "password_reset_expires")
     private Instant passwordResetExpires;
 
+    /**
+     * Wersja sesji JWT — bump przy zmianie hasła / wylogowaniu unieważnia stare access tokeny
+     * (claim {@code tv} musi się zgadzać).
+     */
+    @Column(name = "token_version", nullable = false)
+    private int tokenVersion = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -282,6 +289,14 @@ public class User {
 
     public void setPasswordResetExpires(Instant passwordResetExpires) {
         this.passwordResetExpires = passwordResetExpires;
+    }
+
+    public int getTokenVersion() {
+        return tokenVersion;
+    }
+
+    public void setTokenVersion(int tokenVersion) {
+        this.tokenVersion = tokenVersion;
     }
 
     public Instant getCreatedAt() {

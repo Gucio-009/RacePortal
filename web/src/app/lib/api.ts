@@ -4,19 +4,13 @@
  * Baza URL: `import.meta.env.VITE_API_URL` (Vite); puste = relative `/api/...`
  * (proxy dev albo same-origin za nginx w Docker).
  *
- * Auth: Bearer JWT z localStorage (`raceportal_token` / TOKEN_KEY).
- * getToken / setToken — używane przez AuthContext.persistAuth.
- *
- * ApiError: status + message (+ opcjonalne details walidacji Bean Validation).
- * 204 No Content → `undefined` (DELETE bez body).
- *
- * 401 przy obecnym Bearer → clear token + opcjonalny handler (AuthContext logout UI).
- *
- * Pomysł (alt): axios / ky; OpenAPI generated client; httpOnly cookie.
+ * Auth: httpOnly cookies (`rp_at` / `rp_rt`) + credentials:include.
+ * Legacy `raceportal_token` w localStorage jest kasowany przy starcie.
+ * Przy 401: jedna próba POST /api/auth/refresh, potem onAuthExpired.
  */
 
 const API_URL = import.meta.env.VITE_API_URL || "";
-/** Klucz JWT w localStorage — ten sam kontrakt co mobile / Guidelines.md. */
+/** Legacy — tylko do wyczyszczenia starych sesji XSS-exposed. */
 export const TOKEN_KEY = "raceportal_token";
 
 export class ApiError extends Error {
@@ -31,24 +25,24 @@ export class ApiError extends Error {
   }
 }
 
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-
-export function setToken(token: string | null) {
-  if (token) localStorage.setItem(TOKEN_KEY, token);
-  else localStorage.removeItem(TOKEN_KEY);
+/** Usuwa stary JWT z localStorage (pentest #2). */
+export function clearLegacyToken() {
+  try {
+    localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* private mode */
+  }
 }
 
 type AuthExpiredHandler = () => void;
 let onAuthExpired: AuthExpiredHandler | null = null;
+let refreshInFlight: Promise<boolean> | null = null;
 
-/** AuthContext rejestruje handler — czyści user state po wygaśnięciu JWT. */
+/** AuthContext rejestruje handler — czyści user state po wygaśnięciu sesji. */
 export function setOnAuthExpired(handler: AuthExpiredHandler | null) {
   onAuthExpired = handler;
 }
 
-/** Składa czytelny komunikat z `error` + mapy `details` (pola formularza). */
 function formatApiError(error?: string, details?: Record<string, string>): string {
   const base = error || "Żądanie nie powiodło się";
   if (!details || Object.keys(details).length === 0) return base;
@@ -58,8 +52,33 @@ function formatApiError(error?: string, details?: Record<string, string>): strin
   return `${base} (${fields})`;
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = getToken();
+async function tryRefreshSession(): Promise<boolean> {
+  if (!refreshInFlight) {
+    refreshInFlight = (async () => {
+      try {
+        const res = await fetch(`${API_URL}/api/auth/refresh`, {
+          method: "POST",
+          credentials: "include",
+          headers: { Accept: "application/json", "Content-Type": "application/json" },
+          body: "{}",
+        });
+        return res.ok;
+      } catch {
+        return false;
+      } finally {
+        refreshInFlight = null;
+      }
+    })();
+  }
+  return refreshInFlight;
+}
+
+async function request<T>(
+  method: string,
+  path: string,
+  body?: unknown,
+  retried = false,
+): Promise<T> {
   const headers: Record<string, string> = {
     Accept: "application/json",
   };
@@ -67,13 +86,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   if (body !== undefined) {
     headers["Content-Type"] = "application/json";
   }
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
 
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers,
+    credentials: "include",
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
 
@@ -85,12 +102,16 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   try {
     data = await res.json();
   } catch {
-    // puste body (np. niektóre błędy proxy)
+    // puste body
   }
 
   if (!res.ok) {
-    if (res.status === 401 && token) {
-      setToken(null);
+    if (res.status === 401 && !retried && path !== "/api/auth/refresh" && path !== "/api/auth/login") {
+      const ok = await tryRefreshSession();
+      if (ok) {
+        return request<T>(method, path, body, true);
+      }
+      clearLegacyToken();
       onAuthExpired?.();
     }
     throw new ApiError(
@@ -106,7 +127,6 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 /** Max upload obrazu — zsynchronizowane z `app.upload.max-bytes` (5 MB). */
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 
-/** Typ z MIME albo rozszerzenia. Windows często zostawia file.type puste. */
 function resolveImageType(file: File): string | null {
   const raw = file.type.trim().toLowerCase();
   if (raw === "image/jpg" || raw === "image/pjpeg" || raw === "image/x-citrix-jpeg") return "image/jpeg";
@@ -124,7 +144,6 @@ export const api = {
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
   delete: (path: string) => request<void>("DELETE", path),
-  /** Multipart upload → `{ url }` (ścieżka `/api/uploads/...`). */
   uploadImage: async (file: File): Promise<{ url: string; contentType: string; sizeBytes: number }> => {
     if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
       throw new ApiError(400, "Plik za duży (max 5 MB)");
@@ -132,12 +151,20 @@ export const api = {
     if (!resolveImageType(file)) {
       throw new ApiError(400, "Dozwolone formaty: JPG, PNG, WebP");
     }
-    const token = getToken();
     const form = new FormData();
     form.append("file", file, file.name || "image");
-    const headers: Record<string, string> = { Accept: "application/json" };
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const res = await fetch(`${API_URL}/api/uploads/image`, { method: "POST", headers, body: form });
+    const doUpload = async () =>
+      fetch(`${API_URL}/api/uploads/image`, {
+        method: "POST",
+        credentials: "include",
+        headers: { Accept: "application/json" },
+        body: form,
+      });
+    let res = await doUpload();
+    if (res.status === 401) {
+      const ok = await tryRefreshSession();
+      if (ok) res = await doUpload();
+    }
     let data: { error?: string; message?: string; url?: string; contentType?: string; sizeBytes?: number } = {};
     try {
       data = await res.json();
@@ -145,8 +172,8 @@ export const api = {
       /* HTML z proxy / nginx */
     }
     if (!res.ok) {
-      if (res.status === 401 && token) {
-        setToken(null);
+      if (res.status === 401) {
+        clearLegacyToken();
         onAuthExpired?.();
       }
       const fallback = res.status === 413 ? "Plik za duży (max 5 MB)" : "Upload nie powiódł się";

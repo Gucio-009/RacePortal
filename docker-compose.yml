@@ -59,6 +59,9 @@ services:
       PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:-https://raceportal.pl}
       CORS_ORIGIN: http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173,http://localhost:8082,http://127.0.0.1:8082,https://*.trycloudflare.com,https://*.pages.dev,https://raceportal.pl,https://www.raceportal.pl
       JWT_SECRET: raceportal-dev-secret-change-me
+      JWT_ACCESS_TOKEN_MINUTES: "15"
+      JWT_REFRESH_TOKEN_DAYS: "7"
+      COOKIE_SECURE: "false"
       SEED_ENABLED: "true"
       ALLOW_INSECURE_DEFAULTS: "true"
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}

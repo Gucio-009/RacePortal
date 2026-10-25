@@ -78,7 +78,13 @@ app:
     origin: ${CORS_ORIGIN:*}
   jwt:
     secret: ${JWT_SECRET:raceportal-dev-secret-change-me}
-    expiration-days: ${JWT_EXPIRATION_DAYS:7}
+    # Access JWT (minuty). Stary JWT_EXPIRATION_DAYS nie steruje już access TTL.
+    access-token-minutes: ${JWT_ACCESS_TOKEN_MINUTES:15}
+    refresh-token-days: ${JWT_REFRESH_TOKEN_DAYS:7}
+  cookies:
+    # Prod za HTTPS / Tunnel: COOKIE_SECURE=true
+    secure: ${COOKIE_SECURE:false}
+    same-site: ${COOKIE_SAME_SITE:Lax}
   security:
     # true = lokalnie/demo (compose). Prod: ALLOW_INSECURE_DEFAULTS=false + silny JWT_SECRET + SEED_ENABLED=false.
     allow-insecure-defaults: ${ALLOW_INSECURE_DEFAULTS:true}

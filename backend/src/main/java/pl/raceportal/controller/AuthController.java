@@ -1,5 +1,7 @@
 package pl.raceportal.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,57 +20,52 @@ import pl.raceportal.dto.AuthDtos.ForgotPasswordRequest;
 import pl.raceportal.dto.AuthDtos.GoogleLoginRequest;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
 import pl.raceportal.dto.AuthDtos.MessageResponse;
-import pl.raceportal.dto.AuthDtos.ResetPasswordRequest;
 import pl.raceportal.dto.AuthDtos.OAuthProvidersResponse;
+import pl.raceportal.dto.AuthDtos.RefreshRequest;
 import pl.raceportal.dto.AuthDtos.RegisterOrganizerRequest;
 import pl.raceportal.dto.AuthDtos.RegisterRequest;
 import pl.raceportal.dto.AuthDtos.RegisterResponse;
 import pl.raceportal.dto.AuthDtos.RequestEmailChangeRequest;
 import pl.raceportal.dto.AuthDtos.ResendCodeRequest;
+import pl.raceportal.dto.AuthDtos.ResetPasswordRequest;
 import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
 import pl.raceportal.dto.AuthDtos.UserDto;
 import pl.raceportal.dto.AuthDtos.VerifyEmailRequest;
+import pl.raceportal.security.AuthCookies;
 import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.service.AuthService;
 
 /**
- * REST API uwierzytelniania i profilu użytkownika.
- * <p>
- * Rola w architekturze: warstwa HTTP nad {@link AuthService} — rejestracja, JWT login,
- * Google OAuth, weryfikacja e-mail, {@code /me}. Endpointy publiczne vs {@code @PreAuthorize}.
- * Technologie: Spring Security (JWT + method security), Bean Validation, Google OAuth, Mail.
- * </p>
- * Pomysł (alt): OpenAPI generator z kontraktu; Keycloak realm endpoints zamiast własnego auth.
+ * Auth HTTP: rejestracja, login, cookies httpOnly (access+refresh), logout, profil.
  */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthCookies authCookies;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, AuthCookies authCookies) {
         this.authService = authService;
+        this.authCookies = authCookies;
     }
 
-    /** Rejestracja kierowcy — 201 + komunikat o kodzie (bez JWT). */
     @PostMapping("/register")
     public ResponseEntity<RegisterResponse> register(@Valid @RequestBody RegisterRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(request));
     }
 
-    /** Rejestracja + wniosek organizatora (PENDING) — wymaga późniejszej weryfikacji e-mail. */
     @PostMapping("/register-organizer")
     public ResponseEntity<RegisterResponse> registerOrganizer(@Valid @RequestBody RegisterOrganizerRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(authService.registerOrganizer(request));
     }
 
-    /** Aktywacja konta (lub potwierdzenie zmiany e-maila) tokenem z linku → JWT + UserDto. */
     @PostMapping("/verify-email")
-    public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request) {
-        return ResponseEntity.ok(authService.verifyEmail(request.email(), request.token()));
+    public ResponseEntity<AuthResponse> verifyEmail(@Valid @RequestBody VerifyEmailRequest request,
+                                                     HttpServletResponse response) {
+        return ResponseEntity.ok(attachCookies(authService.verifyEmail(request.email(), request.token()), response));
     }
 
-    /** Ponowna wysyłka linku aktywacyjnego — zawsze ten sam komunikat (anti-enumeration). */
     @PostMapping("/resend-code")
     public ResponseEntity<MessageResponse> resendCode(@Valid @RequestBody ResendCodeRequest request) {
         authService.resendCode(request.email());
@@ -76,25 +73,23 @@ public class AuthController {
                 "Jeśli konto istnieje i nie jest jeszcze zweryfikowane, wysłaliśmy nowy link aktywacyjny."));
     }
 
-    /** Logowanie lokalne email+hasło → JWT. */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
+                                               HttpServletResponse response) {
+        return ResponseEntity.ok(attachCookies(authService.login(request), response));
     }
 
-    /** Które providery OAuth są włączone (np. Google Client ID). */
     @GetMapping("/oauth/providers")
     public ResponseEntity<OAuthProvidersResponse> oauthProviders() {
         return ResponseEntity.ok(new OAuthProvidersResponse(authService.isGoogleOAuthEnabled()));
     }
 
-    /** Google Sign-In: idToken z frontu → weryfikacja → JWT RacePortal. */
     @PostMapping("/oauth/google")
-    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request) {
-        return ResponseEntity.ok(authService.loginWithGoogle(request.idToken()));
+    public ResponseEntity<AuthResponse> loginWithGoogle(@Valid @RequestBody GoogleLoginRequest request,
+                                                         HttpServletResponse response) {
+        return ResponseEntity.ok(attachCookies(authService.loginWithGoogle(request.idToken()), response));
     }
 
-    /** Forgot password — link resetujący mailem; hasło bez zmian do kliknięcia; anti-enumeration. */
     @PostMapping("/forgot-password")
     public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         authService.forgotPassword(request.email());
@@ -102,28 +97,43 @@ public class AuthController {
                 "Jeśli konto istnieje, wysłaliśmy link do ustawienia nowego hasła."));
     }
 
-    /** Ustawienie nowego hasła tokenem z maila (jednorazowy, krótki TTL). */
     @PostMapping("/reset-password")
     public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         authService.resetPassword(request.token(), request.newPassword());
         return ResponseEntity.ok(new MessageResponse("Hasło zostało zmienione. Możesz się zalogować."));
     }
 
-    /** Profil zalogowanego użytkownika (wymaga JWT). */
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> me(@AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(authService.me(currentUser.getId()));
     }
 
-    /** Nowy JWT z rolą z DB — po zmianie roli (org/admin) bez ponownego logowania. */
+    /**
+     * Odświeżenie sesji refresh tokenem (cookie {@code rp_rt} lub body).
+     * Nie wymaga ważnego access JWT.
+     */
     @PostMapping("/refresh")
-    @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<AuthResponse> refresh(@AuthenticationPrincipal UserPrincipal currentUser) {
-        return ResponseEntity.ok(authService.refreshSession(currentUser.getId()));
+    public ResponseEntity<AuthResponse> refresh(@RequestBody(required = false) RefreshRequest body,
+                                                 HttpServletRequest request,
+                                                 HttpServletResponse response) {
+        String raw = firstNonBlank(
+                body == null ? null : body.refreshToken(),
+                authCookies.readRefresh(request));
+        return ResponseEntity.ok(attachCookies(authService.refreshSession(raw), response));
     }
 
-    /** Aktualizacja profilu (username, avatar, dane osobowe, prawo jazdy / PZM). */
+    /** Wylogowanie — kasuje cookies, revoke refresh, bump tokenVersion. */
+    @PostMapping("/logout")
+    public ResponseEntity<MessageResponse> logout(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                   HttpServletRequest request,
+                                                   HttpServletResponse response) {
+        String userId = currentUser != null ? currentUser.getId() : null;
+        authService.logout(userId, authCookies.readRefresh(request));
+        authCookies.clear(response);
+        return ResponseEntity.ok(new MessageResponse("Wylogowano"));
+    }
+
     @PatchMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<UserDto> updateMe(@AuthenticationPrincipal UserPrincipal currentUser,
@@ -131,16 +141,16 @@ public class AuthController {
         return ResponseEntity.ok(authService.updateMe(currentUser.getId(), request));
     }
 
-    /** Zmiana hasła — wymaga bieżącego hasła. */
     @PostMapping("/me/password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> changePassword(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                            @Valid @RequestBody ChangePasswordRequest request) {
+                                                            @Valid @RequestBody ChangePasswordRequest request,
+                                                            HttpServletResponse response) {
         authService.changePassword(currentUser.getId(), request);
-        return ResponseEntity.ok(new MessageResponse("Hasło zostało zmienione"));
+        authCookies.clear(response);
+        return ResponseEntity.ok(new MessageResponse("Hasło zostało zmienione – zaloguj się ponownie"));
     }
 
-    /** Start zmiany e-maila — kod na nowy adres. */
     @PostMapping("/me/email-change")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> requestEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
@@ -148,11 +158,24 @@ public class AuthController {
         return ResponseEntity.ok(authService.requestEmailChange(currentUser.getId(), request.newEmail()));
     }
 
-    /** Potwierdzenie zmiany e-maila tokenem (zwykle przez publiczny link /verify-email). */
     @PostMapping("/me/email-change/confirm")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<AuthResponse> confirmEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
-                                                            @Valid @RequestBody ConfirmEmailChangeRequest request) {
-        return ResponseEntity.ok(authService.confirmEmailChange(currentUser.getId(), request.token()));
+                                                            @Valid @RequestBody ConfirmEmailChangeRequest request,
+                                                            HttpServletResponse response) {
+        return ResponseEntity.ok(attachCookies(
+                authService.confirmEmailChange(currentUser.getId(), request.token()), response));
+    }
+
+    private AuthResponse attachCookies(AuthResponse auth, HttpServletResponse response) {
+        authCookies.setAccessToken(response, auth.token(), authService.accessTokenTtl());
+        authCookies.setRefreshToken(response, auth.refreshToken(), authService.refreshTokenTtl());
+        return auth;
+    }
+
+    private static String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) return a.trim();
+        if (b != null && !b.isBlank()) return b.trim();
+        return null;
     }
 }

@@ -84,7 +84,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/register",
                                 "/api/auth/register-organizer", "/api/auth/verify-email", "/api/auth/resend-code",
                                 "/api/auth/forgot-password", "/api/auth/reset-password",
-                                "/api/auth/oauth/google").permitAll()
+                                "/api/auth/oauth/google", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/oauth/providers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/events/**", "/api/events/meta/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/tracks", "/api/tracks/**").permitAll()

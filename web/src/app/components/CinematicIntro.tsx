@@ -12,7 +12,6 @@
 
 import { Component, useCallback, useEffect, useLayoutEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { useAuth } from "../context/AuthContext";
-import { getToken } from "../lib/api";
 import { loadSettings } from "../lib/userSettings";
 import "../../styles/cinematic-intro.css";
 
@@ -243,7 +242,7 @@ export function BootPulse() {
   }, []);
 
   useEffect(() => {
-    if (blocked || !isLoading || !getToken()) {
+    if (blocked || !isLoading) {
       setVisible(false);
       return;
     }

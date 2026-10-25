@@ -1,5 +1,6 @@
 package pl.raceportal.security;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,12 +17,8 @@ import pl.raceportal.repository.UserRepository;
 import java.io.IOException;
 
 /**
- * Filtr HTTP: odczytuje nagłówek {@code Authorization: Bearer &lt;jwt&gt;}
- * i ustawia autentyczację w {@link SecurityContextHolder}.
- * <p>
- * Rola jest zawsze ładowana z bazy (nie z claim JWT), żeby po APPROVE wniosku
- * organizatora / zmianie roli w adminie uprawnienia działały bez ponownego logowania.
- * </p>
+ * Odczyt access JWT z {@code Authorization: Bearer} albo cookie {@code rp_at}.
+ * Rola z DB; claim {@code tv} musi zgadzać się z {@code User.tokenVersion}.
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -30,23 +27,25 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final AuthCookies authCookies;
 
-    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository) {
+    public JwtAuthFilter(JwtService jwtService, UserRepository userRepository, AuthCookies authCookies) {
         this.jwtService = jwtService;
         this.userRepository = userRepository;
+        this.authCookies = authCookies;
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                      @NonNull HttpServletResponse response,
                                      @NonNull FilterChain filterChain) throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith(BEARER_PREFIX)) {
-            String token = header.substring(BEARER_PREFIX.length());
+        String token = resolveAccessToken(request);
+        if (token != null) {
             try {
-                UserPrincipal fromToken = jwtService.toPrincipal(jwtService.parseClaims(token));
+                Claims claims = jwtService.parseClaims(token);
+                UserPrincipal fromToken = jwtService.toPrincipal(claims);
                 User user = userRepository.findById(fromToken.getId()).orElse(null);
-                if (user == null) {
+                if (user == null || jwtService.tokenVersion(claims) != user.getTokenVersion()) {
                     SecurityContextHolder.clearContext();
                 } else {
                     UserPrincipal principal = UserPrincipal.fromUser(user);
@@ -59,5 +58,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveAccessToken(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header != null && header.startsWith(BEARER_PREFIX)) {
+            String bearer = header.substring(BEARER_PREFIX.length()).trim();
+            if (!bearer.isEmpty()) {
+                return bearer;
+            }
+        }
+        return authCookies.readAccess(request);
     }
 }

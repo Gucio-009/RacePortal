@@ -104,6 +104,10 @@ class ApiIntegrationTest {
     private UserRepository userRepository;
 
     private String login(String email, String password) throws Exception {
+        return loginSession(email, password).accessToken();
+    }
+
+    private AuthSession loginSession(String email, String password) throws Exception {
         String body = objectMapper.writeValueAsString(new LoginPayload(email, password));
         String response = mockMvc.perform(post("/api/auth/login")
                         .contentType("application/json")
@@ -111,7 +115,10 @@ class ApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         JsonNode node = objectMapper.readTree(response);
-        return node.get("token").asText();
+        return new AuthSession(node.get("token").asText(), node.get("refreshToken").asText());
+    }
+
+    private record AuthSession(String accessToken, String refreshToken) {
     }
 
     /** Healthcheck publiczny — status ok + db up. */
@@ -709,7 +716,9 @@ class ApiIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.role", is("USER")))
                 .andReturn().getResponse().getContentAsString();
-        String staleToken = objectMapper.readTree(verifyResponse).get("token").asText();
+        JsonNode verifyNode = objectMapper.readTree(verifyResponse);
+        String staleToken = verifyNode.get("token").asText();
+        String refreshToken = verifyNode.get("refreshToken").asText();
 
         mockMvc.perform(get("/api/organizer/events")
                         .header("Authorization", "Bearer " + staleToken))
@@ -762,10 +771,43 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.name", is("Event po APPROVE wniosku")));
 
         mockMvc.perform(post("/api/auth/refresh")
-                        .header("Authorization", "Bearer " + staleToken))
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new RefreshPayload(refreshToken))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.user.role", is("ORGANIZER")))
-                .andExpect(jsonPath("$.token", notNullValue()));
+                .andExpect(jsonPath("$.token", notNullValue()))
+                .andExpect(jsonPath("$.refreshToken", notNullValue()));
+    }
+
+    /** Pentest #2: zmiana hasła unieważnia poprzedni access JWT (tokenVersion). */
+    @Test
+    void changePassword_invalidatesPreviousAccessToken() throws Exception {
+        String email = "tv-" + UUID.randomUUID() + "@example.com";
+        String password = "OldPass1!";
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new RegisterPayload("TvUser", email, password))))
+                .andExpect(status().isCreated());
+        User user = userRepository.findByEmailIgnoreCase(email).orElseThrow();
+        user.setEmailVerified(true);
+        user.setEmailVerificationCode(null);
+        user.setEmailVerificationExpires(null);
+        userRepository.save(user);
+
+        String oldToken = login(email, password);
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + oldToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/auth/me/password")
+                        .header("Authorization", "Bearer " + oldToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(
+                                new ChangePasswordPayload(password, "NewPass1!"))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + oldToken))
+                .andExpect(status().isUnauthorized());
     }
 
     /** Aktywne zgłoszenie nie może być nadpisane drugim POST (tylko re-apply po CANCELED). */
@@ -1049,6 +1091,12 @@ class ApiIntegrationTest {
     }
 
     private record ResetPasswordPayload(String token, String newPassword) {
+    }
+
+    private record RefreshPayload(String refreshToken) {
+    }
+
+    private record ChangePasswordPayload(String currentPassword, String newPassword) {
     }
 
     private record RegisterPayload(String username, String email, String password) {
