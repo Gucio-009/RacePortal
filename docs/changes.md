@@ -961,5 +961,17 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:50 — robots / server_tokens / duble nagłówków (#13).*
+## 63. Email-change bez oracle + higiena tokenów w logach (#14) (2026-10-25 20:00)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Zajęty e-mail przy zmianie → 409 „konto istnieje” | Ten sam 200 + ogólny komunikat; bez maila na cudzą skrzynkę | Zamyka enumerację skrzynek przez zalogowanego (#5 / #14) |
+| TTL weryfikacji 60 min | 30 min (jak reset); token nadal jednorazowy | Krótsze okno gdy URI wpadnie poza access log |
+| Access log nginx z `/verify-email/{token}` | `access_log off` dla verify/reset deep linków | Token nie w logach originu |
+
+**Weryfikacja:** `requestEmailChange_takenEmail_sameMessageNoOracle`. Docs: `cybersecurity-pentest.md` #14.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 20:00 — email oracle + token logs (#14).*
 

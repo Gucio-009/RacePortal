@@ -362,7 +362,7 @@ export function AccountPage() {
                 Obecny adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
               </p>
               <p className="text-[var(--race-muted)] text-sm">
-                Wymaga obecnego hasła. Link potwierdzający idzie na nowy adres; na dotychczasowy — powiadomienie.
+                Wymaga obecnego hasła. Jeśli nowy adres jest dostępny — link na nową skrzynkę; na dotychczasowy zawsze powiadomienie.
               </p>
               <div className="space-y-2">
                 <Label className="text-[var(--race-fg)]">Nowy e-mail</Label>

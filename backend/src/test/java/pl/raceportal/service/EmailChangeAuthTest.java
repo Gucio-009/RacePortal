@@ -27,7 +27,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/** Pentest #8: zmiana e-maila wymaga hasła i alertu na stary adres. */
+/** Pentest #8 + #14: zmiana e-maila wymaga hasła; zajęty adres bez 409 oracle. */
 class EmailChangeAuthTest {
 
     @Test
@@ -60,11 +60,40 @@ class EmailChangeAuthTest {
         when(mail.send(anyString(), anyString(), anyString())).thenReturn(true);
         AuthService auth = service(users, encoder, mail, mock(RefreshTokenService.class));
 
-        auth.requestEmailChange("user-1", "new@example.com", "Secret1!aa");
+        var res = auth.requestEmailChange("user-1", "new@example.com", "Secret1!aa");
 
         assertEquals("new@example.com", user.getPendingEmail());
+        assertEquals(
+                "Jeśli nowy adres jest dostępny, wysłaliśmy na niego link potwierdzający. "
+                        + "Na dotychczasowy adres poszło powiadomienie o prośbie zmiany.",
+                res.message());
         verify(mail).send(eq("new@example.com"), eq("Potwierdź nowy e-mail RACEPORTAL"), contains("/verify-email/"));
         verify(mail).send(eq("real@example.com"), eq("Prośba o zmianę e-maila RACEPORTAL"), contains("new@example.com"));
+    }
+
+    /** Pentest #14: zajęty e-mail → ten sam komunikat co sukces, bez 409 i bez maila na cudzą skrzynkę. */
+    @Test
+    void requestEmailChange_takenEmail_sameMessageNoOracle() throws Exception {
+        PasswordEncoder encoder = new BCryptPasswordEncoder(4);
+        UserRepository users = mock(UserRepository.class);
+        User user = account(encoder.encode("Secret1!aa"));
+        setCreatedAt(user);
+        when(users.findById("user-1")).thenReturn(Optional.of(user));
+        when(users.existsByEmailIgnoreCase("taken@example.com")).thenReturn(true);
+        MailService mail = mock(MailService.class);
+        when(mail.send(anyString(), anyString(), anyString())).thenReturn(true);
+        AuthService auth = service(users, encoder, mail, mock(RefreshTokenService.class));
+
+        var res = auth.requestEmailChange("user-1", "taken@example.com", "Secret1!aa");
+
+        assertEquals(
+                "Jeśli nowy adres jest dostępny, wysłaliśmy na niego link potwierdzający. "
+                        + "Na dotychczasowy adres poszło powiadomienie o prośbie zmiany.",
+                res.message());
+        assertEquals(null, user.getPendingEmail());
+        verify(mail, never()).send(eq("taken@example.com"), anyString(), anyString());
+        verify(mail).send(eq("real@example.com"), eq("Prośba o zmianę e-maila RACEPORTAL"), contains("taken@example.com"));
+        verify(users, never()).save(any());
     }
 
     @Test

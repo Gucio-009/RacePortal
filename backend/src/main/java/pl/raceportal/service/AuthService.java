@@ -53,11 +53,19 @@ public class AuthService {
 
     private static final Logger log = LoggerFactory.getLogger(AuthService.class);
 
-    /** Czas ważności linku aktywacyjnego (minuty). */
-    private static final int VERIFICATION_TOKEN_TTL_MINUTES = 60;
+    /**
+     * TTL linku aktywacji / potwierdzenia e-maila (minuty). Krótki + jednorazowy (kasowany
+     * w {@link #applyVerificationToken}) — token w URL wpada do access logów (pentest #14).
+     */
+    private static final int VERIFICATION_TOKEN_TTL_MINUTES = 30;
 
     /** Czas ważności linku resetu hasła (minuty) — krótki TTL (pentest #1). */
     private static final int PASSWORD_RESET_TOKEN_TTL_MINUTES = 30;
+
+    /** Ta sama treść przy wolnym i zajętym adresie — bez oracle 409 (pentest #14). */
+    private static final String EMAIL_CHANGE_REQUEST_MESSAGE =
+            "Jeśli nowy adres jest dostępny, wysłaliśmy na niego link potwierdzający. "
+                    + "Na dotychczasowy adres poszło powiadomienie o prośbie zmiany.";
 
     private static final int VERIFY_MAX_ATTEMPTS = 10;
     private static final int RESEND_MAX_ATTEMPTS = 3;
@@ -443,16 +451,18 @@ public class AuthService {
         if (newEmail.equalsIgnoreCase(user.getEmail())) {
             throw ApiException.badRequest("Podaj adres inny niż obecny");
         }
-        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
-            throw ApiException.conflict("Konto z tym emailem już istnieje");
-        }
 
         String oldEmail = user.getEmail();
+        // Zajęty adres: ten sam HTTP 200 + komunikat co przy sukcesie — bez linku na cudzą skrzynkę.
+        if (userRepository.existsByEmailIgnoreCase(newEmail)) {
+            notifyOldEmailAboutPendingChange(oldEmail, user.getUsername(), newEmail);
+            return new MessageResponse(EMAIL_CHANGE_REQUEST_MESSAGE);
+        }
+
         user.setPendingEmail(newEmail);
         sendVerificationLinkTo(user, newEmail);
         notifyOldEmailAboutPendingChange(oldEmail, user.getUsername(), newEmail);
-        return new MessageResponse(
-                "Wysłaliśmy link potwierdzający na nowy adres e-mail. Na dotychczasowy poszło powiadomienie.");
+        return new MessageResponse(EMAIL_CHANGE_REQUEST_MESSAGE);
     }
 
     /**
@@ -559,9 +569,9 @@ public class AuthService {
         boolean sent = mailService.send(oldEmail, "Prośba o zmianę e-maila RACEPORTAL",
                 "<p>Cześć " + safeName + ",</p>" +
                         "<p>Otrzymaliśmy prośbę o zmianę adresu e-mail tego konta na <strong>" + safeNew + "</strong>.</p>" +
-                        "<p>Link potwierdzający wysłaliśmy wyłącznie na nowy adres. Jeśli to nie Ty — " +
-                        "zmień hasło w ustawieniach konta i zignoruj wiadomość na nowej skrzynce. " +
-                        "Dopóki link nie zostanie kliknięty, logujesz się nadal tym adresem.</p>");
+                        "<p>Jeśli adres jest wolny, link potwierdzający trafia wyłącznie na nową skrzynkę. "
+                        + "Jeśli to nie Ty — zmień hasło w ustawieniach konta. "
+                        + "Dopóki link nie zostanie kliknięty, logujesz się nadal tym adresem.</p>");
         if (!sent) {
             log.warn("Email-change alert to old address failed for {}", oldEmail);
         }
@@ -628,7 +638,12 @@ public class AuthService {
         if (pending != null && !pending.isBlank()) {
             if (userRepository.existsByEmailIgnoreCase(pending)
                     && !pending.equalsIgnoreCase(user.getEmail())) {
-                throw ApiException.conflict("Konto z tym emailem już istnieje");
+                // Race: adres zajęty między prośbą a confirm — bez 409 oracle.
+                user.setEmailVerificationCode(null);
+                user.setEmailVerificationExpires(null);
+                user.setPendingEmail(null);
+                userRepository.save(user);
+                throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
             }
             user.setEmail(pending);
             user.setPendingEmail(null);
@@ -637,6 +652,7 @@ public class AuthService {
             user.setEmailVerified(true);
         }
 
+        // Jednorazowość: token znika po użyciu (nawet gdy w access logu nginx został URI).
         user.setEmailVerificationCode(null);
         user.setEmailVerificationExpires(null);
         userRepository.save(user);
