@@ -33,6 +33,9 @@ public interface UserRepository extends JpaRepository<User, String> {
     /** Unikalność nazwy wyświetlanej przy rejestracji. */
     boolean existsByUsernameIgnoreCase(String username);
 
+    /** Unikalność nazwy przy aktualizacji profilu (wyklucza bieżącego użytkownika). */
+    boolean existsByUsernameIgnoreCaseAndIdNot(String username, String id);
+
     /** Unikalność numeru telefonu. */
     boolean existsByPhone(String phone);
 

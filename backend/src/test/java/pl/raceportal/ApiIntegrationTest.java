@@ -264,6 +264,42 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
 
+    /** Pentest #6: nie wolno sklonować nazwy istniejącego konta (seed: test). */
+    @Test
+    void register_withExistingUsername_returns409() throws Exception {
+        String email = "clone-" + UUID.randomUUID() + "@example.com";
+        String body = objectMapper.writeValueAsString(new RegisterPayload("test", email, "Password1!"));
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(body))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error", containsString("zajęta")));
+    }
+
+    /** Pentest #6: podszywanie pod seed „Organizator” — nazwa zarezerwowana (400 przed 409). */
+    @Test
+    void register_asOrganizator_returns400Reserved() throws Exception {
+        String email = "fake-org-" + UUID.randomUUID() + "@example.com";
+        String body = objectMapper.writeValueAsString(new RegisterPayload("Organizator", email, "Password1!"));
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("zarezerwowana")));
+    }
+
+    /** Pentest #6: zarezerwowane nazwy wrażliwe — nawet gdy wolne w bazie. */
+    @Test
+    void register_withReservedUsername_returns400() throws Exception {
+        String email = "reserved-" + UUID.randomUUID() + "@example.com";
+        String body = objectMapper.writeValueAsString(new RegisterPayload("Support", email, "Password1!"));
+        mockMvc.perform(post("/api/auth/register")
+                        .contentType("application/json")
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", containsString("zarezerwowana")));
+    }
+
     @Test
     void register_withInvalidPayload_returns400() throws Exception {
         String body = objectMapper.writeValueAsString(new RegisterPayload("A", "not-an-email", "123"));

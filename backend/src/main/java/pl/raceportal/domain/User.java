@@ -45,8 +45,8 @@ public class User {
     @Column(nullable = false, unique = true, length = 190)
     private String email;
 
-    /** Wyświetlana nazwa użytkownika (niekoniecznie unikalna). */
-    @Column(nullable = false, length = 80)
+    /** Wyświetlana nazwa — unikalna (case-insensitive w serwisie; UNIQUE w DB). */
+    @Column(nullable = false, unique = true, length = 80)
     private String username;
 
     /** Hash BCrypt hasła; dla kont Google OAuth może być placeholder. */

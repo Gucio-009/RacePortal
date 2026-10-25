@@ -14,7 +14,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2 } from "lucide-react";
+import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2, ShieldCheck, User } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
@@ -318,6 +318,21 @@ export function EventDetailPage() {
               <Flag className="w-5 h-5 text-[var(--race-accent)]" />
               <span style={{ fontWeight: 600 }}>{event.voivodeship}</span>
             </div>
+            {event.organizer?.username ? (
+              <div className="flex flex-wrap items-center gap-2 text-[var(--race-fg)]">
+                <User className="w-5 h-5 text-[var(--race-accent)] shrink-0" />
+                <span style={{ fontWeight: 600 }}>{event.organizer.username}</span>
+                {event.organizer.verified ? (
+                  <Badge
+                    className="bg-[var(--race-accent)]/15 text-[var(--race-accent)] border border-[var(--race-accent)]/40"
+                    style={{ fontWeight: 700 }}
+                  >
+                    <ShieldCheck className="w-3 h-3 mr-1" />
+                    Zweryfikowany organizator
+                  </Badge>
+                ) : null}
+              </div>
+            ) : null}
 
             {event.paid && (
               <div className="rounded-md border border-[var(--race-accent)]/40 bg-[var(--race-accent)]/10 p-3 space-y-1">

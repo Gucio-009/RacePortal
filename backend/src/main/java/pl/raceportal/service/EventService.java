@@ -559,9 +559,12 @@ public class EventService {
     }
 
     private EventResponse serialize(Event event, long registrationsCount) {
-        OrganizerRef organizerRef = event.getOrganizer() != null
-                ? new OrganizerRef(event.getOrganizer().getId(), event.getOrganizer().getUsername())
-                : null;
+        OrganizerRef organizerRef = null;
+        if (event.getOrganizer() != null) {
+            User org = event.getOrganizer();
+            boolean verified = org.getRole() == Role.ORGANIZER || org.getRole() == Role.ADMIN;
+            organizerRef = new OrganizerRef(org.getId(), org.getUsername(), verified);
+        }
 
         return new EventResponse(
                 event.getId(),

@@ -24,8 +24,11 @@ public final class EventDtos {
     private EventDtos() {
     }
 
-    /** Skrót organizatora w odpowiedzi wydarzenia. */
-    public record OrganizerRef(String id, String username) {
+    /**
+     * Skrót organizatora w odpowiedzi wydarzenia.
+     * {@code verified} = rola ORGANIZER lub ADMIN (wniosek zaakceptowany przez admina).
+     */
+    public record OrganizerRef(String id, String username, boolean verified) {
     }
 
     /** Pełna reprezentacja wydarzenia dla klienta SPA. */

@@ -24,6 +24,7 @@ import pl.raceportal.repository.OrganizerApplicationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.AttemptRateLimiter;
 import pl.raceportal.security.JwtService;
+import pl.raceportal.security.ReservedUsernames;
 import pl.raceportal.web.ApiException;
 
 import java.security.SecureRandom;
@@ -281,7 +282,8 @@ public class AuthService {
         }
         String candidate = base;
         int n = 0;
-        while (userRepository.existsByUsernameIgnoreCase(candidate)) {
+        while (ReservedUsernames.isReserved(candidate)
+                || userRepository.existsByUsernameIgnoreCase(candidate)) {
             n++;
             String suffix = String.valueOf(n);
             candidate = base.substring(0, Math.min(base.length(), 40 - suffix.length())) + suffix;
@@ -335,7 +337,7 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
         if (request.username() != null && !request.username().isBlank()) {
-            user.setUsername(request.username());
+            user.setUsername(claimUsername(request.username(), user.getId()));
         }
         if (request.avatar() != null) {
             String avatar = request.avatar().trim();
@@ -480,13 +482,36 @@ public class AuthService {
         }
 
         User user = new User();
-        user.setUsername(username);
+        user.setUsername(claimUsername(username, null));
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(rawPassword));
         user.setRole(role);
         user.setAvatar(null);
         user.setEmailVerified(false);
         return userRepository.save(user);
+    }
+
+    /**
+     * Waliduje i rezerwuje nazwę wyświetlaną (pentest #6): trim, brak zarezerwowanych słów,
+     * unikalność case-insensitive → 409 przy zajętej, 400 przy zarezerwowanej.
+     *
+     * @param excludeUserId {@code null} przy rejestracji; id własnego konta przy zmianie profilu
+     */
+    private String claimUsername(String rawUsername, String excludeUserId) {
+        String username = rawUsername == null ? "" : rawUsername.trim();
+        if (username.length() < 2 || username.length() > 40) {
+            throw ApiException.badRequest("Nazwa użytkownika: 2–40 znaków");
+        }
+        if (ReservedUsernames.isReserved(username)) {
+            throw ApiException.badRequest("Ta nazwa użytkownika jest zarezerwowana");
+        }
+        boolean taken = excludeUserId == null
+                ? userRepository.existsByUsernameIgnoreCase(username)
+                : userRepository.existsByUsernameIgnoreCaseAndIdNot(username, excludeUserId);
+        if (taken) {
+            throw ApiException.conflict("Ta nazwa użytkownika jest już zajęta");
+        }
+        return username;
     }
 
     /**

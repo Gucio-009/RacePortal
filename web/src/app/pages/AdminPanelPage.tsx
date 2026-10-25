@@ -52,7 +52,7 @@ import { AdminBugReports } from "../components/AdminBugReports";
 import { Reveal } from "../components/Reveal";
 
 interface PendingEvent extends ApiEvent {
-  organizer?: { id: string; username: string; email: string } | null;
+  organizer?: { id: string; username: string; email: string; verified?: boolean } | null;
 }
 
 export function AdminPanelPage() {
@@ -297,6 +297,7 @@ export function AdminPanelPage() {
                           </h3>
                           <p className="text-[var(--race-muted)] text-sm">
                             {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
+                            {event.organizer?.verified ? " ✓" : ""}
                           </p>
                           <p className="text-[var(--race-muted)] text-sm">
                             {event.dateLabel || formatEventDate(event.date)} · {event.time}
@@ -423,6 +424,7 @@ export function AdminPanelPage() {
                       </h3>
                       <p className="text-[var(--race-muted)] text-sm">
                         {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
+                        {event.organizer?.verified ? " ✓" : ""}
                       </p>
                     </div>
                     <div className="flex flex-wrap gap-2">

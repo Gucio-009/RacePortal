@@ -877,5 +877,16 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 18:45 — stały czas auth (#5) i `docs/cybersecurity-pentest.md`.*
+## 55. Unikalne nazwy + odznaka organizatora (2026-10-25 18:55)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `username` nieunikalny — rejestracja jako „Organizator” → 201 | Unikalność case-insensitive (409), lista zarezerwowanych (400), UNIQUE w DB | Podszywanie pod zaufaną nazwę przy przelewach wpisowego |
+| Brak sygnału „to prawdziwy organizator” przy wydarzeniu | `OrganizerRef.verified` + badge na szczegółach wydarzenia | Użytkownik odróżnia zaakceptowaną rolę ORGANIZER/ADMIN od zwykłego konta |
+
+**Weryfikacja:** `ReservedUsernamesTest`, `UsernameClaimTest`, testy rejestracji w `ApiIntegrationTest`. Docs: `cybersecurity-pentest.md` #6.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 18:55 — unikalne / zarezerwowane username (#6).*
 

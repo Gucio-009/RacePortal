@@ -76,7 +76,8 @@ export interface ApiEvent {
   lng?: number | null;
   status: EventStatus;
   organizerId?: string | null;
-  organizer?: { id: string; username: string } | null;
+  /** verified = rola ORGANIZER/ADMIN (zaakceptowany wniosek). */
+  organizer?: { id: string; username: string; verified?: boolean } | null;
   registrationsCount?: number;
   /** Legacy / opcjonalny kształt licznika, który część klientów nadal czyta. */
   _count?: { registrations: number };
