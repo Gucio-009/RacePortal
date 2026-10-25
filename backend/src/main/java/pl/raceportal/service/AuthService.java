@@ -164,7 +164,11 @@ public class AuthService {
         attemptRateLimiter.check("verify-token:" + token, VERIFY_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
         User user = resolveUserForToken(email, token);
+        boolean emailChange = user.getPendingEmail() != null && !user.getPendingEmail().isBlank();
         applyVerificationToken(user, token);
+        if (emailChange) {
+            refreshTokenService.revokeAllAndBump(user);
+        }
         return issueSession(user);
     }
 
@@ -422,15 +426,20 @@ public class AuthService {
     }
 
     /**
-     * Start zmiany e-maila: link potwierdzający idzie na <em>nowy</em> adres; obecny zostaje do kliknięcia.
+     * Start zmiany e-maila (pentest #8): wymaga aktualnego hasła.
+     * Link potwierdzający idzie na <em>nowy</em> adres; stary dostaje alert (bez linku potwierdzającego).
      */
     @Transactional
-    public MessageResponse requestEmailChange(String userId, String rawNewEmail) {
+    public MessageResponse requestEmailChange(String userId, String rawNewEmail, String currentPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
         String newEmail = rawNewEmail.trim().toLowerCase();
         attemptRateLimiter.check("email-change:" + userId, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
+        if (currentPassword == null || currentPassword.isBlank()
+                || !passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw ApiException.unauthorized("Nieprawidłowe obecne hasło");
+        }
         if (newEmail.equalsIgnoreCase(user.getEmail())) {
             throw ApiException.badRequest("Podaj adres inny niż obecny");
         }
@@ -438,13 +447,16 @@ public class AuthService {
             throw ApiException.conflict("Konto z tym emailem już istnieje");
         }
 
+        String oldEmail = user.getEmail();
         user.setPendingEmail(newEmail);
         sendVerificationLinkTo(user, newEmail);
-        return new MessageResponse("Wysłaliśmy link potwierdzający na nowy adres e-mail.");
+        notifyOldEmailAboutPendingChange(oldEmail, user.getUsername(), newEmail);
+        return new MessageResponse(
+                "Wysłaliśmy link potwierdzający na nowy adres e-mail. Na dotychczasowy poszło powiadomienie.");
     }
 
     /**
-     * Potwierdza zmianę e-maila tokenem (zalogowany użytkownik); zwykle używany link publiczny.
+     * Potwierdza zmianę e-maila tokenem (zalogowany użytkownik); unieważnia stare sesje.
      */
     @Transactional
     public AuthResponse confirmEmailChange(String userId, String token) {
@@ -456,6 +468,7 @@ public class AuthService {
             throw ApiException.badRequest("Brak oczekującej zmiany e-maila");
         }
         applyVerificationToken(user, token == null ? "" : token.trim());
+        refreshTokenService.revokeAllAndBump(user);
         return issueSession(user);
     }
 
@@ -537,6 +550,21 @@ public class AuthService {
             return mailService.sendDecoy(PASSWORD_RESET_SUBJECT, html);
         }
         return mailService.send(userOrNull.getEmail(), PASSWORD_RESET_SUBJECT, html);
+    }
+
+    /** Alert na dotychczasowy adres — bez linku potwierdzającego (ten idzie tylko na nowy). */
+    private void notifyOldEmailAboutPendingChange(String oldEmail, String username, String newEmail) {
+        String safeName = escapeHtml(username == null ? "" : username);
+        String safeNew = escapeHtml(newEmail);
+        boolean sent = mailService.send(oldEmail, "Prośba o zmianę e-maila RACEPORTAL",
+                "<p>Cześć " + safeName + ",</p>" +
+                        "<p>Otrzymaliśmy prośbę o zmianę adresu e-mail tego konta na <strong>" + safeNew + "</strong>.</p>" +
+                        "<p>Link potwierdzający wysłaliśmy wyłącznie na nowy adres. Jeśli to nie Ty — " +
+                        "zmień hasło w ustawieniach konta i zignoruj wiadomość na nowej skrzynce. " +
+                        "Dopóki link nie zostanie kliknięty, logujesz się nadal tym adresem.</p>");
+        if (!sent) {
+            log.warn("Email-change alert to old address failed for {}", oldEmail);
+        }
     }
 
     private void sendVerificationLink(User user) {

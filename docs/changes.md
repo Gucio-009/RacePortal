@@ -898,5 +898,15 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:05 — CSP (#7).*
+## 57. Re-auth przy zmianie e-maila (2026-10-25 19:20)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `POST …/email-change` tylko z JWT — bez hasła, bez maila na stary adres | Wymaga `currentPassword`; link na nowy; alert na stary; po confirm `revokeAllAndBump` | Skradziona sesja nie może trwale przejąć konta przez podmianę skrzynki |
+
+**Weryfikacja:** `EmailChangeAuthTest`. Docs: `cybersecurity-pentest.md` #8.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:20 — re-auth zmiany e-maila (#8).*
 

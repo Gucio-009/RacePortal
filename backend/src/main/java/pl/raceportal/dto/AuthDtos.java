@@ -116,9 +116,10 @@ public final class AuthDtos {
     ) {
     }
 
-    /** Start zmiany e-maila — kod idzie na nowy adres. */
+    /** Start zmiany e-maila — wymaga aktualnego hasła; link na nowy adres, alert na stary (pentest #8). */
     public record RequestEmailChangeRequest(
-            @NotBlank @Email @Size(max = 190) String newEmail
+            @NotBlank @Email @Size(max = 190) String newEmail,
+            @NotBlank String currentPassword
     ) {
     }
 

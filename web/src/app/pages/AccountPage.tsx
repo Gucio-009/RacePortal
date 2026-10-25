@@ -53,6 +53,7 @@ export function AccountPage() {
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [newEmail, setNewEmail] = useState("");
+  const [emailChangePassword, setEmailChangePassword] = useState("");
   const [emailLinkSent, setEmailLinkSent] = useState(false);
   const [savingEmail, setSavingEmail] = useState(false);
 
@@ -147,11 +148,16 @@ export function AccountPage() {
       toast.error("Podaj adres inny niż obecny");
       return;
     }
+    if (!emailChangePassword) {
+      toast.error("Podaj obecne hasło, aby potwierdzić zmianę e-maila");
+      return;
+    }
     setSavingEmail(true);
-    const result = await requestEmailChange(trimmed);
+    const result = await requestEmailChange(trimmed, emailChangePassword);
     setSavingEmail(false);
     if (result.ok) {
       setEmailLinkSent(true);
+      setEmailChangePassword("");
       toast.success(result.message || "Link wysłany na nowy adres");
     } else {
       toast.error(result.message || "Nie udało się wysłać linku");
@@ -355,6 +361,9 @@ export function AccountPage() {
               <p className="text-[var(--race-muted)] text-sm">
                 Obecny adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
               </p>
+              <p className="text-[var(--race-muted)] text-sm">
+                Wymaga obecnego hasła. Link potwierdzający idzie na nowy adres; na dotychczasowy — powiadomienie.
+              </p>
               <div className="space-y-2">
                 <Label className="text-[var(--race-fg)]">Nowy e-mail</Label>
                 <Input
@@ -368,9 +377,20 @@ export function AccountPage() {
                   autoComplete="email"
                 />
               </div>
+              <div className="space-y-2">
+                <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
+                <Input
+                  type="password"
+                  value={emailChangePassword}
+                  onChange={(e) => setEmailChangePassword(e.target.value)}
+                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                  autoComplete="current-password"
+                />
+              </div>
               {emailLinkSent && (
                 <p className="text-[var(--race-muted)] text-sm">
                   Sprawdź skrzynkę nowego adresu i kliknij link potwierdzający (ważny 60 minut).
+                  Na stary adres poszło też powiadomienie.
                 </p>
               )}
               <Button

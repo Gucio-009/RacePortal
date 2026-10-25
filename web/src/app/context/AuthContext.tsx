@@ -57,7 +57,10 @@ interface AuthContextType {
   ) => Promise<{ ok: boolean; message?: string }>;
   forgotPassword: (email: string) => Promise<{ ok: boolean; message: string }>;
   resetPassword: (token: string, newPassword: string) => Promise<{ ok: boolean; message: string }>;
-  requestEmailChange: (newEmail: string) => Promise<{ ok: boolean; message?: string }>;
+  requestEmailChange: (
+    newEmail: string,
+    currentPassword: string,
+  ) => Promise<{ ok: boolean; message?: string }>;
   confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   isAuthenticated: boolean;
@@ -301,9 +304,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const requestEmailChange = async (newEmail: string) => {
+  const requestEmailChange = async (newEmail: string, currentPassword: string) => {
     try {
-      const res = await api.post<{ message: string }>("/api/auth/me/email-change", { newEmail });
+      const res = await api.post<{ message: string }>("/api/auth/me/email-change", {
+        newEmail,
+        currentPassword,
+      });
       return { ok: true, message: res.message };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się wysłać kodu";

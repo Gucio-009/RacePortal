@@ -161,7 +161,8 @@ public class AuthController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<MessageResponse> requestEmailChange(@AuthenticationPrincipal UserPrincipal currentUser,
                                                                @Valid @RequestBody RequestEmailChangeRequest request) {
-        return ResponseEntity.ok(authService.requestEmailChange(currentUser.getId(), request.newEmail()));
+        return ResponseEntity.ok(authService.requestEmailChange(
+                currentUser.getId(), request.newEmail(), request.currentPassword()));
     }
 
     @PostMapping("/me/email-change/confirm")
