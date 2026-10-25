@@ -948,5 +948,18 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:40 — DELETE events + spójne błędy (#12).*
+## 62. Odchudzony robots + nginx bez wersji (#13) (2026-10-25 19:50)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `robots.txt` Disallow: admin/organizer/dashboard/konto/garaz/api | Tylko `Allow: /` + Sitemap | Nie oddajemy mapy paneli crawlerom / rekonesansowi |
+| `X-Frame-Options` 2× na `/api/*` | `proxy_hide_header` + jeden z nginx | Spójne nagłówki |
+| `/API/...` → HTML SPA | `404` JSON | Spójna wielkość liter ścieżki API |
+| Domyślny błąd nginx ze wersją | `server_tokens off` + `/error/403.html`, `50x.html` | Bez numeru wersji na originie |
+
+**Świadomie:** średnik w URI (403↔401) poza MVP. Docs: `cybersecurity-pentest.md` #13.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:50 — robots / server_tokens / duble nagłówków (#13).*
 
