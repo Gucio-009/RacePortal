@@ -973,5 +973,16 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 20:00 — email oracle + token logs (#14).*
+## 64. Płatne zgłoszenia = pay-later (#15 Info) (2026-10-25 20:05)
+
+| Było (pentest) | Decyzja | Dlaczego |
+|----------------|---------|----------|
+| 201 PENDING bez wpłaty / proof odrzucony do ACCEPTED | **Świadomy model MVP** — bez zmiany kodu | Organizator ręcznie akceptuje, potem przelew + dowód; PSP poza zakresem |
+| „Czy terminy istnieją?” | Tak: `paymentDueAt` przy ACCEPTED z `paymentDeadlineHours` | Termin od akceptacji, nie od samego zapisu |
+
+**Weryfikacja:** istniejący `paidRegistration_acceptedThenPaymentProofThenConfirmed`. Docs: `cybersecurity-pentest.md` #15.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 20:05 — pay-later potwierdzony (#15).*
 
