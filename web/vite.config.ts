@@ -65,6 +65,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 700,
     rollupOptions: {
       output: {
+        /**
+         * Sufiks `-r2` zmienia URL chunków lazy. CDN trzyma 404
+         * `GaragePage-Aqx6eZpN.js` rok (Cache-Control immutable na błędzie).
+         * Nowy adres omija ten wpis. Nie usuwać sufiksu, póki stary URL żyje w cache.
+         */
+        chunkFileNames: "assets/[name]-[hash]-r2.js",
         /** Osobne chunki vendorów — mniej unused JS na pierwszej ścieżce (/). */
         manualChunks(id) {
           if (!id.includes('node_modules')) return

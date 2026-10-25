@@ -1,5 +1,5 @@
 /* RacePortal PWA — minimal SW (installability + offline shell). */
-const CACHE = "raceportal-shell-v1";
+const CACHE = "raceportal-shell-v2";
 const PRECACHE = ["/", "/index.html", "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
@@ -25,10 +25,10 @@ self.addEventListener("fetch", (event) => {
   // API zawsze z sieci (świeże dane / auth)
   if (url.pathname.startsWith("/api/")) return;
 
-  // Nawigacja SPA → network, fallback cache index
+  // Nawigacja SPA → sieć (bez heurystycznego cache HTML), fallback cache index
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request.url, { cache: "no-cache", credentials: "same-origin" })
         .then((res) => {
           const copy = res.clone();
           caches.open(CACHE).then((c) => c.put("/index.html", copy));
