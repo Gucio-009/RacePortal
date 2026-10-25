@@ -14,6 +14,7 @@ Branch produkcyjny: **`main`**.
 | **Dlaczego** Oracle / Mailbux / PWA (dyplom) | [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) |
 | Plan MVP vs stan kodu | [`MVP.md`](./MVP.md) |
 | Pentest i remedacje (dyplom) | [`cybersecurity-pentest.md`](./cybersecurity-pentest.md) |
+| Load test k6 / max RPS (VM) | [`testy/wyniki/k6-vm-rps.md`](./testy/wyniki/k6-vm-rps.md) |
 
 ## Repo — katalogi
 
@@ -66,6 +67,7 @@ Branch produkcyjny: **`main`**.
 | [`testy/TESTY.md`](./testy/TESTY.md) | Metodyka testów |
 | [`testy/wyniki/podsumowanie.md`](./testy/wyniki/podsumowanie.md) | Ostatnie wyniki |
 | [`testy/wyniki/unit-500-wyniki.md`](./testy/wyniki/unit-500-wyniki.md) | Unit `@raceportal/api-types` |
+| [`testy/wyniki/k6-vm-rps.md`](./testy/wyniki/k6-vm-rps.md) | Load test k6 na Oracle VM — max RPS |
 
 > Usunięte jako zbędne / mylące (historia jest w `decyzje-wdrozeniowe.md` + `changes.md`):  
 > `gcp-deploy.md`, `cloudflare-pages.md`, `review-2026-08-03.md`.
