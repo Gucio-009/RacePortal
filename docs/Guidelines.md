@@ -29,6 +29,7 @@ Przy każdej istotnej zmianie aktualizuj:
 4. **`docs/pomysly-technologiczne.md`** — gdy pojawia się nowa decyzja stack / alt
 5. **`README.md`** / **`mobile/README.md`** — jeśli zmienia się sposób uruchomienia
 6. **`docs/testy/TESTY.md`** + wyniki w `docs/testy/wyniki/` — gdy zmienia się zestaw lub wynik testów
+7. **`docs/cybersecurity-pentest.md`** — przy każdej remedacji z pentestu: nowy numer (problem → ryzyko → remedacja → weryfikacja) oraz §2, checklista §5, indeks §7 i stopka, w tym samym commicie co kod
 
 **Zasada na dyplom:** zawsze zapisuj **dlaczego** porzuciliśmy A na rzecz B w [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) (i/lub `changes.md`). Nie trzymaj osobnych, nieaktualnych runbooków GCP/Pages — mylą recenzentów.
 

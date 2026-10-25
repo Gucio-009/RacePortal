@@ -13,6 +13,7 @@ Branch produkcyjny: **`main`**.
 | Pierwsze postawienie Oracle + Tunnel | [`oracle-deploy.md`](./oracle-deploy.md) |
 | **Dlaczego** Oracle / Mailbux / PWA (dyplom) | [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) |
 | Plan MVP vs stan kodu | [`MVP.md`](./MVP.md) |
+| Pentest i remedacje (dyplom) | [`cybersecurity-pentest.md`](./cybersecurity-pentest.md) |
 
 ## Repo — katalogi
 
@@ -42,6 +43,7 @@ Branch produkcyjny: **`main`**.
 | Plik | Opis |
 |------|------|
 | [`MVP.md`](./MVP.md) | Miało być / jest / luki / ponad MVP |
+| [`cybersecurity-pentest.md`](./cybersecurity-pentest.md) | Znaleziska pentestu → remedacja → weryfikacja |
 | [`spec-conformity.md`](./spec-conformity.md) | Specyfikacja Formularzy vs kod |
 | [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | Scenariusz demo |
 | [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | Luki i pomysły produktowe |

@@ -47,6 +47,15 @@ public class MailService {
     }
 
     /**
+     * Ta sama praca co {@link #send} (szablon, MIME, SMTP), ale odbiorcą jest skrzynka nadawcy.
+     * Wołane, gdy adres nie ma konta — czas odpowiedzi nie może być krótszy niż przy prawdziwej wysyłce.
+     * Na sondowany adres nic nie wychodzi (inaczej serwer stałby się nadawcą maili do obcych skrzynek).
+     */
+    public boolean sendDecoy(String subject, String bodyHtml) {
+        return send(mailboxAddress(from), subject, bodyHtml);
+    }
+
+    /**
      * Wysyła mail HTML w układzie portalu. Błędy dostawy są logowane, ale nie propagowane.
      *
      * @param to       adres odbiorcy
@@ -125,6 +134,19 @@ public class MailService {
                 </body>
                 </html>
                 """.formatted(safeSubject, safeSubject, body);
+    }
+
+    /** {@code RACEPORTAL <noreply@raceportal.pl>} → {@code noreply@raceportal.pl}. */
+    private static String mailboxAddress(String from) {
+        if (from == null || from.isBlank()) {
+            return "";
+        }
+        int lt = from.lastIndexOf('<');
+        int gt = from.indexOf('>', lt + 1);
+        if (lt >= 0 && gt > lt) {
+            return from.substring(lt + 1, gt).trim();
+        }
+        return from.trim();
     }
 
     private String toPlain(String html) {

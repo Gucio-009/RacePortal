@@ -70,6 +70,8 @@ public class AuthService {
 
     private static final int FORGOT_MAX_PER_IP = 10;
 
+    private static final String PASSWORD_RESET_SUBJECT = "Reset hasła RACEPORTAL";
+
     private final UserRepository userRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
     private final PasswordEncoder passwordEncoder;
@@ -80,6 +82,11 @@ public class AuthService {
     private final AttemptRateLimiter attemptRateLimiter;
     private final SecureRandom random = new SecureRandom();
     private final String publicBaseUrl;
+    /**
+     * Hash BCrypt losowego hasła. Logowanie na nieistniejący email liczy {@code matches} wobec niego,
+     * żeby czas odpowiedzi był taki sam jak przy złym haśle do istniejącego konta (pentest #5).
+     */
+    private final String dummyPasswordHash;
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
@@ -95,6 +102,7 @@ public class AuthService {
         this.googleIdTokenService = googleIdTokenService;
         this.attemptRateLimiter = attemptRateLimiter;
         this.publicBaseUrl = trimTrailingSlash(publicBaseUrl);
+        this.dummyPasswordHash = passwordEncoder.encode(generateVerificationToken());
         log.info("Activation links base URL: {}", this.publicBaseUrl);
         if (this.publicBaseUrl.contains("localhost") || this.publicBaseUrl.contains("127.0.0.1")) {
             log.warn("PUBLIC_BASE_URL wskazuje na localhost – maile aktywacyjne nie zadziałają poza tą maszyną. "
@@ -173,6 +181,8 @@ public class AuthService {
 
     /**
      * Logowanie email+hasło z limitem nieudanych prób (konto + IP) → 429.
+     * Brak konta i złe hasło wykonują ten sam BCrypt ({@code matches} wobec {@link #dummyPasswordHash}
+     * albo hasha użytkownika) — {@code ||} nie może pominąć liczenia, bo czas zdradzałby istnienie emaila.
      */
     @Transactional
     public AuthResponse login(LoginRequest request, String clientIp) {
@@ -184,7 +194,12 @@ public class AuthService {
         attemptRateLimiter.ensureAllowed(ipKey, LOGIN_MAX_PER_IP, LOGIN_WINDOW);
 
         User user = userRepository.findByEmailIgnoreCase(emailNorm).orElse(null);
-        if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+        String hash = user == null ? null : user.getPasswordHash();
+        if (hash == null || hash.isBlank()) {
+            hash = dummyPasswordHash;
+        }
+        boolean passwordOk = passwordEncoder.matches(request.password(), hash);
+        if (user == null || !passwordOk) {
             attemptRateLimiter.record(emailKey, LOGIN_WINDOW);
             attemptRateLimiter.record(ipKey, LOGIN_WINDOW);
             throw ApiException.unauthorized("Nieprawidłowy email lub hasło");
@@ -348,7 +363,9 @@ public class AuthService {
      * Start resetu hasła: jednorazowy link (TTL {@link #PASSWORD_RESET_TOKEN_TTL_MINUTES} min).
      * Hasło NIE jest zmieniane, dopóki użytkownik nie wyśle nowego na {@link #resetPassword}.
      * Soft-fail SMTP: przy błędzie dostawy hasło bez zmian (token wygasa / kolejna prośba nadpisuje).
-     * Nie ujawnia istnienia konta – zawsze ten sam komunikat z kontrolera.
+     * Nie ujawnia istnienia konta – zawsze ten sam komunikat z kontrolera i ta sama wysyłka SMTP.
+     * Brak konta nie skraca requestu: token jest losowany, HTML składany, a mail idzie na skrzynkę
+     * nadawcy ({@link MailService#sendDecoy}) zamiast na sondowany adres. Tokenu z tej ścieżki nie zapisujemy.
      */
     @Transactional
     public void forgotPassword(String email, String clientIp) {
@@ -359,30 +376,18 @@ public class AuthService {
                 FORGOT_MAX_PER_IP, AUTH_CODE_WINDOW,
                 "Zbyt wiele próśb o reset hasła z tej sieci. Spróbuj ponownie za kilka minut.");
 
-        userRepository.findByEmailIgnoreCase(emailNorm).ifPresent(user -> {
-            String token = generateVerificationToken();
+        User user = userRepository.findByEmailIgnoreCase(emailNorm).orElse(null);
+        String token = generateVerificationToken();
+        if (user != null) {
             user.setPasswordResetToken(token);
             user.setPasswordResetExpires(Instant.now().plus(PASSWORD_RESET_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
             userRepository.save(user);
+        }
 
-            String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
-            String link = publicBaseUrl + "/reset-password/" + token;
-            String safeLink = escapeHtml(link);
-            boolean sent = mailService.send(user.getEmail(), "Reset hasła RACEPORTAL",
-                    "<p>Cześć " + safeName + ",</p>" +
-                            "<p>Otrzymaliśmy prośbę o reset hasła. Kliknij poniższy przycisk, aby ustawić nowe hasło." +
-                            " Link jest jednorazowy i ważny przez " + PASSWORD_RESET_TOKEN_TTL_MINUTES + " minut.</p>" +
-                            "<p style=\"margin:18px 0;\">" +
-                            "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
-                            "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
-                            "text-decoration:none;padding:14px 22px;border-radius:8px;\">USTAW NOWE HASŁO</a></p>" +
-                            "<p style=\"font-size:13px;color:#9ca3af;\">Jeśli nie prosiłeś o reset, zignoruj tę wiadomość – " +
-                            "hasło pozostaje bez zmian.<br>Jeśli przycisk nie działa, wklej adres:<br>" +
-                            "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>");
-            if (!sent) {
-                log.warn("Password reset mail failed for user {}; password unchanged", user.getId());
-            }
-        });
+        boolean sent = deliverPasswordResetMail(user, token);
+        if (user != null && !sent) {
+            log.warn("Password reset mail failed for user {}; password unchanged", user.getId());
+        }
     }
 
     /**
@@ -482,6 +487,31 @@ public class AuthService {
         user.setAvatar(null);
         user.setEmailVerified(false);
         return userRepository.save(user);
+    }
+
+    /**
+     * Składa ten sam list resetu dla istniejącego konta i dla adresu spoza bazy.
+     * Adres spoza bazy dostaje wysyłkę na skrzynkę nadawcy — sondowany adres nie dostaje maila z naszej domeny.
+     */
+    private boolean deliverPasswordResetMail(User userOrNull, String token) {
+        String username = userOrNull == null || userOrNull.getUsername() == null ? "kierowca" : userOrNull.getUsername();
+        String safeName = escapeHtml(username);
+        String link = publicBaseUrl + "/reset-password/" + token;
+        String safeLink = escapeHtml(link);
+        String html = "<p>Cześć " + safeName + ",</p>" +
+                "<p>Otrzymaliśmy prośbę o reset hasła. Kliknij poniższy przycisk, aby ustawić nowe hasło." +
+                " Link jest jednorazowy i ważny przez " + PASSWORD_RESET_TOKEN_TTL_MINUTES + " minut.</p>" +
+                "<p style=\"margin:18px 0;\">" +
+                "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
+                "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
+                "text-decoration:none;padding:14px 22px;border-radius:8px;\">USTAW NOWE HASŁO</a></p>" +
+                "<p style=\"font-size:13px;color:#9ca3af;\">Jeśli nie prosiłeś o reset, zignoruj tę wiadomość – " +
+                "hasło pozostaje bez zmian.<br>Jeśli przycisk nie działa, wklej adres:<br>" +
+                "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>";
+        if (userOrNull == null) {
+            return mailService.sendDecoy(PASSWORD_RESET_SUBJECT, html);
+        }
+        return mailService.send(userOrNull.getEmail(), PASSWORD_RESET_SUBJECT, html);
     }
 
     private void sendVerificationLink(User user) {

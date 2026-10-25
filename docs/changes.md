@@ -866,5 +866,16 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-23 — sześć motywów, intro bez błysku i bez auta.*
+## 54. Stały czas logowania i resetu + opis pentestu (2026-10-25 18:45)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Złe hasło do istniejącego konta liczyło BCrypt (~155 ms), brak konta wracał od razu (~67 ms). Reset istniejącego adresu czekał na SMTP (~880 ms), nieznany kończył się od razu (~52 ms) | Oba przypadki logowania liczą BCrypt (dla braku konta — hash losowego hasła ze startu). Reset zawsze składa ten sam list; brak konta wysyła go na skrzynkę nadawcy, bez zapisu tokenu | Czas odpowiedzi nie może być listą użytkowników pod stuffing i phishing |
+| Brak jednego opisu luk pod dyplom | `docs/cybersecurity-pentest.md` (#0–#5: problem → ryzyko → remedacja → weryfikacja) | Kolejne poprawki bezpieczeństwa dopisują numer w tym pliku, w tym samym commicie co kod |
+
+**Weryfikacja:** `AuthTimingTest`, `MailServiceDecoyTest`. Zostaje `resend-code` (mail tylko dla niezweryfikowanego konta).
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 18:45 — stały czas auth (#5) i `docs/cybersecurity-pentest.md`.*
 
