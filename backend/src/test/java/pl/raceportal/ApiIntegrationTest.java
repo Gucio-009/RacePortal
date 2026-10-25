@@ -306,6 +306,31 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.role", is("USER")));
     }
 
+    /** Pentest #11: liczba w polu String → 400 (bez cichej konwersji do \"12345\"). */
+    @Test
+    void updateMe_rejectsNumericUsername() throws Exception {
+        String token = login("test@wp.pl", "test123");
+        mockMvc.perform(patch("/api/auth/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content("{\"username\":12345}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error", notNullValue()));
+    }
+
+    /** Pentest #11: obce pole role jest ignorowane (brak mass-assignment). */
+    @Test
+    void updateMe_ignoresRoleFieldInBody() throws Exception {
+        String token = login("test@wp.pl", "test123");
+        mockMvc.perform(patch("/api/auth/me")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content("{\"username\":\"test\",\"role\":\"ADMIN\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.role", is("USER")))
+                .andExpect(jsonPath("$.username", is("test")));
+    }
+
     @Test
     void register_withExistingEmail_returns409() throws Exception {
         String body = objectMapper.writeValueAsString(new RegisterPayload("Another", "test@wp.pl", "Password1!"));

@@ -926,5 +926,15 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:30 — health disclosure (#10).*
+## 60. Ścisłe typy JSON (#11) (2026-10-25 19:35)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `{"username":12345}` → zapis `"12345"` | Jackson `CoercionAction.Fail` → HTTP 400 | Serwer odrzuca zły typ, nie konwertuje po cichu |
+
+**Weryfikacja:** `JacksonStrictTypesTest`, `updateMe_rejectsNumericUsername`. Obce `role` nadal ignorowane.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:35 — strict JSON types (#11).*
 
