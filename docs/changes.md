@@ -888,5 +888,15 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 18:55 — unikalne / zarezerwowane username (#6).*
+## 56. CSP produkcyjna bez localhost (2026-10-25 19:05)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| CSP z `localhost:4000` / `127.0.0.1:4000`, bez `object-src` / `base-uri` / `form-action`, inline boot w HTML | Same-origin API; brakujące dyrektywy; boot w `/boot.css` + `/boot-theme.js`; GSI w `script-src`/`frame-src` | Ostatnia linia obrony przeglądarki nie może wyglądać jak tryb deweloperski |
+
+**Świadomie:** `style-src 'unsafe-inline'` zostaje (React). Docs: `cybersecurity-pentest.md` #7.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:05 — CSP (#7).*
 
