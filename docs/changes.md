@@ -908,5 +908,13 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:20 — re-auth zmiany e-maila (#8).*
+## 58. Weryfikacja rotacji refresh (#9) (2026-10-25 19:25)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Pentest #9 opisywał refresh bez rotacji; mechanizm był już w #2, bez osobnych testów reuse | `RefreshTokenServiceTest` + `refresh_rotatesTokenAndRejectsReuse`; #9 w `cybersecurity-pentest.md` | Dowód: stary refresh po rotacji → 401 i ubija następcę |
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:25 — testy rotacji refresh (#9).*
 

@@ -154,6 +154,35 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
 
+    /**
+     * Pentest #9: każdy refresh rotuje token; ponowne użycie poprzedniego → 401 i ubija sesję.
+     */
+    @Test
+    void refresh_rotatesTokenAndRejectsReuse() throws Exception {
+        AuthSession session = loginSession("test@wp.pl", "test123");
+        String previous = session.refreshToken();
+
+        String refreshed = mockMvc.perform(post("/api/auth/refresh")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new RefreshPayload(previous))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refreshToken", notNullValue()))
+                .andReturn().getResponse().getContentAsString();
+        String next = objectMapper.readTree(refreshed).get("refreshToken").asText();
+        assertNotBlank(next);
+        org.junit.jupiter.api.Assertions.assertNotEquals(previous, next);
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new RefreshPayload(previous))))
+                .andExpect(status().isUnauthorized());
+
+        mockMvc.perform(post("/api/auth/refresh")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new RefreshPayload(next))))
+                .andExpect(status().isUnauthorized());
+    }
+
     /** Pentest: brute-force logowania → 429 po limicie nieudanych prób na konto. */
     @Test
     void login_rateLimitsFailedAttemptsWith429() throws Exception {
