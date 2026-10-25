@@ -2,6 +2,7 @@ package pl.raceportal.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 
@@ -128,7 +129,9 @@ public final class EventDtos {
             @Positive Integer freeCancelDays,
             Boolean acceptRegistrations,
             @DecimalMin(value = "0", inclusive = true) BigDecimal spectatorFee,
-            @Size(max = 500) String externalUrl,
+            @Size(max = 500)
+            @Pattern(regexp = "^$|^https?://.+$", message = "Dozwolone tylko adresy http:// lub https://")
+            String externalUrl,
             Boolean requireDrivingLicense,
             Boolean requirePzmLicense,
             Boolean requireOc,
@@ -161,6 +164,8 @@ public final class EventDtos {
             Integer freeCancelDays,
             Boolean acceptRegistrations,
             BigDecimal spectatorFee,
+            @Size(max = 500)
+            @Pattern(regexp = "^$|^https?://.+$", message = "Dozwolone tylko adresy http:// lub https://")
             String externalUrl,
             Boolean requireDrivingLicense,
             Boolean requirePzmLicense,

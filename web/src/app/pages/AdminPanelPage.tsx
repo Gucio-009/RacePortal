@@ -371,8 +371,8 @@ export function AdminPanelPage() {
                             </p>
                             <p>
                               <span className="text-[var(--race-fg)]">Link:</span>{" "}
-                              {event.externalUrl ? (
-                                <a href={event.externalUrl} className="text-[var(--race-accent)] underline" target="_blank" rel="noreferrer">
+                              {event.externalUrl && /^https?:\/\//i.test(event.externalUrl) ? (
+                                <a href={event.externalUrl} className="text-[var(--race-accent)] underline" target="_blank" rel="noopener noreferrer">
                                   {event.externalUrl}
                                 </a>
                               ) : (

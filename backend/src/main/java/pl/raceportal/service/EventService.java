@@ -423,7 +423,9 @@ public class EventService {
         if (request.endTime() != null) event.setEndTime(request.endTime().isBlank() ? null : request.endTime());
         if (request.street() != null) event.setStreet(request.street().isBlank() ? null : request.street());
         if (request.spectatorFee() != null) event.setSpectatorFee(request.spectatorFee());
-        if (request.externalUrl() != null) event.setExternalUrl(request.externalUrl().isBlank() ? null : request.externalUrl());
+        if (request.externalUrl() != null) {
+            event.setExternalUrl(SafeHttpUrls.normalizeHttpUrl(request.externalUrl(), "Link zewnętrzny"));
+        }
         if (request.requireDrivingLicense() != null) event.setRequireDrivingLicense(request.requireDrivingLicense());
         if (request.requirePzmLicense() != null) event.setRequirePzmLicense(request.requirePzmLicense());
         if (request.requireOc() != null) event.setRequireOc(request.requireOc());
@@ -609,7 +611,9 @@ public class EventService {
         if (endTime != null && !endTime.isBlank()) event.setEndTime(endTime);
         if (street != null && !street.isBlank()) event.setStreet(street);
         if (spectatorFee != null) event.setSpectatorFee(spectatorFee);
-        if (externalUrl != null && !externalUrl.isBlank()) event.setExternalUrl(externalUrl);
+        if (externalUrl != null) {
+            event.setExternalUrl(SafeHttpUrls.normalizeHttpUrl(externalUrl, "Link zewnętrzny"));
+        }
         if (requireDrivingLicense != null) event.setRequireDrivingLicense(requireDrivingLicense);
         if (requirePzmLicense != null) event.setRequirePzmLicense(requirePzmLicense);
         if (requireOc != null) event.setRequireOc(requireOc);

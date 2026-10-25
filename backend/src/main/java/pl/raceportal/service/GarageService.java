@@ -163,8 +163,8 @@ public class GarageService {
         if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
         if (request.hasOc() != null) car.setHasOc(request.hasOc());
         if (request.hasPt() != null) car.setHasPt(request.hasPt());
-        car.setSocialUrl(blankToNull(request.socialUrl()));
-        car.setVideoUrl(blankToNull(request.videoUrl()));
+        car.setSocialUrl(SafeHttpUrls.normalizeHttpUrl(request.socialUrl(), "Link społecznościowy"));
+        car.setVideoUrl(SafeHttpUrls.normalizeHttpUrl(request.videoUrl(), "Link wideo"));
         car.setModifications(blankToNull(request.modifications()));
     }
 
@@ -179,8 +179,12 @@ public class GarageService {
         if (request.hasRollCage() != null) car.setHasRollCage(request.hasRollCage());
         if (request.hasOc() != null) car.setHasOc(request.hasOc());
         if (request.hasPt() != null) car.setHasPt(request.hasPt());
-        if (request.socialUrl() != null) car.setSocialUrl(blankToNull(request.socialUrl()));
-        if (request.videoUrl() != null) car.setVideoUrl(blankToNull(request.videoUrl()));
+        if (request.socialUrl() != null) {
+            car.setSocialUrl(SafeHttpUrls.normalizeHttpUrl(request.socialUrl(), "Link społecznościowy"));
+        }
+        if (request.videoUrl() != null) {
+            car.setVideoUrl(SafeHttpUrls.normalizeHttpUrl(request.videoUrl(), "Link wideo"));
+        }
         if (request.modifications() != null) car.setModifications(blankToNull(request.modifications()));
     }
 

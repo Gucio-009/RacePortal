@@ -153,6 +153,23 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$.error", notNullValue()));
     }
 
+    /** Pentest: externalUrl javascript: musi być odrzucony przy zapisie (stored XSS). */
+    @Test
+    void createEvent_rejectsJavascriptExternalUrl() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "XSS Link Event",
+                "Opis testowy wydarzenia z zatrutym linkiem zewnętrznym.",
+                "Track Day", "2027-06-01", "10:00", null, null, "Tor XSS", "Warszawa", "Mazowieckie",
+                null, 52.2, 21.0, false, null, null, null, 7, true, null, "javascript:alert(1)",
+                false, false, false, false));
+        mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isBadRequest());
+    }
+
     /**
      * Pentest #1: forgot-password nie zmienia hasła; dopiero reset-password z tokenem z maila.
      */

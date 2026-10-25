@@ -250,7 +250,8 @@ public class RegistrationService {
                     "Potwierdzenie przelewu można dodać tylko dla zaakceptowanego zgłoszenia na płatne wydarzenie");
         }
 
-        registration.setPaymentProofUrl(paymentProofUrl);
+        registration.setPaymentProofUrl(
+                SafeHttpUrls.normalizeHttpUrlOrUpload(paymentProofUrl, "Dowód przelewu"));
         registration = registrationRepository.save(registration);
 
         return serialize(registration, true, false);
