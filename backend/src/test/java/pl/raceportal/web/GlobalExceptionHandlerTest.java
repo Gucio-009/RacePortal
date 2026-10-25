@@ -4,10 +4,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 /**
  * Testy jednostkowe mapowania wyjątków w {@link GlobalExceptionHandler}.
@@ -50,5 +53,21 @@ class GlobalExceptionHandlerTest {
     ResponseEntity<ErrorResponse> res = handler.handleGeneric(new RuntimeException("boom"));
     assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, res.getStatusCode());
     assertEquals("Błąd serwera", res.getBody().error());
+  }
+
+  @Test
+  void noResourceReturns404() {
+    ResponseEntity<ErrorResponse> res =
+        handler.handleNoResource(new NoResourceFoundException(HttpMethod.GET, "/api/missing"));
+    assertEquals(HttpStatus.NOT_FOUND, res.getStatusCode());
+    assertEquals("Nie znaleziono", res.getBody().error());
+  }
+
+  @Test
+  void methodNotSupportedReturns405() {
+    ResponseEntity<ErrorResponse> res = handler.handleMethodNotSupported(
+        new HttpRequestMethodNotSupportedException("DELETE"));
+    assertEquals(HttpStatus.METHOD_NOT_ALLOWED, res.getStatusCode());
+    assertEquals("Metoda niedozwolona", res.getBody().error());
   }
 }

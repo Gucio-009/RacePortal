@@ -249,6 +249,25 @@ export function OrganizerPanelPage() {
     }
   };
 
+  /** Twarde usunięcie — znika z listy (także po anulowaniu); zgłoszenia kasowane na backendzie. */
+  const deleteEvent = async (eventId: string) => {
+    if (!confirm("Na pewno trwale usunąć wydarzenie? Tej operacji nie można cofnąć.")) {
+      return;
+    }
+    try {
+      await api.delete(`/api/events/${eventId}`);
+      toast.success("Wydarzenie usunięte");
+      loadEvents();
+      if (selectedEventId === eventId) {
+        setRegistrations([]);
+        setSelectedEventId(null);
+        setActiveTab("events");
+      }
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć wydarzenia");
+    }
+  };
+
   const handleDialogOpenChange = (open: boolean) => {
     setCreateOpen(open);
     if (!open) {
@@ -292,6 +311,7 @@ export function OrganizerPanelPage() {
               onEdit={openEdit}
               onLoadRegistrations={loadRegistrations}
               onCancelEvent={cancelEvent}
+              onDeleteEvent={deleteEvent}
             />
           </TabsContent>
 

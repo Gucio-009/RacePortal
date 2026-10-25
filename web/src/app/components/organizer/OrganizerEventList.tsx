@@ -1,9 +1,9 @@
 /**
  * OrganizerEventList — lista wydarzeń w panelu organizatora.
  *
- * Props z `OrganizerPanelPage`: events + loading/error + callbacki edycji / zgłoszeń / anulacji.
+ * Props z `OrganizerPanelPage`: events + loading/error + callbacki edycji / zgłoszeń / anulacji / usuwania.
  * Statusy: `eventStatusLabel` (PL); badge „Płatne” gdy `event.paid`.
- * Anuluj ukryte dla CANCELLED / ARCHIVED (już nieaktywne).
+ * Anuluj ukryte dla CANCELLED / ARCHIVED; Usuń zawsze (twarde DELETE).
  * Licznik zgłoszeń: `_count.registrations` (Spring) lub `registrationsCount`.
  *
  * Akcent UI: `--race-accent` (theme / ustawienia użytkownika).
@@ -11,7 +11,7 @@
  * Pomysł (alt): tabela z sortowaniem zamiast kart; infinite scroll przy wielu eventach.
  */
 
-import { Calendar, Users, Loader2, Ban, Pencil } from "lucide-react";
+import { Calendar, Users, Loader2, Ban, Pencil, Trash2 } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -25,6 +25,7 @@ interface OrganizerEventListProps {
   onEdit: (event: OrganizerEvent) => void;
   onLoadRegistrations: (eventId: string) => void;
   onCancelEvent: (eventId: string) => void;
+  onDeleteEvent: (eventId: string) => void;
 }
 
 export function OrganizerEventList({
@@ -34,6 +35,7 @@ export function OrganizerEventList({
   onEdit,
   onLoadRegistrations,
   onCancelEvent,
+  onDeleteEvent,
 }: OrganizerEventListProps) {
   if (loading) {
     return (
@@ -114,6 +116,14 @@ export function OrganizerEventList({
                   Anuluj
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={() => onDeleteEvent(event.id)}
+                className="border-red-900 text-red-400 hover:bg-red-950"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Usuń
+              </Button>
             </div>
           </CardContent>
         </Card>

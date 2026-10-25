@@ -936,5 +936,17 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 19:35 — strict JSON types (#11).*
+## 61. DELETE wydarzeń + spójne 404/403/405 (#12) (2026-10-25 19:40)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| `DELETE /api/events/{id}` → 500 (brak mapowania + catch-all); wydarzenie zostaje | `DELETE` właściciela/admina → 204 (kasuje zgłoszenia + event); brak → 404; cudze → 403 | Organizator czyści testowe dane bez admina w DB |
+| Zła metoda / brak ścieżki → 500 „Błąd serwera” | `405` / `404` z ogólnym komunikatem | Jedna sytuacja = jeden kod; bez mapy wnętrza przez „kraksy” |
+| Panel: tylko Anuluj | Przycisk **Usuń** | Anulowane wydarzenia da się usunąć z UI |
+
+**Weryfikacja:** `event_delete_ownerRemoves_missingIs404_otherOwnerIs403`, `GlobalExceptionHandlerTest`. Docs: `cybersecurity-pentest.md` #12.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-25 19:40 — DELETE events + spójne błędy (#12).*
 

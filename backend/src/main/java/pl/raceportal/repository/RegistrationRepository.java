@@ -47,4 +47,7 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
     void deleteByUser_Id(String userId);
 
     void deleteByCar_User_Id(String userId);
+
+    /** Usuwanie zgłoszeń przy twardym delete wydarzenia (FK event_id). */
+    void deleteByEvent_Id(String eventId);
 }

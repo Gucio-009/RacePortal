@@ -758,6 +758,72 @@ class ApiIntegrationTest {
                 .andExpect(jsonPath("$[?(@.id == '" + regId + "')].status", contains("CANCELED")));
     }
 
+    /** DELETE wydarzenia: właściciel usuwa (także po cancel); losowe ID → 404; cudze → 403. */
+    @Test
+    void event_delete_ownerRemoves_missingIs404_otherOwnerIs403() throws Exception {
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Testowy Trackday do usuniecia",
+                "Wydarzenie testowe tworzone przez test integracyjny w celu weryfikacji usuwania.",
+                "Track Day", "2026-12-15", "10:00", null, null, "Tor Testowy", "Testowo", "Testowe",
+                null, null, null, false, null, null, null, null, true,
+                null, null, null, null, null, null));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/events/00000000-0000-0000-0000-000000000000")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error", containsString("Nie znaleziono")));
+
+        String otherBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Cudze wydarzenie admina",
+                "Wydarzenie admina — organizator nie powinien móc go usunąć (403).",
+                "Track Day", "2026-12-16", "11:00", null, null, "Tor Testowy", "Testowo", "Testowe",
+                null, null, null, false, null, null, null, null, true,
+                null, null, null, null, null, null));
+        String otherId = objectMapper.readTree(mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(otherBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        mockMvc.perform(delete("/api/events/" + otherId)
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error", is("Brak uprawnień")));
+
+        mockMvc.perform(post("/api/events/" + eventId + "/cancel")
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(delete("/api/events/" + eventId)
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isNoContent());
+
+        mockMvc.perform(get("/api/events/" + eventId)
+                        .header("Authorization", "Bearer " + orgToken))
+                .andExpect(status().isNotFound());
+
+        mockMvc.perform(delete("/api/events/" + otherId)
+                        .header("Authorization", "Bearer " + adminToken))
+                .andExpect(status().isNoContent());
+    }
+
     /** RBAC: zwykły USER nie wchodzi na /api/admin. */
     @Test
     void admin_endpoint_forbiddenForRegularUser() throws Exception {

@@ -42,7 +42,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Serwis wydarzeń: listy z filtrami, markery mapy, CRUD organizatora, anulowanie.
+ * Serwis wydarzeń: listy z filtrami, markery mapy, CRUD organizatora, anulowanie, twarde usuwanie.
  * <p>
  * Rola w architekturze: publiczne API katalogu imprez + panel organizatora.
  * Filtry budowane przez JPA Specification; dopasowanie pojazdu przez {@link CategoryMatcher}.
@@ -489,6 +489,25 @@ public class EventService {
         }
 
         return serialize(event);
+    }
+
+    /**
+     * Twarde usunięcie wydarzenia (właściciel ORGANIZER lub ADMIN).
+     * Najpierw zgłoszenia (FK), potem event — bez 500 z naruszenia integralności.
+     */
+    @Transactional
+    @CacheEvict(cacheNames = "events", allEntries = true)
+    public void delete(String id, UserPrincipal currentUser) {
+        Event event = eventRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono wydarzenia"));
+
+        boolean isOwner = event.getOrganizer() != null && event.getOrganizer().getId().equals(currentUser.getId());
+        if (currentUser.getRole() != Role.ADMIN && !isOwner) {
+            throw ApiException.forbidden("Brak uprawnień");
+        }
+
+        registrationRepository.deleteByEvent_Id(event.getId());
+        eventRepository.delete(event);
     }
 
     private void notifyRegisteredDriversOfChange(Event event) {

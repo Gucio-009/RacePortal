@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,7 +29,7 @@ import java.util.Map;
  * REST API katalogu wydarzeń (publiczne GET + chronione mutacje).
  * <p>
  * Rola w architekturze: główny entrypoint SPA — lista z filtrami, markery mapy,
- * meta kategorii, szczegóły; tworzenie/edycja/anulowanie dla ORGANIZER/ADMIN.
+ * meta kategorii, szczegóły; tworzenie/edycja/anulowanie/usuwanie dla ORGANIZER/ADMIN.
  * Technologie: Spring Web, JWT (opcjonalny na GET — wpływa na filtry status),
  * JPA Specification, CategoryMatcher (param {@code carId}).
  * </p>
@@ -133,5 +134,14 @@ public class EventController {
     public ResponseEntity<EventResponse> cancel(@PathVariable String id,
                                                  @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(eventService.cancelEvent(id, currentUser));
+    }
+
+    /** Twarde usunięcie (ownership); nieistniejące → 404, cudze → 403. */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable String id,
+                                        @AuthenticationPrincipal UserPrincipal currentUser) {
+        eventService.delete(id, currentUser);
+        return ResponseEntity.noContent().build();
     }
 }
