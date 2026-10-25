@@ -27,9 +27,11 @@ spring:
           starttls:
             enable: ${SMTP_STARTTLS:true}
             required: true
-          connectiontimeout: 3000
-          timeout: 3000
-          writetimeout: 3000
+          # Mailbux bywa wolniejszy przy HTML (reset/aktywacja) — 3s kończyło się
+          # "Exception reading response" i soft-fail bez maila u użytkownika.
+          connectiontimeout: 20000
+          timeout: 20000
+          writetimeout: 20000
 
 app:
   # Prod default — lokalnie ustaw PUBLIC_BASE_URL=http://localhost:8081 w `.env`

@@ -74,7 +74,7 @@ public class HealthController {
      */
     private boolean isSmtpUp() {
         try {
-            return CompletableFuture.supplyAsync(this::probeSmtp).get(3, TimeUnit.SECONDS);
+            return CompletableFuture.supplyAsync(this::probeSmtp).get(8, TimeUnit.SECONDS);
         } catch (Exception e) {
             return false;
         }
@@ -83,9 +83,9 @@ public class HealthController {
     private boolean probeSmtp() {
         try {
             Properties props = mailSender.getJavaMailProperties();
-            props.put("mail.smtp.connectiontimeout", "3000");
-            props.put("mail.smtp.timeout", "3000");
-            props.put("mail.smtp.writetimeout", "3000");
+            props.put("mail.smtp.connectiontimeout", "8000");
+            props.put("mail.smtp.timeout", "8000");
+            props.put("mail.smtp.writetimeout", "8000");
             mailSender.testConnection();
             return true;
         } catch (Exception e) {

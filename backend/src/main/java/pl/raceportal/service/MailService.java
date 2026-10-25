@@ -66,7 +66,11 @@ public class MailService {
             mailSender.send(message);
             return true;
         } catch (Exception ex) {
-            log.warn("[mail] Failed to send email to {}: {}", to, ex.getMessage());
+            Throwable root = ex;
+            while (root.getCause() != null && root.getCause() != root) {
+                root = root.getCause();
+            }
+            log.warn("[mail] Failed to send email to {}: {} ({})", to, ex.getMessage(), root.toString());
             return false;
         }
     }
