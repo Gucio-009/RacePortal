@@ -8,8 +8,8 @@
  *
  * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod.
  */
-import { useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FileText, Plus } from "lucide-react";
 import { Reveal } from "../components/Reveal";
 import { Button } from "../components/ui/button";
 import {
@@ -31,8 +31,12 @@ import {
   clearFormDraft,
   EVENT_DRAFT_KEY,
   isFormDirty,
+  listEventDrafts,
   loadFormDraft,
+  removeEventDraft,
   saveFormDraft,
+  upsertEventDraft,
+  type EventDraftEntry,
 } from "../lib/formDraft";
 import {
   emptyForm,
@@ -44,6 +48,7 @@ import { OrganizerEventList } from "../components/organizer/OrganizerEventList";
 import { OrganizerRegistrationsList } from "../components/organizer/OrganizerRegistrationsList";
 import { OrganizerRegistrationDetailDialog } from "../components/organizer/OrganizerRegistrationDetailDialog";
 import { OrganizerEventFormDialog } from "../components/organizer/OrganizerEventFormDialog";
+import { OrganizerEventDraftsDialog } from "../components/organizer/OrganizerEventDraftsDialog";
 
 export function OrganizerPanelPage() {
   const { refreshSession } = useAuth();
@@ -56,6 +61,10 @@ export function OrganizerPanelPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  /** Id wpisu w liście wersji roboczych (tylko nowe wydarzenia). */
+  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
+  const [draftsOpen, setDraftsOpen] = useState(false);
+  const [drafts, setDrafts] = useState<EventDraftEntry<FormState>[]>([]);
   const [saving, setSaving] = useState(false);
   const [eventSearch, setEventSearch] = useState("");
   const [form, setForm] = useState(emptyForm);
@@ -65,8 +74,12 @@ export function OrganizerPanelPage() {
   const [unsavedOpen, setUnsavedOpen] = useState(false);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
-  const eventDraftKey = editingId ? `${EVENT_DRAFT_KEY}_${editingId}` : EVENT_DRAFT_KEY;
+  const editDraftKey = editingId ? `${EVENT_DRAFT_KEY}_${editingId}` : null;
   const formDirty = createOpen && isFormDirty(form, formBaseline);
+
+  const refreshDrafts = useCallback(() => {
+    setDrafts(listEventDrafts<FormState>());
+  }, []);
 
   const filteredEvents = useMemo(() => {
     const q = eventSearch.trim().toLowerCase();
@@ -146,6 +159,7 @@ export function OrganizerPanelPage() {
       await refreshSession();
       if (cancelled) return;
       loadEvents();
+      refreshDrafts();
     })();
     return () => {
       cancelled = true;
@@ -169,17 +183,16 @@ export function OrganizerPanelPage() {
 
   const openCreate = () => {
     setEditingId(null);
-    const draft = loadFormDraft<FormState>(EVENT_DRAFT_KEY);
-    const initial = draft ?? emptyForm;
-    setForm(initial);
-    setFormBaseline(initial);
+    setActiveDraftId(null);
+    setForm(emptyForm);
+    setFormBaseline(emptyForm);
     setFieldErrors({});
     setCreateOpen(true);
-    if (draft) toast.message("Przywrócono zapis roboczy wydarzenia");
   };
 
   const openEdit = (event: OrganizerEvent) => {
     setEditingId(event.id);
+    setActiveDraftId(null);
     const draft = loadFormDraft<FormState>(`${EVENT_DRAFT_KEY}_${event.id}`);
     const initial = draft ?? eventToForm(event);
     setForm(initial);
@@ -189,19 +202,41 @@ export function OrganizerPanelPage() {
     if (draft) toast.message("Przywrócono zapis roboczy wydarzenia");
   };
 
+  const openDraft = (draft: EventDraftEntry<FormState>) => {
+    setEditingId(null);
+    setActiveDraftId(draft.id);
+    setForm(draft.data);
+    setFormBaseline(draft.data);
+    setFieldErrors({});
+    setDraftsOpen(false);
+    setCreateOpen(true);
+  };
+
   const closeEventFormClean = () => {
     setCreateOpen(false);
     setUnsavedOpen(false);
     setForm(emptyForm);
     setFormBaseline(emptyForm);
     setEditingId(null);
+    setActiveDraftId(null);
     setFieldErrors({});
   };
 
   const handleSaveDraft = () => {
-    saveFormDraft(eventDraftKey, form);
+    if (editingId) {
+      saveFormDraft(`${EVENT_DRAFT_KEY}_${editingId}`, form);
+    } else {
+      upsertEventDraft(form, activeDraftId);
+      refreshDrafts();
+    }
     toast.success("Zapisano wersję roboczą lokalnie");
     closeEventFormClean();
+  };
+
+  const handleDeleteDraft = (id: string) => {
+    removeEventDraft(id);
+    refreshDrafts();
+    toast.success("Usunięto wersję roboczą");
   };
 
   const handleSave = async () => {
@@ -252,7 +287,12 @@ export function OrganizerPanelPage() {
         await api.post("/api/events", payload);
         toast.success("Wydarzenie utworzone – oczekuje na akceptację admina");
       }
-      clearFormDraft(eventDraftKey);
+      if (editingId) {
+        clearFormDraft(`${EVENT_DRAFT_KEY}_${editingId}`);
+      } else if (activeDraftId) {
+        removeEventDraft(activeDraftId);
+        refreshDrafts();
+      }
       closeEventFormClean();
       loadEvents();
     } catch (e) {
@@ -340,10 +380,30 @@ export function OrganizerPanelPage() {
             </h1>
             <p className="text-[var(--race-muted)]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
           </div>
-          <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
-            <Plus className="w-4 h-4 mr-2" />
-            NOWE WYDARZENIE
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                refreshDrafts();
+                setDraftsOpen(true);
+              }}
+              className="border-[var(--race-border)] text-[var(--race-fg)] bg-transparent hover:bg-[var(--race-hover)]"
+              style={{ fontWeight: 700 }}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              WERSJE ROBOCZE
+              {drafts.length > 0 ? (
+                <span className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-[var(--race-accent)] px-1.5 text-xs text-[var(--race-on-accent)]">
+                  {drafts.length}
+                </span>
+              ) : null}
+            </Button>
+            <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
+              <Plus className="w-4 h-4 mr-2" />
+              NOWE WYDARZENIE
+            </Button>
+          </div>
         </Reveal>
       </section>
 
@@ -415,11 +475,24 @@ export function OrganizerPanelPage() {
         clearFieldError={clearFieldError}
       />
 
+      <OrganizerEventDraftsDialog
+        open={draftsOpen}
+        onOpenChange={setDraftsOpen}
+        drafts={drafts}
+        onOpenDraft={openDraft}
+        onDeleteDraft={handleDeleteDraft}
+      />
+
       <UnsavedChangesDialog
         open={unsavedOpen}
         onOpenChange={setUnsavedOpen}
         onDiscard={() => {
-          clearFormDraft(eventDraftKey);
+          if (editDraftKey) {
+            clearFormDraft(editDraftKey);
+          } else if (activeDraftId) {
+            removeEventDraft(activeDraftId);
+            refreshDrafts();
+          }
           closeEventFormClean();
         }}
         onSaveDraft={handleSaveDraft}
