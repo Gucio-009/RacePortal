@@ -39,15 +39,27 @@ public final class CategoryMatcher {
     }
 
     /**
-     * Czy klasa auta pasuje do kategorii wydarzenia (po normalizacji i aliasach).
+     * Czy klasa(y) auta pasują do kategorii wydarzenia (po normalizacji i aliasach).
+     * {@code Car.className} może być CSV (multi-select w garażu) — wystarczy jedna trafiona klasa.
      *
-     * @param carClass      {@code Car.className}
+     * @param carClass      {@code Car.className} (jedna wartość lub lista po przecinku)
      * @param eventCategory {@code Event.category}
      */
     public static boolean matches(String carClass, String eventCategory) {
         if (carClass == null || carClass.isBlank() || eventCategory == null || eventCategory.isBlank()) {
             return false;
         }
+        for (String part : carClass.split(",")) {
+            String trimmed = part.trim();
+            if (!trimmed.isEmpty() && matchesSingle(trimmed, eventCategory)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Pojedyncza klasa vs kategoria wydarzenia. */
+    private static boolean matchesSingle(String carClass, String eventCategory) {
         String carN = normalize(carClass);
         String eventN = normalize(eventCategory);
         if (carN.equals(eventN)) {

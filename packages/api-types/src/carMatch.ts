@@ -78,14 +78,32 @@ function aliasKeyFor(normalized: string): string | null {
 }
 
 /**
- * Czy klasa auta pasuje do kategorii wydarzenia (dokładnie / alias / substring).
- * Puste / whitespace → false.
+ * className w API to jedna lub wiele klas rozdzielonych przecinkiem
+ * (np. „Time Attack, KJS, Drift”) — multi-select w garażu.
  */
-export function carMatchesEventCategory(
-  carClass: string | null | undefined,
-  eventCategory: string | null | undefined,
-): boolean {
-  if (!carClass?.trim() || !eventCategory?.trim()) return false;
+export function parseCarClasses(className: string | null | undefined): string[] {
+  if (!className?.trim()) return [];
+  return className
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
+/** Składa listę klas do pola className (bez duplikatów, kolejność zachowana). */
+export function serializeCarClasses(classes: readonly string[]): string {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of classes) {
+    const t = raw.trim();
+    if (!t || seen.has(t)) continue;
+    seen.add(t);
+    out.push(t);
+  }
+  return out.join(", ");
+}
+
+/** Pojedyncza klasa vs kategoria wydarzenia (dokładnie / alias / substring). */
+function matchesSingleClass(carClass: string, eventCategory: string): boolean {
   const carN = normalize(carClass);
   const eventN = normalize(eventCategory);
   if (carN === eventN) return true;
@@ -95,6 +113,19 @@ export function carMatchesEventCategory(
   if (carKey && eventKey && carKey === eventKey) return true;
 
   return carN.includes(eventN) || eventN.includes(carN);
+}
+
+/**
+ * Czy klasa(y) auta pasują do kategorii wydarzenia (dokładnie / alias / substring).
+ * Przy wielu klasach (CSV) wystarczy dopasowanie którejkolwiek.
+ * Puste / whitespace → false.
+ */
+export function carMatchesEventCategory(
+  carClass: string | null | undefined,
+  eventCategory: string | null | undefined,
+): boolean {
+  if (!carClass?.trim() || !eventCategory?.trim()) return false;
+  return parseCarClasses(carClass).some((part) => matchesSingleClass(part, eventCategory));
 }
 
 /**
@@ -113,7 +144,8 @@ export function partitionCarsForEvent(cars: Car[], eventCategory: string) {
  */
 export function formatCarLabel(car: Car, recommended = false): string {
   const base = `${car.make} ${car.model}${car.year ? ` (${car.year})` : ""}`;
-  const klass = car.className ? ` · ${car.className}` : "";
+  const classes = parseCarClasses(car.className);
+  const klass = classes.length ? ` · ${classes.join(" · ")}` : "";
   return recommended ? `★ ${base}${klass}` : `${base}${klass}`;
 }
 

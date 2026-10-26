@@ -109,7 +109,8 @@ public class GarageService {
 
     /**
      * Usuwanie auta (diagram „Proces usuwania auta z garażu”):
-     * dowolne otwarte zgłoszenie całkowicie blokuje delete.
+     * otwarte zgłoszenie (PENDING/ACCEPTED/CONFIRMED) całkowicie blokuje delete;
+     * historia anulowanych/wycofanych jest odłączana (FK), żeby nie było „Konflikt danych”.
      */
     @Transactional
     public void delete(String userId, String carId) {
@@ -121,6 +122,7 @@ public class GarageService {
                     "Brak możliwości usunięcia auta ze względu na otwarte zgłoszenie");
         }
 
+        registrationRepository.clearCarId(carId);
         carRepository.delete(car);
     }
 

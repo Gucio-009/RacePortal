@@ -54,11 +54,13 @@ public final class GarageDtos {
             @NotBlank @Size(min = 1, max = 60) String make,
             @NotBlank @Size(min = 1, max = 60) String model,
             @Min(1886) @Max(2100) Integer year,
-            @Size(max = 60) String className,
+            /** Jedna lub wiele klas (CSV), np. „Time Attack, KJS, Drift”. */
+            @Size(max = 500) String className,
             @Size(max = 20) String plate,
             @Size(max = 2000) String imageUrl,
             @Size(max = 10) String driveType,
             @Min(1) @Max(5000) Integer powerHp,
+            /** 0 dozwolone — auta elektryczne (brak pojemności skokowej). */
             @Min(0) @Max(20000) Integer engineCc,
             @Min(1) @Max(10000) Integer weightKg,
             Boolean registered,
@@ -82,7 +84,8 @@ public final class GarageDtos {
             @Size(min = 1, max = 60) String make,
             @Size(min = 1, max = 60) String model,
             @Min(1886) @Max(2100) Integer year,
-            @Size(max = 60) String className,
+            /** Jedna lub wiele klas (CSV), np. „Time Attack, KJS, Drift”. */
+            @Size(max = 500) String className,
             @Size(max = 20) String plate,
             @Size(max = 2000) String imageUrl,
             @Size(max = 10) String driveType,

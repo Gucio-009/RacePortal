@@ -1,6 +1,7 @@
 package pl.raceportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pl.raceportal.domain.Registration;
@@ -43,6 +44,14 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
      * blokuje usunięcie pojazdu z garażu przy aktywnych zgłoszeniach.
      */
     boolean existsByCar_IdAndStatusIn(String carId, List<RegistrationStatus> statuses);
+
+    /**
+     * Odłącza auto od historii zgłoszeń (np. CANCELED) przed hard-delete —
+     * inaczej FK car_id kończy się DataIntegrityViolation → „Konflikt danych”.
+     */
+    @Modifying(clearAutomatically = true)
+    @Query("update Registration r set r.car = null where r.car.id = :carId")
+    int clearCarId(@Param("carId") String carId);
 
     void deleteByUser_Id(String userId);
 

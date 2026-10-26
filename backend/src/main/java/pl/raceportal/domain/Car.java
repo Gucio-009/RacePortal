@@ -54,8 +54,11 @@ public class Car {
 
     private Integer year;
 
-    /** Klasa / kategoria pojazdu (np. Street, Pro) — input do CategoryMatcher. */
-    @Column(name = "class_name", length = 60)
+    /**
+     * Klasa / kategoria pojazdu (np. Time Attack) — input do CategoryMatcher.
+     * Może zawierać wiele wartości rozdzielonych przecinkiem (multi-select w garażu).
+     */
+    @Column(name = "class_name", length = 500)
     private String className;
 
     @Column(length = 20)

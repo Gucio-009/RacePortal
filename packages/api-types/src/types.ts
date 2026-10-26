@@ -146,7 +146,8 @@ export interface PaginatedEvents {
 
 /**
  * Auto w garażu użytkownika – className to klasa/kategoria sportowa
- * (CAR_CLASS_OPTIONS), używana przy dopasowaniu do kategorii eventu (carMatch).
+ * (CAR_CLASS_OPTIONS), ewentualnie kilka rozdzielonych przecinkiem (multi-select);
+ * używana przy dopasowaniu do kategorii eventu (carMatch).
  */
 export interface Car {
   id: string;

@@ -14,4 +14,6 @@ export {
   carMatchesEventCategory,
   partitionCarsForEvent,
   formatCarLabel,
+  parseCarClasses,
+  serializeCarClasses,
 } from "@raceportal/api-types";

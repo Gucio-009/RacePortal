@@ -544,6 +544,70 @@ class ApiIntegrationTest {
     }
 
     /**
+     * Po anulowaniu zgłoszenia auto musi dać się usunąć z garażu
+     * (bez DataIntegrityViolation → „Konflikt danych”).
+     */
+    @Test
+    void garage_deleteAllowedAfterCanceledRegistration() throws Exception {
+        String token = login("test@wp.pl", "test123");
+        String orgToken = login("org@raceportal.pl", "org123");
+        String adminToken = login("admin@raceportal.pl", "admin123");
+
+        String carBody = objectMapper.writeValueAsString(
+                new CarPayload("Mazda", "MX-5", 2019, "Track Day, Drift", "GD 44444",
+                        "https://example.com/cars/mx5.jpg", "RWD", 184, 2000, 1100,
+                        true, false, true, true));
+        String carResponse = mockMvc.perform(post("/api/garage")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(carBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.className", is("Track Day, Drift")))
+                .andExpect(jsonPath("$.engineCc", is(2000)))
+                .andReturn().getResponse().getContentAsString();
+        String carId = objectMapper.readTree(carResponse).get("id").asText();
+
+        String eventBody = objectMapper.writeValueAsString(new EventCreatePayload(
+                "Track Day Delete Car Test",
+                "Event testowy do usunięcia auta po anulowaniu zgłoszenia.",
+                "Track Day", "2026-12-29", "10:00", null, null, "Tor DeleteCar", "Deleteowo", "Mazowieckie",
+                null, 52.0, 21.0, false, null, null, null, 7, true, null, null,
+                false, false, false, false));
+        String eventResponse = mockMvc.perform(post("/api/events")
+                        .header("Authorization", "Bearer " + orgToken)
+                        .contentType("application/json")
+                        .content(eventBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String eventId = objectMapper.readTree(eventResponse).get("id").asText();
+
+        mockMvc.perform(patch("/api/admin/events/" + eventId + "/status")
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(new EventStatusPayload("APPROVED"))))
+                .andExpect(status().isOk());
+
+        String regBody = objectMapper.writeValueAsString(
+                new RegistrationCreatePayload(eventId, carId, null));
+        String regResponse = mockMvc.perform(post("/api/registrations")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType("application/json")
+                        .content(regBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        String regId = objectMapper.readTree(regResponse).get("id").asText();
+
+        mockMvc.perform(post("/api/registrations/" + regId + "/cancel")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status", is("CANCELED")));
+
+        mockMvc.perform(delete("/api/garage/" + carId)
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isNoContent());
+    }
+
+    /**
      * Flow płatny: PENDING → ACCEPTED (org) → payment-proof (kierowca) → CONFIRMED (org).
      */
     @Test

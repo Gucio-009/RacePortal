@@ -162,6 +162,17 @@ function buildCases(): Case[] {
     });
   }
 
+  // Multi-select (CSV): wystarczy jedna pasująca klasa
+  add("multi class Time Attack, KJS, Drift matches Drift", () => {
+    expect(carMatchesEventCategory("Time Attack, KJS, Drift", "Drift")).toBe(true);
+  });
+  add("multi class Time Attack, KJS matches Time Attack", () => {
+    expect(carMatchesEventCategory("Time Attack, KJS", "Time Attack")).toBe(true);
+  });
+  add("multi class Time Attack, Drift does not match Endurance", () => {
+    expect(carMatchesEventCategory("Time Attack, Drift", "Endurance")).toBe(false);
+  });
+
   // Macierz: każda klasa vs sondy rodzin (wynik boolean; self → true)
   const probes = ["Drift", "GT Racing", "Rally", "Endurance", "Time Attack", "Track Day", "MPWS", "Inne"];
   for (const klass of CAR_CLASS_OPTIONS) {

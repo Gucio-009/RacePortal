@@ -50,5 +50,5 @@ export const EVENT_CATEGORY_GROUPS: CategoryGroup[] = [
 /** Płaska lista wszystkich kategorii wydarzeń (24 pozycji przy obecnym zestawie). */
 export const ALL_EVENT_CATEGORIES: string[] = EVENT_CATEGORY_GROUPS.flatMap((g) => g.items);
 
-/** Płaska lista do selecta className w garażu (bez „Inne”). */
+/** Płaska lista do tagów/multi-select className w garażu (bez „Inne”). */
 export const CAR_CLASS_OPTIONS = ALL_EVENT_CATEGORIES.filter((c) => c !== "Inne");
