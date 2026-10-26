@@ -142,9 +142,16 @@ git fetch origin
 git checkout main
 git pull origin main
 sudo docker compose up --build -d
+sudo bash deploy/vm/docker-prune.sh
 ```
 
 Volume MySQL zostaje. Tunel jest poza repozytorium i nie wymaga ponownej instalacji.
+
+Przy pierwszym wdrożeniu warto od razu włączyć codzienny prune (stare obrazy po `--build` zjadają dysk Always Free):
+
+```bash
+sudo bash deploy/vm/install-docker-prune-cron.sh
+```
 
 ---
 

@@ -139,14 +139,35 @@ git fetch origin
 git checkout main
 git pull origin main
 sudo docker compose up --build -d
+sudo bash deploy/vm/docker-prune.sh   # stare obrazy + cache BuildKit (volumes zostają)
 ```
 
-### B5. Pamięć
+Po każdym `--build` zostają poprzednie warstwy obrazów. Bez prune dysk Always Free szybko się zatyka.
+
+### B5. Pamięć i dysk
 
 ```bash
 free -h
 sudo docker stats --no-stream
+df -h /
+sudo docker system df
 ```
+
+Jednorazowe czyszczenie (gdy `df` pokazuje mało miejsca):
+
+```bash
+cd ~/RacePortal
+sudo bash deploy/vm/docker-prune.sh
+```
+
+Codzienny cron (raz na VM):
+
+```bash
+cd ~/RacePortal
+sudo bash deploy/vm/install-docker-prune-cron.sh
+```
+
+Skrypt **nie** rusza volumes (`raceportal_mysql`, uploads, backups). Nie używaj `docker system prune --volumes` ani `compose down -v`.
 
 ### B6. Maile
 
@@ -167,6 +188,7 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 
 | Objaw | Co zrobić |
 |-------|-----------|
+| Dysk pełny / `no space left on device` przy buildzie | `df -h /`, potem `sudo bash deploy/vm/docker-prune.sh`. Cron: `install-docker-prune-cron.sh`. **Nie** `prune --volumes` |
 | `Out of capacity` przy tworzeniu VM | Inna domena dostępności (AD-2, potem AD-3), ten sam kształt 2 OCPU / 12 GB |
 | Publiczny IPv4 się nie włącza | Najpierw kreator VCN, potem istniejąca podsieć **public** |
 | `UNPROTECTED PRIVATE KEY FILE` | `icacls` na pliku `.key`; nie loguj się plikiem `.pub` |
@@ -189,6 +211,8 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 |------|--------|
 | `docker-compose.yml` | Stack na VM i lokalnie (web + api + mysql + backup); maile SMTP Mailbux |
 | `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle. Ma volume `raceportal_uploads_vm`, gdyby ktoś go odpalił |
+| `deploy/vm/docker-prune.sh` | Czyści stare obrazy/cache po rebuildach; **bez** volumes |
+| `deploy/vm/install-docker-prune-cron.sh` | Codzienny cron 04:15 → `docker-prune.sh` |
 | `deploy/vm/.env.vm.example` | Szablon sekretów (gdy ktoś odpala wariant VM compose) |
 | `web/public/manifest.webmanifest` + `sw.js` | PWA |
 | `web/public/robots.txt` + `sitemap.xml` | SEO (nie SPA fallback) |
