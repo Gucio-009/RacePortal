@@ -31,12 +31,20 @@ import {
 } from "../components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Badge } from "../components/ui/badge";
+import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES, parseCarClasses, serializeCarClasses } from "../lib/carMatch";
 import { validateImageReference } from "../lib/profileValidation";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { Reveal } from "../components/Reveal";
+import {
+  clearFormDraft,
+  GARAGE_DRAFT_KEY,
+  isFormDirty,
+  loadFormDraft,
+  saveFormDraft,
+} from "../lib/formDraft";
 import { toast } from "sonner";
 
 const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
@@ -284,6 +292,11 @@ export function GaragePage() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [deleteTarget, setDeleteTarget] = useState<GarageCar | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [formBaseline, setFormBaseline] = useState(emptyForm);
+  const [unsavedOpen, setUnsavedOpen] = useState(false);
+
+  const garageDraftKey = editingId ? `${GARAGE_DRAFT_KEY}_${editingId}` : GARAGE_DRAFT_KEY;
+  const formDirty = dialogOpen && isFormDirty(form, formBaseline);
 
   const loadCars = () => {
     setLoading(true);
@@ -307,16 +320,47 @@ export function GaragePage() {
 
   const openAdd = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    const draft = loadFormDraft<typeof emptyForm>(GARAGE_DRAFT_KEY);
+    const initial = draft ?? emptyForm;
+    setForm(initial);
+    setFormBaseline(initial);
     setFieldErrors({});
     setDialogOpen(true);
+    if (draft) toast.message("Przywrócono zapis roboczy auta");
   };
 
   const openEdit = (car: GarageCar) => {
     setEditingId(car.id);
-    setForm(carToForm(car));
+    const draft = loadFormDraft<typeof emptyForm>(`${GARAGE_DRAFT_KEY}_${car.id}`);
+    const initial = draft ?? carToForm(car);
+    setForm(initial);
+    setFormBaseline(initial);
     setFieldErrors({});
     setDialogOpen(true);
+    if (draft) toast.message("Przywrócono zapis roboczy auta");
+  };
+
+  const closeFormClean = () => {
+    setDialogOpen(false);
+    setUnsavedOpen(false);
+    setForm(emptyForm);
+    setFormBaseline(emptyForm);
+    setEditingId(null);
+    setFieldErrors({});
+  };
+
+  const requestCloseForm = () => {
+    if (formDirty) {
+      setUnsavedOpen(true);
+      return;
+    }
+    closeFormClean();
+  };
+
+  const handleSaveDraft = () => {
+    saveFormDraft(garageDraftKey, form);
+    toast.success("Zapisano wersję roboczą lokalnie");
+    closeFormClean();
   };
 
   const setFormField = <K extends keyof typeof emptyForm>(key: K, value: (typeof emptyForm)[K]) => {
@@ -348,9 +392,8 @@ export function GaragePage() {
         await api.post("/api/garage", payload);
         toast.success("Auto dodane do garażu");
       }
-      setDialogOpen(false);
-      setForm(emptyForm);
-      setEditingId(null);
+      clearFormDraft(garageDraftKey);
+      closeFormClean();
       loadCars();
     } catch (e) {
       if (e instanceof ApiError) {
@@ -496,7 +539,13 @@ export function GaragePage() {
         )}
       </section>
 
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <Dialog
+        open={dialogOpen}
+        onOpenChange={(open) => {
+          if (!open) requestCloseForm();
+          else setDialogOpen(true);
+        }}
+      >
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
@@ -741,13 +790,21 @@ export function GaragePage() {
               />
             </div>
           </div>
-          <DialogFooter className="gap-2 sm:gap-2">
+          <DialogFooter className="gap-2 sm:gap-2 flex-col sm:flex-row">
             <Button
               variant="outline"
-              onClick={() => setDialogOpen(false)}
+              onClick={requestCloseForm}
               className="flex-1 h-11 border-[var(--race-border)] text-[var(--race-fg)]"
             >
               Anuluj
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSaveDraft}
+              disabled={saving || !formDirty}
+              className="flex-1 h-11 border-[var(--race-accent)] text-[var(--race-accent)]"
+            >
+              Zapisz roboczo
             </Button>
             <Button
               onClick={handleSave}
@@ -760,6 +817,16 @@ export function GaragePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <UnsavedChangesDialog
+        open={unsavedOpen}
+        onOpenChange={setUnsavedOpen}
+        onDiscard={() => {
+          clearFormDraft(garageDraftKey);
+          closeFormClean();
+        }}
+        onSaveDraft={handleSaveDraft}
+      />
 
       <AlertDialog
         open={deleteTarget != null}

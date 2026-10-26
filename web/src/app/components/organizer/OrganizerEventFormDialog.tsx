@@ -58,6 +58,8 @@ interface OrganizerEventFormDialogProps {
   setForm: Dispatch<SetStateAction<FormState>>;
   saving: boolean;
   onSave: () => void;
+  onSaveDraft: () => void;
+  formDirty?: boolean;
   fieldErrors?: Record<string, string>;
   clearFieldError?: (key: string) => void;
 }
@@ -70,6 +72,8 @@ export function OrganizerEventFormDialog({
   setForm,
   saving,
   onSave,
+  onSaveDraft,
+  formDirty = false,
   fieldErrors = {},
   clearFieldError,
 }: OrganizerEventFormDialogProps) {
@@ -639,9 +643,17 @@ export function OrganizerEventFormDialog({
             (RODO) wyłącznie w celu publikacji i obsługi zgłoszeń.
           </p>
         </div>
-        <DialogFooter>
+        <DialogFooter className="gap-2 flex-col sm:flex-row">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="border-[var(--race-border)] text-[var(--race-fg)]">
             Anuluj
+          </Button>
+          <Button
+            variant="outline"
+            onClick={onSaveDraft}
+            disabled={saving || !formDirty}
+            className="border-[var(--race-accent)] text-[var(--race-accent)]"
+          >
+            Zapisz roboczo
           </Button>
           <Button onClick={onSave} disabled={saving} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
             {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Utwórz"}

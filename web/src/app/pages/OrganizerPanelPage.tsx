@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../components/ui/dialog";
+import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { Registration, RegistrationStatus } from "../lib/types";
@@ -27,8 +28,16 @@ import { OTHER } from "../lib/eventFormPresets";
 import { toast } from "sonner";
 import { validateImageReference } from "../lib/profileValidation";
 import {
+  clearFormDraft,
+  EVENT_DRAFT_KEY,
+  isFormDirty,
+  loadFormDraft,
+  saveFormDraft,
+} from "../lib/formDraft";
+import {
   emptyForm,
   eventToForm,
+  type FormState,
   type OrganizerEvent,
 } from "../components/organizer/organizerEventForm";
 import { OrganizerEventList } from "../components/organizer/OrganizerEventList";
@@ -50,10 +59,14 @@ export function OrganizerPanelPage() {
   const [saving, setSaving] = useState(false);
   const [eventSearch, setEventSearch] = useState("");
   const [form, setForm] = useState(emptyForm);
+  const [formBaseline, setFormBaseline] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [unsavedOpen, setUnsavedOpen] = useState(false);
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
+  const eventDraftKey = editingId ? `${EVENT_DRAFT_KEY}_${editingId}` : EVENT_DRAFT_KEY;
+  const formDirty = createOpen && isFormDirty(form, formBaseline);
 
   const filteredEvents = useMemo(() => {
     const q = eventSearch.trim().toLowerCase();
@@ -156,16 +169,39 @@ export function OrganizerPanelPage() {
 
   const openCreate = () => {
     setEditingId(null);
-    setForm(emptyForm);
+    const draft = loadFormDraft<FormState>(EVENT_DRAFT_KEY);
+    const initial = draft ?? emptyForm;
+    setForm(initial);
+    setFormBaseline(initial);
     setFieldErrors({});
     setCreateOpen(true);
+    if (draft) toast.message("Przywrócono zapis roboczy wydarzenia");
   };
 
   const openEdit = (event: OrganizerEvent) => {
     setEditingId(event.id);
-    setForm(eventToForm(event));
+    const draft = loadFormDraft<FormState>(`${EVENT_DRAFT_KEY}_${event.id}`);
+    const initial = draft ?? eventToForm(event);
+    setForm(initial);
+    setFormBaseline(initial);
     setFieldErrors({});
     setCreateOpen(true);
+    if (draft) toast.message("Przywrócono zapis roboczy wydarzenia");
+  };
+
+  const closeEventFormClean = () => {
+    setCreateOpen(false);
+    setUnsavedOpen(false);
+    setForm(emptyForm);
+    setFormBaseline(emptyForm);
+    setEditingId(null);
+    setFieldErrors({});
+  };
+
+  const handleSaveDraft = () => {
+    saveFormDraft(eventDraftKey, form);
+    toast.success("Zapisano wersję roboczą lokalnie");
+    closeEventFormClean();
   };
 
   const handleSave = async () => {
@@ -216,9 +252,8 @@ export function OrganizerPanelPage() {
         await api.post("/api/events", payload);
         toast.success("Wydarzenie utworzone – oczekuje na akceptację admina");
       }
-      setCreateOpen(false);
-      setForm(emptyForm);
-      setEditingId(null);
+      clearFormDraft(eventDraftKey);
+      closeEventFormClean();
       loadEvents();
     } catch (e) {
       toast.error(
@@ -284,12 +319,15 @@ export function OrganizerPanelPage() {
   };
 
   const handleDialogOpenChange = (open: boolean) => {
-    setCreateOpen(open);
     if (!open) {
-      setForm(emptyForm);
-      setEditingId(null);
-      setFieldErrors({});
+      if (formDirty) {
+        setUnsavedOpen(true);
+        return;
+      }
+      closeEventFormClean();
+      return;
     }
+    setCreateOpen(true);
   };
 
   return (
@@ -371,8 +409,20 @@ export function OrganizerPanelPage() {
         setForm={setForm}
         saving={saving}
         onSave={handleSave}
+        onSaveDraft={handleSaveDraft}
+        formDirty={formDirty}
         fieldErrors={fieldErrors}
         clearFieldError={clearFieldError}
+      />
+
+      <UnsavedChangesDialog
+        open={unsavedOpen}
+        onOpenChange={setUnsavedOpen}
+        onDiscard={() => {
+          clearFormDraft(eventDraftKey);
+          closeEventFormClean();
+        }}
+        onSaveDraft={handleSaveDraft}
       />
     </div>
   );

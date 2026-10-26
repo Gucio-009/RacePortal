@@ -1,20 +1,20 @@
 /**
  * ArchivePage — lista zakończonych / zarchiwizowanych wydarzeń.
  *
- * Cel: przegląd przeszłych sezonów z paginacją; link do szczegółów.
- * Wzorce: fetch `/api/events?archive=1&page=&limit=12` przy zmianie `page`.
+ * Cel: przegląd przeszłych sezonów z paginacją i wyszukiwarką (`q`).
+ * Wzorce: fetch `/api/events?archive=1&page=&limit=12&q=` przy zmianie `page` / `query`.
  * Auth: publiczna. Theme: `--race-accent`, `font-display`.
  * Docker/nginx: deep link `/archiwum` → SPA try_files.
- * Używana też przez ResultsPage jako tymczasowy stub wyników.
  *
  * Pomysł (alt): TanStack Query; filtry sezon/kategoria; Next.js ISR archiwum SEO.
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import { Calendar, MapPin, ChevronRight, ChevronLeft } from "lucide-react";
+import { MapPin, ChevronRight, ChevronLeft, Search } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Reveal } from "../components/Reveal";
 import { api, ApiError } from "../lib/api";
@@ -23,16 +23,32 @@ import { eventImage, eventStatusLabel, HERO_BG_RACE, IMAGE_WIDTH_CARD } from "..
 
 export function ArchivePage() {
   const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [data, setData] = useState<PaginatedEvents | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Paginacja serwerowa — przeładowanie przy zmianie strony.
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => window.clearTimeout(t);
+  }, [query]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedQuery]);
+
   useEffect(() => {
     setLoading(true);
     setLoadError(null);
+    const params = new URLSearchParams({
+      archive: "1",
+      page: String(page),
+      limit: "12",
+    });
+    if (debouncedQuery) params.set("q", debouncedQuery);
     api
-      .get<PaginatedEvents>(`/api/events?archive=1&page=${page}&limit=12`)
+      .get<PaginatedEvents>(`/api/events?${params.toString()}`)
       .then((res) => {
         setData(res);
         setLoadError(null);
@@ -42,7 +58,7 @@ export function ArchivePage() {
         setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać archiwum. Sprawdź API / połączenie.");
       })
       .finally(() => setLoading(false));
-  }, [page]);
+  }, [page, debouncedQuery]);
 
   const items = data?.items ?? [];
 
@@ -67,12 +83,24 @@ export function ArchivePage() {
       </section>
 
       <section className="container mx-auto px-4 py-10 space-y-6">
+        <div className="relative max-w-xl">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--race-muted)]" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Szukaj w archiwum (nazwa, kategoria, tor, miasto…)"
+            className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]"
+          />
+        </div>
+
         {loading ? (
           <p className="text-center text-[var(--race-muted)] py-16">Ładowanie archiwum...</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : items.length === 0 ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Brak zarchiwizowanych wydarzeń.</p>
+          <p className="text-center text-[var(--race-muted)] py-16">
+            {debouncedQuery ? "Brak wydarzeń pasujących do wyszukiwania." : "Brak zarchiwizowanych wydarzeń."}
+          </p>
         ) : (
           <>
             {items.map((event: ApiEvent, index: number) => (
