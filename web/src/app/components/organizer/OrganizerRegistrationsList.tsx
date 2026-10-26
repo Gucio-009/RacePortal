@@ -5,15 +5,13 @@
  * - Bezpłatne: PENDING → CONFIRMED | CANCELED
  * - Płatne:    PENDING → ACCEPTED (akceptacja) → CONFIRMED (po proof przelewu) | CANCELED
  *
- * Przycisk „Akceptuj” vs „Potwierdź” zależy od `selectedEvent.paid`.
- * „Potwierdź wpłatę” wymaga `paymentProofUrl` (disabled bez dowodu).
- * Komentarz organizatora: lokalny state `comments[regId]` → wysyłany w `onUpdateStatus`.
+ * Klik w kartę → pełny podgląd (kierowca + auto). Akcje statusu osobno (stopPropagation).
  *
  * Pomysł (alt): bulk accept; powiadomienie e-mail przy zmianie statusu (już częściowo w API).
  */
 
 import type { Dispatch, SetStateAction } from "react";
-import { Check, X } from "lucide-react";
+import { Check, X, Eye } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -29,6 +27,7 @@ interface OrganizerRegistrationsListProps {
   comments: Record<string, string>;
   setComments: Dispatch<SetStateAction<Record<string, string>>>;
   onUpdateStatus: (id: string, status: RegistrationStatus) => void;
+  onOpenDetail: (reg: Registration) => void;
 }
 
 export function OrganizerRegistrationsList({
@@ -37,6 +36,7 @@ export function OrganizerRegistrationsList({
   comments,
   setComments,
   onUpdateStatus,
+  onOpenDetail,
 }: OrganizerRegistrationsListProps) {
   if (registrations.length === 0) {
     return <p className="text-[var(--race-muted)] text-center py-8">Brak zgłoszeń dla tego wydarzenia.</p>;
@@ -45,10 +45,14 @@ export function OrganizerRegistrationsList({
   return (
     <>
       {registrations.map((reg) => (
-        <Card key={reg.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
+        <Card
+          key={reg.id}
+          className="bg-[var(--race-card)] border-[var(--race-border)] cursor-pointer hover:border-[var(--race-accent)]/50 transition-colors"
+          onClick={() => onOpenDetail(reg)}
+        >
           <CardContent className="p-4 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-              <div>
+              <div className="min-w-0">
                 <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
                   {reg.user?.username ?? "Kierowca"}
                 </p>
@@ -66,6 +70,7 @@ export function OrganizerRegistrationsList({
                     target="_blank"
                     rel="noreferrer"
                     className="text-[var(--race-accent)] text-sm underline"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     Potwierdzenie przelewu
                   </a>
@@ -73,16 +78,26 @@ export function OrganizerRegistrationsList({
                 {reg.organizerComment && (
                   <p className="text-sm text-[var(--race-muted)] mt-1">Komentarz: {reg.organizerComment}</p>
                 )}
-                <Badge className="mt-2 bg-[var(--race-muted-bg)] text-[var(--race-fg)]">{registrationStatusLabel(reg.status)}</Badge>
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Badge className="bg-[var(--race-muted-bg)] text-[var(--race-fg)]">
+                    {registrationStatusLabel(reg.status)}
+                  </Badge>
+                  <span className="text-xs text-[var(--race-accent)] inline-flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5" />
+                    Podgląd
+                  </span>
+                </div>
               </div>
-              <div className="flex flex-col gap-2 min-w-[200px]">
+              <div
+                className="flex flex-col gap-2 min-w-[200px]"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <Input
                   placeholder="Komentarz (opcjonalnie)"
                   value={comments[reg.id] || ""}
                   onChange={(e) => setComments((prev) => ({ ...prev, [reg.id]: e.target.value }))}
                   className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                 />
-                {/* PENDING: płatne → ACCEPTED; bezpłatne → od razu CONFIRMED */}
                 {reg.status === "PENDING" && (
                   <div className="flex gap-2">
                     <Button
@@ -105,7 +120,6 @@ export function OrganizerRegistrationsList({
                     </Button>
                   </div>
                 )}
-                {/* ACCEPTED (tylko płatne): czekamy na proof → CONFIRMED */}
                 {reg.status === "ACCEPTED" && (
                   <div className="flex gap-2">
                     <Button

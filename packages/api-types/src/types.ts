@@ -94,6 +94,8 @@ export interface ApiEvent {
   externalUrl?: string | null;
   requireDrivingLicense?: boolean;
   requirePzmLicense?: boolean;
+  /** Wystarczy prawo jazdy B albo licencja PZM. */
+  requireDrivingLicenseOrPzm?: boolean;
   requireOc?: boolean;
   requirePt?: boolean;
   requireCage?: boolean;
@@ -190,7 +192,19 @@ export interface Registration {
   updatedAt: string;
   event?: ApiEvent;
   car?: Car | null;
-  user?: { id: string; username: string; email: string; avatar?: string | null };
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    avatar?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    instagramUrl?: string | null;
+    hasDrivingLicenseB?: boolean;
+    pzmLicense?: string | null;
+  };
 }
 
 /** Wynik trasy (np. OSRM/Google) – polyline jako pary [lat, lng]. */

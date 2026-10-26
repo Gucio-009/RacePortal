@@ -52,8 +52,7 @@ public class OrganizerService {
     public OrganizerApplicationResponse myApplication(UserPrincipal currentUser) {
         return organizerApplicationRepository.findFirstByUser_IdOrderByCreatedAtDesc(currentUser.getId())
                 .map(a -> {
-                    UserRef userRef = new UserRef(a.getUser().getId(), a.getUser().getUsername(),
-                            a.getUser().getEmail(), null);
+                    UserRef userRef = UserRef.from(a.getUser());
                     return new OrganizerApplicationResponse(
                             a.getId(), a.getUser().getId(), a.getCompany(), a.getBusinessType(),
                             a.getMessage(), a.getStatus().name(),
@@ -87,7 +86,7 @@ public class OrganizerService {
         application.setStatus(ApplicationStatus.PENDING);
         application = organizerApplicationRepository.save(application);
 
-        UserRef userRef = new UserRef(user.getId(), user.getUsername(), user.getEmail(), null);
+        UserRef userRef = UserRef.from(user);
         return new OrganizerApplicationResponse(
                 application.getId(), user.getId(), application.getCompany(), application.getBusinessType(),
                 application.getMessage(),

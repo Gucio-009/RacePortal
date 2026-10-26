@@ -333,6 +333,13 @@ public class RegistrationService {
         if (event.isRequirePzmLicense() && (user.getPzmLicense() == null || user.getPzmLicense().isBlank())) {
             throw ApiException.badRequest("To wydarzenie wymaga licencji PZM");
         }
+        if (event.isRequireDrivingLicenseOrPzm()) {
+            boolean hasLicenseB = user.isHasDrivingLicenseB();
+            boolean hasPzm = user.getPzmLicense() != null && !user.getPzmLicense().isBlank();
+            if (!hasLicenseB && !hasPzm) {
+                throw ApiException.badRequest("To wydarzenie wymaga prawa jazdy kat. B lub licencji PZM");
+            }
+        }
         if ((event.isRequireOc() || event.isRequirePt() || event.isRequireCage() || event.isRequireRegistered()) && car == null) {
             throw ApiException.badRequest("To wydarzenie wymaga wyboru auta spełniającego warunki techniczne");
         }
@@ -353,10 +360,7 @@ public class RegistrationService {
     private RegistrationResponse serialize(Registration registration, boolean includeEvent, boolean includeUser) {
         EventResponse eventResponse = includeEvent ? eventService.serialize(registration.getEvent()) : null;
         CarResponse carResponse = registration.getCar() != null ? garageService.serialize(registration.getCar()) : null;
-        UserRef userRef = includeUser
-                ? new UserRef(registration.getUser().getId(), registration.getUser().getUsername(),
-                        registration.getUser().getEmail(), registration.getUser().getAvatar())
-                : null;
+        UserRef userRef = includeUser ? UserRef.from(registration.getUser()) : null;
 
         return new RegistrationResponse(
                 registration.getId(),

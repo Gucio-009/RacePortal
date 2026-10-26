@@ -387,6 +387,7 @@ export function AdminPanelPage() {
                               {[
                                 event.requireDrivingLicense && "prawo jazdy B",
                                 event.requirePzmLicense && "licencja PZM",
+                                event.requireDrivingLicenseOrPzm && "prawo jazdy B lub licencja PZM",
                                 event.requireOc && "OC",
                                 event.requirePt && "PT",
                                 event.requireCage && "klatka",

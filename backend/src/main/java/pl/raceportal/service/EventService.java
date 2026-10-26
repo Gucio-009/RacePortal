@@ -368,13 +368,20 @@ public class EventService {
         event.setOrganizer(organizer);
         event.setPaid(request.paid());
         event.setEntryFee(request.paid() ? request.entryFee() : null);
-        event.setBankAccount(request.paid() ? request.bankAccount() : null);
-        if (request.paymentDeadlineHours() != null) event.setPaymentDeadlineHours(request.paymentDeadlineHours());
-        if (request.freeCancelDays() != null) event.setFreeCancelDays(request.freeCancelDays());
         if (request.acceptRegistrations() != null) event.setAcceptRegistrations(request.acceptRegistrations());
+        // IBAN / termin wpłaty tylko przy online zgłoszeniach; bez tego cena jest informacyjna.
+        boolean onlinePayments = request.paid() && event.isAcceptRegistrations();
+        event.setBankAccount(onlinePayments ? request.bankAccount() : null);
+        if (onlinePayments && request.paymentDeadlineHours() != null) {
+            event.setPaymentDeadlineHours(request.paymentDeadlineHours());
+        }
+        if (onlinePayments && request.freeCancelDays() != null) {
+            event.setFreeCancelDays(request.freeCancelDays());
+        }
         applyOptionalEventFields(event, request.endDate(), request.endTime(), request.street(),
                 request.spectatorFee(), request.externalUrl(), request.requireDrivingLicense(),
-                request.requirePzmLicense(), request.requireOc(), request.requirePt(),
+                request.requirePzmLicense(), request.requireDrivingLicenseOrPzm(),
+                request.requireOc(), request.requirePt(),
                 request.requireCage(), request.requireRegistered());
         ensureEventDatesValid(event, true);
 
@@ -414,11 +421,18 @@ public class EventService {
         if (request.lat() != null) event.setLat(request.lat());
         if (request.lng() != null) event.setLng(request.lng());
         if (request.paid() != null) event.setPaid(request.paid());
-        if (request.entryFee() != null) event.setEntryFee(event.isPaid() ? request.entryFee() : null);
-        if (request.bankAccount() != null) event.setBankAccount(event.isPaid() ? request.bankAccount() : null);
-        if (request.paymentDeadlineHours() != null) event.setPaymentDeadlineHours(request.paymentDeadlineHours());
-        if (request.freeCancelDays() != null) event.setFreeCancelDays(request.freeCancelDays());
         if (request.acceptRegistrations() != null) event.setAcceptRegistrations(request.acceptRegistrations());
+        if (request.entryFee() != null) event.setEntryFee(event.isPaid() ? request.entryFee() : null);
+        boolean onlinePayments = event.isPaid() && event.isAcceptRegistrations();
+        if (request.bankAccount() != null) {
+            event.setBankAccount(onlinePayments ? request.bankAccount() : null);
+        } else if (!onlinePayments) {
+            event.setBankAccount(null);
+        }
+        if (onlinePayments) {
+            if (request.paymentDeadlineHours() != null) event.setPaymentDeadlineHours(request.paymentDeadlineHours());
+            if (request.freeCancelDays() != null) event.setFreeCancelDays(request.freeCancelDays());
+        }
         if (request.endDate() != null) event.setEndDate(parseOptionalDate(request.endDate()));
         if (request.endTime() != null) event.setEndTime(request.endTime().isBlank() ? null : request.endTime());
         if (request.street() != null) event.setStreet(request.street().isBlank() ? null : request.street());
@@ -428,12 +442,17 @@ public class EventService {
         }
         if (request.requireDrivingLicense() != null) event.setRequireDrivingLicense(request.requireDrivingLicense());
         if (request.requirePzmLicense() != null) event.setRequirePzmLicense(request.requirePzmLicense());
+        if (request.requireDrivingLicenseOrPzm() != null) {
+            event.setRequireDrivingLicenseOrPzm(request.requireDrivingLicenseOrPzm());
+        }
         if (request.requireOc() != null) event.setRequireOc(request.requireOc());
         if (request.requirePt() != null) event.setRequirePt(request.requirePt());
         if (request.requireCage() != null) event.setRequireCage(request.requireCage());
         if (request.requireRegistered() != null) event.setRequireRegistered(request.requireRegistered());
         if (!event.isPaid()) {
             event.setEntryFee(null);
+            event.setBankAccount(null);
+        } else if (!event.isAcceptRegistrations()) {
             event.setBankAccount(null);
         }
 
@@ -616,6 +635,7 @@ public class EventService {
                 event.getExternalUrl(),
                 event.isRequireDrivingLicense(),
                 event.isRequirePzmLicense(),
+                event.isRequireDrivingLicenseOrPzm(),
                 event.isRequireOc(),
                 event.isRequirePt(),
                 event.isRequireCage(),
@@ -627,6 +647,7 @@ public class EventService {
     private void applyOptionalEventFields(Event event, String endDate, String endTime, String street,
                                            java.math.BigDecimal spectatorFee, String externalUrl,
                                            Boolean requireDrivingLicense, Boolean requirePzmLicense,
+                                           Boolean requireDrivingLicenseOrPzm,
                                            Boolean requireOc, Boolean requirePt,
                                            Boolean requireCage, Boolean requireRegistered) {
         if (endDate != null && !endDate.isBlank()) event.setEndDate(parseDate(endDate));
@@ -638,6 +659,7 @@ public class EventService {
         }
         if (requireDrivingLicense != null) event.setRequireDrivingLicense(requireDrivingLicense);
         if (requirePzmLicense != null) event.setRequirePzmLicense(requirePzmLicense);
+        if (requireDrivingLicenseOrPzm != null) event.setRequireDrivingLicenseOrPzm(requireDrivingLicenseOrPzm);
         if (requireOc != null) event.setRequireOc(requireOc);
         if (requirePt != null) event.setRequirePt(requirePt);
         if (requireCage != null) event.setRequireCage(requireCage);

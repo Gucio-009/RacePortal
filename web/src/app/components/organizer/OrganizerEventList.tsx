@@ -11,10 +11,11 @@
  * Pomysł (alt): tabela z sortowaniem zamiast kart; infinite scroll przy wielu eventach.
  */
 
-import { Calendar, Users, Loader2, Ban, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Users, Loader2, Ban, Pencil, Trash2, Search } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
+import { Input } from "../ui/input";
 import { eventStatusLabel, formatEventDate } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 
@@ -22,6 +23,8 @@ interface OrganizerEventListProps {
   events: OrganizerEvent[];
   loading: boolean;
   loadError: string | null;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
   onEdit: (event: OrganizerEvent) => void;
   onLoadRegistrations: (eventId: string) => void;
   onCancelEvent: (eventId: string) => void;
@@ -32,30 +35,62 @@ export function OrganizerEventList({
   events,
   loading,
   loadError,
+  searchQuery,
+  onSearchQueryChange,
   onEdit,
   onLoadRegistrations,
   onCancelEvent,
   onDeleteEvent,
 }: OrganizerEventListProps) {
+  const search = (
+    <div className="relative mb-4">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--race-muted)]" />
+      <Input
+        value={searchQuery}
+        onChange={(e) => onSearchQueryChange(e.target.value)}
+        placeholder="Szukaj wydarzeń (nazwa, kategoria, tor, miasto…)"
+        className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]"
+      />
+    </div>
+  );
+
   if (loading) {
     return (
-      <div className="text-center py-12 text-[var(--race-muted)]">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
-        Ładowanie...
+      <div className="space-y-4">
+        {search}
+        <div className="text-center py-12 text-[var(--race-muted)]">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
+          Ładowanie...
+        </div>
       </div>
     );
   }
 
   if (loadError) {
-    return <p className="text-red-400 text-center py-12">{loadError}</p>;
+    return (
+      <div className="space-y-4">
+        {search}
+        <p className="text-red-400 text-center py-12">{loadError}</p>
+      </div>
+    );
   }
 
   if (events.length === 0) {
-    return <p className="text-[var(--race-muted)] text-center py-12">Brak wydarzeń. Utwórz pierwsze!</p>;
+    return (
+      <div className="space-y-4">
+        {search}
+        <p className="text-[var(--race-muted)] text-center py-12">
+          {searchQuery.trim()
+            ? "Brak wydarzeń pasujących do wyszukiwania."
+            : "Brak wydarzeń. Utwórz pierwsze!"}
+        </p>
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="space-y-4">
+      {search}
       {events.map((event) => (
         <Card key={event.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
           <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -128,6 +163,6 @@ export function OrganizerEventList({
           </CardContent>
         </Card>
       ))}
-    </>
+    </div>
   );
 }

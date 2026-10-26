@@ -148,6 +148,10 @@ public class Event {
     @Column(name = "require_pzm_license", nullable = false)
     private boolean requirePzmLicense = false;
 
+    /** Wymaga prawa jazdy B albo licencji PZM (wystarczy jedno). */
+    @Column(name = "require_driving_license_or_pzm", nullable = false)
+    private boolean requireDrivingLicenseOrPzm = false;
+
     /** Wymaga OC na pojeździe. */
     @Column(name = "require_oc", nullable = false)
     private boolean requireOc = false;
@@ -409,6 +413,14 @@ public class Event {
 
     public void setRequirePzmLicense(boolean requirePzmLicense) {
         this.requirePzmLicense = requirePzmLicense;
+    }
+
+    public boolean isRequireDrivingLicenseOrPzm() {
+        return requireDrivingLicenseOrPzm;
+    }
+
+    public void setRequireDrivingLicenseOrPzm(boolean requireDrivingLicenseOrPzm) {
+        this.requireDrivingLicenseOrPzm = requireDrivingLicenseOrPzm;
     }
 
     public boolean isRequireOc() {

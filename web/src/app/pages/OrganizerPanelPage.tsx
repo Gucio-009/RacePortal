@@ -2,21 +2,23 @@
  * OrganizerPanelPage – panel roli ORGANIZER (oraz ADMIN przez AuthGate).
  *
  * Cel: CRUD wydarzeń organizatora + zarządzanie statusami zgłoszeń kierowców.
- * Wzorce: fetch on mount (`/api/organizer/events`), Tabs (wydarzenia / zgłoszenia),
- * dialog formularza (komponenty organizer/*), api.patch/post z JWT z `raceportal_token`.
+ * Wzorce: fetch on mount (`/api/organizer/events`), wyszukiwarka listy, dialog zgłoszeń
+ * (bez osobnej zakładki), dialog formularza (komponenty organizer/*).
  * Auth: route gated AuthGate roles=["ORGANIZER","ADMIN"] w routes.tsx; API też egzekwuje rolę.
- * Presety OTHER → własne wartości kategorii/toru/miasta/czasu przed wysyłką payloadu.
- * Theme: `--race-accent`, `font-display` w nagłówku.
- * Docker/nginx: deep link `/organizer` (lub ścieżka z routera) → SPA fallback.
  *
- * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod; Next.js RSC + server actions;
- * osobny mikrofrontend panelu organizatora.
+ * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod.
  */
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { Reveal } from "../components/Reveal";
 import { Button } from "../components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { Registration, RegistrationStatus } from "../lib/types";
@@ -31,6 +33,7 @@ import {
 } from "../components/organizer/organizerEventForm";
 import { OrganizerEventList } from "../components/organizer/OrganizerEventList";
 import { OrganizerRegistrationsList } from "../components/organizer/OrganizerRegistrationsList";
+import { OrganizerRegistrationDetailDialog } from "../components/organizer/OrganizerRegistrationDetailDialog";
 import { OrganizerEventFormDialog } from "../components/organizer/OrganizerEventFormDialog";
 
 export function OrganizerPanelPage() {
@@ -38,20 +41,32 @@ export function OrganizerPanelPage() {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [registrationsOpen, setRegistrationsOpen] = useState(false);
+  const [detailReg, setDetailReg] = useState<Registration | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState("events");
+  const [eventSearch, setEventSearch] = useState("");
   const [form, setForm] = useState(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  // Komentarze per zgłoszenie – wysyłane przy zmianie statusu.
   const [comments, setComments] = useState<Record<string, string>>({});
 
   const selectedEvent = events.find((e) => e.id === selectedEventId);
 
-  // Rozwiązanie presetów „Inne…” przed zapisem do API.
+  const filteredEvents = useMemo(() => {
+    const q = eventSearch.trim().toLowerCase();
+    if (!q) return events;
+    return events.filter((e) => {
+      const hay = [e.name, e.category, e.track, e.city, e.voivodeship, e.status]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return hay.includes(q);
+    });
+  }, [events, eventSearch]);
+
   const resolvedCategory =
     form.category === OTHER ? form.categoryOther.trim() : form.category.trim();
   const resolvedTrack =
@@ -88,8 +103,8 @@ export function OrganizerPanelPage() {
     if (form.endDate.trim() && form.date && form.endDate < form.date) {
       errors.endDate = "Data zakończenia nie może być wcześniejsza niż data startu";
     }
-    if (form.paid && !form.bankAccount.trim()) {
-      errors.bankAccount = "Dla płatnego wydarzenia podaj numer konta";
+    if (form.paid && form.acceptRegistrations && !form.bankAccount.trim()) {
+      errors.bankAccount = "Dla płatnego wydarzenia ze zgłoszeniami online podaj numer konta";
     }
     const imageErr = validateImageReference(form.imageUrl, false);
     if (imageErr) errors.imageUrl = imageErr;
@@ -113,7 +128,6 @@ export function OrganizerPanelPage() {
   };
 
   useEffect(() => {
-    // AuthGate już odświeża rolę przy mismatch; tu best-effort + lista (nawet gdy refresh padnie).
     let cancelled = false;
     (async () => {
       await refreshSession();
@@ -126,10 +140,11 @@ export function OrganizerPanelPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount
   }, []);
 
-  /** Pobiera zgłoszenia wybranego wydarzenia i przełącza tab. */
+  /** Pobiera zgłoszenia wybranego wydarzenia i otwiera dialog (bez osobnej zakładki). */
   const loadRegistrations = async (eventId: string) => {
     setSelectedEventId(eventId);
-    setActiveTab("registrations");
+    setRegistrationsOpen(true);
+    setComments({});
     try {
       const items = await api.get<Registration[]>(`/api/registrations/event/${eventId}`);
       setRegistrations(items);
@@ -153,7 +168,6 @@ export function OrganizerPanelPage() {
     setCreateOpen(true);
   };
 
-  /** Create (POST) lub update (PATCH) – nowe wydarzenie czeka na akceptację admina. */
   const handleSave = async () => {
     const errors = validateEventForm();
     if (Object.keys(errors).length > 0) {
@@ -163,6 +177,7 @@ export function OrganizerPanelPage() {
     }
     setFieldErrors({});
     setSaving(true);
+    const onlinePaid = form.paid && form.acceptRegistrations;
     const payload = {
       name: form.name.trim(),
       description: form.description.trim(),
@@ -177,9 +192,9 @@ export function OrganizerPanelPage() {
       lng: form.lng ? Number(form.lng) : undefined,
       paid: form.paid,
       entryFee: form.paid && resolvedEntryFee ? Number(resolvedEntryFee) : undefined,
-      bankAccount: form.paid ? form.bankAccount.trim() : undefined,
-      paymentDeadlineHours: form.paid ? Number(form.paymentDeadlineHours) || 72 : undefined,
-      freeCancelDays: Number(form.freeCancelDays) || 7,
+      bankAccount: onlinePaid ? form.bankAccount.trim() : undefined,
+      paymentDeadlineHours: onlinePaid ? Number(form.paymentDeadlineHours) || 72 : undefined,
+      freeCancelDays: onlinePaid ? Number(form.freeCancelDays) || 7 : undefined,
       acceptRegistrations: form.acceptRegistrations,
       endDate: form.endDate.trim() || undefined,
       endTime: form.endTime.trim() || undefined,
@@ -187,6 +202,7 @@ export function OrganizerPanelPage() {
       externalUrl: form.externalUrl.trim() || undefined,
       requireDrivingLicense: form.acceptRegistrations ? form.requireDrivingLicense : false,
       requirePzmLicense: form.acceptRegistrations ? form.requirePzmLicense : false,
+      requireDrivingLicenseOrPzm: form.acceptRegistrations ? form.requireDrivingLicenseOrPzm : false,
       requireOc: form.acceptRegistrations ? form.requireOc : false,
       requirePt: form.acceptRegistrations ? form.requirePt : false,
       requireCage: form.acceptRegistrations ? form.requireCage : false,
@@ -224,13 +240,13 @@ export function OrganizerPanelPage() {
         comment: comments[id]?.trim() || undefined,
       });
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+      setDetailReg((prev) => (prev?.id === id ? updated : prev));
       toast.success(`Zgłoszenie: ${registrationStatusLabel(updated.status)}`);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
     }
   };
 
-  /** Anulowanie wydarzenia po stronie organizatora – kasuje otwarte zgłoszenia na backendzie. */
   const cancelEvent = async (eventId: string) => {
     if (!confirm("Na pewno anulować wydarzenie? Wszystkie otwarte zgłoszenia zostaną anulowane.")) {
       return;
@@ -242,14 +258,13 @@ export function OrganizerPanelPage() {
       if (selectedEventId === eventId) {
         setRegistrations([]);
         setSelectedEventId(null);
-        setActiveTab("events");
+        setRegistrationsOpen(false);
       }
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się anulować wydarzenia");
     }
   };
 
-  /** Twarde usunięcie — znika z listy (także po anulowaniu); zgłoszenia kasowane na backendzie. */
   const deleteEvent = async (eventId: string) => {
     if (!confirm("Na pewno trwale usunąć wydarzenie? Tej operacji nie można cofnąć.")) {
       return;
@@ -261,7 +276,7 @@ export function OrganizerPanelPage() {
       if (selectedEventId === eventId) {
         setRegistrations([]);
         setSelectedEventId(null);
-        setActiveTab("events");
+        setRegistrationsOpen(false);
       }
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć wydarzenia");
@@ -295,37 +310,58 @@ export function OrganizerPanelPage() {
       </section>
 
       <section className="container mx-auto px-4 py-10">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="bg-[var(--race-card)] border border-[var(--race-border)] mb-6">
-            <TabsTrigger value="events">Moje wydarzenia</TabsTrigger>
-            <TabsTrigger value="registrations" disabled={!selectedEventId}>
-              Zgłoszenia {selectedEventId ? "" : "(wybierz wydarzenie)"}
-            </TabsTrigger>
-          </TabsList>
+        <h2 className="font-display text-[var(--race-fg)] mb-4" style={{ fontWeight: 800 }}>
+          Moje wydarzenia
+        </h2>
+        <OrganizerEventList
+          events={filteredEvents}
+          loading={loading}
+          loadError={loadError}
+          searchQuery={eventSearch}
+          onSearchQueryChange={setEventSearch}
+          onEdit={openEdit}
+          onLoadRegistrations={loadRegistrations}
+          onCancelEvent={cancelEvent}
+          onDeleteEvent={deleteEvent}
+        />
+      </section>
 
-          <TabsContent value="events" className="space-y-4">
-            <OrganizerEventList
-              events={events}
-              loading={loading}
-              loadError={loadError}
-              onEdit={openEdit}
-              onLoadRegistrations={loadRegistrations}
-              onCancelEvent={cancelEvent}
-              onDeleteEvent={deleteEvent}
-            />
-          </TabsContent>
-
-          <TabsContent value="registrations" className="space-y-4">
+      <Dialog
+        open={registrationsOpen}
+        onOpenChange={(open) => {
+          setRegistrationsOpen(open);
+          if (!open) setDetailReg(null);
+        }}
+      >
+        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
+              Zgłoszenia
+            </DialogTitle>
+            <DialogDescription className="text-[var(--race-muted)]">
+              {selectedEvent ? selectedEvent.name : "Wybierz wydarzenie"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
             <OrganizerRegistrationsList
               registrations={registrations}
               selectedEvent={selectedEvent}
               comments={comments}
               setComments={setComments}
               onUpdateStatus={updateRegistrationStatus}
+              onOpenDetail={setDetailReg}
             />
-          </TabsContent>
-        </Tabs>
-      </section>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <OrganizerRegistrationDetailDialog
+        registration={detailReg}
+        open={detailReg != null}
+        onOpenChange={(open) => {
+          if (!open) setDetailReg(null);
+        }}
+      />
 
       <OrganizerEventFormDialog
         open={createOpen}

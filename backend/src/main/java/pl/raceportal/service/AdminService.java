@@ -369,8 +369,7 @@ public class AdminService {
     }
 
     private OrganizerApplicationResponse serializeApplication(OrganizerApplication application) {
-        UserRef userRef = new UserRef(application.getUser().getId(), application.getUser().getUsername(),
-                application.getUser().getEmail(), null);
+        UserRef userRef = UserRef.from(application.getUser());
         return new OrganizerApplicationResponse(
                 application.getId(),
                 application.getUser().getId(),

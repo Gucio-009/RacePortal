@@ -20,8 +20,38 @@ public final class RegistrationDtos {
     private RegistrationDtos() {
     }
 
-    /** Skrót użytkownika w listach zgłoszeń organizatora. */
-    public record UserRef(String id, String username, String email, String avatar) {
+    /**
+     * Profil użytkownika w odpowiedziach API (zgłoszenia, wnioski organizatora).
+     * Pola kierowcy (imię, PJ, PZM…) wypełniane gdy dostępne — np. podgląd zgłoszenia.
+     */
+    public record UserRef(
+            String id,
+            String username,
+            String email,
+            String avatar,
+            String firstName,
+            String lastName,
+            String phone,
+            String address,
+            String instagramUrl,
+            boolean hasDrivingLicenseB,
+            String pzmLicense
+    ) {
+        public static UserRef from(pl.raceportal.domain.User user) {
+            return new UserRef(
+                    user.getId(),
+                    user.getUsername(),
+                    user.getEmail(),
+                    user.getAvatar(),
+                    user.getFirstName(),
+                    user.getLastName(),
+                    user.getPhone(),
+                    user.getAddress(),
+                    user.getInstagramUrl(),
+                    user.isHasDrivingLicenseB(),
+                    user.getPzmLicense()
+            );
+        }
     }
 
     /** Nowe zgłoszenie — {@code carId} opcjonalne, {@code note} dla organizatora. */

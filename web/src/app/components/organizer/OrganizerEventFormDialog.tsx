@@ -6,7 +6,7 @@
  *
  * Tor preset → `applyTrackPreset` wypełnia city / województwo / lat / lng.
  * Mapa: `LocationMapPicker` montowany tylko gdy `open` (invalidateSize w pickerze).
- * Płatne: wpisowe, IBAN, termin wpłaty, darmowa anulacja – widoczne przy `form.paid`.
+ * Płatne: cena zawsze przy `form.paid`; IBAN/termin/anulacja tylko gdy też `acceptRegistrations`.
  * Wymagania kierowcy (PJ, PZM, OC…) – tylko gdy `acceptRegistrations`.
  *
  * Stan formularza trzymany w rodzicu (`OrganizerPanelPage`); tu tylko UI + setForm.
@@ -422,7 +422,13 @@ export function OrganizerEventFormDialog({
             <Switch
               className="shrink-0"
               checked={form.acceptRegistrations}
-              onCheckedChange={(v) => setForm({ ...form, acceptRegistrations: v })}
+              onCheckedChange={(v) =>
+                setForm({
+                  ...form,
+                  acceptRegistrations: v,
+                  bankAccount: v ? form.bankAccount : "",
+                })
+              }
             />
           </div>
 
@@ -436,6 +442,7 @@ export function OrganizerEventFormDialog({
                   [
                     ["requireDrivingLicense", "Prawo jazdy kat. B"],
                     ["requirePzmLicense", "Licencja PZM"],
+                    ["requireDrivingLicenseOrPzm", "Prawo jazdy kat. B LUB Licencja PZM"],
                     ["requireOc", "Ubezpieczenie OC"],
                     ["requirePt", "Przegląd techniczny (PT)"],
                     ["requireCage", "Klatka bezpieczeństwa"],
@@ -443,7 +450,7 @@ export function OrganizerEventFormDialog({
                   ] as const
                 ).map(([key, label]) => (
                   <div key={key} className="flex items-center gap-3 rounded border border-[var(--race-border)] px-3 py-2 box-border overflow-hidden">
-                    <Label className="text-[var(--race-fg)] text-sm flex-1 min-w-0 truncate pr-1">{label}</Label>
+                    <Label className="text-[var(--race-fg)] text-sm flex-1 min-w-0 pr-1 leading-snug">{label}</Label>
                     <Switch
                       className="shrink-0"
                       checked={form[key]}
@@ -496,11 +503,15 @@ export function OrganizerEventFormDialog({
             />
           </div>
 
-          {/* Płatne: flow ACCEPTED → proof → CONFIRMED (patrz OrganizerRegistrationsList). */}
+          {/* Płatne: pełny flow przelewu tylko przy online zgłoszeniach; inaczej sama cena informacyjna. */}
           <div className="sm:col-span-2 flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden">
             <div className="flex-1 min-w-0 pr-1">
               <Label className="text-[var(--race-fg)]">Wydarzenie płatne</Label>
-              <p className="text-xs text-[var(--race-muted)] truncate">Wpisowe + weryfikacja przelewu</p>
+              <p className="text-xs text-[var(--race-muted)] truncate">
+                {form.acceptRegistrations
+                  ? "Wpisowe + weryfikacja przelewu"
+                  : "Cena udziału (tylko informacyjnie)"}
+              </p>
             </div>
             <Switch
               className="shrink-0"
@@ -512,7 +523,7 @@ export function OrganizerEventFormDialog({
           {form.paid && (
             <>
               <div className="space-y-2 sm:col-span-2">
-                <Label>Wpisowe (PLN)</Label>
+                <Label>{form.acceptRegistrations ? "Wpisowe (PLN)" : "Cena udziału (PLN, informacyjnie)"}</Label>
                 <div className="flex flex-wrap gap-2">
                   {ENTRY_FEE_PRESETS.map((fee) => (
                     <Button
@@ -554,65 +565,69 @@ export function OrganizerEventFormDialog({
                   />
                 )}
               </div>
-              <div className="space-y-2 sm:col-span-2">
-                <Label className="inline-flex items-baseline gap-0.5">
-                  Numer konta<span className="text-red-500 font-bold">*</span>
-                </Label>
-                <Input
-                  value={form.bankAccount}
-                  onChange={(e) => patch({ bankAccount: e.target.value }, "bankAccount")}
-                  placeholder="PL…"
-                  className={fieldClass(!!fieldErrors.bankAccount)}
-                />
-                {fieldErrors.bankAccount && (
-                  <p className="text-xs text-red-400">{fieldErrors.bankAccount}</p>
-                )}
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="border-[var(--race-border)] text-[var(--race-accent)]"
-                  onClick={() => patch({ bankAccount: DEMO_BANK_ACCOUNT }, "bankAccount")}
-                >
-                  Wstaw konto demo
-                </Button>
-              </div>
-              <div className="space-y-2">
-                <Label>Termin wpłaty</Label>
-                <Select
-                  value={form.paymentDeadlineHours}
-                  onValueChange={(v) => setForm({ ...form, paymentDeadlineHours: v })}
-                >
-                  <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-                    {PAYMENT_DEADLINE_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Darmowa anulacja</Label>
-                <Select
-                  value={form.freeCancelDays}
-                  onValueChange={(v) => setForm({ ...form, freeCancelDays: v })}
-                >
-                  <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-                    {FREE_CANCEL_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value}>
-                        {o.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {form.acceptRegistrations && (
+                <>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label className="inline-flex items-baseline gap-0.5">
+                      Numer konta<span className="text-red-500 font-bold">*</span>
+                    </Label>
+                    <Input
+                      value={form.bankAccount}
+                      onChange={(e) => patch({ bankAccount: e.target.value }, "bankAccount")}
+                      placeholder="PL…"
+                      className={fieldClass(!!fieldErrors.bankAccount)}
+                    />
+                    {fieldErrors.bankAccount && (
+                      <p className="text-xs text-red-400">{fieldErrors.bankAccount}</p>
+                    )}
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="border-[var(--race-border)] text-[var(--race-accent)]"
+                      onClick={() => patch({ bankAccount: DEMO_BANK_ACCOUNT }, "bankAccount")}
+                    >
+                      Wstaw konto demo
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Termin wpłaty</Label>
+                    <Select
+                      value={form.paymentDeadlineHours}
+                      onValueChange={(v) => setForm({ ...form, paymentDeadlineHours: v })}
+                    >
+                      <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                        {PAYMENT_DEADLINE_OPTIONS.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Darmowa anulacja</Label>
+                    <Select
+                      value={form.freeCancelDays}
+                      onValueChange={(v) => setForm({ ...form, freeCancelDays: v })}
+                    >
+                      <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                        {FREE_CANCEL_OPTIONS.map((o) => (
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              )}
             </>
           )}
 
