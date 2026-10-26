@@ -17,9 +17,8 @@ import {
   Alert,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { api, webEventUrl } from "../api/client";
+import { api, eventMediaUrl, webEventUrl } from "../api/client";
 import type { ApiEvent } from "../api/types";
-import { DEFAULT_IMAGE } from "../api/types";
 import { useTheme } from "../theme/ThemeContext";
 import { colors } from "../theme/colors";
 import type { EventsStackParamList } from "../navigation/types";
@@ -73,7 +72,7 @@ export function EventDetailScreen({ route }: Props) {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={{ paddingBottom: 40 }}>
-      <Image source={{ uri: event.imageUrl || DEFAULT_IMAGE }} style={styles.image} />
+      <Image source={{ uri: eventMediaUrl(event) }} style={styles.image} />
       <View style={styles.body}>
         <Text style={[styles.category, { color: accentColor }]}>{event.category}</Text>
         <Text style={styles.name}>{event.name}</Text>

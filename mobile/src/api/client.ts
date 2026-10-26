@@ -1,11 +1,13 @@
 /**
  * Klient HTTP API RacePortal — mobilka-wizytówka (tylko publiczne GET).
  *
- * URL API: `EXPO_PUBLIC_API_URL` albo IP z Expo Go / localhost / 10.0.2.2 (Android).
- * URL weba (CTA zapisu): `EXPO_PUBLIC_WEB_URL` (domyślnie http://127.0.0.1:8081).
+ * Lokalnie: API `:4000`, web CTA `:8081` (Compose).
+ * Demo / prod CTA: `EXPO_PUBLIC_WEB_URL=https://raceportal.pl`
+ * (API nadal lokalne albo `EXPO_PUBLIC_API_URL` na origin VM).
  */
 import Constants from "expo-constants";
 import { Platform } from "react-native";
+import { DEFAULT_IMAGE, eventImage } from "./types";
 
 function resolveExpoGoHost(): string | null {
   const hostUri = Constants.expoConfig?.hostUri || "";
@@ -15,7 +17,7 @@ function resolveExpoGoHost(): string | null {
 
 /** Domyślnie API Dockera; w Expo Go próbuje użyć IP hosta dev-serwera. */
 export const API_URL = (() => {
-  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL;
+  if (process.env.EXPO_PUBLIC_API_URL) return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
   const expoGoHost = resolveExpoGoHost();
   if (expoGoHost && expoGoHost !== "localhost" && expoGoHost !== "127.0.0.1") {
     return `http://${expoGoHost}:4000`;
@@ -37,6 +39,17 @@ export function webEventUrl(eventId: string): string {
   return `${WEB_URL}/wydarzenia/${encodeURIComponent(eventId)}`;
 }
 
+/**
+ * URL zdjęcia eventu dla `<Image>` — relative `/api/uploads/...` dostaje prefiks API_URL
+ * (web ma same-origin; native nie).
+ */
+export function eventMediaUrl(event: { imageUrl?: string | null }): string {
+  const src = eventImage(event);
+  if (!src) return DEFAULT_IMAGE;
+  if (src.startsWith("/")) return `${API_URL}${src}`;
+  return src;
+}
+
 export class ApiError extends Error {
   status: number;
   details?: Record<string, string>;
@@ -56,17 +69,13 @@ function formatApiError(error?: string, details?: Record<string, string>): strin
   return `${base} (${fields})`;
 }
 
-/** Publiczne GET/POST bez JWT (katalog wizytówki). */
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-
+/** Publiczne GET bez JWT (katalog wizytówki). */
+async function getJson<T>(path: string): Promise<T> {
   let res: Response;
   try {
     res = await fetch(`${API_URL}${path}`, {
-      method,
-      headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      method: "GET",
+      headers: { Accept: "application/json" },
     });
   } catch {
     throw new ApiError(0, `Brak połączenia z API (${API_URL})`);
@@ -88,6 +97,5 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 }
 
 export const api = {
-  get: <T>(path: string) => request<T>("GET", path),
-  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
+  get: <T>(path: string) => getJson<T>(path),
 };

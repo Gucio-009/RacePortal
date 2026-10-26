@@ -28,7 +28,8 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "http://127.0.0.1:4000"
+      "apiUrl": "http://127.0.0.1:4000",
+      "webUrl": "http://127.0.0.1:8081"
     }
   }
 }

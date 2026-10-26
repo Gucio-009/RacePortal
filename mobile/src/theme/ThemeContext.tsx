@@ -1,5 +1,7 @@
 /**
  * Motyw akcentu (gold / redline / ice / arctic / sand / blush) — lokalne ustawienia, bez API.
+ * Wizytówka nie ma ekranu Settings: domyślnie gold; `setAccent` zostaje na przyszłość / Expo web.
+ * Native: SecureStore; Expo web: localStorage — to NIE jest ten sam storage co web Compose (`:8081`).
  * StyleSheet.create zamraża kolory, więc komponenty UI czytają accentColor w renderze.
  */
 import {

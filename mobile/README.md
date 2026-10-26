@@ -22,7 +22,8 @@ Backend: Spring Boot na porcie **4000** (Docker Compose). Web: **8081**.
    docker compose up -d
    curl http://127.0.0.1:4000/api/health
    ```
-   Oczekiwane: `"status":"ok"`, `"db":"up"`. Web: `http://127.0.0.1:8081`.
+   Oczekiwane publicznie: `{"status":"ok"}` (szczegóły `db`/`smtp` są tylko dla admina — po pentest 2026-10).  
+   Web CTA lokalnie: `http://127.0.0.1:8081`.
 3. Zależności mobile:
    ```bash
    cd mobile
@@ -147,9 +148,19 @@ Otwórz `http://localhost:8082` — wystarczy do smoke / E2E.
 | iOS Simulator (Mac) | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
 | Android Emulator | `http://10.0.2.2:4000` | `http://10.0.2.2:8081` |
 | Expo web | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
-| Fizyczny telefon | `EXPO_PUBLIC_API_URL=http://<IP_PC>:4000` | `EXPO_PUBLIC_WEB_URL=http://<IP_PC>:8081` |
+| Fizyczny telefon (LAN) | `EXPO_PUBLIC_API_URL=http://<IP_PC>:4000` | `EXPO_PUBLIC_WEB_URL=http://<IP_PC>:8081` |
+| Demo CTA → produkcja | lokalne API albo origin | `EXPO_PUBLIC_WEB_URL=https://raceportal.pl` |
 
-Sprawdzenie API z hosta: `http://127.0.0.1:4000/api/health`.
+Sprawdzenie API z hosta: `curl http://127.0.0.1:4000/api/health` → `{"status":"ok"}`.
+
+**Zdjęcia:** uploady przychodzą jako `/api/uploads/...` — klient dokleja `API_URL` (`eventMediaUrl`), inaczej miniatury na native nie ładują się (web ma same-origin).
+
+Przykład CTA na żywy portal przy lokalnym API:
+
+```bash
+cd mobile
+EXPO_PUBLIC_WEB_URL=https://raceportal.pl npm start
+```
 
 ---
 

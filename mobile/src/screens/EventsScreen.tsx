@@ -22,9 +22,9 @@ import {
 import DateTimePicker, { type DateTimePickerEvent } from "@react-native-community/datetimepicker";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { api } from "../api/client";
+import { api, eventMediaUrl } from "../api/client";
 import type { ApiEvent, EventMarker, EventMarkersResponse, PaginatedEvents } from "../api/types";
-import { DEFAULT_IMAGE, EVENT_CATEGORY_GROUPS } from "../api/types";
+import { EVENT_CATEGORY_GROUPS } from "../api/types";
 import { ScreenHeader, GhostButton } from "../components/ui";
 import { EventsCalendarView } from "../components/EventsCalendarView";
 import { colors } from "../theme/colors";
@@ -390,7 +390,7 @@ export function EventsScreen() {
           ListEmptyComponent={<Text style={styles.empty}>Brak nadchodzących wydarzeń</Text>}
           renderItem={({ item }) => (
             <Pressable style={styles.card} onPress={() => goDetail(item.id)}>
-              <Image source={{ uri: item.imageUrl || DEFAULT_IMAGE }} style={styles.image} />
+              <Image source={{ uri: eventMediaUrl(item) }} style={styles.image} />
               <View style={styles.cardBody}>
                 <Text style={styles.category}>{item.category}</Text>
                 <Text style={styles.name} numberOfLines={2}>

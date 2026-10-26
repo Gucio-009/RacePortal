@@ -3,7 +3,7 @@
 Dokument zbiera **całą historię prac nad `mobile/`** (Expo), decyzje technologiczne, stan przed/po oraz efekty widoczne dla użytkownika i recenzenta.  
 Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronologia całego projektu: [`changes.md`](./changes.md).
 
-**Ostatnia aktualizacja:** 2026-10-23 (`ThemeContext` zna sześć akcentów weba).
+**Ostatnia aktualizacja:** 2026-10-26 (media URL, CTA prod, docs health, cleanup zależności).
 
 ---
 
@@ -53,8 +53,8 @@ Szybki start / emulator: [`../mobile/README.md`](../mobile/README.md). Chronolog
 
 | Warstwa | Narzędzie | Zakres |
 |---------|-----------|--------|
-| Unit | Vitest | `API_URL`, token storage (web) — `mobile/tests/unit.client.test.ts` |
-| E2E | Playwright | `tests/e2e/mobile.spec.ts` — login, lista, detal, błąd hasła, wylogowanie (Expo web `:8082`) |
+| Unit | Vitest | `API_URL` / `WEB_URL` / `eventMediaUrl` — `mobile/tests/unit.client.test.ts` |
+| E2E | Playwright | `tests/e2e/mobile.spec.ts` — gość: lista / detal / CTA (Expo web `:8082`; historycznie login — przed wizytówką) |
 
 **Efekt:** mobile w tej samej piramidzie testów co API/web (dokumentacja: [`testy/TESTY.md`](./testy/TESTY.md)).
 
@@ -144,7 +144,10 @@ mobile/
 | iOS Simulator | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
 | Android emulator | `http://10.0.2.2:4000` | `http://10.0.2.2:8081` |
 | Expo web | `http://127.0.0.1:4000` | `http://127.0.0.1:8081` |
-| Telefon fizyczny | `EXPO_PUBLIC_API_URL` | `EXPO_PUBLIC_WEB_URL` |
+| Telefon fizyczny (LAN) | `EXPO_PUBLIC_API_URL` | `EXPO_PUBLIC_WEB_URL` (lokalny web) |
+| Demo → produkcja | lokalne / origin | `EXPO_PUBLIC_WEB_URL=https://raceportal.pl` |
+
+Zdjęcia z uploadu (`/api/uploads/...`): `eventMediaUrl` w `client.ts` dokleja `API_URL` (native nie ma same-origin jak web).
 
 ---
 
@@ -191,7 +194,7 @@ Pełna instrukcja: [`../mobile/README.md`](../mobile/README.md). Skrót:
 
 ### Wspólne
 
-1. `docker compose up -d` → `http://127.0.0.1:4000/api/health` → `"db":"up"`
+1. `docker compose up -d` → `http://127.0.0.1:4000/api/health` → publicznie `{"status":"ok"}`
 2. `cd mobile && npm install`
 
 ### macOS
@@ -238,11 +241,13 @@ npm --prefix mobile test                        # unit
 | [`testy/TESTY.md`](./testy/TESTY.md) | TC mobile |
 | `tests/e2e/mobile.spec.ts` | E2E Expo web |
 | `mobile/App.tsx` + `mobile/src/screens/*` | Implementacja |
-| `mobile/src/theme/ThemeContext.tsx` | Akcent gold/redline/ice |
+| `mobile/src/theme/ThemeContext.tsx` | Akcenty: gold / redline / ice / arctic / sand / blush (bez UI Settings) |
 
 ---
 
-### Etap E — UX / Spec (2026-09-14)
+### Etap E — UX / Spec (2026-09-14, **przed** wizytówką)
+
+*(Historyczne — ekrany Settings / garaż / Moje usunięte w Etapie H.)*
 
 - ThemeContext: zmiana akcentu + Alert + zamknięcie Settings  
 - Clear-on-edit numerów w garażu; większy gap na „Moje”  
@@ -257,9 +262,16 @@ Luki względem Spec (mobile bez pola zdjęcia, wymagane imię/telefon itd.): [`s
 
 **Efekt:** katalog publiczny bez konta; konwersja zapisu na webie Compose `:8081`.
 
-### Etap I — Akcenty z weba (2026-10-23)
+### Etap I — Akcenty (2026-10-23)
 
-`ThemeContext` czyta ten sam `raceportal_settings` co strona. Oprócz gold / redline / ice / arctic rozpoznaje Desert Sand i Blush Pink, więc wspólny zapis nie wraca do złotego. Ekran zostaje katalogiem wydarzeń — pełne jasne powierzchnie są na webie.
+`ThemeContext` zna sześć akcentów jak web (gold / redline / ice / arctic / sand / blush).  
+Na native klucz `raceportal_settings` jest w **SecureStore** — **nie** dzieli localStorage z webem Compose. Brak ekranu Settings → zwykle domyślny gold. Expo web może czytać localStorage tej samej przeglądarki co `:8082`, nadal osobno od `:8081`.
+
+### Etap J — Spójność po updateach weba/API (2026-10-26)
+
+- `eventMediaUrl` — absolute URL dla `/api/uploads/...`
+- Docs: publiczny health = `{"status":"ok"}`; CTA prod przez `EXPO_PUBLIC_WEB_URL=https://raceportal.pl`
+- Usunięte: `@react-navigation/bottom-tabs`, martwy `api.post`
 
 ---
 
