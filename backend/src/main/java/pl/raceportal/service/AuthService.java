@@ -3,11 +3,13 @@ package pl.raceportal.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.raceportal.domain.ApplicationStatus;
+import pl.raceportal.domain.Event;
 import pl.raceportal.domain.OrganizerApplication;
 import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
@@ -21,12 +23,21 @@ import pl.raceportal.dto.AuthDtos.RegisterResponse;
 import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
 import pl.raceportal.dto.AuthDtos.UserDto;
 import pl.raceportal.i18n.MailTexts;
+import pl.raceportal.repository.BugReportRepository;
+import pl.raceportal.repository.CarRepository;
+import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.NotificationRepository;
 import pl.raceportal.repository.OrganizerApplicationRepository;
+import pl.raceportal.repository.RefreshTokenRepository;
+import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.AttemptRateLimiter;
 import pl.raceportal.security.JwtService;
 import pl.raceportal.security.ReservedUsernames;
 import pl.raceportal.web.ApiException;
+
+import java.util.List;
+import java.util.Locale;
 
 import java.security.SecureRandom;
 import java.time.Duration;
@@ -80,8 +91,17 @@ public class AuthService {
 
     private static final int FORGOT_MAX_PER_IP = 10;
 
+    /** Fraza wymagana przy zamknięciu konta (UI każe przepisać dokładnie to). */
+    public static final String CLOSE_ACCOUNT_PHRASE = "zamknij konto";
+
     private final UserRepository userRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
+    private final EventRepository eventRepository;
+    private final RegistrationRepository registrationRepository;
+    private final CarRepository carRepository;
+    private final NotificationRepository notificationRepository;
+    private final BugReportRepository bugReportRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
@@ -97,12 +117,21 @@ public class AuthService {
     private final String dummyPasswordHash;
 
     public AuthService(UserRepository userRepository, OrganizerApplicationRepository organizerApplicationRepository,
+                        EventRepository eventRepository, RegistrationRepository registrationRepository,
+                        CarRepository carRepository, NotificationRepository notificationRepository,
+                        BugReportRepository bugReportRepository, RefreshTokenRepository refreshTokenRepository,
                         PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
                         MailService mailService, GoogleIdTokenService googleIdTokenService,
                         AttemptRateLimiter attemptRateLimiter,
                         @Value("${app.public-base-url:https://raceportal.pl}") String publicBaseUrl) {
         this.userRepository = userRepository;
         this.organizerApplicationRepository = organizerApplicationRepository;
+        this.eventRepository = eventRepository;
+        this.registrationRepository = registrationRepository;
+        this.carRepository = carRepository;
+        this.notificationRepository = notificationRepository;
+        this.bugReportRepository = bugReportRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
@@ -254,6 +283,7 @@ public class AuthService {
             user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
             user.setRole(Role.USER);
             user.setEmailVerified(true);
+            user.setGoogleAccount(true);
             // Google nie zbiera prawa jazdy / PZM — wymuszamy krok dokończenia rejestracji.
             user.setRegistrationComplete(false);
             user.setAvatar(picture != null && !picture.isBlank() ? picture : null);
@@ -269,10 +299,13 @@ public class AuthService {
                 user.setEmailVerificationExpires(null);
                 user.setPendingEmail(null);
                 user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
+                user.setGoogleAccount(true);
             }
             if ((user.getAvatar() == null || user.getAvatar().isBlank()) && picture != null && !picture.isBlank()) {
                 user.setAvatar(picture);
             }
+            // Backfill starych kont Google + oznacz, że tożsamość idzie przez Google.
+            user.setGoogleAccount(true);
             user = userRepository.save(user);
         }
 
@@ -373,6 +406,9 @@ public class AuthService {
     public void changePassword(String userId, ChangePasswordRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        if (user.isGoogleAccount()) {
+            throw ApiException.badRequest("Konto Google — hasło zmieniasz w Google, nie tutaj");
+        }
         if (!passwordEncoder.matches(request.currentPassword(), user.getPasswordHash())) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "Nieprawidłowe obecne hasło");
         }
@@ -400,15 +436,17 @@ public class AuthService {
 
         User user = userRepository.findByEmailIgnoreCase(emailNorm).orElse(null);
         String token = generateVerificationToken();
-        if (user != null) {
+        // Konta Google nie mają lokalnego hasła — bez tokenu, ten sam komunikat (bez oracle).
+        if (user != null && !user.isGoogleAccount()) {
             user.setPasswordResetToken(token);
             user.setPasswordResetExpires(Instant.now().plus(PASSWORD_RESET_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
             userRepository.save(user);
         }
 
-        boolean sent = deliverPasswordResetMail(user, token);
-        if (user != null && !sent) {
-            log.warn("Password reset mail failed for user {}; password unchanged", user.getId());
+        User mailUser = (user != null && !user.isGoogleAccount()) ? user : null;
+        boolean sent = deliverPasswordResetMail(mailUser, token);
+        if (mailUser != null && !sent) {
+            log.warn("Password reset mail failed for user {}; password unchanged", mailUser.getId());
         }
     }
 
@@ -433,6 +471,9 @@ public class AuthService {
                 || !user.getPasswordResetToken().equals(token)) {
             throw ApiException.badRequest("Nieprawidłowy lub wygasły link");
         }
+        if (user.isGoogleAccount()) {
+            throw ApiException.badRequest("Konto Google — hasło zmieniasz w Google, nie tutaj");
+        }
 
         user.setPasswordHash(passwordEncoder.encode(newPassword));
         user.setPasswordResetToken(null);
@@ -449,6 +490,9 @@ public class AuthService {
     public MessageResponse requestEmailChange(String userId, String rawNewEmail, String currentPassword) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        if (user.isGoogleAccount()) {
+            throw ApiException.badRequest("Konto Google — e-mail zmieniasz w Google, nie tutaj");
+        }
         String newEmail = rawNewEmail.trim().toLowerCase();
         attemptRateLimiter.check("email-change:" + userId, RESEND_MAX_ATTEMPTS, AUTH_CODE_WINDOW);
 
@@ -674,6 +718,49 @@ public class AuthService {
         return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
     }
 
+    /**
+     * USER / ORGANIZER mogą zamknąć własne konto po wpisaniu {@link #CLOSE_ACCOUNT_PHRASE}.
+     * ADMIN — nie (zarządzanie kontami adminów tylko przez innego admina).
+     * Wydarzenia organizatora przechodzą na dowolnego ADMINA.
+     */
+    @Transactional
+    @CacheEvict(cacheNames = "events", allEntries = true)
+    public void closeOwnAccount(String userId, String confirmation) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono użytkownika"));
+        if (user.getRole() == Role.ADMIN) {
+            throw ApiException.forbidden("Administrator nie może zamknąć konta samodzielnie");
+        }
+        String phrase = confirmation == null ? "" : confirmation.trim().toLowerCase(Locale.ROOT);
+        if (!CLOSE_ACCOUNT_PHRASE.equals(phrase)) {
+            throw ApiException.badRequest("Aby zamknąć konto, wpisz dokładnie: zamknij konto");
+        }
+
+        List<User> admins = userRepository.findByRole(Role.ADMIN);
+        User handoff = admins.stream().filter(a -> !a.getId().equals(userId)).findFirst().orElse(null);
+        List<Event> organized = eventRepository.findByOrganizer_IdOrderByDateDesc(userId);
+        if (!organized.isEmpty()) {
+            if (handoff == null) {
+                throw ApiException.badRequest(
+                        "Nie można zamknąć konta: masz wydarzenia, a w systemie nie ma administratora do przejęcia");
+            }
+            for (Event event : organized) {
+                event.setOrganizer(handoff);
+            }
+            eventRepository.saveAll(organized);
+            eventRepository.flush();
+        }
+
+        registrationRepository.deleteByCar_User_Id(userId);
+        registrationRepository.deleteByUser_Id(userId);
+        notificationRepository.deleteByUser_Id(userId);
+        organizerApplicationRepository.deleteByUser_Id(userId);
+        bugReportRepository.detachUser(userId);
+        carRepository.deleteByUser_Id(userId);
+        refreshTokenRepository.deleteByUser_Id(userId);
+        userRepository.deleteById(userId);
+    }
+
     private UserDto toUserDto(User user) {
         String memberSince = String.valueOf(user.getCreatedAt().atZone(ZoneOffset.UTC).getYear());
         return new UserDto(user.getId(), user.getEmail(), user.getUsername(),
@@ -682,7 +769,8 @@ public class AuthService {
                 user.getAddress(), user.getInstagramUrl(),
                 user.isHasDrivingLicenseB(), user.getPzmLicense(),
                 MailTexts.normalize(user.getLocale()),
-                user.isRegistrationComplete());
+                user.isRegistrationComplete(),
+                user.isGoogleAccount());
     }
 
     private void applyProfileFields(User user, String firstName, String lastName, String phone,

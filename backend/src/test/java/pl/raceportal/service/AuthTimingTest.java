@@ -9,7 +9,13 @@ import pl.raceportal.domain.Role;
 import pl.raceportal.domain.User;
 import pl.raceportal.dto.AuthDtos.AuthResponse;
 import pl.raceportal.dto.AuthDtos.LoginRequest;
+import pl.raceportal.repository.BugReportRepository;
+import pl.raceportal.repository.CarRepository;
+import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.NotificationRepository;
 import pl.raceportal.repository.OrganizerApplicationRepository;
+import pl.raceportal.repository.RefreshTokenRepository;
+import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.AttemptRateLimiter;
 import pl.raceportal.security.JwtService;
@@ -201,7 +207,10 @@ class AuthTimingTest {
 
     private static AuthService service(UserRepository users, PasswordEncoder encoder, MailService mail,
                                        JwtService jwt, RefreshTokenService refresh) {
-        return new AuthService(users, mock(OrganizerApplicationRepository.class), encoder, jwt, refresh, mail,
+        return new AuthService(users, mock(OrganizerApplicationRepository.class),
+                mock(EventRepository.class), mock(RegistrationRepository.class), mock(CarRepository.class),
+                mock(NotificationRepository.class), mock(BugReportRepository.class), mock(RefreshTokenRepository.class),
+                encoder, jwt, refresh, mail,
                 mock(GoogleIdTokenService.class), mock(AttemptRateLimiter.class), "http://localhost:8081");
     }
 }

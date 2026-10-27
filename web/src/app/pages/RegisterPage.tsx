@@ -272,49 +272,6 @@ export function RegisterPage() {
             </form>
           ) : (
             <>
-              {googleEnabled ? (
-                <div className="space-y-4 mb-6">
-                  <div className="flex items-start gap-3">
-                    <Checkbox
-                      id="terms-google"
-                      checked={acceptTerms}
-                      onCheckedChange={(v) => setAcceptTerms(v === true)}
-                      className="mt-1 border-[var(--race-border)] data-[state=checked]:bg-[var(--race-accent)] data-[state=checked]:border-[var(--race-accent)]"
-                    />
-                    <Label htmlFor="terms-google" className="text-[var(--race-muted)] text-sm leading-relaxed cursor-pointer">
-                      Akceptuję{" "}
-                      <Link to="/terms" className="text-[var(--race-accent)] hover:underline">
-                        regulamin
-                      </Link>{" "}
-                      i{" "}
-                      <Link to="/privacy" className="text-[var(--race-accent)] hover:underline">
-                        politykę prywatności
-                      </Link>
-                    </Label>
-                  </div>
-                  <GoogleSignInButton
-                    onCredential={handleGoogle}
-                    onError={(msg) => toast.error(msg)}
-                    disabled={isLoading || !acceptTerms}
-                    label="Zarejestruj się przez Google"
-                  />
-                  {!acceptTerms ? (
-                    <p className="text-[#6b7280] text-xs text-center">
-                      Zaznacz regulamin, aby utworzyć konto przez Google
-                    </p>
-                  ) : null}
-                  <div className="relative my-2">
-                    <Separator className="bg-[var(--race-muted-bg)]" />
-                    <span
-                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)] whitespace-nowrap"
-                      style={{ fontSize: "14px" }}
-                    >
-                      lub zarejestruj e-mailem
-                    </span>
-                  </div>
-                </div>
-              ) : null}
-
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
                   <Label htmlFor="username" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
@@ -559,6 +516,31 @@ export function RegisterPage() {
                   {isLoading ? "TWORZENIE KONTA..." : "STWÓRZ KONTO"}
                 </Button>
               </form>
+
+              {googleEnabled ? (
+                <div className="space-y-4 mt-6">
+                  <div className="relative">
+                    <Separator className="bg-[var(--race-muted-bg)]" />
+                    <span
+                      className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)] whitespace-nowrap"
+                      style={{ fontSize: "14px" }}
+                    >
+                      lub zarejestruj przez Google
+                    </span>
+                  </div>
+                  <GoogleSignInButton
+                    onCredential={handleGoogle}
+                    onError={(msg) => toast.error(msg)}
+                    disabled={isLoading || !acceptTerms}
+                    label="Zarejestruj się przez Google"
+                  />
+                  {!acceptTerms ? (
+                    <p className="text-[#6b7280] text-xs text-center">
+                      Zaznacz regulamin powyżej, aby utworzyć konto przez Google
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
             </>
           )}
 

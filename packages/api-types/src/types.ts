@@ -65,6 +65,11 @@ export interface User {
    * Brak pola (stare API) traktuj jak true.
    */
   registrationComplete?: boolean;
+  /**
+   * true = konto Google — bez zmiany hasła / e-maila w portalu.
+   * Brak pola (stare API) traktuj jak false.
+   */
+  googleAccount?: boolean;
 }
 
 /** Pełne wydarzenie z list/szczegółów (GET /api/events). */

@@ -143,7 +143,7 @@ export const api = {
   get: <T>(path: string) => request<T>("GET", path),
   post: <T>(path: string, body?: unknown) => request<T>("POST", path, body),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body),
-  delete: (path: string) => request<void>("DELETE", path),
+  delete: <T = void>(path: string, body?: unknown) => request<T>("DELETE", path, body),
   uploadImage: async (file: File): Promise<{ url: string; contentType: string; sizeBytes: number }> => {
     if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
       throw new ApiError(400, "Plik za duży (max 5 MB)");

@@ -336,7 +336,15 @@
     "languageDesc": "Interfejs i maile systemowe (dla zalogowanych)",
     "languageSaved": "Język: {{lang}}",
     "accentSaved": "Akcent: {{label}}",
-    "savedLocal": "Ustawienia zapisane lokalnie w tej przeglądarce."
+    "savedLocal": "Ustawienia zapisane lokalnie w tej przeglądarce.",
+    "closeAccount": "Zamknij konto",
+    "closeAccountDesc": "Trwale usuwa konto, zgłoszenia i garaż. Wydarzenia organizatora przechodzą na administratora.",
+    "closeAccountConfirmLabel": "Przepisz „zamknij konto”, aby potwierdzić",
+    "closeAccountPhrase": "zamknij konto",
+    "closeAccountButton": "ZAMKNIJ KONTO",
+    "closeAccountOk": "Konto zostało zamknięte",
+    "closeAccountFail": "Nie udało się zamknąć konta",
+    "closeAccountMismatch": "Wpisz dokładnie: zamknij konto"
   },
   "footer": {
     "tagline": "Katalog motorsportu w Polsce",

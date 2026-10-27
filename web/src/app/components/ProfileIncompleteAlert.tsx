@@ -1,16 +1,25 @@
 /**
- * Alert: konto Google bez domkniętego profilu / licencji.
+ * Alert: brak prawa jazdy B i/lub licencji PZM (albo niedomknięta rejestracja Google).
  * Nie blokuje nawigacji — CTA prowadzi do /konto (poza stroną konta).
  */
 import { Link, useLocation } from "react-router";
 import { AlertTriangle } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "./ui/button";
+import type { User } from "../lib/types";
+
+export function isProfileIncomplete(user: User | null | undefined): boolean {
+  if (!user) return false;
+  if (user.registrationComplete === false) return true;
+  const hasLicenseB = user.hasDrivingLicenseB === true;
+  const hasPzm = Boolean(user.pzmLicense?.trim());
+  return !hasLicenseB && !hasPzm;
+}
 
 export function ProfileIncompleteAlert() {
   const { user } = useAuth();
   const { pathname } = useLocation();
-  if (user?.registrationComplete !== false) return null;
+  if (!isProfileIncomplete(user)) return null;
   const onAccountPage = pathname === "/konto";
 
   return (

@@ -94,6 +94,14 @@ public class User {
             columnDefinition = "tinyint(1) not null default 1")
     private boolean registrationComplete = true;
 
+    /**
+     * Konto utworzone / przejęte przez Google OAuth (brak lokalnego hasła do zmiany).
+     * Blokuje zmianę hasła i e-maila — logowanie wyłącznie przez Google.
+     */
+    @Column(name = "google_account", nullable = false,
+            columnDefinition = "tinyint(1) not null default 0")
+    private boolean googleAccount = false;
+
     /** Flaga weryfikacji adresu e-mail (po rejestracji lokalnej). */
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = true;
@@ -265,6 +273,14 @@ public class User {
 
     public void setRegistrationComplete(boolean registrationComplete) {
         this.registrationComplete = registrationComplete;
+    }
+
+    public boolean isGoogleAccount() {
+        return googleAccount;
+    }
+
+    public void setGoogleAccount(boolean googleAccount) {
+        this.googleAccount = googleAccount;
     }
 
     public boolean isEmailVerified() {

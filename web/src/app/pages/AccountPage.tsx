@@ -74,6 +74,7 @@ export function AccountPage() {
 
   const roleLabel =
     user?.role === "ADMIN" ? "ADMINISTRATOR" : user?.role === "ORGANIZER" ? "ORGANIZATOR" : "KIEROWCA";
+  const isGoogleAccount = user?.googleAccount === true;
 
   const saveProfile = async () => {
     if (!username.trim() || username.trim().length < 2) {
@@ -175,7 +176,11 @@ export function AccountPage() {
             <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
               DANE KONTA
             </h1>
-            <p className="text-[var(--race-muted)]">Zmień nazwę, awatar, e-mail, dane kierowcy lub hasło.</p>
+            <p className="text-[var(--race-muted)]">
+              {isGoogleAccount
+                ? "Zmień nazwę, awatar i dane kierowcy. E-mail i hasło zarządzasz w Google."
+                : "Zmień nazwę, awatar, e-mail, dane kierowcy lub hasło."}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <Avatar className="w-14 h-14 border-2 border-[var(--race-accent)]">
@@ -352,125 +357,144 @@ export function AccountPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
-            <CardHeader>
-              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
-                <Mail className="w-5 h-5 text-[var(--race-accent)]" />
-                Zmiana e-maila
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-[var(--race-muted)] text-sm">
-                Obecny adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
-              </p>
-              <p className="text-[var(--race-muted)] text-sm">
-                Wymaga obecnego hasła. Jeśli nowy adres jest dostępny — link na nową skrzynkę; na dotychczasowy zawsze powiadomienie.
-              </p>
-              <div className="space-y-2">
-                <Label className="text-[var(--race-fg)]">Nowy e-mail</Label>
-                <Input
-                  type="email"
-                  value={newEmail}
-                  onChange={(e) => {
-                    setNewEmail(e.target.value);
-                    setEmailLinkSent(false);
-                  }}
-                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                  autoComplete="email"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
-                <Input
-                  type="password"
-                  value={emailChangePassword}
-                  onChange={(e) => setEmailChangePassword(e.target.value)}
-                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                  autoComplete="current-password"
-                />
-              </div>
-              {emailLinkSent && (
-                <p className="text-[var(--race-muted)] text-sm">
-                  Sprawdź skrzynkę nowego adresu i kliknij link potwierdzający (ważny 60 minut).
-                  Na stary adres poszło też powiadomienie.
+          {isGoogleAccount ? (
+            <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
+              <CardContent className="pt-6 space-y-2">
+                <p className="text-[var(--race-fg)] font-semibold flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-[var(--race-accent)]" />
+                  Logowanie przez Google
                 </p>
-              )}
-              <Button
-                onClick={sendEmailChangeLink}
-                disabled={savingEmail}
-                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
-                style={{ fontWeight: 700 }}
-              >
-                {savingEmail ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    WYSYŁANIE...
-                  </>
-                ) : emailLinkSent ? (
-                  "WYŚLIJ LINK PONOWNIE"
-                ) : (
-                  "WYŚLIJ LINK POTWIERDZAJĄCY"
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+                <p className="text-[var(--race-muted)] text-sm">
+                  Adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
+                </p>
+                <p className="text-[var(--race-muted)] text-sm">
+                  E-mailu i hasła nie zmienisz w RacePortal — zarządzasz nimi w koncie Google.
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
+                <CardHeader>
+                  <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
+                    <Mail className="w-5 h-5 text-[var(--race-accent)]" />
+                    Zmiana e-maila
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-[var(--race-muted)] text-sm">
+                    Obecny adres: <span className="text-[var(--race-fg)]">{user?.email}</span>
+                  </p>
+                  <p className="text-[var(--race-muted)] text-sm">
+                    Wymaga obecnego hasła. Jeśli nowy adres jest dostępny — link na nową skrzynkę; na dotychczasowy zawsze powiadomienie.
+                  </p>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--race-fg)]">Nowy e-mail</Label>
+                    <Input
+                      type="email"
+                      value={newEmail}
+                      onChange={(e) => {
+                        setNewEmail(e.target.value);
+                        setEmailLinkSent(false);
+                      }}
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                      autoComplete="email"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
+                    <Input
+                      type="password"
+                      value={emailChangePassword}
+                      onChange={(e) => setEmailChangePassword(e.target.value)}
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  {emailLinkSent && (
+                    <p className="text-[var(--race-muted)] text-sm">
+                      Sprawdź skrzynkę nowego adresu i kliknij link potwierdzający (ważny 60 minut).
+                      Na stary adres poszło też powiadomienie.
+                    </p>
+                  )}
+                  <Button
+                    onClick={sendEmailChangeLink}
+                    disabled={savingEmail}
+                    className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
+                    style={{ fontWeight: 700 }}
+                  >
+                    {savingEmail ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        WYSYŁANIE...
+                      </>
+                    ) : emailLinkSent ? (
+                      "WYŚLIJ LINK PONOWNIE"
+                    ) : (
+                      "WYŚLIJ LINK POTWIERDZAJĄCY"
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
 
-          <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
-            <CardHeader>
-              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
-                <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
-                Zmiana hasła
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
-                <Input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                  autoComplete="current-password"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[var(--race-fg)]">Nowe hasło</Label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                  autoComplete="new-password"
-                />
-                <p className="text-[var(--race-muted)] text-xs">{STRONG_PASSWORD_HINT}</p>
-              </div>
-              <div className="space-y-2">
-                <Label className="text-[var(--race-fg)]">Potwierdź nowe hasło</Label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                  autoComplete="new-password"
-                />
-              </div>
-              <Button
-                onClick={savePassword}
-                disabled={savingPassword}
-                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
-                style={{ fontWeight: 700 }}
-              >
-                {savingPassword ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ZMIENIANIE...
-                  </>
-                ) : (
-                  "ZMIEŃ HASŁO"
-                )}
-              </Button>
-            </CardContent>
-          </Card>
+              <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
+                <CardHeader>
+                  <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
+                    <KeyRound className="w-5 h-5 text-[var(--race-accent)]" />
+                    Zmiana hasła
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-[var(--race-fg)]">Obecne hasło</Label>
+                    <Input
+                      type="password"
+                      value={currentPassword}
+                      onChange={(e) => setCurrentPassword(e.target.value)}
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--race-fg)]">Nowe hasło</Label>
+                    <Input
+                      type="password"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                      autoComplete="new-password"
+                    />
+                    <p className="text-[var(--race-muted)] text-xs">{STRONG_PASSWORD_HINT}</p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-[var(--race-fg)]">Potwierdź nowe hasło</Label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                      autoComplete="new-password"
+                    />
+                  </div>
+                  <Button
+                    onClick={savePassword}
+                    disabled={savingPassword}
+                    className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
+                    style={{ fontWeight: 700 }}
+                  >
+                    {savingPassword ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        ZMIENIANIE...
+                      </>
+                    ) : (
+                      "ZMIEŃ HASŁO"
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          )}
 
           {user?.role === "USER" && (
             <Card className="bg-[var(--race-card)] border-[var(--race-border)]">

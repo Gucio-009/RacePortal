@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pl.raceportal.dto.AuthDtos.AuthResponse;
 import pl.raceportal.dto.AuthDtos.ChangePasswordRequest;
+import pl.raceportal.dto.AuthDtos.CloseAccountRequest;
 import pl.raceportal.dto.AuthDtos.ConfirmEmailChangeRequest;
 import pl.raceportal.dto.AuthDtos.ForgotPasswordRequest;
 import pl.raceportal.dto.AuthDtos.GoogleLoginRequest;
@@ -172,6 +174,17 @@ public class AuthController {
                                                             HttpServletResponse response) {
         return ResponseEntity.ok(attachCookies(
                 authService.confirmEmailChange(currentUser.getId(), request.token()), response));
+    }
+
+    /** Zamknięcie własnego konta (USER/ORGANIZER) — wymaga frazy „zamknij konto”. */
+    @DeleteMapping("/me")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<MessageResponse> closeAccount(@AuthenticationPrincipal UserPrincipal currentUser,
+                                                         @Valid @RequestBody CloseAccountRequest request,
+                                                         HttpServletResponse response) {
+        authService.closeOwnAccount(currentUser.getId(), request.confirmation());
+        authCookies.clear(response);
+        return ResponseEntity.ok(new MessageResponse("Konto zostało zamknięte"));
     }
 
     private AuthResponse attachCookies(AuthResponse auth, HttpServletResponse response) {

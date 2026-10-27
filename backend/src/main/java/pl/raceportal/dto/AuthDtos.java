@@ -179,7 +179,15 @@ public final class AuthDtos {
             boolean hasDrivingLicenseB,
             String pzmLicense,
             String locale,
-            boolean registrationComplete
+            boolean registrationComplete,
+            /** true = konto Google — bez zmiany hasła / e-maila. */
+            boolean googleAccount
+    ) {
+    }
+
+    /** Zamknięcie własnego konta — wymaga wpisania frazy potwierdzającej. */
+    public record CloseAccountRequest(
+            @NotBlank String confirmation
     ) {
     }
 

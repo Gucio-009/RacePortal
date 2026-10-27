@@ -81,6 +81,8 @@ interface AuthContextType {
     currentPassword: string,
   ) => Promise<{ ok: boolean; message?: string }>;
   confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
+  /** Zamknięcie konta (USER/ORGANIZER) — confirmation = „zamknij konto”. */
+  closeAccount: (confirmation: string) => Promise<{ ok: boolean; message?: string }>;
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   /** Aktualizuje locale w state usera (po LanguageSwitcher / Settings). */
   setUserLocale: (locale: Locale) => void;
@@ -360,6 +362,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const closeAccount = async (confirmation: string) => {
+    try {
+      const res = await api.delete<{ message: string }>("/api/auth/me", { confirmation });
+      persistAuth(null);
+      return { ok: true, message: res.message };
+    } catch (e) {
+      const message = e instanceof ApiError ? e.message : "Nie udało się zamknąć konta";
+      return { ok: false, message };
+    }
+  };
+
   const refreshSession = useCallback(async () => {
     try {
       const res = await api.post<{ user: User }>("/api/auth/refresh", {});
@@ -388,6 +401,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         resetPassword,
         requestEmailChange,
         confirmEmailChange,
+        closeAccount,
         refreshSession,
         setUserLocale,
         isAuthenticated: !!user,

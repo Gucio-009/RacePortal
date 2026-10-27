@@ -336,7 +336,15 @@
     "languageDesc": "UI and system emails (when signed in)",
     "languageSaved": "Language: {{lang}}",
     "accentSaved": "Accent: {{label}}",
-    "savedLocal": "Settings saved locally in this browser."
+    "savedLocal": "Settings saved locally in this browser.",
+    "closeAccount": "Close account",
+    "closeAccountDesc": "Permanently deletes your account, entries, and garage. Organizer events are handed to an admin.",
+    "closeAccountConfirmLabel": "Type “zamknij konto” to confirm",
+    "closeAccountPhrase": "zamknij konto",
+    "closeAccountButton": "CLOSE ACCOUNT",
+    "closeAccountOk": "Account closed",
+    "closeAccountFail": "Could not close account",
+    "closeAccountMismatch": "Type exactly: zamknij konto"
   },
   "footer": {
     "tagline": "Motorsport catalog in Poland",

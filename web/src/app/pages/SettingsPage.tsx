@@ -16,18 +16,18 @@
  * TanStack Query niepotrzebny (brak API); sync ustawień z backendem /api/users/me/settings.
  */
 import { useEffect, useState, type ReactNode } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Bell,
   Flame,
   Gauge,
-  Languages,
   Loader2,
   Moon,
   Palette,
   Shield,
   Sparkles,
+  Trash2,
   Trophy,
   Volume2,
 } from "lucide-react";
@@ -50,15 +50,18 @@ import {
   type AccentTheme,
   type UserSettings,
 } from "../lib/userSettings";
-import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Reveal } from "../components/Reveal";
 
 export function SettingsPage() {
   const { t } = useTranslation();
-  const { user } = useAuth();
+  const { user, closeAccount } = useAuth();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [ready, setReady] = useState(false);
   const [teamDraft, setTeamDraft] = useState("");
+  const [closeConfirm, setCloseConfirm] = useState("");
+  const [closing, setClosing] = useState(false);
+  const canCloseAccount = user?.role === "USER" || user?.role === "ORGANIZER";
 
   // Hydratacja z localStorage po mount (unikamy SSR/hydration mismatch – tu Vite SPA).
   useEffect(() => {
@@ -115,6 +118,23 @@ export function SettingsPage() {
     persist({ ...settings, teamFlair }, teamFlair ? `Flair: ${teamFlair}` : "Flair wyczyszczony");
   };
 
+  const handleCloseAccount = async () => {
+    const phrase = t("settings.closeAccountPhrase");
+    if (closeConfirm.trim().toLowerCase() !== phrase) {
+      toast.error(t("settings.closeAccountMismatch"));
+      return;
+    }
+    setClosing(true);
+    const result = await closeAccount(closeConfirm.trim());
+    setClosing(false);
+    if (result.ok) {
+      toast.success(result.message || t("settings.closeAccountOk"));
+      navigate("/");
+    } else {
+      toast.error(result.message || t("settings.closeAccountFail"));
+    }
+  };
+
   const celebrate = () => {
     if (!settings.pitStopMode) {
       confetti({
@@ -169,21 +189,6 @@ export function SettingsPage() {
 
         <div className="space-y-6">
           <Reveal delay={40}>
-          <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
-            <CardHeader>
-              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
-                <Languages className="w-5 h-5 text-[var(--race-accent)]" />
-                {t("settings.language")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-[var(--race-muted)] text-sm">{t("settings.languageDesc")}</p>
-              <LanguageSwitcher />
-            </CardContent>
-          </Card>
-          </Reveal>
-
-          <Reveal delay={60}>
           <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
             <CardHeader>
               <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
@@ -320,6 +325,51 @@ export function SettingsPage() {
             </CardContent>
           </Card>
           </Reveal>
+
+          {canCloseAccount ? (
+            <Reveal delay={200}>
+              <Card className="bg-[var(--race-card)] border-red-500/40 shadow-[var(--race-card-shadow)]">
+                <CardHeader>
+                  <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
+                    <Trash2 className="w-5 h-5 text-red-400" />
+                    {t("settings.closeAccount")}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-[var(--race-muted)] text-sm">{t("settings.closeAccountDesc")}</p>
+                  <div className="space-y-2">
+                    <Label htmlFor="close-account" className="text-[var(--race-fg)]">
+                      {t("settings.closeAccountConfirmLabel")}
+                    </Label>
+                    <Input
+                      id="close-account"
+                      value={closeConfirm}
+                      onChange={(e) => setCloseConfirm(e.target.value)}
+                      placeholder={t("settings.closeAccountPhrase")}
+                      autoComplete="off"
+                      className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={handleCloseAccount}
+                    disabled={closing || closeConfirm.trim().toLowerCase() !== t("settings.closeAccountPhrase")}
+                    className="bg-red-600 text-white hover:bg-red-500 disabled:opacity-50"
+                    style={{ fontWeight: 700 }}
+                  >
+                    {closing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        …
+                      </>
+                    ) : (
+                      t("settings.closeAccountButton")
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </Reveal>
+          ) : null}
 
           <div className="flex flex-wrap gap-3">
             <Button
