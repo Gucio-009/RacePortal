@@ -415,16 +415,16 @@ export function EventsPage() {
           <p className="text-center text-[var(--race-muted)] py-16">{t("events.noResults")}</p>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
               {items.map((event, index) => (
-                <Reveal key={event.id} delay={Math.min(index * 100, 400)}>
-                <Link to={`/wydarzenia/${event.id}`}>
+                <Reveal key={event.id} delay={Math.min(index * 100, 400)} className="h-full">
+                <Link to={`/wydarzenia/${event.id}`} className="block h-full">
                   <Card
-                    className={`event-card-lift bg-[var(--race-card)] overflow-hidden hover:border-[var(--race-accent)] group h-full ${
+                    className={`event-card-lift h-full gap-0 bg-[var(--race-card)] overflow-hidden hover:border-[var(--race-accent)] group ${
                       event.paid ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)] shadow-[0_0_0_1px_color-mix(in_srgb,var(--race-accent)_15%,transparent)]" : "border-[var(--race-border)]"
                     }`}
                   >
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-48 shrink-0 overflow-hidden">
                       <ImageWithFallback
                         src={eventImage(event, IMAGE_WIDTH_CARD)}
                         alt={event.name}
@@ -435,19 +435,19 @@ export function EventsPage() {
                         {event.category}
                       </div>
                     </div>
-                    <CardContent className="p-6">
-                      <div className="flex items-center gap-2 text-[var(--race-fg)] mb-2 text-sm">
-                        <CalendarIcon className="w-4 h-4 text-[var(--race-fg)]" />
-                        {event.dateLabel || event.date}
+                    <CardContent className="p-6 flex flex-1 flex-col min-h-0">
+                      <div className="flex items-center gap-2 text-[var(--race-fg)] mb-2 text-sm min-h-[1.25rem]">
+                        <CalendarIcon className="w-4 h-4 shrink-0 text-[var(--race-fg)]" />
+                        <span className="truncate">{event.dateLabel || event.date}</span>
                       </div>
-                      <h3 className="text-[var(--race-fg)] mb-2 font-display group-hover:text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
+                      <h3 className="text-[var(--race-fg)] mb-2 font-display font-bold leading-snug line-clamp-2 min-h-[2.5rem] group-hover:text-[var(--race-accent)]">
                         {event.name}
                       </h3>
-                      <div className="flex items-center gap-2 text-[var(--race-muted)] text-sm mb-4">
-                        <MapPin className="w-4 h-4" />
-                        {event.track}, {event.city}
+                      <div className="flex items-center gap-2 text-[var(--race-muted)] text-sm mb-4 min-h-[1.25rem]">
+                        <MapPin className="w-4 h-4 shrink-0" />
+                        <span className="truncate">{event.track}, {event.city}</span>
                       </div>
-                      <div className="flex items-center text-[var(--race-accent)] text-sm" style={{ fontWeight: 700 }}>
+                      <div className="mt-auto flex items-center text-[var(--race-accent)] text-sm font-bold">
                         {t("events.details")} <ChevronRight className="w-4 h-4 ml-1" />
                       </div>
                     </CardContent>

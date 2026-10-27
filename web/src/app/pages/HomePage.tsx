@@ -197,17 +197,17 @@ export function HomePage() {
         ) : upcomingEvents.length === 0 ? (
           <p className="text-center text-[var(--race-muted)] py-12 min-h-[20rem]">Brak nadchodzących wydarzeń.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {upcomingEvents.map((event, index) => (
-              <Reveal key={event.id} delay={Math.min(index * 120, 480)}>
+              <Reveal key={event.id} delay={Math.min(index * 120, 480)} className="h-full">
                 <Card
-                  className={`event-card-lift bg-[var(--race-card)] overflow-hidden hover:border-[var(--race-accent)] group ${
+                  className={`event-card-lift h-full gap-0 bg-[var(--race-card)] overflow-hidden hover:border-[var(--race-accent)] group ${
                     event.paid
                       ? "border-[color-mix(in_srgb,var(--race-accent)_55%,transparent)]"
                       : "border-[var(--race-border)]"
                   }`}
                 >
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative h-48 shrink-0 overflow-hidden">
                     <ImageWithFallback
                       src={eventImage(event, 960)}
                       alt={event.name}
@@ -223,27 +223,24 @@ export function HomePage() {
                       {event.category}
                     </div>
                   </div>
-                  <CardContent className="p-6">
-                    <div className="flex items-center gap-2 text-[var(--race-accent)] mb-3">
+                  <CardContent className="p-6 flex flex-1 flex-col min-h-0">
+                    <div className="flex items-center gap-2 text-[var(--race-accent)] mb-3 min-h-[1.25rem]">
                       <Calendar className="w-4 h-4 shrink-0" />
-                      <span style={{ fontSize: "14px", fontWeight: 700 }}>{event.dateLabel}</span>
+                      <span className="truncate text-sm font-bold">{event.dateLabel}</span>
                     </div>
-                    <h3
-                      className="font-display mb-2 text-[var(--race-fg)] leading-snug"
-                      style={{ fontSize: "20px", fontWeight: 700 }}
-                    >
+                    <h3 className="font-display mb-2 text-[var(--race-fg)] text-xl font-bold leading-snug line-clamp-2 min-h-[2.5rem]">
                       {event.name}
                     </h3>
-                    <div className="flex items-center gap-2 text-[var(--race-muted)] mb-4">
+                    <div className="flex items-center gap-2 text-[var(--race-muted)] mb-4 min-h-[1.25rem]">
                       <MapPin className="w-4 h-4 shrink-0" />
-                      <span style={{ fontSize: "14px" }}>{event.track}</span>
+                      <span className="truncate text-sm">{event.track}</span>
                     </div>
-                    <Link to={`/wydarzenia/${event.id}`}>
+                    <Link to={`/wydarzenia/${event.id}`} className="mt-auto block">
                       <Button
                         className="w-full bg-transparent border border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                         style={{ fontWeight: 700 }}
                       >
-                        SPRAWDŹ SZCZEGÓŁY
+                        {t("home.checkDetails")}
                       </Button>
                     </Link>
                   </CardContent>

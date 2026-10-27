@@ -3,7 +3,9 @@
     "code": "pl",
     "label": "PL",
     "switchTo": "English",
-    "language": "Język"
+    "language": "Język",
+    "plFull": "Polski",
+    "enFull": "English"
   },
   "nav": {
     "events": "WYDARZENIA",
@@ -86,6 +88,7 @@
     "upcomingSubtitle": "Nie przegap najgorętszych polskich wyścigów sezonu",
     "seeAll": "ZOBACZ WSZYSTKIE",
     "seeAllShort": "Wszystkie",
+    "checkDetails": "SPRAWDŹ SZCZEGÓŁY",
     "registeredUsers": "zarejestrowanych kierowców"
   },
   "authExtra": {

@@ -3,7 +3,9 @@
     "code": "en",
     "label": "EN",
     "switchTo": "Polski",
-    "language": "Language"
+    "language": "Language",
+    "plFull": "Polski",
+    "enFull": "English"
   },
   "nav": {
     "events": "EVENTS",
@@ -86,6 +88,7 @@
     "upcomingSubtitle": "Don't miss the hottest Polish races of the season",
     "seeAll": "SEE ALL",
     "seeAllShort": "All",
+    "checkDetails": "VIEW DETAILS",
     "registeredUsers": "registered drivers"
   },
   "authExtra": {
