@@ -11,7 +11,7 @@
 #
 # Pomysł (alt): osobny stage preview z `vite preview` zamiast nginx; albo CDN (S3+CloudFront).
 #
-# Build (context: repo root — needs packages/api-types for Vite alias)
+# Build (context: repo root — needs packages/api-types + packages/i18n for Vite aliases)
 FROM node:22-alpine AS build
 WORKDIR /app
 
@@ -23,6 +23,7 @@ COPY web/index.html web/vite.config.ts web/tsconfig.json web/postcss.config.mjs 
 COPY web/public ./public
 COPY web/src ./src
 COPY packages/api-types /app/packages/api-types
+COPY packages/i18n /app/packages/i18n
 
 ARG VITE_API_URL=
 ARG VITE_GOOGLE_CLIENT_ID=
