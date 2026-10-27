@@ -119,6 +119,13 @@ public class User {
     @Column(name = "token_version", nullable = false)
     private int tokenVersion = 0;
 
+    /**
+     * Preferowany język UI i maili systemowych ({@code pl} | {@code en}).
+     * DEFAULT w SQL — żeby ddl-auto:update nie wywalił się na istniejących wierszach.
+     */
+    @Column(name = "locale", nullable = false, length = 5, columnDefinition = "varchar(5) not null default 'pl'")
+    private String locale = "pl";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -297,6 +304,14 @@ public class User {
 
     public void setTokenVersion(int tokenVersion) {
         this.tokenVersion = tokenVersion;
+    }
+
+    public String getLocale() {
+        return locale;
+    }
+
+    public void setLocale(String locale) {
+        this.locale = locale;
     }
 
     public Instant getCreatedAt() {

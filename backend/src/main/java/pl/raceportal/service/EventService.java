@@ -26,6 +26,7 @@ import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
+import pl.raceportal.i18n.MailTexts;
 import pl.raceportal.security.UserPrincipal;
 import pl.raceportal.web.ApiException;
 
@@ -499,12 +500,13 @@ public class EventService {
                 registration.setStatus(RegistrationStatus.CANCELED);
                 registrationRepository.save(registration);
             }
-            String refundNote = event.isPaid()
-                    ? "<p>Jeśli dokonałeś/aś już płatności, zwrot środków zostanie zrealizowany przez organizatora.</p>"
-                    : "";
-            mailService.send(registration.getUser().getEmail(), "Wydarzenie anulowane: " + event.getName(),
-                    "<p>Wydarzenie <strong>" + event.getName() + "</strong> zostało anulowane przez organizatora, " +
-                            "a Twoje zgłoszenie otrzymało status <strong>CANCELED</strong>.</p>" + refundNote);
+            User driver = registration.getUser();
+            String locale = MailTexts.of(driver);
+            String safeEvent = event.getName() == null ? "" : event.getName();
+            mailService.send(driver.getEmail(),
+                    MailTexts.eventCancelledSubject(locale, safeEvent),
+                    MailTexts.eventCancelledBody(locale, safeEvent, event.isPaid()),
+                    locale);
         }
 
         return serialize(event);
@@ -532,9 +534,13 @@ public class EventService {
     private void notifyRegisteredDriversOfChange(Event event) {
         List<Registration> registrations = registrationRepository.findByEvent_IdOrderByCreatedAtDesc(event.getId());
         for (Registration registration : registrations) {
-            mailService.send(registration.getUser().getEmail(), "Zmiany w wydarzeniu: " + event.getName(),
-                    "<p>Organizator zaktualizował informacje o wydarzeniu <strong>" + event.getName() +
-                            "</strong>, na które jesteś zgłoszony/a.</p>");
+            User driver = registration.getUser();
+            String locale = MailTexts.of(driver);
+            String safeEvent = event.getName() == null ? "" : event.getName();
+            mailService.send(driver.getEmail(),
+                    MailTexts.eventUpdatedSubject(locale, safeEvent),
+                    MailTexts.eventUpdatedBody(locale, safeEvent),
+                    locale);
         }
     }
 

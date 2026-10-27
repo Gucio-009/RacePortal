@@ -12,6 +12,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Calendar, MapPin, ChevronRight } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -27,6 +28,7 @@ import { eventImage, HERO_BG_TRACK } from "../lib/types";
 const STATS_POLL_MS = 30_000;
 
 export function HomePage() {
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [upcomingEvents, setUpcomingEvents] = useState<ApiEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,13 +108,13 @@ export function HomePage() {
         <div className="container mx-auto px-4 text-center z-10 py-16 sm:py-20">
           <Reveal>
             <h1 className="font-display mb-4 sm:mb-6 tracking-wider text-[var(--race-hero-fg)] text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-[1.15]">
-              DOŁĄCZ DO <span className="text-[var(--race-accent)]">WYŚCIGU</span>
+              {t("home.heroTitleBefore")}{" "}
+              <span className="text-[var(--race-accent)]">{t("home.heroTitleAccent")}</span>
             </h1>
           </Reveal>
           <Reveal delay={80}>
             <p className="mb-6 sm:mb-8 text-[var(--race-hero-muted)] max-w-2xl mx-auto text-base sm:text-lg md:text-xl font-medium leading-relaxed px-1">
-              Twoje centrum motoryzacyjnych emocji. Śledź najważniejsze polskie wydarzenia wyścigowe, sprawdzaj
-              wyniki i bądź częścią społeczności RACEPORTAL.
+              {t("home.heroSubtitle")}
             </p>
           </Reveal>
           {/* min-h: stała wysokość CTA zanim /me rozstrzygnie auth (bez skoku „Zarejestruj”) */}
@@ -121,7 +123,7 @@ export function HomePage() {
               {!authLoading && !isAuthenticated && (
                 <Link to="/register" className="w-full sm:w-auto">
                   <Button className="w-full h-14 sm:h-14 bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 px-8 py-0 text-base sm:text-lg font-extrabold leading-none">
-                    ZAREJESTRUJ SIĘ
+                    {t("home.ctaRegister")}
                     <ChevronRight className="w-5 h-5" />
                   </Button>
                 </Link>
@@ -131,7 +133,7 @@ export function HomePage() {
                   variant="outline"
                   className="home-hero-cta-secondary w-full h-14 border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)] px-8 py-0 text-base font-extrabold leading-none"
                 >
-                  KALENDARZ
+                  {t("home.ctaCalendar")}
                 </Button>
               </Link>
               <a href="#o-nas" className="w-full sm:w-auto hidden sm:block">
@@ -139,7 +141,7 @@ export function HomePage() {
                   variant="outline"
                   className="home-hero-cta-secondary w-full h-14 sm:h-14 border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)] px-8 py-0 text-base sm:text-lg font-extrabold leading-none"
                 >
-                  POZNAJ WIĘCEJ
+                  {t("home.ctaMore")}
                 </Button>
               </a>
             </div>
@@ -153,16 +155,17 @@ export function HomePage() {
         <Reveal className="flex items-end justify-between mb-6 sm:mb-12 gap-4">
           <div className="min-w-0">
             <h2 className="font-display mb-1 sm:mb-2 text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight text-[var(--race-fg)]">
-              NADCHODZĄCE <span className="text-[var(--race-accent)]">WYDARZENIA</span>
+              {t("home.upcomingBefore")}{" "}
+              <span className="text-[var(--race-accent)]">{t("home.upcomingAccent")}</span>
             </h2>
             <p className="text-[var(--race-muted)] text-sm sm:text-lg">
-              Nie przegap najgorętszych polskich wyścigów sezonu
+              {t("home.upcomingSubtitle")}
             </p>
           </div>
           <Link to="/wydarzenia" className="shrink-0">
             <Button variant="ghost" className="text-[var(--race-accent)] hover:bg-[var(--race-hover)] px-2 sm:px-4 font-bold">
-              <span className="hidden sm:inline">ZOBACZ WSZYSTKIE</span>
-              <span className="sm:hidden">Wszystkie</span>
+              <span className="hidden sm:inline">{t("home.seeAll")}</span>
+              <span className="sm:hidden">{t("home.seeAllShort")}</span>
               <ChevronRight className="ml-1 sm:ml-2 w-5 h-5" />
             </Button>
           </Link>
@@ -274,7 +277,7 @@ export function HomePage() {
               ) : registeredUsers != null ? (
                 <>
                   <div className="font-display text-[var(--race-accent)] mb-1 sm:mb-2 text-3xl sm:text-4xl md:text-5xl font-extrabold tabular-nums">
-                    {registeredUsers.toLocaleString("pl-PL")}
+                    {registeredUsers.toLocaleString(i18n.language === "en" ? "en-GB" : "pl-PL")}
                   </div>
                   <p className="text-[var(--race-muted)] text-xs sm:text-lg font-semibold leading-tight">
                     ZAREJESTROWANYCH UŻYTKOWNIKÓW

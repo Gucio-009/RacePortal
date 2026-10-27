@@ -7,9 +7,25 @@
  */
 
 import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import { normalizeLocale, type Locale } from "@raceportal/i18n";
 import { api, clearLegacyToken, setOnAuthExpired, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
+import { setAppLocale } from "../i18n";
+import {
+  applyUserSettings,
+  loadSettings,
+  persistSettings,
+} from "../lib/userSettings";
 import type { User } from "../lib/types";
+
+function syncLocaleFromUser(user: User | null) {
+  if (!user?.locale) return;
+  const locale = normalizeLocale(user.locale);
+  setAppLocale(locale);
+  const next = { ...loadSettings(), locale };
+  persistSettings(next);
+  applyUserSettings(next);
+}
 
 export type { User };
 
@@ -50,6 +66,7 @@ interface AuthContextType {
     instagramUrl?: string;
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
+    locale?: Locale;
   }) => Promise<{ ok: boolean; message?: string }>;
   changePassword: (
     currentPassword: string,
@@ -63,6 +80,8 @@ interface AuthContextType {
   ) => Promise<{ ok: boolean; message?: string }>;
   confirmEmailChange: (token: string) => Promise<{ ok: boolean; message?: string }>;
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
+  /** Aktualizuje locale w state usera (po LanguageSwitcher / Settings). */
+  setUserLocale: (locale: Locale) => void;
   isAuthenticated: boolean;
 }
 
@@ -82,7 +101,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const persistAuth = useCallback((nextUser: User | null) => {
     setUser(nextUser);
+    syncLocaleFromUser(nextUser);
     if (!nextUser) clearLegacyToken();
+  }, []);
+
+  const setUserLocale = useCallback((locale: Locale) => {
+    setUser((prev) => (prev ? { ...prev, locale } : prev));
   }, []);
 
   useEffect(() => {
@@ -91,9 +115,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       void (async () => {
         try {
           const me = await api.get<User>("/api/auth/me");
-          setUser(me);
+          persistAuth(me);
         } catch {
-          setUser(null);
+          persistAuth(null);
         } finally {
           setIsLoading(false);
         }
@@ -245,6 +269,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     instagramUrl?: string;
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
+    locale?: Locale;
   }) => {
     try {
       const updated = await api.patch<User>("/api/auth/me", {
@@ -257,8 +282,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         instagramUrl: data.instagramUrl,
         hasDrivingLicenseB: data.hasDrivingLicenseB,
         pzmLicense: data.pzmLicense,
+        locale: data.locale,
       });
-      setUser(updated);
+      persistAuth(updated);
       return { ok: true };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się zaktualizować profilu";
@@ -357,6 +383,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         requestEmailChange,
         confirmEmailChange,
         refreshSession,
+        setUserLocale,
         isAuthenticated: !!user,
       }}
     >

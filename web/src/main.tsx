@@ -15,6 +15,7 @@
 import "./boot/criticalAssets";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import "./app/i18n";
 import App from "./app/App";
 import { CinematicIntro } from "./app/components/CinematicIntro";
 import "./styles/index.css";

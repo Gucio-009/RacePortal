@@ -20,6 +20,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { api, eventMediaUrl, webEventUrl } from "../api/client";
 import type { ApiEvent } from "../api/types";
 import { useTheme } from "../theme/ThemeContext";
+import { useLocale } from "../i18n/LocaleContext";
 import { colors } from "../theme/colors";
 import type { EventsStackParamList } from "../navigation/types";
 
@@ -28,6 +29,7 @@ type Props = NativeStackScreenProps<EventsStackParamList, "EventDetail">;
 export function EventDetailScreen({ route }: Props) {
   const { id } = route.params;
   const { accentColor } = useTheme();
+  const { t } = useLocale();
   const [event, setEvent] = useState<ApiEvent | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +46,7 @@ export function EventDetailScreen({ route }: Props) {
     try {
       await Linking.openURL(url);
     } catch {
-      Alert.alert("Nie udało się otworzyć strony", url);
+      Alert.alert(t("mobile.openWebFail"), url);
     }
   };
 
@@ -65,7 +67,7 @@ export function EventDetailScreen({ route }: Props) {
   if (!event) {
     return (
       <View style={styles.center}>
-        <Text style={styles.muted}>Nie znaleziono wydarzenia</Text>
+        <Text style={styles.muted}>{t("mobile.notFound")}</Text>
       </View>
     );
   }
@@ -84,24 +86,22 @@ export function EventDetailScreen({ route }: Props) {
         </Text>
         {event.paid ? (
           <Text style={styles.meta}>
-            Wpisowe: {event.entryFee != null ? `${event.entryFee} PLN` : "płatne"}
+            {t("mobile.paidLabel")}: {event.entryFee != null ? `${event.entryFee} PLN` : t("common.paid")}
           </Text>
         ) : (
-          <Text style={styles.meta}>Wstęp / start darmowy</Text>
+          <Text style={styles.meta}>{t("mobile.freeEntry")}</Text>
         )}
         <Text style={styles.desc}>{event.description}</Text>
 
         {event.lat && event.lng ? (
           <Pressable style={[styles.mapBtn, { borderColor: accentColor }]} onPress={openMaps}>
-            <Text style={[styles.mapBtnText, { color: accentColor }]}>Otwórz w Google Maps</Text>
+            <Text style={[styles.mapBtnText, { color: accentColor }]}>{t("mobile.openMaps")}</Text>
           </Pressable>
         ) : null}
 
-        <Text style={styles.ctaHint}>
-          Zapis na wydarzenie i garaż dostępne w aplikacji webowej RacePortal.
-        </Text>
+        <Text style={styles.ctaHint}>{t("mobile.registerHint")}</Text>
         <Pressable style={[styles.btn, { backgroundColor: accentColor }]} onPress={openWebRegister}>
-          <Text style={styles.btnText}>ZAPISZ SIĘ NA STRONIE</Text>
+          <Text style={styles.btnText}>{t("mobile.registerOnWeb")}</Text>
         </Pressable>
       </View>
     </ScrollView>

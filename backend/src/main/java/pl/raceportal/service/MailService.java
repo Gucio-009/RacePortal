@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import pl.raceportal.i18n.MailTexts;
 
 /**
  * Wysyłka wiadomości e-mail (HTML) przez Spring Mail.
@@ -52,7 +53,11 @@ public class MailService {
      * Na sondowany adres nic nie wychodzi (inaczej serwer stałby się nadawcą maili do obcych skrzynek).
      */
     public boolean sendDecoy(String subject, String bodyHtml) {
-        return send(mailboxAddress(from), subject, bodyHtml);
+        return sendDecoy(subject, bodyHtml, MailTexts.PL);
+    }
+
+    public boolean sendDecoy(String subject, String bodyHtml, String locale) {
+        return send(mailboxAddress(from), subject, bodyHtml, locale);
     }
 
     /**
@@ -64,8 +69,13 @@ public class MailService {
      * @return {@code true} gdy SMTP przyjął wiadomość; {@code false} przy błędzie (soft-fail)
      */
     public boolean send(String to, String subject, String bodyHtml) {
+        return send(to, subject, bodyHtml, MailTexts.PL);
+    }
+
+    public boolean send(String to, String subject, String bodyHtml, String locale) {
+        String lang = MailTexts.normalize(locale);
         try {
-            String html = layout(subject, bodyHtml);
+            String html = layout(subject, bodyHtml, lang);
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setFrom(from);
@@ -84,7 +94,7 @@ public class MailService {
         }
     }
 
-    private String layout(String subject, String bodyHtml) {
+    private String layout(String subject, String bodyHtml, String locale) {
         String body = bodyHtml == null ? "" : bodyHtml
                 .replace("<p>", "<p style=\"" + PARAGRAPH_STYLE + "\">")
                 .replace("<strong>", "<strong style=\"" + STRONG_STYLE + "\">");
@@ -92,9 +102,10 @@ public class MailService {
                 .replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;");
+        String lang = MailTexts.normalize(locale);
         return """
                 <!DOCTYPE html>
-                <html lang="pl">
+                <html lang="%s">
                 <head>
                   <meta charset="UTF-8">
                   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -109,7 +120,7 @@ public class MailService {
                           <tr>
                             <td style="padding:28px 32px 16px;border-bottom:1px solid #2a2a2a;">
                               <div style="font-family:Arial,Helvetica,sans-serif;font-size:22px;font-weight:800;letter-spacing:0.14em;color:#FFD700;">RACEPORTAL</div>
-                              <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.16em;color:#9ca3af;margin-top:6px;">WYŚCIGI · TOR · ZGŁOSZENIA</div>
+                              <div style="font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:0.16em;color:#9ca3af;margin-top:6px;">%s</div>
                             </td>
                           </tr>
                           <tr>
@@ -119,12 +130,12 @@ public class MailService {
                           </tr>
                           <tr>
                             <td style="padding:8px 32px 28px;">
-                              <a href="https://raceportal.pl" style="display:inline-block;background:#FFD700;color:#121212;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;text-decoration:none;padding:12px 18px;border-radius:8px;">OTWÓRZ RACEPORTAL</a>
+                              <a href="https://raceportal.pl" style="display:inline-block;background:#FFD700;color:#121212;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:800;letter-spacing:0.06em;text-decoration:none;padding:12px 18px;border-radius:8px;">%s</a>
                             </td>
                           </tr>
                           <tr>
                             <td style="padding:16px 32px 24px;border-top:1px solid #2a2a2a;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#9ca3af;">
-                              Wiadomość wysłana automatycznie z raceportal.pl. Nie odpowiadaj na ten adres.
+                              %s
                             </td>
                           </tr>
                         </table>
@@ -133,7 +144,14 @@ public class MailService {
                   </table>
                 </body>
                 </html>
-                """.formatted(safeSubject, safeSubject, body);
+                """.formatted(
+                lang,
+                safeSubject,
+                safeSubject,
+                MailTexts.tagline(lang),
+                body,
+                MailTexts.openCta(lang),
+                MailTexts.footer(lang));
     }
 
     /** {@code RACEPORTAL <noreply@raceportal.pl>} → {@code noreply@raceportal.pl}. */

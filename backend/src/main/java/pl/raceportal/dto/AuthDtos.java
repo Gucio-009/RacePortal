@@ -149,7 +149,9 @@ public final class AuthDtos {
             )
             String instagramUrl,
             Boolean hasDrivingLicenseB,
-            @Size(max = 40) String pzmLicense
+            @Size(max = 40) String pzmLicense,
+            @Pattern(regexp = "(?i)^(pl|en)?$", message = "locale: pl lub en")
+            String locale
     ) {
     }
 
@@ -175,7 +177,8 @@ public final class AuthDtos {
             String address,
             String instagramUrl,
             boolean hasDrivingLicenseB,
-            String pzmLicense
+            String pzmLicense,
+            String locale
     ) {
     }
 

@@ -17,10 +17,12 @@
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Bell,
   Flame,
   Gauge,
+  Languages,
   Loader2,
   Moon,
   Palette,
@@ -40,17 +42,19 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import {
   ACCENTS,
-  STORAGE_KEY,
   applyUserSettings,
   defaultSettings,
   loadSettings,
+  persistSettings,
   ACCENT_GROUPS,
   type AccentTheme,
   type UserSettings,
 } from "../lib/userSettings";
+import { LanguageSwitcher } from "../components/LanguageSwitcher";
 import { Reveal } from "../components/Reveal";
 
 export function SettingsPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [ready, setReady] = useState(false);
@@ -68,7 +72,7 @@ export function SettingsPage() {
   /** Zapis do state + localStorage + natychmiastowe zastosowanie CSS vars. */
   const persist = (next: UserSettings, message?: string) => {
     setSettings(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    persistSettings(next);
     applyUserSettings(next);
     if (message) toast.success(message);
   };
@@ -95,7 +99,7 @@ export function SettingsPage() {
   };
 
   const setAccent = (accent: AccentTheme) => {
-    persist({ ...settings, accent }, `Akcent: ${ACCENTS[accent].label}`);
+    persist({ ...settings, accent }, t("settings.accentSaved", { label: ACCENTS[accent].label }));
     // Confetti pomijane w trybie pit-stop (mniej ruchu).
     if (settings.pitStopMode) return;
     confetti({
@@ -120,7 +124,7 @@ export function SettingsPage() {
         colors: [ACCENTS[settings.accent].color, "#fff", "#FF3B3B"],
       });
     }
-    toast.message("Checkered flag!", { description: "Ustawienia zapisane lokalnie w tej przeglądarce." });
+    toast.message("Checkered flag!", { description: t("settings.savedLocal") });
   };
 
   if (!ready) {
@@ -132,19 +136,22 @@ export function SettingsPage() {
   }
 
   const roleLabel =
-    user?.role === "ADMIN" ? "ADMINISTRATOR" : user?.role === "ORGANIZER" ? "ORGANIZATOR" : "KIEROWCA";
+    user?.role === "ADMIN"
+      ? t("roles.ADMIN_CAPS")
+      : user?.role === "ORGANIZER"
+        ? t("roles.ORGANIZER_CAPS")
+        : t("roles.USER_CAPS");
 
   return (
     <div className="min-h-screen bg-[var(--race-bg)]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
         <Reveal className="mb-8">
-          <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KOKPIT</p>
+          <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">{t("settings.cockpit")}</p>
           <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "36px", fontWeight: 800 }}>
-            USTAWIENIA
+            {t("settings.title")}
           </h1>
           <p className="text-[var(--race-muted)]">
-            Preferencje lokalne konta <span className="text-[var(--race-fg)]">{user?.username}</span> – zapisują się w tej
-            przeglądarce.
+            {t("settings.subtitle", { username: user?.username ?? "" })}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
@@ -161,42 +168,50 @@ export function SettingsPage() {
         </Reveal>
 
         <div className="space-y-6">
+          <Reveal delay={40}>
+          <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
+            <CardHeader>
+              <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
+                <Languages className="w-5 h-5 text-[var(--race-accent)]" />
+                {t("settings.language")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <p className="text-[var(--race-muted)] text-sm">{t("settings.languageDesc")}</p>
+              <LanguageSwitcher />
+            </CardContent>
+          </Card>
+          </Reveal>
+
           <Reveal delay={60}>
           <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
             <CardHeader>
               <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Bell className="w-5 h-5 text-[var(--race-accent)]" />
-                Powiadomienia
+                {t("settings.notifications")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-5">
               <SettingRow
                 icon={<Shield className="w-4 h-4 text-[var(--race-accent)]" />}
-                title="Alerty e-mail"
-                desc="Potwierdzenia zgłoszeń i statusów (e-mail SMTP)"
+                title={t("settings.emailAlerts")}
+                desc={t("settings.emailAlertsDesc")}
                 checked={settings.emailAlerts}
-                onChange={() =>
-                  toggle("emailAlerts", settings.emailAlerts ? "Alerty e-mail wyłączone" : "Alerty e-mail włączone")
-                }
+                onChange={() => toggle("emailAlerts", t("settings.savedLocal"))}
               />
               <SettingRow
                 icon={<Gauge className="w-4 h-4 text-[var(--race-accent)]" />}
-                title="Przypomnienia o starcie"
-                desc="Przypominaj o nadchodzących wydarzeniach"
+                title={t("settings.startReminders")}
+                desc={t("settings.startRemindersDesc")}
                 checked={settings.startReminders}
-                onChange={() =>
-                  toggle(
-                    "startReminders",
-                    settings.startReminders ? "Przypomnienia wyłączone" : "Przypomnienia włączone",
-                  )
-                }
+                onChange={() => toggle("startReminders", t("settings.savedLocal"))}
               />
               <SettingRow
                 icon={<Volume2 className="w-4 h-4 text-[var(--race-accent)]" />}
-                title="Dźwięki UI"
-                desc="Krótki bip przy przełączaniu (demo)"
+                title={t("settings.soundFx")}
+                desc={t("settings.soundFxDesc")}
                 checked={settings.soundFx}
-                onChange={() => toggle("soundFx", settings.soundFx ? "Dźwięki wyłączone" : "Dźwięki włączone")}
+                onChange={() => toggle("soundFx", t("settings.savedLocal"))}
               />
             </CardContent>
           </Card>
@@ -207,14 +222,14 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Palette className="w-5 h-5 text-[var(--race-accent)]" />
-                Wygląd
+                {t("settings.appearance")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               {ACCENT_GROUPS.map((group) => (
                 <section key={group.title} className="space-y-3">
                   <h3 className="font-display text-[11px] tracking-[0.18em] text-[var(--race-muted)] uppercase">
-                    {group.title}
+                    {group.title === "Tryb ciemny" ? t("settings.darkMode") : t("settings.lightMode")}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {group.keys.map((key) => {
@@ -248,7 +263,7 @@ export function SettingsPage() {
                             className="mt-2 text-[11px] font-display tracking-[0.14em] uppercase min-h-[1rem]"
                             style={{ color: active ? item.color : "transparent" }}
                           >
-                            Aktywny
+                            {t("common.active")}
                           </div>
                         </button>
                       );
@@ -259,12 +274,10 @@ export function SettingsPage() {
 
               <SettingRow
                 icon={<Moon className="w-4 h-4 text-[var(--race-accent)]" />}
-                title="Tryb pit-stop"
-                desc="Minimalne animacje – jak w boksach przed wyjazdem"
+                title={t("settings.pitStop")}
+                desc={t("settings.pitStopDesc")}
                 checked={settings.pitStopMode}
-                onChange={() =>
-                  toggle("pitStopMode", settings.pitStopMode ? "Pełne animacje" : "Tryb pit-stop włączony")
-                }
+                onChange={() => toggle("pitStopMode", t("settings.savedLocal"))}
               />
             </CardContent>
           </Card>

@@ -39,6 +39,9 @@ export type RegistrationStatus =
 /** Status wniosku o rolę organizatora. */
 export type ApplicationStatus = "PENDING" | "APPROVED" | "REJECTED";
 
+/** Preferowany język UI i maili systemowych. */
+export type UserLocale = "pl" | "en";
+
 /** Profil użytkownika z GET /api/auth/me i list admina. */
 export interface User {
   id: string;
@@ -55,6 +58,8 @@ export interface User {
   instagramUrl?: string | null;
   hasDrivingLicenseB?: boolean;
   pzmLicense?: string | null;
+  /** Preferencja języka (maile + sync UI). Domyślnie pl. */
+  locale?: UserLocale | null;
 }
 
 /** Pełne wydarzenie z list/szczegółów (GET /api/events). */

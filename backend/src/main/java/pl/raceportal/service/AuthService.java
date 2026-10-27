@@ -20,6 +20,7 @@ import pl.raceportal.dto.AuthDtos.RegisterRequest;
 import pl.raceportal.dto.AuthDtos.RegisterResponse;
 import pl.raceportal.dto.AuthDtos.UpdateMeRequest;
 import pl.raceportal.dto.AuthDtos.UserDto;
+import pl.raceportal.i18n.MailTexts;
 import pl.raceportal.repository.OrganizerApplicationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.AttemptRateLimiter;
@@ -78,8 +79,6 @@ public class AuthService {
     private static final Duration LOGIN_WINDOW = Duration.ofMinutes(15);
 
     private static final int FORGOT_MAX_PER_IP = 10;
-
-    private static final String PASSWORD_RESET_SUBJECT = "Reset hasła RACEPORTAL";
 
     private final UserRepository userRepository;
     private final OrganizerApplicationRepository organizerApplicationRepository;
@@ -357,6 +356,9 @@ public class AuthService {
         }
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
                 request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
+        if (request.locale() != null && !request.locale().isBlank()) {
+            user.setLocale(MailTexts.normalize(request.locale()));
+        }
         user = userRepository.save(user);
         return toUserDto(user);
     }
@@ -455,13 +457,13 @@ public class AuthService {
         String oldEmail = user.getEmail();
         // Zajęty adres: ten sam HTTP 200 + komunikat co przy sukcesie — bez linku na cudzą skrzynkę.
         if (userRepository.existsByEmailIgnoreCase(newEmail)) {
-            notifyOldEmailAboutPendingChange(oldEmail, user.getUsername(), newEmail);
+            notifyOldEmailAboutPendingChange(user, oldEmail, newEmail);
             return new MessageResponse(EMAIL_CHANGE_REQUEST_MESSAGE);
         }
 
         user.setPendingEmail(newEmail);
         sendVerificationLinkTo(user, newEmail);
-        notifyOldEmailAboutPendingChange(oldEmail, user.getUsername(), newEmail);
+        notifyOldEmailAboutPendingChange(user, oldEmail, newEmail);
         return new MessageResponse(EMAIL_CHANGE_REQUEST_MESSAGE);
     }
 
@@ -542,36 +544,30 @@ public class AuthService {
      * Adres spoza bazy dostaje wysyłkę na skrzynkę nadawcy — sondowany adres nie dostaje maila z naszej domeny.
      */
     private boolean deliverPasswordResetMail(User userOrNull, String token) {
-        String username = userOrNull == null || userOrNull.getUsername() == null ? "kierowca" : userOrNull.getUsername();
+        String locale = MailTexts.of(userOrNull);
+        String username = userOrNull == null || userOrNull.getUsername() == null
+                ? (MailTexts.isEn(locale) ? "driver" : "kierowca")
+                : userOrNull.getUsername();
         String safeName = escapeHtml(username);
         String link = publicBaseUrl + "/reset-password/" + token;
         String safeLink = escapeHtml(link);
-        String html = "<p>Cześć " + safeName + ",</p>" +
-                "<p>Otrzymaliśmy prośbę o reset hasła. Kliknij poniższy przycisk, aby ustawić nowe hasło." +
-                " Link jest jednorazowy i ważny przez " + PASSWORD_RESET_TOKEN_TTL_MINUTES + " minut.</p>" +
-                "<p style=\"margin:18px 0;\">" +
-                "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
-                "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
-                "text-decoration:none;padding:14px 22px;border-radius:8px;\">USTAW NOWE HASŁO</a></p>" +
-                "<p style=\"font-size:13px;color:#9ca3af;\">Jeśli nie prosiłeś o reset, zignoruj tę wiadomość – " +
-                "hasło pozostaje bez zmian.<br>Jeśli przycisk nie działa, wklej adres:<br>" +
-                "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>";
+        String subject = MailTexts.passwordResetSubject(locale);
+        String html = MailTexts.passwordResetBody(locale, safeName, safeLink, PASSWORD_RESET_TOKEN_TTL_MINUTES);
         if (userOrNull == null) {
-            return mailService.sendDecoy(PASSWORD_RESET_SUBJECT, html);
+            return mailService.sendDecoy(subject, html, locale);
         }
-        return mailService.send(userOrNull.getEmail(), PASSWORD_RESET_SUBJECT, html);
+        return mailService.send(userOrNull.getEmail(), subject, html, locale);
     }
 
     /** Alert na dotychczasowy adres — bez linku potwierdzającego (ten idzie tylko na nowy). */
-    private void notifyOldEmailAboutPendingChange(String oldEmail, String username, String newEmail) {
-        String safeName = escapeHtml(username == null ? "" : username);
+    private void notifyOldEmailAboutPendingChange(User user, String oldEmail, String newEmail) {
+        String locale = MailTexts.of(user);
+        String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
         String safeNew = escapeHtml(newEmail);
-        boolean sent = mailService.send(oldEmail, "Prośba o zmianę e-maila RACEPORTAL",
-                "<p>Cześć " + safeName + ",</p>" +
-                        "<p>Otrzymaliśmy prośbę o zmianę adresu e-mail tego konta na <strong>" + safeNew + "</strong>.</p>" +
-                        "<p>Jeśli adres jest wolny, link potwierdzający trafia wyłącznie na nową skrzynkę. "
-                        + "Jeśli to nie Ty — zmień hasło w ustawieniach konta. "
-                        + "Dopóki link nie zostanie kliknięty, logujesz się nadal tym adresem.</p>");
+        boolean sent = mailService.send(oldEmail,
+                MailTexts.emailChangeAlertSubject(locale),
+                MailTexts.emailChangeAlertBody(locale, safeName, safeNew),
+                locale);
         if (!sent) {
             log.warn("Email-change alert to old address failed for {}", oldEmail);
         }
@@ -588,27 +584,16 @@ public class AuthService {
         user.setEmailVerificationExpires(Instant.now().plus(VERIFICATION_TOKEN_TTL_MINUTES, ChronoUnit.MINUTES));
         userRepository.save(user);
 
+        String locale = MailTexts.of(user);
         String safeName = escapeHtml(user.getUsername() == null ? "" : user.getUsername());
         // Token w ścieżce (nie ?token=) – mniej blokad WAF/skanerów maili na query string → 403.
         String link = publicBaseUrl + "/verify-email/" + token;
         String safeLink = escapeHtml(link);
         boolean emailChange = user.getPendingEmail() != null && !user.getPendingEmail().isBlank();
-        String subject = emailChange ? "Potwierdź nowy e-mail RACEPORTAL" : "Aktywuj konto RACEPORTAL";
-        String intro = emailChange
-                ? "Kliknij poniższy przycisk, aby potwierdzić nowy adres e-mail."
-                : "Kliknij poniższy przycisk, aby aktywować konto.";
-        mailService.send(targetEmail, subject,
-                "<p>Cześć " + safeName + ",</p>" +
-                        "<p>" + intro + "</p>" +
-                        "<p style=\"margin:18px 0;\">" +
-                        "<a href=\"" + safeLink + "\" style=\"display:inline-block;background:#FFD700;color:#121212;" +
-                        "font-family:Arial,Helvetica,sans-serif;font-size:14px;font-weight:800;letter-spacing:0.06em;" +
-                        "text-decoration:none;padding:14px 22px;border-radius:8px;\">" +
-                        (emailChange ? "POTWIERDŹ E-MAIL" : "AKTYWUJ KONTO") +
-                        "</a></p>" +
-                        "<p style=\"font-size:13px;color:#9ca3af;\">Link jest ważny przez " +
-                        VERIFICATION_TOKEN_TTL_MINUTES + " minut. Jeśli przycisk nie działa, wklej adres:<br>" +
-                        "<span style=\"word-break:break-all;color:#FFD700;\">" + safeLink + "</span></p>");
+        mailService.send(targetEmail,
+                MailTexts.activateSubject(locale, emailChange),
+                MailTexts.activateBody(locale, safeName, safeLink, emailChange, VERIFICATION_TOKEN_TTL_MINUTES),
+                locale);
     }
 
     private User resolveUserForToken(String email, String token) {
@@ -689,7 +674,8 @@ public class AuthService {
                 user.getRole().name(), user.getAvatar(), memberSince,
                 user.getFirstName(), user.getLastName(), user.getPhone(),
                 user.getAddress(), user.getInstagramUrl(),
-                user.isHasDrivingLicenseB(), user.getPzmLicense());
+                user.isHasDrivingLicenseB(), user.getPzmLicense(),
+                MailTexts.normalize(user.getLocale()));
     }
 
     private void applyProfileFields(User user, String firstName, String lastName, String phone,

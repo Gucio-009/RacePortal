@@ -5,7 +5,10 @@
  * Wzorzec: Złoty tor (gold) – ciemne tło + żółty akcent. Redline/Ice zmieniają tylko
  * `--race-accent`. Motywy jasne (arctic, sand, blush) nadpisują powierzchnie
  * (`html[data-accent]`). Układ stron i Scroll Reveal są wspólne.
+ * Locale PL/EN: `locale` + `document.documentElement.lang`; zalogowany sync przez PATCH /me.
  */
+import { defaultLocale, isLocale, type Locale } from "@raceportal/i18n";
+
 export type AccentTheme = "gold" | "redline" | "ice" | "arctic" | "sand" | "blush";
 
 export type UserSettings = {
@@ -15,6 +18,8 @@ export type UserSettings = {
   pitStopMode: boolean;
   accent: AccentTheme;
   teamFlair: string;
+  /** UI + preferencja maili (sync z users.locale gdy zalogowany). */
+  locale: Locale;
 };
 
 export const STORAGE_KEY = "raceportal_settings";
@@ -50,6 +55,7 @@ export function defaultSettings(): UserSettings {
     pitStopMode: false,
     accent: "gold",
     teamFlair: "",
+    locale: defaultLocale,
   };
 }
 
@@ -59,6 +65,7 @@ export function loadSettings(): UserSettings {
     if (raw) {
       const parsed = { ...defaultSettings(), ...JSON.parse(raw) } as UserSettings;
       if (!ACCENT_KEYS.has(parsed.accent)) parsed.accent = "gold";
+      if (!isLocale(parsed.locale)) parsed.locale = defaultLocale;
       return parsed;
     }
   } catch {
@@ -67,7 +74,11 @@ export function loadSettings(): UserSettings {
   return defaultSettings();
 }
 
-/** Stosuje akcent / pit-stop do documentElement (CSS vars + data-*). */
+export function persistSettings(settings: UserSettings) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
+
+/** Stosuje akcent / pit-stop / lang do documentElement (CSS vars + data-*). */
 export function applyUserSettings(settings: UserSettings) {
   const key = ACCENT_KEYS.has(settings.accent) ? settings.accent : "gold";
   const accent = ACCENTS[key]?.color ?? "#FFD700";
@@ -82,6 +93,8 @@ export function applyUserSettings(settings: UserSettings) {
   }
   const light = isLightAccent(key);
   root.style.colorScheme = light ? "light" : "dark";
+  const locale = isLocale(settings.locale) ? settings.locale : defaultLocale;
+  root.lang = locale;
   const metaTheme = document.querySelector('meta[name="theme-color"]');
   if (metaTheme) metaTheme.setAttribute("content", ACCENTS[key].surface);
   const metaScheme = document.querySelector('meta[name="color-scheme"]');

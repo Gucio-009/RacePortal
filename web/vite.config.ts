@@ -44,6 +44,7 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@raceportal/api-types': path.resolve(__dirname, '../packages/api-types/src/index.ts'),
+      '@raceportal/i18n': path.resolve(__dirname, '../packages/i18n/src/index.ts'),
     },
   },
   server: {
