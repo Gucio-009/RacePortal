@@ -14,6 +14,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Users,
   Calendar,
@@ -46,7 +47,7 @@ import { Label } from "../components/ui/label";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
-import { eventStatusLabel, formatEventDate, formatEntryFee } from "../lib/types";
+import { formatEventDate, formatEntryFee } from "../lib/types";
 import { toast } from "sonner";
 import { AdminBugReports } from "../components/AdminBugReports";
 import { Reveal } from "../components/Reveal";
@@ -56,6 +57,7 @@ interface PendingEvent extends ApiEvent {
 }
 
 export function AdminPanelPage() {
+  const { t, i18n } = useTranslation();
   const { user: me } = useAuth();
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [users, setUsers] = useState<AdminUser[]>([]);
@@ -87,7 +89,7 @@ export function AdminPanelPage() {
       setApprovedEvents(ae);
       setApplications(apps);
     } catch (e) {
-      if (!silent) toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować panelu");
+      if (!silent) toast.error(e instanceof ApiError ? e.message : t("admin.loadFail"));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -114,10 +116,10 @@ export function AdminPanelPage() {
       });
       toast.success(
         status === "APPROVED"
-          ? "Wydarzenie zaakceptowane – organizator został powiadomiony"
+          ? t("admin.eventApproved")
           : status === "REJECTED"
-            ? "Wydarzenie odrzucone – organizator został powiadomiony"
-            : `Status wydarzenia: ${status}`,
+            ? t("admin.eventRejected")
+            : t("admin.eventStatusChanged", { status }),
       );
       setPendingEvents((prev) => prev.filter((e) => e.id !== id));
       if (status === "CANCELLED" || status === "ARCHIVED" || status === "REJECTED") {
@@ -131,13 +133,13 @@ export function AdminPanelPage() {
         setStats({ ...stats, pendingEvents: Math.max(0, stats.pendingEvents - 1) });
       }
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
+      toast.error(e instanceof ApiError ? e.message : t("admin.updateFail"));
       throw e;
     }
   };
 
   const cancelApprovedEvent = async (id: string) => {
-    if (!confirm("Anulować to zatwierdzone wydarzenie? Zgłoszenia uczestników zostaną anulowane.")) return;
+    if (!confirm(t("admin.cancelEventConfirm"))) return;
     await updateEventStatus(id, "CANCELLED");
   };
 
@@ -145,7 +147,7 @@ export function AdminPanelPage() {
     if (!rejectTarget) return;
     const reason = rejectReason.trim();
     if (!reason) {
-      toast.error("Podaj powód odrzucenia");
+      toast.error(t("admin.rejectReasonRequired"));
       return;
     }
     setRejecting(true);
@@ -166,11 +168,11 @@ export function AdminPanelPage() {
     setDeleting(true);
     try {
       await api.delete(`/api/admin/users/${deleteTarget.id}`);
-      toast.success("Użytkownik usunięty");
+      toast.success(t("admin.userDeleted"));
       setDeleteTarget(null);
       await loadAll();
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć użytkownika");
+      toast.error(e instanceof ApiError ? e.message : t("admin.userDeleteFail"));
     } finally {
       setDeleting(false);
     }
@@ -180,9 +182,9 @@ export function AdminPanelPage() {
     try {
       const updated = await api.patch<AdminUser>(`/api/admin/users/${id}/role`, { role });
       setUsers((prev) => prev.map((u) => (u.id === id ? updated : u)));
-      toast.success(`Rola użytkownika: ${role}`);
+      toast.success(t("admin.roleChanged", { role }));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Błąd zmiany roli");
+      toast.error(e instanceof ApiError ? e.message : t("admin.roleChangeFail"));
     }
   };
 
@@ -191,22 +193,22 @@ export function AdminPanelPage() {
       await api.patch(`/api/admin/organizer-applications/${id}`, { status });
       toast.success(
         status === "APPROVED"
-          ? "Wniosek zaakceptowany – użytkownik ma teraz rolę organizatora"
-          : "Wniosek odrzucony",
+          ? t("admin.appApproved")
+          : t("admin.appRejected"),
       );
       setApplications((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
       if (stats) {
         setStats({ ...stats, pendingApps: Math.max(0, stats.pendingApps - 1) });
       }
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji wniosku");
+      toast.error(e instanceof ApiError ? e.message : t("admin.appUpdateFail"));
     }
   };
 
   const applicationStatusLabel = (status: string) => {
-    if (status === "PENDING") return "Oczekuje";
-    if (status === "APPROVED") return "Zaakceptowany";
-    if (status === "REJECTED") return "Odrzucony";
+    if (status === "PENDING") return t("admin.appStatusPending");
+    if (status === "APPROVED") return t("admin.appStatusApproved");
+    if (status === "REJECTED") return t("admin.appStatusRejected");
     return status;
   };
 
@@ -220,7 +222,7 @@ export function AdminPanelPage() {
     return (
       <div className="min-h-screen flex items-center justify-center text-[var(--race-muted)]">
         <Loader2 className="w-8 h-8 animate-spin text-[var(--race-accent)] mr-3" />
-        Ładowanie panelu admina...
+        {t("admin.loading")}
       </div>
     );
   }
@@ -230,9 +232,9 @@ export function AdminPanelPage() {
       <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-12">
         <Reveal className="container mx-auto px-4">
           <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
-            PANEL <span className="text-[var(--race-accent)]">ADMINA</span>
+            {t("admin.titleBefore")} <span className="text-[var(--race-accent)]">{t("admin.titleAccent")}</span>
           </h1>
-          <p className="text-[var(--race-muted)]">Zarządzanie użytkownikami, wydarzeniami i wnioskami organizatorów.</p>
+          <p className="text-[var(--race-muted)]">{t("admin.subtitle")}</p>
         </Reveal>
       </section>
 
@@ -240,11 +242,11 @@ export function AdminPanelPage() {
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {[
-              { label: "Użytkownicy", value: stats.users, icon: Users },
-              { label: "Wydarzenia", value: stats.events, icon: Calendar },
-              { label: "Oczekujące", value: stats.pendingEvents, icon: ClipboardList },
-              { label: "Zgłoszenia", value: stats.registrations, icon: Shield },
-              { label: "Wnioski org.", value: stats.pendingApps, icon: Shield },
+              { label: t("admin.users"), value: stats.users, icon: Users },
+              { label: t("admin.events"), value: stats.events, icon: Calendar },
+              { label: t("admin.pending"), value: stats.pendingEvents, icon: ClipboardList },
+              { label: t("admin.registrations"), value: stats.registrations, icon: Shield },
+              { label: t("admin.applications"), value: stats.pendingApps, icon: Shield },
             ].map(({ label, value, icon: Icon }, index) => (
               <Reveal key={label} delay={index * 70}>
                 <Card className="bg-[var(--race-card)] border-[var(--race-border)] shadow-[var(--race-card-shadow)]">
@@ -263,16 +265,16 @@ export function AdminPanelPage() {
 
         <Tabs defaultValue="events" className="space-y-6">
           <TabsList className="bg-[var(--race-card)] border border-[var(--race-border)] flex-wrap h-auto">
-            <TabsTrigger value="events">Do akceptacji ({pendingEvents.length})</TabsTrigger>
-            <TabsTrigger value="approved">Zatwierdzone ({approvedEvents.length})</TabsTrigger>
-            <TabsTrigger value="users">Użytkownicy ({users.length})</TabsTrigger>
-            <TabsTrigger value="applications">Wnioski ({applications.filter((a) => a.status === "PENDING").length})</TabsTrigger>
-            <TabsTrigger value="bugs">Błędy</TabsTrigger>
+            <TabsTrigger value="events">{t("admin.tabPending", { count: pendingEvents.length })}</TabsTrigger>
+            <TabsTrigger value="approved">{t("admin.tabApproved", { count: approvedEvents.length })}</TabsTrigger>
+            <TabsTrigger value="users">{t("admin.tabUsers", { count: users.length })}</TabsTrigger>
+            <TabsTrigger value="applications">{t("admin.tabApplications", { count: applications.filter((a) => a.status === "PENDING").length })}</TabsTrigger>
+            <TabsTrigger value="bugs">{t("admin.bugs")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events" className="space-y-4">
             {pendingEvents.length === 0 ? (
-              <p className="text-[var(--race-muted)] text-center py-8">Brak wydarzeń oczekujących na akceptację.</p>
+              <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noPendingEvents")}</p>
             ) : (
               pendingEvents.map((event) => {
                 const expanded = expandedId === event.id;
@@ -284,11 +286,11 @@ export function AdminPanelPage() {
                           <div className="flex flex-wrap gap-2 mb-2">
                             <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]">{event.category}</Badge>
                             <Badge variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
-                              {eventStatusLabel(event.status)}
+                              {t(`eventStatus.${event.status}`, { defaultValue: event.status })}
                             </Badge>
                             {event.paid && (
                               <Badge variant="outline" className="border-[var(--race-accent)] text-[var(--race-accent)]">
-                                Płatne
+                                {t("common.paid")}
                               </Badge>
                             )}
                           </div>
@@ -296,7 +298,7 @@ export function AdminPanelPage() {
                             {event.name}
                           </h3>
                           <p className="text-[var(--race-muted)] text-sm">
-                            {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
+                            {event.track}, {event.city} · {t("admin.organizerLabel", { name: event.organizer?.username ?? "–" })}
                             {event.organizer?.verified ? " ✓" : ""}
                           </p>
                           <p className="text-[var(--race-muted)] text-sm">
@@ -315,17 +317,17 @@ export function AdminPanelPage() {
                             ) : (
                               <ChevronDown className="w-4 h-4 mr-1" />
                             )}
-                            Szczegóły
+                            {t("events.details")}
                           </Button>
                           <Button size="sm" asChild variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
                             <Link to={`/wydarzenia/${event.id}`}>
                               <Eye className="w-4 h-4 mr-1" />
-                              Podgląd
+                              {t("admin.preview")}
                             </Link>
                           </Button>
                           <Button size="sm" onClick={() => updateEventStatus(event.id, "APPROVED")} className="bg-green-700 hover:bg-green-600">
                             <Check className="w-4 h-4 mr-1" />
-                            Akceptuj
+                            {t("admin.accept")}
                           </Button>
                           <Button
                             size="sm"
@@ -337,11 +339,11 @@ export function AdminPanelPage() {
                             className="border-red-800 text-red-400"
                           >
                             <X className="w-4 h-4 mr-1" />
-                            Odrzuć
+                            {t("admin.reject")}
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => updateEventStatus(event.id, "ARCHIVED")} className="border-[var(--race-border)] text-[var(--race-fg)]">
                             <Archive className="w-4 h-4 mr-1" />
-                            Archiwum
+                            {t("admin.archive")}
                           </Button>
                         </div>
                       </div>
@@ -349,29 +351,29 @@ export function AdminPanelPage() {
                       {expanded && (
                         <div className="border-t border-[var(--race-border)] pt-4 space-y-3 text-sm">
                           <div>
-                            <p className="text-[var(--race-accent)] font-semibold mb-1">Opis</p>
+                            <p className="text-[var(--race-accent)] font-semibold mb-1">{t("events.description")}</p>
                             <p className="text-[var(--race-muted)] whitespace-pre-wrap">{event.description || "–"}</p>
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[var(--race-muted)]">
                             <p>
-                              <span className="text-[var(--race-fg)]">Województwo:</span> {event.voivodeship}
+                              <span className="text-[var(--race-fg)]">{t("events.voivodeship")}:</span> {event.voivodeship}
                             </p>
                             <p>
-                              <span className="text-[var(--race-fg)]">Ulica:</span> {event.street || "–"}
+                              <span className="text-[var(--race-fg)]">{t("events.street")}:</span> {event.street || "–"}
                             </p>
                             <p>
-                              <span className="text-[var(--race-fg)]">Wpisowe:</span>{" "}
-                              {event.paid ? formatEntryFee(event.entryFee) ?? "–" : "Bezpłatne"}
+                              <span className="text-[var(--race-fg)]">{t("events.entryFee")}:</span>{" "}
+                              {event.paid ? formatEntryFee(event.entryFee) ?? "–" : t("events.freeEntry")}
                             </p>
                             <p>
-                              <span className="text-[var(--race-fg)]">Konto:</span> {event.bankAccount || "–"}
+                              <span className="text-[var(--race-fg)]">{t("events.bankAccount")}:</span> {event.bankAccount || "–"}
                             </p>
                             <p>
-                              <span className="text-[var(--race-fg)]">Koniec:</span>{" "}
+                              <span className="text-[var(--race-fg)]">{t("events.end")}:</span>{" "}
                               {event.endDate ? `${event.endDate}${event.endTime ? ` ${event.endTime}` : ""}` : "–"}
                             </p>
                             <p>
-                              <span className="text-[var(--race-fg)]">Link:</span>{" "}
+                              <span className="text-[var(--race-fg)]">{t("events.link")}:</span>{" "}
                               {event.externalUrl && /^https?:\/\//i.test(event.externalUrl) ? (
                                 <a href={event.externalUrl} className="text-[var(--race-accent)] underline" target="_blank" rel="noopener noreferrer">
                                   {event.externalUrl}
@@ -382,19 +384,19 @@ export function AdminPanelPage() {
                             </p>
                           </div>
                           <div>
-                            <p className="text-[var(--race-fg)] mb-1">Wymagania</p>
+                            <p className="text-[var(--race-fg)] mb-1">{t("events.requirements")}</p>
                             <p className="text-[var(--race-muted)]">
                               {[
-                                event.requireDrivingLicense && "prawo jazdy B",
-                                event.requirePzmLicense && "licencja PZM",
-                                event.requireDrivingLicenseOrPzm && "prawo jazdy B lub licencja PZM",
-                                event.requireOc && "OC",
-                                event.requirePt && "PT",
-                                event.requireCage && "klatka",
-                                event.requireRegistered && "pojazd zarejestrowany",
+                                event.requireDrivingLicense && t("events.reqLicenseB"),
+                                event.requirePzmLicense && t("events.reqPzm"),
+                                event.requireDrivingLicenseOrPzm && t("events.reqLicenseOrPzm"),
+                                event.requireOc && t("events.reqOc"),
+                                event.requirePt && t("events.reqPt"),
+                                event.requireCage && t("events.reqCage"),
+                                event.requireRegistered && t("events.reqRegistered"),
                               ]
                                 .filter(Boolean)
-                                .join(", ") || "brak dodatkowych wymagań"}
+                                .join(", ") || t("events.reqNone")}
                             </p>
                           </div>
                         </div>
@@ -408,7 +410,7 @@ export function AdminPanelPage() {
 
           <TabsContent value="approved" className="space-y-4">
             {approvedEvents.length === 0 ? (
-              <p className="text-[var(--race-muted)] text-center py-8">Brak zatwierdzonych wydarzeń.</p>
+              <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noApprovedEvents")}</p>
             ) : (
               approvedEvents.map((event) => (
                 <Card key={event.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
@@ -417,14 +419,14 @@ export function AdminPanelPage() {
                       <div className="flex flex-wrap gap-2 mb-2">
                         <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]">{event.category}</Badge>
                         <Badge variant="outline" className="border-green-800 text-green-400">
-                          {eventStatusLabel(event.status)}
+                          {t(`eventStatus.${event.status}`, { defaultValue: event.status })}
                         </Badge>
                       </div>
                       <h3 className="font-display text-[var(--race-fg)]" style={{ fontWeight: 800 }}>
                         {event.name}
                       </h3>
                       <p className="text-[var(--race-muted)] text-sm">
-                        {event.track}, {event.city} · Organizator: {event.organizer?.username ?? "–"}
+                        {event.track}, {event.city} · {t("admin.organizerLabel", { name: event.organizer?.username ?? "–" })}
                         {event.organizer?.verified ? " ✓" : ""}
                       </p>
                     </div>
@@ -432,7 +434,7 @@ export function AdminPanelPage() {
                       <Button size="sm" asChild variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
                         <Link to={`/wydarzenia/${event.id}`}>
                           <Eye className="w-4 h-4 mr-1" />
-                          Podgląd
+                          {t("admin.preview")}
                         </Link>
                       </Button>
                       <Button
@@ -442,11 +444,11 @@ export function AdminPanelPage() {
                         className="border-red-900 text-red-400 hover:bg-red-950"
                       >
                         <Ban className="w-4 h-4 mr-1" />
-                        Anuluj wydarzenie
+                        {t("admin.cancelEvent")}
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => updateEventStatus(event.id, "ARCHIVED")} className="border-[var(--race-border)] text-[var(--race-fg)]">
                         <Archive className="w-4 h-4 mr-1" />
-                        Archiwum
+                        {t("admin.archive")}
                       </Button>
                     </div>
                   </CardContent>
@@ -488,12 +490,12 @@ export function AdminPanelPage() {
                         className="border-red-800 text-red-400"
                         onClick={() => setDeleteTarget(user)}
                       >
-                        Usuń
+                        {t("admin.deleteUser")}
                       </Button>
                     )}
                   </div>
                   {me?.id === user.id && (
-                    <p className="text-xs text-[var(--race-muted)] sm:absolute sm:sr-only">Nie możesz zmienić własnej roli</p>
+                    <p className="text-xs text-[var(--race-muted)] sm:absolute sm:sr-only">{t("admin.cannotChangeOwnRole")}</p>
                   )}
                 </CardContent>
               </Card>
@@ -502,7 +504,7 @@ export function AdminPanelPage() {
 
           <TabsContent value="applications" className="space-y-4">
             {sortedApplications.length === 0 ? (
-              <p className="text-[var(--race-muted)] text-center py-8">Brak wniosków o rolę organizatora.</p>
+              <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noApplications")}</p>
             ) : (
               sortedApplications.map((app) => (
                 <Card key={app.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
@@ -530,7 +532,7 @@ export function AdminPanelPage() {
                     </p>
                     {app.createdAt && (
                       <p className="text-[#6b7280] text-xs">
-                        Złożony: {new Date(app.createdAt).toLocaleString("pl-PL")}
+                        {t("admin.submittedAt", { date: new Date(app.createdAt).toLocaleString(i18n.language === "en" ? "en-GB" : "pl-PL") })}
                       </p>
                     )}
                     <p className="text-[var(--race-muted)] whitespace-pre-wrap">{app.message}</p>
@@ -542,7 +544,7 @@ export function AdminPanelPage() {
                           className="bg-green-700 hover:bg-green-600"
                         >
                           <Check className="w-4 h-4 mr-1" />
-                          Zaakceptuj
+                          {t("admin.accept")}
                         </Button>
                         <Button
                           size="sm"
@@ -551,7 +553,7 @@ export function AdminPanelPage() {
                           className="border-red-800 text-red-400"
                         >
                           <X className="w-4 h-4 mr-1" />
-                          Odrzuć
+                          {t("admin.reject")}
                         </Button>
                       </div>
                     )}
@@ -570,11 +572,11 @@ export function AdminPanelPage() {
       <Dialog open={!!deleteTarget} onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}>
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
           <DialogHeader>
-            <DialogTitle className="font-display">Usuń użytkownika</DialogTitle>
+            <DialogTitle className="font-display">{t("admin.deleteUserTitle")}</DialogTitle>
             <DialogDescription className="text-[var(--race-muted)]">
               {deleteTarget
-                ? `Usunąć konto ${deleteTarget.username} (${deleteTarget.email})? Zgłoszenia, auta i powiadomienia tego konta znikną. Wydarzenia, których był organizatorem, zostaną przypisane do Ciebie.`
-                : "Usunąć to konto?"}
+                ? t("admin.deleteUserDesc", { username: deleteTarget.username, email: deleteTarget.email })
+                : t("admin.deleteUserFallback")}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -584,7 +586,7 @@ export function AdminPanelPage() {
               onClick={() => setDeleteTarget(null)}
               disabled={deleting}
             >
-              Anuluj
+              {t("common.cancel")}
             </Button>
             <Button
               className="bg-red-800 hover:bg-red-700 text-[var(--race-fg)]"
@@ -592,7 +594,7 @@ export function AdminPanelPage() {
               disabled={deleting}
             >
               {deleting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Usuń konto
+              {t("admin.deleteAccount")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -609,22 +611,22 @@ export function AdminPanelPage() {
       >
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
           <DialogHeader>
-            <DialogTitle className="font-display">Odrzuć wydarzenie</DialogTitle>
+            <DialogTitle className="font-display">{t("admin.rejectEventTitle")}</DialogTitle>
             <DialogDescription className="text-[var(--race-muted)]">
               {rejectTarget
-                ? `Podaj powód odrzucenia „${rejectTarget.name}". Organizator otrzyma powiadomienie i e-mail.`
-                : "Podaj powód odrzucenia."}
+                ? t("admin.rejectEventDesc", { name: rejectTarget.name })
+                : t("admin.rejectEventDescFallback")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             <Label htmlFor="reject-reason" className="text-[var(--race-fg)]">
-              Powód <span className="text-red-400">*</span>
+              {t("admin.reason")} <span className="text-red-400">*</span>
             </Label>
             <Textarea
               id="reject-reason"
               value={rejectReason}
               onChange={(e) => setRejectReason(e.target.value)}
-              placeholder="Np. brak wymaganych informacji o torze, data w przeszłości, niekompletny opis…"
+              placeholder={t("admin.rejectPlaceholder")}
               className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] min-h-[120px]"
               maxLength={2000}
             />
@@ -640,7 +642,7 @@ export function AdminPanelPage() {
               }}
               disabled={rejecting}
             >
-              Anuluj
+              {t("common.cancel")}
             </Button>
             <Button
               className="bg-red-800 hover:bg-red-700 text-[var(--race-fg)]"
@@ -648,7 +650,7 @@ export function AdminPanelPage() {
               disabled={rejecting || !rejectReason.trim()}
             >
               {rejecting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <X className="w-4 h-4 mr-2" />}
-              Odrzuć wydarzenie
+              {t("admin.rejectSubmit")}
             </Button>
           </DialogFooter>
         </DialogContent>

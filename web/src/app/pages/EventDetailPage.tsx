@@ -14,6 +14,7 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2, ShieldCheck, User } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
@@ -38,7 +39,6 @@ import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Car, Registration, RouteResult } from "../lib/types";
 import {
   eventImage,
-  eventStatusLabel,
   formatEntryFee,
   IMAGE_WIDTH_DETAIL,
   isOpenRegistration,
@@ -47,6 +47,7 @@ import { formatCarLabel, partitionCarsForEvent } from "../lib/carMatch";
 import { toast } from "sonner";
 
 export function EventDetailPage() {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -116,7 +117,7 @@ export function EventDetailPage() {
 
   const handleRegister = async () => {
     if (!isAuthenticated) {
-      toast.info("Zaloguj się, aby zapisać się na wydarzenie");
+      toast.info(t("events.loginToRegister"));
       navigate("/login");
       return;
     }
@@ -131,9 +132,9 @@ export function EventDetailPage() {
         note: note.trim() || undefined,
       });
       setMyRegistration(created);
-      toast.success(`Zgłoszenie na ${event.name} wysłane`);
+      toast.success(t("events.registeredOk", { name: event.name }));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się wysłać zgłoszenia");
+      toast.error(e instanceof ApiError ? e.message : t("events.registerFail"));
     } finally {
       setRegistering(false);
     }
@@ -141,14 +142,14 @@ export function EventDetailPage() {
 
   const handleUnregister = async () => {
     if (!myRegistration) return;
-    if (!window.confirm("Na pewno wypisać się z tego wydarzenia?")) return;
+    if (!window.confirm(t("events.unregisterConfirm"))) return;
     setRegistering(true);
     try {
       await api.post(`/api/registrations/${myRegistration.id}/cancel`);
       setMyRegistration(null);
-      toast.success("Wypisano z wydarzenia");
+      toast.success(t("events.unregisteredOk"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się wypisać");
+      toast.error(e instanceof ApiError ? e.message : t("events.unregisterFail"));
     } finally {
       setRegistering(false);
     }
@@ -157,11 +158,11 @@ export function EventDetailPage() {
   /** Od Twojej lokalizacji → do eventu (polyline + dystans). */
   const handleRoute = () => {
     if (!event?.lat || !event?.lng) {
-      toast.error("Brak współrzędnych wydarzenia");
+      toast.error(t("events.noCoords"));
       return;
     }
     if (!navigator.geolocation) {
-      toast.error("Geolokalizacja niedostępna");
+      toast.error(t("events.geoUnavailable"));
       return;
     }
 
@@ -176,15 +177,15 @@ export function EventDetailPage() {
             toLng: event.lng,
           });
           setRoute(result);
-          toast.success(`Trasa do eventu: ${result.distanceText}, ${result.durationText}`);
+          toast.success(t("events.routeOk", { distance: result.distanceText, duration: result.durationText }));
         } catch (e) {
-          toast.error(e instanceof ApiError ? e.message : "Nie udało się wytyczyć trasy");
+          toast.error(e instanceof ApiError ? e.message : t("events.routeFail"));
         } finally {
           setRouteLoading(false);
         }
       },
       () => {
-        toast.error("Nie udało się ustalić Twojej lokalizacji (punkt startowy trasy)");
+        toast.error(t("events.geoFail"));
         setRouteLoading(false);
       },
     );
@@ -194,7 +195,7 @@ export function EventDetailPage() {
     return (
       <div className="container mx-auto px-4 py-24 text-center text-[var(--race-muted)]">
         <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
-        Ładowanie wydarzenia...
+        {t("events.loadingEvent")}
       </div>
     );
   }
@@ -203,10 +204,10 @@ export function EventDetailPage() {
     return (
       <div className="container mx-auto px-4 py-24 text-center">
         <h1 className="font-display text-[var(--race-fg)] mb-4" style={{ fontSize: "32px", fontWeight: 800 }}>
-          Nie znaleziono wydarzenia
+          {t("events.notFound")}
         </h1>
         <Link to="/wydarzenia">
-          <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95">Wróć do kalendarza</Button>
+          <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95">{t("events.backToCalendar")}</Button>
         </Link>
       </div>
     );
@@ -232,14 +233,14 @@ export function EventDetailPage() {
         <Reveal className="absolute bottom-0 left-0 right-0 container mx-auto px-4 pb-8">
           <Link to="/wydarzenia" className="inline-flex items-center text-[var(--race-accent)] mb-4 hover:underline" style={{ fontWeight: 600 }}>
             <ChevronLeft className="w-4 h-4" />
-            Wróć do kalendarza
+            {t("events.backToCalendar")}
           </Link>
           <div className="flex flex-wrap gap-2 mb-3">
             <Badge className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
               {event.category}
             </Badge>
             <Badge variant="outline" className="border-white/40 text-white">
-              {eventStatusLabel(event.status)}
+              {t(`eventStatus.${event.status}`, { defaultValue: event.status })}
             </Badge>
             <PaidEventBadge event={event} />
           </div>
@@ -248,7 +249,7 @@ export function EventDetailPage() {
           </h1>
           {event.status === "REJECTED" && event.rejectionReason && (
             <p className="mt-3 text-red-300 text-sm max-w-3xl whitespace-pre-wrap">
-              Powód odrzucenia: {event.rejectionReason}
+              {t("events.rejectionReason", { reason: event.rejectionReason })}
             </p>
           )}
         </Reveal>
@@ -259,7 +260,7 @@ export function EventDetailPage() {
           <Reveal delay={80}>
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-6 shadow-[var(--race-card-shadow)]">
             <h2 className="font-display text-[var(--race-fg)] mb-4" style={{ fontSize: "24px", fontWeight: 800 }}>
-              Opis
+              {t("events.description")}
             </h2>
             <p className="text-[var(--race-muted)] leading-relaxed" style={{ fontSize: "16px" }}>
               {event.description}
@@ -271,7 +272,7 @@ export function EventDetailPage() {
             <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-6 space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <h2 className="font-display text-[var(--race-fg)]" style={{ fontSize: "24px", fontWeight: 800 }}>
-                  Mapa
+                  {t("events.map")}
                 </h2>
                 <Button
                   onClick={handleRoute}
@@ -285,7 +286,7 @@ export function EventDetailPage() {
                   ) : (
                     <Navigation className="w-4 h-4 mr-2" />
                   )}
-                  Trasa do eventu
+                  {t("events.routeToEvent")}
                 </Button>
               </div>
               {route && (
@@ -306,7 +307,7 @@ export function EventDetailPage() {
             </div>
             <div className="flex items-center gap-3 text-[var(--race-fg)]">
               <Clock className="w-5 h-5 text-[var(--race-accent)]" />
-              <span style={{ fontWeight: 600 }}>Start: {event.time}</span>
+              <span style={{ fontWeight: 600 }}>{t("events.startAt", { time: event.time })}</span>
             </div>
             <div className="flex items-center gap-3 text-[var(--race-fg)]">
               <MapPin className="w-5 h-5 text-[var(--race-accent)]" />
@@ -328,7 +329,7 @@ export function EventDetailPage() {
                     style={{ fontWeight: 700 }}
                   >
                     <ShieldCheck className="w-3 h-3 mr-1" />
-                    Zweryfikowany organizator
+                    {t("events.verifiedOrganizer")}
                   </Badge>
                 ) : null}
               </div>
@@ -338,14 +339,14 @@ export function EventDetailPage() {
               <div className="rounded-md border border-[var(--race-accent)]/40 bg-[var(--race-accent)]/10 p-3 space-y-1">
                 <PaidEventBadge event={event} />
                 <p className="text-sm text-[var(--race-muted)]">
-                  Wpisowe:{" "}
+                  {t("events.entryFee")}:{" "}
                   <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
-                    {formatEntryFee(event.entryFee) ?? "do ustalenia"}
+                    {formatEntryFee(event.entryFee) ?? t("events.feeTbd")}
                   </span>
                 </p>
                 {event.bankAccount && (
                   <p className="text-xs text-[var(--race-muted)]">
-                    Po akceptacji wpłać na: <span className="text-[var(--race-fg)]">{event.bankAccount}</span>
+                    {t("events.payAfterAccept")} <span className="text-[var(--race-fg)]">{event.bankAccount}</span>
                   </p>
                 )}
               </div>
@@ -355,43 +356,35 @@ export function EventDetailPage() {
               <>
                 <div className="space-y-2 pt-2 border-t border-[var(--race-border)]">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Label className="text-[var(--race-fg)]">Auto z garażu</Label>
+                    <Label className="text-[var(--race-fg)]">{t("events.garageCar")}</Label>
                     <span className="text-xs text-[var(--race-muted)]">
                       {recommended.length > 0 ? (
                         <>
-                          Dopasowane do{" "}
-                          <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
-                            {event.category}
-                          </span>
-                          :{" "}
+                          {t("events.matchedToCategory", { category: event.category })}{" "}
                           <span className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
                             {recommended.length}
                           </span>
                           {cars.length > recommended.length
-                            ? ` / ${cars.length} w garażu`
+                            ? t("events.ofGarage", { total: cars.length })
                             : ""}
                         </>
                       ) : cars.length > 0 ? (
-                        <>
-                          Brak aut klasy{" "}
-                          <span className="text-[var(--race-accent)]">{event.category}</span> – masz {cars.length} w
-                          garażu
-                        </>
+                        t("events.noClassCars", { category: event.category, count: cars.length })
                       ) : (
-                        "Brak aut w garażu"
+                        t("events.noCars")
                       )}
                     </span>
                   </div>
                   <Select value={carId} onValueChange={setCarId}>
                     <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
-                      <SelectValue placeholder="Wybierz auto" />
+                      <SelectValue placeholder={t("events.chooseCar")} />
                     </SelectTrigger>
                     <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-                      <SelectItem value="none">Bez auta</SelectItem>
+                      <SelectItem value="none">{t("events.noCar")}</SelectItem>
                       {recommended.length > 0 && (
                         <SelectGroup>
                           <SelectLabel className="text-[var(--race-accent)]">
-                            Proponowane / zalecane ({event.category})
+                            {t("events.suggestedCars", { category: event.category })}
                           </SelectLabel>
                           {recommended.map((car) => (
                             <SelectItem key={car.id} value={car.id}>
@@ -403,7 +396,7 @@ export function EventDetailPage() {
                       {recommended.length > 0 && other.length > 0 && <SelectSeparator />}
                       {other.length > 0 && (
                         <SelectGroup>
-                          <SelectLabel className="text-[var(--race-muted)]">Pozostałe auta</SelectLabel>
+                          <SelectLabel className="text-[var(--race-muted)]">{t("events.otherCars")}</SelectLabel>
                           {other.map((car) => (
                             <SelectItem key={car.id} value={car.id}>
                               {formatCarLabel(car)}
@@ -415,26 +408,21 @@ export function EventDetailPage() {
                   </Select>
                   {cars.length === 0 && (
                     <Link to="/garaz" className="text-[var(--race-accent)] text-sm hover:underline">
-                      Dodaj auto w garażu
+                      {t("events.addCarInGarage")}
                     </Link>
                   )}
                   {cars.length > 0 && recommended.length === 0 && (
                     <p className="text-xs text-amber-400/90">
-                      Żadne auto nie ma kategorii „{event.category}”. Możesz wybrać inne albo dodać
-                      właściwe w{" "}
-                      <Link to="/garaz" className="text-[var(--race-accent)] underline">
-                        garażu
-                      </Link>
-                      .
+                      {t("events.noMatchingCategory", { category: event.category })}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[var(--race-fg)]">Notatka (opcjonalnie)</Label>
+                  <Label className="text-[var(--race-fg)]">{t("events.noteOptional")}</Label>
                   <Textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
-                    placeholder="Dodatkowe informacje..."
+                    placeholder={t("events.notePlaceholder")}
                     className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
                     rows={3}
                   />
@@ -456,24 +444,24 @@ export function EventDetailPage() {
               style={{ fontWeight: 800 }}
             >
               {registering
-                ? "WYSYŁANIE..."
+                ? t("events.sending")
                 : isAuthenticated
                   ? myRegistration
-                    ? "WYPISZ SIĘ"
+                    ? t("events.unregister")
                     : event.status === "APPROVED"
-                      ? "ZAPISZ SIĘ"
-                      : "ZAPISY NIEDOSTĘPNE"
-                  : "ZALOGUJ I ZAPISZ SIĘ"}
+                      ? t("events.register")
+                      : t("events.registerUnavailable")
+                  : t("events.loginAndRegister")}
             </Button>
             {myRegistration && (
               <p className="text-xs text-[var(--race-muted)] text-center mt-1">
-                Masz aktywne zgłoszenie – nie możesz zapisać się ponownie.
+                {t("events.activeRegHint")}
               </p>
             )}
             {!isAuthenticated && (
               <Link to="/login" className="block">
                 <Button variant="outline" className="w-full border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
-                  Przejdź do logowania
+                  {t("events.goLogin")}
                 </Button>
               </Link>
             )}

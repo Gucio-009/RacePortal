@@ -8,6 +8,7 @@
  * Pomysł (alt): osobny badge „Wymaga przelewu” gdy status ACCEPTED bez proof.
  */
 
+import { useTranslation } from "react-i18next";
 import { Banknote } from "lucide-react";
 import type { ApiEvent } from "../lib/types";
 import { formatEntryFee } from "../lib/types";
@@ -21,10 +22,12 @@ type Props = {
 
 /** Widoczny marker „Płatne” z opcjonalną kwotą wpisowego. */
 export function PaidEventBadge({ event, variant = "inline", className = "" }: Props) {
+  const { t } = useTranslation();
   if (!event.paid) return null;
 
   const fee = formatEntryFee(event.entryFee);
-  const label = fee ? `Płatne · ${fee}` : "Płatne";
+  const paid = t("common.paid");
+  const label = fee ? `${paid} · ${fee}` : paid;
 
   if (variant === "overlay") {
     return (

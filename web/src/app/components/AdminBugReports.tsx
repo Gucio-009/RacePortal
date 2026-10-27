@@ -2,6 +2,7 @@
  * Lista zgłoszeń błędów w panelu admina — status, usuwanie, eksport CSV.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -23,14 +24,14 @@ interface BugReport {
   status: BugStatus;
 }
 
-function who(report: BugReport) {
+function who(report: BugReport, guestLabel: string) {
   if (report.username) {
     return `${report.username} (${report.accountEmail ?? ""})`;
   }
   if (report.contactEmail) {
     return report.contactEmail;
   }
-  return "Gość";
+  return guestLabel;
 }
 
 function csvEscape(value: string): string {
@@ -40,14 +41,14 @@ function csvEscape(value: string): string {
   return value;
 }
 
-function downloadCsv(reports: BugReport[]) {
+function downloadCsv(reports: BugReport[], guestLabel: string) {
   const header = ["id", "status", "createdAt", "who", "accountEmail", "contactEmail", "pageUrl", "message"];
   const rows = reports.map((r) =>
     [
       r.id,
       r.status,
       r.createdAt,
-      who(r),
+      who(r, guestLabel),
       r.accountEmail ?? "",
       r.contactEmail ?? "",
       r.pageUrl ?? "",
@@ -69,6 +70,7 @@ function downloadCsv(reports: BugReport[]) {
 }
 
 export function AdminBugReports() {
+  const { t, i18n } = useTranslation();
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<Filter>("OPEN");
@@ -91,7 +93,7 @@ export function AdminBugReports() {
     let cancelled = false;
     reload()
       .catch((err) => {
-        toast.error(err instanceof ApiError ? err.message : "Nie udało się pobrać zgłoszeń.");
+        toast.error(err instanceof ApiError ? err.message : t("bugs.loadFail"));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -99,7 +101,7 @@ export function AdminBugReports() {
     return () => {
       cancelled = true;
     };
-  }, [reload]);
+  }, [reload, t]);
 
   const visible = useMemo(() => {
     if (filter === "ALL") return reports;
@@ -111,34 +113,36 @@ export function AdminBugReports() {
     try {
       const updated = await api.patch<BugReport>(`/api/bug-reports/${id}/status`, { status });
       setReports((prev) => prev.map((r) => (r.id === id ? { ...r, ...updated, status } : r)));
-      toast.success(status === "DONE" ? "Oznaczone jako zrobione" : "Przywrócone jako otwarte");
+      toast.success(status === "DONE" ? t("bugs.markedDone") : t("bugs.markedOpen"));
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Nie udało się zmienić statusu");
+      toast.error(err instanceof ApiError ? err.message : t("bugs.statusFail"));
     } finally {
       setBusyId(null);
     }
   };
 
   const remove = async (id: string) => {
-    if (!window.confirm("Usunąć to zgłoszenie na stałe?")) return;
+    if (!window.confirm(t("bugs.deleteConfirm"))) return;
     setBusyId(id);
     try {
       await api.delete(`/api/bug-reports/${id}`);
       setReports((prev) => prev.filter((r) => r.id !== id));
-      toast.success("Zgłoszenie usunięte");
+      toast.success(t("bugs.deleted"));
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Nie udało się usunąć");
+      toast.error(err instanceof ApiError ? err.message : t("bugs.deleteFail"));
     } finally {
       setBusyId(null);
     }
   };
 
   if (loading) {
-    return <p className="text-[var(--race-muted)] text-center py-8">Ładowanie zgłoszeń…</p>;
+    return <p className="text-[var(--race-muted)] text-center py-8">{t("bugs.loading")}</p>;
   }
 
   const openCount = reports.filter((r) => r.status === "OPEN").length;
   const doneCount = reports.filter((r) => r.status === "DONE").length;
+  const guestLabel = t("bugs.guest");
+  const dateLocale = i18n.language === "en" ? "en-GB" : "pl-PL";
 
   return (
     <div className="space-y-4">
@@ -146,9 +150,9 @@ export function AdminBugReports() {
         <div className="flex flex-wrap gap-2">
           {(
             [
-              ["OPEN", `Otwarte (${openCount})`],
-              ["DONE", `Zrobione (${doneCount})`],
-              ["ALL", `Wszystkie (${reports.length})`],
+              ["OPEN", t("bugs.openCount", { count: openCount })],
+              ["DONE", t("bugs.doneCount", { count: doneCount })],
+              ["ALL", t("bugs.allCount", { count: reports.length })],
             ] as const
           ).map(([value, label]) => (
             <Button
@@ -172,18 +176,18 @@ export function AdminBugReports() {
           className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
           disabled={visible.length === 0}
           onClick={() => {
-            downloadCsv(visible);
-            toast.success(`Wyeksportowano ${visible.length} zgłoszeń do CSV`);
+            downloadCsv(visible, guestLabel);
+            toast.success(t("bugs.exported", { count: visible.length }));
           }}
         >
           <Download className="w-4 h-4 mr-2" />
-          Eksport CSV
+          {t("bugs.exportCsv")}
         </Button>
       </div>
 
       {visible.length === 0 ? (
         <p className="text-[var(--race-muted)] text-center py-8">
-          {reports.length === 0 ? "Brak zgłoszonych błędów." : "Brak zgłoszeń w tym filtrze."}
+          {reports.length === 0 ? t("bugs.empty") : t("bugs.emptyFilter")}
         </p>
       ) : (
         visible.map((report) => {
@@ -204,12 +208,12 @@ export function AdminBugReports() {
                           : "bg-[var(--race-accent)] text-[var(--race-on-accent)]"
                       }
                     >
-                      {done ? "Zrobione" : "Otwarte"}
+                      {done ? t("bugs.done") : t("bugs.open")}
                     </Badge>
-                    <span>{who(report)}</span>
+                    <span>{who(report, guestLabel)}</span>
                   </div>
                   <time dateTime={report.createdAt}>
-                    {new Date(report.createdAt).toLocaleString("pl-PL")}
+                    {new Date(report.createdAt).toLocaleString(dateLocale)}
                   </time>
                 </div>
                 {report.pageUrl && (
@@ -227,7 +231,7 @@ export function AdminBugReports() {
                       className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
                       onClick={() => setStatus(report.id, "OPEN")}
                     >
-                      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Przywróć jako otwarte"}
+                      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : t("bugs.reopen")}
                     </Button>
                   ) : (
                     <Button
@@ -236,7 +240,7 @@ export function AdminBugReports() {
                       className="bg-green-700 hover:bg-green-600 text-[var(--race-fg)]"
                       onClick={() => setStatus(report.id, "DONE")}
                     >
-                      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Oznacz jako zrobione"}
+                      {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : t("bugs.markDone")}
                     </Button>
                   )}
                   <Button
@@ -247,7 +251,7 @@ export function AdminBugReports() {
                     onClick={() => remove(report.id)}
                   >
                     <Trash2 className="w-4 h-4 mr-1" />
-                    Usuń
+                    {t("common.delete")}
                   </Button>
                 </div>
               </CardContent>

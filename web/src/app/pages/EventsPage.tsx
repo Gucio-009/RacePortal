@@ -114,7 +114,7 @@ export function EventsPage() {
           })
           .catch(() => {
             setData(null);
-            setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+            setLoadError(t("events.loadFail"));
           })
           .finally(() => setLoading(false));
       } else {
@@ -127,13 +127,13 @@ export function EventsPage() {
           })
           .catch(() => {
             setOverview([]);
-            setLoadError("Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.");
+            setLoadError(t("events.loadFail"));
           })
           .finally(() => setLoading(false));
       }
     }, 300);
     return () => clearTimeout(timer);
-  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, page, view]);
+  }, [query, category, paidFilter, voivodeship, city, track, dateFrom, dateTo, carId, page, view, t]);
 
   // Reset strony przy zmianie filtrów / widoku.
   useEffect(() => {
@@ -228,16 +228,16 @@ export function EventsPage() {
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Szukaj toru, miasta lub nazwy..."
+              placeholder={t("events.searchPlaceholder")}
               className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11"
             />
           </div>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
-              <SelectValue placeholder="Kategoria" />
+              <SelectValue placeholder={t("events.category")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
-              <SelectItem value="all">Wszystkie kategorie</SelectItem>
+              <SelectItem value="all">{t("events.allCategories")}</SelectItem>
               {EVENT_CATEGORY_GROUPS.map((g) => (
                 <SelectGroup key={g.group}>
                   <SelectLabel className="text-[var(--race-accent)]">{g.group}</SelectLabel>
@@ -252,20 +252,20 @@ export function EventsPage() {
           </Select>
           <Select value={paidFilter} onValueChange={setPaidFilter}>
             <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
-              <SelectValue placeholder="Płatność" />
+              <SelectValue placeholder={t("events.payment")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-              <SelectItem value="all">Wszystkie</SelectItem>
-              <SelectItem value="true">Płatne</SelectItem>
-              <SelectItem value="false">Darmowe</SelectItem>
+              <SelectItem value="all">{t("common.all")}</SelectItem>
+              <SelectItem value="true">{t("common.paid")}</SelectItem>
+              <SelectItem value="false">{t("common.free")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={voivodeship} onValueChange={setVoivodeship}>
             <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
-              <SelectValue placeholder="Województwo" />
+              <SelectValue placeholder={t("events.voivodeship")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
-              <SelectItem value="all">Wszystkie województwa</SelectItem>
+              <SelectItem value="all">{t("events.allVoivodeships")}</SelectItem>
               {VOIVODESHIPS.map((v) => (
                 <SelectItem key={v} value={v}>
                   {v}
@@ -275,23 +275,23 @@ export function EventsPage() {
           </Select>
           <Select value={track} onValueChange={setTrack}>
             <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
-              <SelectValue placeholder="Tor" />
+              <SelectValue placeholder={t("events.track")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
-              <SelectItem value="all">Wszystkie tory</SelectItem>
-              {TRACK_PRESETS.map((t) => (
-                <SelectItem key={t.track} value={t.track}>
-                  {t.track}
+              <SelectItem value="all">{t("events.allTracks")}</SelectItem>
+              {TRACK_PRESETS.map((preset) => (
+                <SelectItem key={preset.track} value={preset.track}>
+                  {preset.track}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={city || "all"} onValueChange={(v) => setCity(v === "all" ? "" : v)}>
             <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11">
-              <SelectValue placeholder="Miasto" />
+              <SelectValue placeholder={t("events.city")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
-              <SelectItem value="all">Wszystkie miasta</SelectItem>
+              <SelectItem value="all">{t("events.allCities")}</SelectItem>
               {cities.map((c) => (
                 <SelectItem key={c} value={c}>
                   {c}
@@ -301,37 +301,37 @@ export function EventsPage() {
           </Select>
           <div className="space-y-1.5">
             <label htmlFor="events-date-from" className="block text-xs font-semibold text-[var(--race-muted)]">
-              Data od
+              {t("events.dateFromLabel")}
             </label>
             <Input
               id="events-date-from"
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              aria-label="Data od"
+              aria-label={t("events.dateFromLabel")}
               className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 [color-scheme:dark]"
             />
           </div>
           <div className="space-y-1.5">
             <label htmlFor="events-date-to" className="block text-xs font-semibold text-[var(--race-muted)]">
-              Data do
+              {t("events.dateToLabel")}
             </label>
             <Input
               id="events-date-to"
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              aria-label="Data do"
+              aria-label={t("events.dateToLabel")}
               className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 [color-scheme:dark]"
             />
           </div>
           {isAuthenticated && (
             <Select value={carId} onValueChange={setCarId}>
               <SelectTrigger className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] h-11 lg:col-span-2">
-                <SelectValue placeholder="Dopasuj do auta" />
+                <SelectValue placeholder={t("events.matchCar")} />
               </SelectTrigger>
               <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-                <SelectItem value="all">Bez filtra garażu</SelectItem>
+                <SelectItem value="all">{t("events.noGarageFilter")}</SelectItem>
                 {cars.map((car) => (
                   <SelectItem key={car.id} value={car.id}>
                     {car.make} {car.model}
@@ -368,7 +368,7 @@ export function EventsPage() {
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : view === "map" ? (
           markers.length === 0 ? (
-            <p className="text-center text-[var(--race-muted)] py-16">Brak wydarzeń z GPS dla wybranych filtrów.</p>
+            <p className="text-center text-[var(--race-muted)] py-16">{t("events.noGpsResults")}</p>
           ) : (
             <EventsMapView markers={markers} height="560px" />
           )
@@ -398,9 +398,9 @@ export function EventsPage() {
                 {selectedDay ? format(selectedDay, "d MMMM yyyy", { locale: dateLocale }) : t("events.calendar")}
               </h3>
               {!selectedDay ? (
-                <p className="text-[var(--race-muted)]">Dni ze złotym tłem mają wydarzenia.</p>
+                <p className="text-[var(--race-muted)]">{t("events.calendarHint")}</p>
               ) : dayEvents.length === 0 ? (
-                <p className="text-[var(--race-muted)]">Brak wydarzeń w tym dniu (dla filtrów).</p>
+                <p className="text-[var(--race-muted)]">{t("events.noDayEvents")}</p>
               ) : (
                 dayEvents.map((event) => (
                   <Link key={event.id} to={`/wydarzenia/${event.id}`} className="block border border-[var(--race-border)] rounded-md p-4 hover:border-[var(--race-accent)]">
@@ -412,7 +412,7 @@ export function EventsPage() {
             </div>
           </div>
         ) : items.length === 0 ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Brak wydarzeń dla wybranych filtrów.</p>
+          <p className="text-center text-[var(--race-muted)] py-16">{t("events.noResults")}</p>
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -448,7 +448,7 @@ export function EventsPage() {
                         {event.track}, {event.city}
                       </div>
                       <div className="flex items-center text-[var(--race-accent)] text-sm" style={{ fontWeight: 700 }}>
-                        Szczegóły <ChevronRight className="w-4 h-4 ml-1" />
+                        {t("events.details")} <ChevronRight className="w-4 h-4 ml-1" />
                       </div>
                     </CardContent>
                   </Card>

@@ -10,6 +10,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { MapPin, ChevronRight, ChevronLeft, Search } from "lucide-react";
 import { Card, CardContent } from "../components/ui/card";
 import { Badge } from "../components/ui/badge";
@@ -19,9 +20,10 @@ import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Reveal } from "../components/Reveal";
 import { api, ApiError } from "../lib/api";
 import type { ApiEvent, PaginatedEvents } from "../lib/types";
-import { eventImage, eventStatusLabel, HERO_BG_RACE, IMAGE_WIDTH_CARD } from "../lib/types";
+import { eventImage, HERO_BG_RACE, IMAGE_WIDTH_CARD } from "../lib/types";
 
 export function ArchivePage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
@@ -30,8 +32,8 @@ export function ArchivePage() {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    const t = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
-    return () => window.clearTimeout(t);
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), 300);
+    return () => window.clearTimeout(timer);
   }, [query]);
 
   useEffect(() => {
@@ -55,10 +57,10 @@ export function ArchivePage() {
       })
       .catch((e) => {
         setData(null);
-        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać archiwum. Sprawdź API / połączenie.");
+        setLoadError(e instanceof ApiError ? e.message : t("archive.loadFail"));
       })
       .finally(() => setLoading(false));
-  }, [page, debouncedQuery]);
+  }, [page, debouncedQuery, t]);
 
   const items = data?.items ?? [];
 
@@ -73,10 +75,10 @@ export function ArchivePage() {
         <div className="container mx-auto px-4">
           <Reveal>
             <h1 className="font-display text-white mb-3" style={{ fontSize: "48px", fontWeight: 800 }}>
-              ARCHIWUM <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
+              {t("archive.titleBefore")} <span className="text-[var(--race-accent)]">{t("archive.titleAccent")}</span>
             </h1>
             <p className="text-[#9ca3af] max-w-2xl" style={{ fontSize: "18px" }}>
-              Zakończone wyścigi i wydarzenia z poprzednich sezonów.
+              {t("archive.subtitle")}
             </p>
           </Reveal>
         </div>
@@ -88,18 +90,18 @@ export function ArchivePage() {
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Szukaj w archiwum (nazwa, kategoria, tor, miasto…)"
+            placeholder={t("archive.searchPlaceholder")}
             className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]"
           />
         </div>
 
         {loading ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie archiwum...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">{t("archive.loading")}</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : items.length === 0 ? (
           <p className="text-center text-[var(--race-muted)] py-16">
-            {debouncedQuery ? "Brak wydarzeń pasujących do wyszukiwania." : "Brak zarchiwizowanych wydarzeń."}
+            {debouncedQuery ? t("archive.emptySearch") : t("archive.empty")}
           </p>
         ) : (
           <>
@@ -121,7 +123,7 @@ export function ArchivePage() {
                           {event.category}
                         </Badge>
                         <Badge variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
-                          {eventStatusLabel(event.status)}
+                          {t(`eventStatus.${event.status}`, { defaultValue: event.status })}
                         </Badge>
                         <span className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
                           {event.dateLabel}
@@ -141,7 +143,7 @@ export function ArchivePage() {
                           className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                           style={{ fontWeight: 700 }}
                         >
-                          SZCZEGÓŁY
+                          {t("events.detailsCaps")}
                           <ChevronRight className="ml-2 w-4 h-4" />
                         </Button>
                       </Link>
@@ -161,10 +163,10 @@ export function ArchivePage() {
                   className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
                   <ChevronLeft className="w-4 h-4 mr-1" />
-                  Poprzednia
+                  {t("archive.prev")}
                 </Button>
                 <span className="text-[var(--race-muted)]">
-                  Strona {page} / {data.totalPages}
+                  {t("archive.pageOf", { page, total: data.totalPages })}
                 </span>
                 <Button
                   variant="outline"
@@ -172,7 +174,7 @@ export function ArchivePage() {
                   onClick={() => setPage((p) => p + 1)}
                   className="border-[var(--race-border)] text-[var(--race-fg)]"
                 >
-                  Następna
+                  {t("archive.next")}
                   <ChevronRight className="w-4 h-4 ml-1" />
                 </Button>
               </div>
