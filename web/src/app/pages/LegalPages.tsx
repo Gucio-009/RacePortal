@@ -9,6 +9,7 @@
  * Pomysł (alt): MDX / CMS treści prawnych; wersjonowanie regulaminu; Next.js markdown pages.
  */
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Button } from "../components/ui/button";
 
 /** Wspólna ramka layoutu dla dokumentów prawnych. */
@@ -19,6 +20,7 @@ function LegalLayout({
   title: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="min-h-screen">
       <section className="border-b border-[var(--race-border)] bg-[var(--race-card)] py-16">
@@ -35,7 +37,7 @@ function LegalLayout({
         <div className="mt-8">
           <Link to="/register">
             <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 700 }}>
-              Wróć do rejestracji
+              {t("common.back")}
             </Button>
           </Link>
         </div>
@@ -46,8 +48,10 @@ function LegalLayout({
 
 /** Regulamin serwisu — akceptowany checkboxem przy rejestracji. */
 export function TermsPage() {
+  const { t, i18n } = useTranslation();
   return (
-    <LegalLayout title="REGULAMIN">
+    <LegalLayout title={t("legal.termsTitle").toUpperCase()}>
+      {i18n.language === "en" ? <p>{t("legal.enNotice")}</p> : null}
       <p style={{ fontWeight: 700 }} className="text-[var(--race-fg)]">
         §1. Postanowienia ogólne
       </p>
@@ -79,8 +83,10 @@ export function TermsPage() {
 
 /** Polityka prywatności — m.in. zakres danych i JWT w localStorage. */
 export function PrivacyPage() {
+  const { t, i18n } = useTranslation();
   return (
-    <LegalLayout title="POLITYKA PRYWATNOŚCI">
+    <LegalLayout title={t("legal.privacyTitle").toUpperCase()}>
+      {i18n.language === "en" ? <p>{t("legal.enNotice")}</p> : null}
       <p style={{ fontWeight: 700 }} className="text-[var(--race-fg)]">
         1. Administrator danych
       </p>

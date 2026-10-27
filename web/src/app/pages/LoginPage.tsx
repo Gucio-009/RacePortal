@@ -15,6 +15,7 @@
  */
 import { useCallback, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Mail, Lock, Eye, EyeOff, Flag } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -27,6 +28,7 @@ import { setPendingVerifyEmail } from "../lib/pendingVerifyEmail";
 import { HERO_BG_TRACK } from "../lib/types";
 
 export function LoginPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -44,19 +46,19 @@ export function LoginPage() {
     try {
       const result = await login(email, password);
       if (result.ok) {
-        toast.success("Zalogowano pomyślnie!");
+        toast.success(t("authExtra.loginOk"));
         navigate("/dashboard");
       } else {
-        const msg = result.message || "Nieprawidłowy email lub hasło";
+        const msg = result.message || t("authExtra.loginFail");
         toast.error(msg);
         // Konto istnieje, ale bez aktywacji – wróć do ponownej wysyłki linku.
-        if (/weryfikuj|zweryfikuj|kod|link|aktyw/i.test(msg) && email.includes("@")) {
+        if (/weryfikuj|zweryfikuj|kod|link|aktyw|verif|activat/i.test(msg) && email.includes("@")) {
           setPendingVerifyEmail(email);
           navigate(`/register?verify=1&email=${encodeURIComponent(email.trim().toLowerCase())}`);
         }
       }
     } catch (error) {
-      toast.error("Wystąpił błąd podczas logowania");
+      toast.error(t("authExtra.loginError"));
     } finally {
       setIsLoading(false);
     }
@@ -69,10 +71,10 @@ export function LoginPage() {
       try {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
-          toast.success("Zalogowano przez Google");
+          toast.success(t("authExtra.googleOk"));
           navigate("/dashboard");
         } else {
-          toast.error(result.message || "Nie udało się zalogować przez Google");
+          toast.error(result.message || t("authExtra.googleFail"));
         }
       } finally {
         setIsLoading(false);
@@ -97,10 +99,10 @@ export function LoginPage() {
             className="font-display text-white mb-2"
             style={{ fontSize: '36px', fontWeight: 800 }}
           >
-            WITAJ Z <span className="text-[var(--race-accent)]">POWROTEM</span>
+            {t("auth.loginTitle")}
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: '16px' }}>
-            Zaloguj się do swojego konta
+            {t("auth.loginSubtitle")}
           </p>
         </div>
 
@@ -108,7 +110,7 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                Email
+                {t("auth.email")}
               </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
@@ -126,7 +128,7 @@ export function LoginPage() {
 
             <div className="space-y-2">
               <Label htmlFor="password" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                Hasło
+                {t("auth.password")}
               </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
@@ -155,7 +157,7 @@ export function LoginPage() {
                 className="text-[var(--race-accent)] hover:underline"
                 style={{ fontSize: '14px', fontWeight: 600 }}
               >
-                Nie pamiętasz hasła?
+                {t("auth.forgotPassword")}
               </Link>
             </div>
 
@@ -165,7 +167,7 @@ export function LoginPage() {
               className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
               style={{ fontSize: '16px', fontWeight: 800 }}
             >
-              {isLoading ? "LOGOWANIE..." : "ZALOGUJ SIĘ"}
+              {isLoading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
 

@@ -165,6 +165,10 @@ Całość stoi na `VM.Standard.A1.Flex` (2 OCPU, 12 GB) we Frankfurcie. Front **
 
 Web (`raceportal.pl`) ma manifest + service worker. Na telefonie: Safari/Chrome → **Dodaj do ekranu początkowego**. Nawigacja: dolny tab bar (Start / Eventy / …) + menu „Więcej” w headerze. Expo (`mobile/`) to osobna wizytówka — nie mylić z PWA weba.
 
+## 12. Język PL / EN
+
+Przełącznik **PL | EN** jest w nagłówku weba (i w Ustawieniach). Gość zapisuje wybór lokalnie; zalogowany dodatkowo w `users.locale` — maile (aktywacja, reset, status zgłoszenia) idą w tym języku. Mobile Expo ma ten sam przełącznik w katalogu. Domyślnie polski. Szczegóły: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) §B7.
+
 ---
 
 ## Powiązane dokumenty

@@ -19,6 +19,7 @@
 
 import { Outlet, Link, useNavigate, NavLink } from "react-router";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import {
@@ -43,18 +44,14 @@ import { userInitials } from "../lib/types";
 import { NotificationBell } from "./NotificationBell";
 import { BugReportButton } from "./BugReportButton";
 import { MobileBottomNav } from "./MobileBottomNav";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
   `${isActive ? "text-[var(--race-accent)]" : "text-[var(--race-muted)] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
 
-function roleLabel(role?: string) {
-  if (role === "ADMIN") return "Administrator";
-  if (role === "ORGANIZER") return "Organizator";
-  return "Kierowca";
-}
-
 export function RootLayout() {
+  const { t } = useTranslation();
   const { user, logout, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,6 +59,12 @@ export function RootLayout() {
   const menuRef = useRef<HTMLDivElement>(null);
   const mainRef = useRef<HTMLElement>(null);
   useScrollReveal(mainRef);
+
+  const roleLabel = (role?: string) => {
+    if (role === "ADMIN") return t("roles.ADMIN");
+    if (role === "ORGANIZER") return t("roles.ORGANIZER");
+    return t("roles.USER");
+  };
 
   // Zamykanie menu konta: klik poza + Escape (bez zewnętrznej biblioteki popover).
   useEffect(() => {
@@ -100,7 +103,7 @@ export function RootLayout() {
     setMenuOpen(false);
     setMoreOpen(false);
     logout();
-    toast.success("Wylogowano", { description: "Do zobaczenia na torze 🏁" });
+    toast.success(t("auth.logoutOk"), { description: t("auth.logoutDesc") });
     void import("canvas-confetti").then(({ default: confetti }) => {
       confetti({
         particleCount: 60,
@@ -136,30 +139,32 @@ export function RootLayout() {
           <div className="flex items-center gap-2 sm:gap-4 justify-end min-w-0">
             <div className="hidden md:flex items-center gap-5 flex-wrap justify-end">
               <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
-                WYDARZENIA
+                {t("nav.events")}
               </NavLink>
               <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
-                ARCHIWUM
+                {t("nav.archive")}
               </NavLink>
 
               {isAuthenticated && isUser && (
                 <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  GARAŻ
+                  {t("nav.garage")}
                 </NavLink>
               )}
 
               {isAuthenticated && isOrganizer && (
                 <NavLink to="/organizer" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  PANEL ORG.
+                  {t("nav.organizerPanel")}
                 </NavLink>
               )}
 
               {isAuthenticated && isAdmin && (
                 <NavLink to="/admin" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  ADMIN
+                  {t("nav.admin")}
                 </NavLink>
               )}
             </div>
+
+            <LanguageSwitcher className="shrink-0" compact />
 
             {/* Jeden mount — wcześniej desktop+mobile = 2× /api/notifications */}
             {isAuthenticated && <NotificationBell />}
@@ -170,7 +175,7 @@ export function RootLayout() {
                   <Button
                     type="button"
                     variant="ghost"
-                    aria-label="Menu konta"
+                    aria-label={t("nav.accountMenu")}
                     aria-haspopup="menu"
                     aria-expanded={menuOpen}
                     onClick={() => setMenuOpen((v) => !v)}
@@ -208,7 +213,7 @@ export function RootLayout() {
                         onClick={() => go("/dashboard")}
                       >
                         <User className="h-4 w-4 text-[var(--race-accent)]" />
-                        Moje konto
+                        {t("nav.myAccount")}
                       </button>
                       <button
                         type="button"
@@ -217,7 +222,7 @@ export function RootLayout() {
                         onClick={() => go("/konto")}
                       >
                         <KeyRound className="h-4 w-4 text-[var(--race-accent)]" />
-                        Dane konta (email / hasło)
+                        {t("nav.accountData")}
                       </button>
                       <button
                         type="button"
@@ -226,7 +231,7 @@ export function RootLayout() {
                         onClick={() => go("/ustawienia")}
                       >
                         <Settings className="h-4 w-4 text-[var(--race-accent)]" />
-                        Ustawienia
+                        {t("nav.settings")}
                       </button>
                       <button
                         type="button"
@@ -235,7 +240,7 @@ export function RootLayout() {
                         onClick={() => go("/garaz")}
                       >
                         <Car className="h-4 w-4 text-[var(--race-accent)]" />
-                        Garaż
+                        {t("nav.garage")}
                       </button>
                       {isUser && (
                         <button
@@ -245,7 +250,7 @@ export function RootLayout() {
                           onClick={() => go("/zostan-organizatorem")}
                         >
                           <Flag className="h-4 w-4 text-[var(--race-accent)]" />
-                          Zostań organizatorem
+                          {t("nav.becomeOrganizer")}
                         </button>
                       )}
                       {isOrganizer && (
@@ -256,7 +261,7 @@ export function RootLayout() {
                           onClick={() => go("/organizer")}
                         >
                           <LayoutDashboard className="h-4 w-4 text-[var(--race-accent)]" />
-                          Panel organizatora
+                          {t("nav.organizerPanelFull")}
                         </button>
                       )}
                       {isAdmin && (
@@ -267,7 +272,7 @@ export function RootLayout() {
                           onClick={() => go("/admin")}
                         >
                           <Shield className="h-4 w-4 text-[var(--race-accent)]" />
-                          Panel admina
+                          {t("nav.adminPanelFull")}
                         </button>
                       )}
 
@@ -279,7 +284,7 @@ export function RootLayout() {
                         onClick={handleLogout}
                       >
                         <LogOut className="h-4 w-4" />
-                        Wyloguj
+                        {t("nav.logout")}
                       </button>
                     </div>
                   )}
@@ -287,7 +292,7 @@ export function RootLayout() {
               ) : (
                 <Link to="/login">
                   <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 700 }}>
-                    ZALOGUJ SIĘ
+                    {t("nav.login")}
                   </Button>
                 </Link>
               )}
@@ -297,7 +302,7 @@ export function RootLayout() {
               type="button"
               variant="ghost"
               size="icon"
-              aria-label={moreOpen ? "Zamknij menu" : "Więcej"}
+              aria-label={moreOpen ? t("nav.closeMenu") : t("nav.more")}
               aria-expanded={moreOpen}
               onClick={() => setMoreOpen((v) => !v)}
               className="md:hidden text-[var(--race-fg)] hover:bg-[var(--race-hover)] h-10 w-10"
@@ -324,34 +329,37 @@ export function RootLayout() {
                 </div>
               </div>
             )}
+            <div className="px-2 pb-2">
+              <LanguageSwitcher />
+            </div>
             <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/archiwum")}>
-              <Archive className="w-4 h-4 text-[var(--race-accent)]" /> Archiwum
+              <Archive className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.archive")}
             </button>
             {isUser && (
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/zostan-organizatorem")}>
-                <Flag className="w-4 h-4 text-[var(--race-accent)]" /> Zostań organizatorem
+                <Flag className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.becomeOrganizer")}
               </button>
             )}
             {isOrganizer && (
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/organizer")}>
-                <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> Panel organizatora
+                <LayoutDashboard className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.organizerPanelFull")}
               </button>
             )}
             {isAdmin && (
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/admin")}>
-                <Shield className="w-4 h-4 text-[var(--race-accent)]" /> Panel admina
+                <Shield className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.adminPanelFull")}
               </button>
             )}
             {isAuthenticated && (
               <>
                 <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/ustawienia")}>
-                  <Settings className="w-4 h-4 text-[var(--race-accent)]" /> Ustawienia
+                  <Settings className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.settings")}
                 </button>
                 <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/konto")}>
-                  <KeyRound className="w-4 h-4 text-[var(--race-accent)]" /> Dane konta
+                  <KeyRound className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.accountData")}
                 </button>
                 <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[#ff8a8a] hover:bg-[var(--race-hover)]" onClick={handleLogout}>
-                  <LogOut className="w-4 h-4" /> Wyloguj
+                  <LogOut className="w-4 h-4" /> {t("nav.logout")}
                 </button>
               </>
             )}
@@ -361,7 +369,7 @@ export function RootLayout() {
                 className="w-full mt-2 py-3 rounded-lg bg-[var(--race-accent)] text-[var(--race-on-accent)] font-extrabold"
                 onClick={() => go("/register")}
               >
-                Zarejestruj się
+                {t("auth.register")}
               </button>
             )}
           </div>
@@ -383,13 +391,13 @@ export function RootLayout() {
 
       <footer className="hidden md:block border-t border-[var(--race-border)] bg-[var(--race-card)] mt-20">
         <div className="container mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4 text-[var(--race-muted)] md:pr-40">
-          <p>© 2026 RACEPORTAL. Wszystkie prawa zastrzeżone.</p>
+          <p>© 2026 RACEPORTAL. {t("footer.tagline")}</p>
           <div className="flex flex-wrap gap-4 justify-center md:justify-end" style={{ fontSize: "14px" }}>
             <Link to="/terms" className="hover:text-[var(--race-accent)]">
-              Regulamin
+              {t("footer.terms")}
             </Link>
             <Link to="/privacy" className="hover:text-[var(--race-accent)]">
-              Polityka prywatności
+              {t("footer.privacy")}
             </Link>
           </div>
         </div>

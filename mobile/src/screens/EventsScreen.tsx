@@ -30,6 +30,7 @@ import { EventsCalendarView } from "../components/EventsCalendarView";
 import { colors } from "../theme/colors";
 import { VOIVODESHIPS, TRACK_PRESETS, FILTER_CITIES } from "../lib/locationPresets";
 import type { EventsStackParamList } from "../navigation/types";
+import { LanguageToggle, useLocale } from "../i18n/LocaleContext";
 
 type ViewMode = "list" | "calendar" | "map";
 type PaidFilter = "all" | "true" | "false";
@@ -70,6 +71,7 @@ function formatDate(value: Date) {
 }
 
 export function EventsScreen() {
+  const { t } = useLocale();
   const navigation = useNavigation<NativeStackNavigationProp<EventsStackParamList>>();
 
   const [view, setView] = useState<ViewMode>("list");
@@ -171,14 +173,18 @@ export function EventsScreen() {
 
   return (
     <View style={styles.root}>
-      <ScreenHeader title="WYDARZENIA" subtitle="Katalog wydarzeń · wizytówka" />
+      <ScreenHeader
+        title={t("events.title").toUpperCase()}
+        subtitle={t("footer.tagline")}
+        right={<LanguageToggle />}
+      />
 
       <View style={styles.viewTabs}>
         {(
           [
-            ["list", "Lista"],
-            ["calendar", "Kalendarz"],
-            ["map", "Mapa"],
+            ["list", t("events.list")],
+            ["calendar", t("events.calendar")],
+            ["map", t("events.map")],
           ] as const
         ).map(([id, label]) => (
           <Pressable

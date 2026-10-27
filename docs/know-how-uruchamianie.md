@@ -173,6 +173,13 @@ Skrypt **nie** rusza volumes (`raceportal_mysql`, uploads, backups). Nie używaj
 
 Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika przez SMTP Mailbux (`noreply@raceportal.pl`). Na VM w `~/RacePortal/.env` musi być `SMTP_PASSWORD` (hasło skrzynki albo App Password). Stan SMTP: `GET /api/health/details` (ADMIN) → `smtp: up`.
 
+### B7. Język PL / EN
+
+- Web: przełącznik **PL | EN** w nagłówku (i w Ustawieniach). Preferencja w `localStorage` (`raceportal_settings.locale`).
+- Zalogowany: `PATCH /api/auth/me` z `{ "locale": "en" }` zapisuje `users.locale` — maile systemowe (aktywacja, reset, statusy) idą w wybranym języku.
+- Mobile Expo: ten sam przełącznik w katalogu wydarzeń (SecureStore / localStorage).
+- Domyślnie `pl`. Treści eventów / regulamin prawniczy zostają po polsku (EN: krótka nota na stronach legal).
+
 ---
 
 ## C) Checklista przed demo
@@ -213,6 +220,8 @@ Kody weryfikacyjne, reset hasła i statusy zgłoszeń idą na adres użytkownika
 | `docker-compose.vm.yml` | Opcjonalny API-only — **nie** używany na żywej Oracle. Ma volume `raceportal_uploads_vm`, gdyby ktoś go odpalił |
 | `deploy/vm/docker-prune.sh` | Czyści stare obrazy/cache po rebuildach; **bez** volumes |
 | `deploy/vm/install-docker-prune-cron.sh` | Codzienny cron 04:15 → `docker-prune.sh` |
+| `packages/i18n/` | Słowniki PL/EN (web + mobile) |
+| `backend/.../i18n/MailTexts.java` | Tematy/treści maili PL/EN wg `users.locale` |
 | `deploy/vm/.env.vm.example` | Szablon sekretów (gdy ktoś odpala wariant VM compose) |
 | `web/public/manifest.webmanifest` + `sw.js` | PWA |
 | `web/public/robots.txt` + `sitemap.xml` | SEO (nie SPA fallback) |

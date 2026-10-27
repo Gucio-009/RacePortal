@@ -20,6 +20,7 @@ import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.UserPrincipal;
+import pl.raceportal.i18n.MailTexts;
 import pl.raceportal.web.ApiException;
 
 import java.time.Instant;
@@ -128,9 +129,12 @@ public class RegistrationService {
 
         registration = registrationRepository.save(registration);
 
-        mailService.send(user.getEmail(), "Zgłoszenie: " + event.getName(),
-                "<p>Twoje zgłoszenie na <strong>" + event.getName() +
-                        "</strong> zostało przyjęte i oczekuje na decyzję organizatora.</p>");
+        String locale = MailTexts.of(user);
+        String safeEvent = event.getName() == null ? "" : event.getName();
+        mailService.send(user.getEmail(),
+                MailTexts.registrationReceivedSubject(locale, safeEvent),
+                MailTexts.registrationReceivedBody(locale, safeEvent),
+                locale);
 
         return serialize(registration, true, false);
     }
@@ -220,12 +224,13 @@ public class RegistrationService {
         registration.setStatus(RegistrationStatus.CANCELED);
         registration = registrationRepository.save(registration);
 
-        String refundNote = refundByOrganizer
-                ? "<p>Zwrot środków za zgłoszenie zostanie zrealizowany przez organizatora.</p>"
-                : "";
-        mailService.send(registration.getUser().getEmail(), "Rezygnacja ze zgłoszenia: " + event.getName(),
-                "<p>Potwierdzamy anulowanie Twojego zgłoszenia na <strong>" + event.getName() + "</strong>.</p>" +
-                        refundNote);
+        User driver = registration.getUser();
+        String locale = MailTexts.of(driver);
+        String safeEvent = event.getName() == null ? "" : event.getName();
+        mailService.send(driver.getEmail(),
+                MailTexts.registrationCancelSubject(locale, safeEvent),
+                MailTexts.registrationCancelBody(locale, safeEvent, refundByOrganizer),
+                locale);
 
         return serialize(registration, true, false);
     }
@@ -311,15 +316,19 @@ public class RegistrationService {
     }
 
     private void sendStatusUpdateMail(Registration registration, Event event, RegistrationStatus status) {
-        String bankNote = "";
+        User driver = registration.getUser();
+        String locale = MailTexts.of(driver);
+        String safeEvent = event.getName() == null ? "" : event.getName();
+        Integer hours = null;
+        String bank = null;
         if (status == RegistrationStatus.ACCEPTED && event.isPaid()) {
-            int hours = event.getPaymentDeadlineHours() != null ? event.getPaymentDeadlineHours() : 72;
-            bankNote = "<p>Aby potwierdzić udział, wpłać wpisowe w ciągu " + hours + " godzin na numer konta: " +
-                    "<strong>" + event.getBankAccount() + "</strong> i dołącz potwierdzenie przelewu w swoim profilu.</p>";
+            hours = event.getPaymentDeadlineHours() != null ? event.getPaymentDeadlineHours() : 72;
+            bank = event.getBankAccount();
         }
-        mailService.send(registration.getUser().getEmail(), "Status zgłoszenia: " + event.getName(),
-                "<p>Status Twojego zgłoszenia na <strong>" + event.getName() + "</strong>: <strong>" +
-                        status + "</strong>.</p>" + bankNote);
+        mailService.send(driver.getEmail(),
+                MailTexts.registrationStatusSubject(locale, safeEvent),
+                MailTexts.registrationStatusBody(locale, safeEvent, status.name(), hours, bank),
+                locale);
     }
 
     /**

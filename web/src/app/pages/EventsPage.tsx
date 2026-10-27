@@ -13,9 +13,10 @@
  */
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Calendar as CalendarIcon, MapPin, Search, ChevronRight, ChevronLeft, List, Map } from "lucide-react";
 import { DayPicker } from "react-day-picker";
-import { pl } from "date-fns/locale";
+import { enUS, pl } from "date-fns/locale";
 import { format, parseISO, isSameDay } from "date-fns";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
@@ -61,6 +62,8 @@ function buildFilterParams(opts: {
 }
 
 export function EventsPage() {
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language === "en" ? enUS : pl;
   const { isAuthenticated } = useAuth();
   const [view, setView] = useState<ViewMode>("list");
   const [query, setQuery] = useState("");
@@ -183,10 +186,10 @@ export function EventsPage() {
         <div className="container mx-auto px-4">
           <Reveal>
             <h1 className="font-display text-white mb-2 sm:mb-3 text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight">
-              KALENDARZ <span className="text-[var(--race-accent)]">WYDARZEŃ</span>
+              {t("events.title").toUpperCase()}
             </h1>
             <p className="text-[#9ca3af] max-w-2xl text-sm sm:text-lg">
-              Lista, mapa i kalendarz – wspólne filtry dla każdego widoku.
+              {t("events.list")} · {t("events.map")} · {t("events.calendar")}
             </p>
           </Reveal>
         </div>
@@ -196,9 +199,9 @@ export function EventsPage() {
         <div className="grid grid-cols-3 gap-2 mb-4 sm:mb-6 sm:flex sm:flex-wrap">
           {(
             [
-              { id: "list" as const, label: "Lista", icon: List },
-              { id: "map" as const, label: "Mapa", icon: Map },
-              { id: "calendar" as const, label: "Kalendarz", icon: CalendarIcon },
+              { id: "list" as const, label: t("events.list"), icon: List },
+              { id: "map" as const, label: t("events.map"), icon: Map },
+              { id: "calendar" as const, label: t("events.calendar"), icon: CalendarIcon },
             ] as const
           ).map(({ id, label, icon: Icon }) => (
             <Button
@@ -355,12 +358,12 @@ export function EventsPage() {
               setPage(1);
             }}
           >
-            Wyczyść filtry
+            {t("common.clearFilters")}
           </Button>
         </div>
 
         {loading ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie wydarzeń...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">{t("common.loading")}</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : view === "map" ? (
@@ -374,7 +377,7 @@ export function EventsPage() {
             <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-4 text-[var(--race-fg)] rdp-dark overflow-x-auto">
               <DayPicker
                 mode="single"
-                locale={pl}
+                locale={dateLocale}
                 numberOfMonths={2}
                 month={calendarMonth}
                 onMonthChange={setCalendarMonth}
@@ -392,7 +395,7 @@ export function EventsPage() {
             </div>
             <div className="space-y-3">
               <h3 className="text-[var(--race-fg)] font-display" style={{ fontWeight: 800 }}>
-                {selectedDay ? format(selectedDay, "d MMMM yyyy", { locale: pl }) : "Wybierz dzień"}
+                {selectedDay ? format(selectedDay, "d MMMM yyyy", { locale: dateLocale }) : t("events.calendar")}
               </h3>
               {!selectedDay ? (
                 <p className="text-[var(--race-muted)]">Dni ze złotym tłem mają wydarzenia.</p>

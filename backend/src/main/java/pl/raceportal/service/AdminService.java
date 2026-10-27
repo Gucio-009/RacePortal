@@ -149,8 +149,11 @@ public class AdminService {
         user.setRole(role);
         user = userRepository.save(user);
 
-        mailService.send(user.getEmail(), "Zmiana roli w RACEPORTAL",
-                "<p>Twoja rola w systemie to teraz: <strong>" + role + "</strong>.</p>");
+        String locale = pl.raceportal.i18n.MailTexts.of(user);
+        mailService.send(user.getEmail(),
+                pl.raceportal.i18n.MailTexts.roleChangedSubject(locale),
+                pl.raceportal.i18n.MailTexts.roleChangedBody(locale, role.name()),
+                locale);
 
         return serializeUser(user);
     }
@@ -278,13 +281,15 @@ public class AdminService {
         String safeName = escapeHtml(eventName);
         String safeReason = escapeHtml(reason);
 
+        String locale = pl.raceportal.i18n.MailTexts.of(organizer);
         if (target == EventStatus.APPROVED) {
             String title = "Wydarzenie zaakceptowane";
             String body = "Twoje wydarzenie \"" + eventName + "\" zostało zaakceptowane i jest widoczne publicznie.";
             notificationService.notifyUser(organizer, "EVENT_APPROVED", title, body, event.getId());
-            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie zaakceptowane – " + eventName,
-                    "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>zaakceptowane</strong>.</p>"
-                            + "<p>Jest już widoczne w kalendarzu RacePortal.</p>");
+            mailService.send(organizer.getEmail(),
+                    pl.raceportal.i18n.MailTexts.eventApprovedSubject(locale, eventName),
+                    pl.raceportal.i18n.MailTexts.eventApprovedBody(locale, safeName),
+                    locale);
             return;
         }
 
@@ -292,19 +297,20 @@ public class AdminService {
             String title = "Wydarzenie odrzucone";
             String body = "Twoje wydarzenie \"" + eventName + "\" zostało odrzucone. Powód: " + reason;
             notificationService.notifyUser(organizer, "EVENT_REJECTED", title, body, event.getId());
-            mailService.send(organizer.getEmail(), "RACEPORTAL: wydarzenie odrzucone – " + eventName,
-                    "<p>Twoje wydarzenie <strong>" + safeName + "</strong> zostało <strong>odrzucone</strong>.</p>"
-                            + "<p><strong>Powód:</strong> " + safeReason + "</p>"
-                            + "<p>Możesz poprawić wydarzenie w panelu organizatora i wysłać je ponownie do moderacji.</p>");
+            mailService.send(organizer.getEmail(),
+                    pl.raceportal.i18n.MailTexts.eventRejectedSubject(locale, eventName),
+                    pl.raceportal.i18n.MailTexts.eventRejectedBody(locale, safeName, safeReason),
+                    locale);
             return;
         }
 
         String title = "Status wydarzenia: " + target.name();
         String body = "Wydarzenie \"" + eventName + "\" ma teraz status: " + target.name() + ".";
         notificationService.notifyUser(organizer, "EVENT_STATUS", title, body, event.getId());
-        mailService.send(organizer.getEmail(), "RACEPORTAL: status wydarzenia – " + eventName,
-                "<p>Wydarzenie <strong>" + safeName + "</strong> ma teraz status: <strong>"
-                        + escapeHtml(target.name()) + "</strong>.</p>");
+        mailService.send(organizer.getEmail(),
+                pl.raceportal.i18n.MailTexts.eventStatusSubject(locale, eventName),
+                pl.raceportal.i18n.MailTexts.eventStatusBody(locale, safeName, escapeHtml(target.name())),
+                locale);
     }
 
     private static String escapeHtml(String value) {
@@ -357,8 +363,12 @@ public class AdminService {
             }
         }
 
-        mailService.send(application.getUser().getEmail(), "Wniosek o rolę organizatora",
-                "<p>Twój wniosek o konto organizatora: <strong>" + status + "</strong>.</p>");
+        User applicant = application.getUser();
+        String locale = pl.raceportal.i18n.MailTexts.of(applicant);
+        mailService.send(applicant.getEmail(),
+                pl.raceportal.i18n.MailTexts.organizerAppSubject(locale),
+                pl.raceportal.i18n.MailTexts.organizerAppBody(locale, status.name()),
+                locale);
 
         return serializeApplication(application);
     }

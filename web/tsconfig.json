@@ -15,11 +15,13 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@raceportal/api-types": ["../packages/api-types/src/index.ts"]
+      "@raceportal/api-types": ["../packages/api-types/src/index.ts"],
+      "@raceportal/i18n": ["../packages/i18n/src/index.ts"]
     }
   },
-  "include": ["src", "../packages/api-types/src"]
+  "include": ["src", "../packages/api-types/src", "../packages/i18n/src"]
 }

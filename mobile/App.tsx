@@ -4,11 +4,11 @@
  * Tylko publiczny katalog wydarzeń (lista / mapa / kalendarz + detal).
  * Logowanie, garaż, zgłoszenia — wyłącznie na webie (CTA z detalu).
  */
-import { Text, StyleSheet } from "react-native";
 import { NavigationContainer, DarkTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from "expo-status-bar";
 import { ThemeProvider, useTheme } from "./src/theme/ThemeContext";
+import { LocaleProvider, useLocale } from "./src/i18n/LocaleContext";
 import { EventsScreen } from "./src/screens/EventsScreen";
 import { EventDetailScreen } from "./src/screens/EventDetailScreen";
 import { colors } from "./src/theme/colors";
@@ -30,6 +30,7 @@ const navTheme = {
 
 function EventsNavigator() {
   const { accentColor } = useTheme();
+  const { t } = useLocale();
   return (
     <EventsStack.Navigator
       screenOptions={{
@@ -39,7 +40,11 @@ function EventsNavigator() {
       }}
     >
       <EventsStack.Screen name="EventsList" component={EventsScreen} options={{ headerShown: false }} />
-      <EventsStack.Screen name="EventDetail" component={EventDetailScreen} options={{ title: "Szczegóły" }} />
+      <EventsStack.Screen
+        name="EventDetail"
+        component={EventDetailScreen}
+        options={{ title: t("events.details") }}
+      />
     </EventsStack.Navigator>
   );
 }
@@ -47,10 +52,12 @@ function EventsNavigator() {
 export default function App() {
   return (
     <ThemeProvider>
-      <NavigationContainer theme={navTheme}>
-        <StatusBar style="light" />
-        <EventsNavigator />
-      </NavigationContainer>
+      <LocaleProvider>
+        <NavigationContainer theme={navTheme}>
+          <StatusBar style="light" />
+          <EventsNavigator />
+        </NavigationContainer>
+      </LocaleProvider>
     </ThemeProvider>
   );
 }
