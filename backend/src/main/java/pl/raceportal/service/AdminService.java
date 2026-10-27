@@ -21,6 +21,7 @@ import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.NotificationRepository;
 import pl.raceportal.repository.OrganizerApplicationRepository;
+import pl.raceportal.repository.RefreshTokenRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.security.UserPrincipal;
@@ -72,6 +73,7 @@ public class AdminService {
     private final CarRepository carRepository;
     private final NotificationRepository notificationRepository;
     private final BugReportRepository bugReportRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
     private final EventService eventService;
     private final MailService mailService;
     private final NotificationService notificationService;
@@ -83,6 +85,7 @@ public class AdminService {
                          CarRepository carRepository,
                          NotificationRepository notificationRepository,
                          BugReportRepository bugReportRepository,
+                         RefreshTokenRepository refreshTokenRepository,
                          EventService eventService, MailService mailService,
                          NotificationService notificationService,
                          StatsService statsService) {
@@ -93,6 +96,7 @@ public class AdminService {
         this.carRepository = carRepository;
         this.notificationRepository = notificationRepository;
         this.bugReportRepository = bugReportRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
         this.eventService = eventService;
         this.mailService = mailService;
         this.notificationService = notificationService;
@@ -198,6 +202,7 @@ public class AdminService {
         organizerApplicationRepository.deleteByUser_Id(userId);
         bugReportRepository.detachUser(userId);
         carRepository.deleteByUser_Id(userId);
+        refreshTokenRepository.deleteByUser_Id(userId);
         userRepository.deleteById(userId);
     }
 

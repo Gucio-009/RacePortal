@@ -100,7 +100,12 @@
     "loginFail": "Invalid email or password",
     "loginError": "Something went wrong while signing in",
     "googleOk": "Signed in with Google",
-    "googleFail": "Could not sign in with Google"
+    "googleFail": "Could not sign in with Google",
+    "googleCreated": "Google account created",
+    "googleWelcomeTitle": "Welcome to RacePortal!",
+    "googleWelcomeBody": "Your Google account is ready. Add driving license / PZM license details in your profile if you want to enter events that require them.",
+    "googleWelcomeCta": "Complete profile",
+    "googleWelcomeLater": "Later"
   },
   "events": {
     "title": "Events",

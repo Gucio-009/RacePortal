@@ -32,8 +32,6 @@ import {
   validatePersonName,
   validatePhone,
 } from "../lib/profileValidation";
-import { ProfileIncompleteAlert } from "../components/ProfileIncompleteAlert";
-
 export function AccountPage() {
   const { user, updateProfile, changePassword, requestEmailChange } = useAuth();
   const [username, setUsername] = useState("");
@@ -169,7 +167,6 @@ export function AccountPage() {
   return (
     <div className="min-h-screen bg-[var(--race-bg)]">
       <div className="container mx-auto px-4 py-12 max-w-3xl">
-        <ProfileIncompleteAlert />
         <div className="mb-8 flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
           <div>
             <p className="text-[var(--race-accent)] font-display tracking-widest text-sm mb-2">KONTO</p>

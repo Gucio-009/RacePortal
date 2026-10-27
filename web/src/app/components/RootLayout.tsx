@@ -26,7 +26,6 @@ import {
   Flag,
   User,
   LogOut,
-  Car,
   Shield,
   LayoutDashboard,
   Settings,
@@ -233,15 +232,6 @@ export function RootLayout() {
                       >
                         <Settings className="h-4 w-4 text-[var(--race-accent)]" />
                         {t("nav.settings")}
-                      </button>
-                      <button
-                        type="button"
-                        role="menuitem"
-                        className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
-                        onClick={() => go("/garaz")}
-                      >
-                        <Car className="h-4 w-4 text-[var(--race-accent)]" />
-                        {t("nav.garage")}
                       </button>
                       {isUser && (
                         <button

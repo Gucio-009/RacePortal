@@ -71,8 +71,9 @@ export function LoginPage() {
       try {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
-          toast.success(t("authExtra.googleOk"));
-          navigate("/dashboard");
+          const isNew = result.registrationComplete === false;
+          toast.success(isNew ? t("authExtra.googleCreated") : t("authExtra.googleOk"));
+          navigate("/dashboard", { state: isNew ? { googleWelcome: true } : undefined });
         } else {
           toast.error(result.message || t("authExtra.googleFail"));
         }

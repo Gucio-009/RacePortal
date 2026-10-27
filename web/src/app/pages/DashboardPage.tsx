@@ -11,7 +11,8 @@
  * Pomysł (alt): TanStack Query; osobne widgety; push notyfikacje; Next.js authenticated RSC.
  */
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Calendar, MapPin, Clock, Car, Trophy, Loader2, Flag } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
@@ -19,6 +20,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "../components/ui/avatar";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Separator } from "../components/ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { api, ApiError } from "../lib/api";
 import { ImageUploadField } from "../components/ImageUploadField";
 import type { Car as GarageCar, Registration } from "../lib/types";
@@ -32,15 +41,26 @@ import {
 import { toast } from "sonner";
 import { HERO_BG_RACE } from "../lib/types";
 import { Reveal } from "../components/Reveal";
-import { ProfileIncompleteAlert } from "../components/ProfileIncompleteAlert";
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
   // URL potwierdzeń przelewu per registration id (lokalny draft przed POST).
   const [proofUrls, setProofUrls] = useState<Record<string, string>>({});
+  const [googleWelcomeOpen, setGoogleWelcomeOpen] = useState(false);
+
+  useEffect(() => {
+    const state = location.state as { googleWelcome?: boolean } | null;
+    if (state?.googleWelcome) {
+      setGoogleWelcomeOpen(true);
+      navigate(".", { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const reloadRegistrations = () =>
     api
@@ -115,9 +135,40 @@ export function DashboardPage() {
       />
 
       <div className="container mx-auto px-4 -mt-20 pb-16">
-        <Reveal>
-          <ProfileIncompleteAlert />
-        </Reveal>
+        <Dialog open={googleWelcomeOpen} onOpenChange={setGoogleWelcomeOpen}>
+          <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+            <DialogHeader>
+              <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
+                {t("authExtra.googleWelcomeTitle")}
+              </DialogTitle>
+              <DialogDescription className="text-[var(--race-muted)]">
+                {t("authExtra.googleWelcomeBody")}
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                type="button"
+                variant="outline"
+                className="border-[var(--race-border)] text-[var(--race-fg)]"
+                onClick={() => setGoogleWelcomeOpen(false)}
+              >
+                {t("authExtra.googleWelcomeLater")}
+              </Button>
+              <Button
+                type="button"
+                className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
+                style={{ fontWeight: 700 }}
+                onClick={() => {
+                  setGoogleWelcomeOpen(false);
+                  navigate("/konto");
+                }}
+              >
+                {t("authExtra.googleWelcomeCta")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
         <Reveal>
         <Card className="bg-[var(--race-card)] border-[var(--race-border)] mb-8 shadow-[var(--race-card-shadow)]">
           <CardContent className="pt-6">

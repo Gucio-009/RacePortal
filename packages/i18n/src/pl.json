@@ -100,7 +100,12 @@
     "loginFail": "Nieprawidłowy email lub hasło",
     "loginError": "Wystąpił błąd podczas logowania",
     "googleOk": "Zalogowano przez Google",
-    "googleFail": "Nie udało się zalogować przez Google"
+    "googleFail": "Nie udało się zalogować przez Google",
+    "googleCreated": "Konto Google utworzone",
+    "googleWelcomeTitle": "Witaj w RacePortal!",
+    "googleWelcomeBody": "Konto przez Google jest gotowe. Uzupełnij w profilu prawo jazdy / licencję PZM, jeśli chcesz zapisywać się na wydarzenia, które tego wymagają.",
+    "googleWelcomeCta": "Uzupełnij profil",
+    "googleWelcomeLater": "Później"
   },
   "events": {
     "title": "Wydarzenia",

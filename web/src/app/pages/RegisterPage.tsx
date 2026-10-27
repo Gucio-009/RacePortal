@@ -162,7 +162,7 @@ export function RegisterPage() {
     }
   };
 
-  /** Google: od razu dashboard; brakujące licencje = alert w profilu. */
+  /** Google: od razu dashboard; przy nowym koncie — popup o uzupełnieniu licencji. */
   const handleGoogle = useCallback(
     async (idToken: string) => {
       if (!acceptTerms) {
@@ -173,12 +173,9 @@ export function RegisterPage() {
       try {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
-          toast.success(
-            result.registrationComplete === false
-              ? "Konto Google utworzone"
-              : "Zalogowano przez Google",
-          );
-          navigate("/dashboard");
+          const isNew = result.registrationComplete === false;
+          toast.success(isNew ? "Konto Google utworzone" : "Zalogowano przez Google");
+          navigate("/dashboard", { state: isNew ? { googleWelcome: true } : undefined });
         } else {
           toast.error(result.message || "Nie udało się kontynuować z Google");
         }
