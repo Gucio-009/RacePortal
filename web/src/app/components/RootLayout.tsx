@@ -45,10 +45,11 @@ import { NotificationBell } from "./NotificationBell";
 import { BugReportButton } from "./BugReportButton";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { StableI18nLabel } from "./StableI18nLabel";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
-  `${isActive ? "text-[var(--race-accent)]" : "text-[var(--race-muted)] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base`;
+  `${isActive ? "text-[var(--race-accent)]" : "text-[var(--race-muted)] hover:text-[var(--race-accent)]"} transition-colors text-sm md:text-base shrink-0`;
 
 export function RootLayout() {
   const { t } = useTranslation();
@@ -136,30 +137,30 @@ export function RootLayout() {
           </Link>
 
           {/* Prawa strona: linki (md+) + jeden bell + konto / hamburger */}
-          <div className="flex items-center gap-2 sm:gap-4 justify-end min-w-0">
-            <div className="hidden md:flex items-center gap-5 flex-wrap justify-end">
+          <div className="flex items-center gap-2 sm:gap-4 justify-end min-w-0 shrink-0">
+            <div className="hidden md:flex items-center gap-5 flex-nowrap justify-end">
               <NavLink to="/wydarzenia" className={navLinkClass} style={{ fontWeight: 600 }}>
-                {t("nav.events")}
+                <StableI18nLabel i18nKey="nav.events" />
               </NavLink>
               <NavLink to="/archiwum" className={navLinkClass} style={{ fontWeight: 600 }}>
-                {t("nav.archive")}
+                <StableI18nLabel i18nKey="nav.archive" />
               </NavLink>
 
               {isAuthenticated && isUser && (
                 <NavLink to="/garaz" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  {t("nav.garage")}
+                  <StableI18nLabel i18nKey="nav.garage" />
                 </NavLink>
               )}
 
               {isAuthenticated && isOrganizer && (
                 <NavLink to="/organizer" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  {t("nav.organizerPanel")}
+                  <StableI18nLabel i18nKey="nav.organizerPanel" />
                 </NavLink>
               )}
 
               {isAuthenticated && isAdmin && (
                 <NavLink to="/admin" className={navLinkClass} style={{ fontWeight: 600 }}>
-                  {t("nav.admin")}
+                  <StableI18nLabel i18nKey="nav.admin" />
                 </NavLink>
               )}
             </div>
@@ -169,7 +170,7 @@ export function RootLayout() {
             {/* Jeden mount — wcześniej desktop+mobile = 2× /api/notifications */}
             {isAuthenticated && <NotificationBell />}
 
-            <div className="hidden md:block">
+            <div className="hidden md:block shrink-0">
               {isAuthenticated ? (
                 <div className="relative" ref={menuRef}>
                   <Button
@@ -292,7 +293,7 @@ export function RootLayout() {
               ) : (
                 <Link to="/login">
                   <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 700 }}>
-                    {t("nav.login")}
+                    <StableI18nLabel i18nKey="nav.login" />
                   </Button>
                 </Link>
               )}

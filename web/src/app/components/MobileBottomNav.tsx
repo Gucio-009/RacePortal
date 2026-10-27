@@ -7,6 +7,7 @@ import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Flag, CalendarDays, Archive, Car, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { StableI18nLabel } from "./StableI18nLabel";
 
 const itemClass = ({ isActive }: { isActive: boolean }) =>
   `flex flex-1 flex-col items-center justify-center gap-0.5 min-h-[48px] py-1.5 text-[10px] font-bold tracking-wide transition-colors ${
@@ -26,32 +27,32 @@ export function MobileBottomNav() {
       <div className="flex items-stretch max-w-lg mx-auto px-1">
         <NavLink to="/" end className={itemClass}>
           <Flag className="w-5 h-5" aria-hidden />
-          {t("nav.home")}
+          <StableI18nLabel i18nKey="nav.home" />
         </NavLink>
         <NavLink to="/wydarzenia" className={itemClass}>
           <CalendarDays className="w-5 h-5" aria-hidden />
-          {t("nav.eventsShort")}
+          <StableI18nLabel i18nKey="nav.eventsShort" />
         </NavLink>
         {isAuthenticated && isUser ? (
           <NavLink to="/garaz" className={itemClass}>
             <Car className="w-5 h-5" aria-hidden />
-            {t("nav.garage")}
+            <StableI18nLabel i18nKey="nav.garage" />
           </NavLink>
         ) : (
           <NavLink to="/archiwum" className={itemClass}>
             <Archive className="w-5 h-5" aria-hidden />
-            {t("nav.archive")}
+            <StableI18nLabel i18nKey="nav.archive" />
           </NavLink>
         )}
         {isAuthenticated ? (
           <NavLink to="/dashboard" className={itemClass}>
             <UserRound className="w-5 h-5" aria-hidden />
-            {t("nav.account")}
+            <StableI18nLabel i18nKey="nav.account" />
           </NavLink>
         ) : (
           <NavLink to="/login" className={itemClass}>
             <UserRound className="w-5 h-5" aria-hidden />
-            {t("nav.login")}
+            <StableI18nLabel i18nKey="nav.login" />
           </NavLink>
         )}
       </div>
