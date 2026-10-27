@@ -72,11 +72,7 @@ export function LoginPage() {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
           toast.success(t("authExtra.googleOk"));
-          navigate(
-            result.registrationComplete === false
-              ? "/dokonczenie-rejestracji"
-              : "/dashboard",
-          );
+          navigate("/dashboard");
         } else {
           toast.error(result.message || t("authExtra.googleFail"));
         }
@@ -187,6 +183,7 @@ export function LoginPage() {
                 onCredential={handleGoogle}
                 onError={(msg) => toast.error(msg)}
                 disabled={isLoading}
+                label={t("auth.googleContinue")}
               />
             </>
           ) : null}

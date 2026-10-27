@@ -74,7 +74,11 @@
     "logoutOk": "Wylogowano",
     "logoutDesc": "Do zobaczenia na torze 🏁",
     "profileUpdateFail": "Nie udało się zaktualizować profilu",
-    "passwordChangeFail": "Nie udało się zmienić hasła"
+    "passwordChangeFail": "Nie udało się zmienić hasła",
+    "googleContinue": "Kontynuuj z Google",
+    "googleRegister": "Zarejestruj się przez Google",
+    "orEmail": "lub zarejestruj e-mailem",
+    "acceptTermsGoogle": "Zaakceptuj regulamin, aby użyć Google"
   },
   "home": {
     "heroTitleBefore": "DOŁĄCZ DO",

@@ -165,12 +165,9 @@ const CompleteRegistrationPage = lazyPage(() =>
 function AuthGate({
   children,
   roles,
-  allowIncompleteRegistration = false,
 }: {
   children: ReactNode;
   roles?: UserRole[];
-  /** Strona dokończenia rejestracji Google — bez redirectu w pętli. */
-  allowIncompleteRegistration?: boolean;
 }) {
   const { isAuthenticated, user, isLoading, refreshSession } = useAuth();
   const [roleRefreshing, setRoleRefreshing] = useState(false);
@@ -204,13 +201,6 @@ function AuthGate({
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (
-    !allowIncompleteRegistration &&
-    user &&
-    user.registrationComplete === false
-  ) {
-    return <Navigate to="/dokonczenie-rejestracji" replace />;
-  }
   if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
   return <>{children}</>;
@@ -274,7 +264,7 @@ function ProtectedBecomeOrganizer() {
 
 function ProtectedCompleteRegistration() {
   return (
-    <AuthGate allowIncompleteRegistration>
+    <AuthGate>
       <CompleteRegistrationPage />
     </AuthGate>
   );

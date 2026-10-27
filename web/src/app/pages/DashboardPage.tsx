@@ -32,6 +32,7 @@ import {
 import { toast } from "sonner";
 import { HERO_BG_RACE } from "../lib/types";
 import { Reveal } from "../components/Reveal";
+import { ProfileIncompleteAlert } from "../components/ProfileIncompleteAlert";
 
 export function DashboardPage() {
   const { user } = useAuth();
@@ -114,6 +115,9 @@ export function DashboardPage() {
       />
 
       <div className="container mx-auto px-4 -mt-20 pb-16">
+        <Reveal>
+          <ProfileIncompleteAlert />
+        </Reveal>
         <Reveal>
         <Card className="bg-[var(--race-card)] border-[var(--race-border)] mb-8 shadow-[var(--race-card-shadow)]">
           <CardContent className="pt-6">

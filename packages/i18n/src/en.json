@@ -74,7 +74,11 @@
     "logoutOk": "Signed out",
     "logoutDesc": "See you on the track 🏁",
     "profileUpdateFail": "Could not update profile",
-    "passwordChangeFail": "Could not change password"
+    "passwordChangeFail": "Could not change password",
+    "googleContinue": "Continue with Google",
+    "googleRegister": "Sign up with Google",
+    "orEmail": "or register with email",
+    "acceptTermsGoogle": "Accept the terms to use Google"
   },
   "home": {
     "heroTitleBefore": "JOIN THE",
