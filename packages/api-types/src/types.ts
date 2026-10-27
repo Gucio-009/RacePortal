@@ -60,6 +60,11 @@ export interface User {
   pzmLicense?: string | null;
   /** Preferencja języka (maile + sync UI). Domyślnie pl. */
   locale?: UserLocale | null;
+  /**
+   * false = konto z Google bez kroku prawa jazdy / PZM — UI wymusza dokończenie rejestracji.
+   * Brak pola (stare API) traktuj jak true.
+   */
+  registrationComplete?: boolean;
 }
 
 /** Pełne wydarzenie z list/szczegółów (GET /api/events). */

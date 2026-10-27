@@ -162,7 +162,7 @@ export function RegisterPage() {
     }
   };
 
-  /** Google wymaga wcześniejszej akceptacji regulaminu (checkbox). */
+  /** Google: nowe konto → dokończenie (prawo jazdy / PZM); istniejące → dashboard. */
   const handleGoogle = useCallback(
     async (idToken: string) => {
       if (!acceptTerms) {
@@ -173,8 +173,13 @@ export function RegisterPage() {
       try {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
-          toast.success("Konto Google połączone – jesteś zalogowany");
-          navigate("/dashboard");
+          if (result.registrationComplete === false) {
+            toast.success("Konto Google utworzone — uzupełnij dane rejestracji");
+            navigate("/dokonczenie-rejestracji");
+          } else {
+            toast.success("Zalogowano przez Google");
+            navigate("/dashboard");
+          }
         } else {
           toast.error(result.message || "Nie udało się kontynuować z Google");
         }
@@ -521,9 +526,12 @@ export function RegisterPage() {
                       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)]"
                       style={{ fontSize: "14px" }}
                     >
-                      lub
+                      lub utwórz konto przez Google
                     </span>
                   </div>
+                  <p className="text-[var(--race-muted)] text-sm text-center mb-3">
+                    Po Google uzupełnisz prawo jazdy i licencję PZM w następnym kroku.
+                  </p>
                   <GoogleSignInButton
                     onCredential={handleGoogle}
                     onError={(msg) => toast.error(msg)}
@@ -531,7 +539,7 @@ export function RegisterPage() {
                   />
                   {!acceptTerms ? (
                     <p className="text-[#6b7280] text-xs text-center mt-2">
-                      Zaznacz regulamin, aby kontynuować z Google
+                      Zaznacz regulamin powyżej, aby utworzyć konto przez Google
                     </p>
                   ) : null}
                 </>

@@ -54,7 +54,9 @@ interface AuthContextType {
   ) => Promise<RegisterResult>;
   verifyEmail: (token: string, email?: string) => Promise<{ ok: boolean; message?: string }>;
   resendCode: (email: string) => Promise<{ ok: boolean; message?: string }>;
-  loginWithGoogle: (idToken: string) => Promise<{ ok: boolean; message?: string }>;
+  loginWithGoogle: (
+    idToken: string,
+  ) => Promise<{ ok: boolean; message?: string; registrationComplete?: boolean }>;
   logout: () => void;
   updateProfile: (data: {
     username?: string;
@@ -240,7 +242,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const res = await api.post<{ user: User }>("/api/auth/oauth/google", { idToken });
       persistAuth(res.user);
-      return { ok: true };
+      return {
+        ok: true,
+        // Brak pola ze starego API = kompletne; false tylko dla nowych kont Google.
+        registrationComplete: res.user.registrationComplete !== false,
+      };
     } catch (e) {
       const message = e instanceof ApiError ? e.message : "Nie udało się zalogować przez Google";
       return { ok: false, message };

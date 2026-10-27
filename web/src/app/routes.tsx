@@ -150,6 +150,11 @@ const SettingsPage = lazyPage(() =>
 const AccountPage = lazyPage(() =>
   import("./pages/AccountPage").then((m) => ({ default: m.AccountPage })),
 );
+const CompleteRegistrationPage = lazyPage(() =>
+  import("./pages/CompleteRegistrationPage").then((m) => ({
+    default: m.CompleteRegistrationPage,
+  })),
+);
 
 /**
  * Brama auth: spinner podczas bootstrapu `/api/auth/me`, potem redirect lub children.
@@ -160,9 +165,12 @@ const AccountPage = lazyPage(() =>
 function AuthGate({
   children,
   roles,
+  allowIncompleteRegistration = false,
 }: {
   children: ReactNode;
   roles?: UserRole[];
+  /** Strona dokończenia rejestracji Google — bez redirectu w pętli. */
+  allowIncompleteRegistration?: boolean;
 }) {
   const { isAuthenticated, user, isLoading, refreshSession } = useAuth();
   const [roleRefreshing, setRoleRefreshing] = useState(false);
@@ -196,6 +204,13 @@ function AuthGate({
   }
 
   if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (
+    !allowIncompleteRegistration &&
+    user &&
+    user.registrationComplete === false
+  ) {
+    return <Navigate to="/dokonczenie-rejestracji" replace />;
+  }
   if (roles && user && !roles.includes(user.role)) return <Navigate to="/" replace />;
 
   return <>{children}</>;
@@ -257,6 +272,14 @@ function ProtectedBecomeOrganizer() {
   );
 }
 
+function ProtectedCompleteRegistration() {
+  return (
+    <AuthGate allowIncompleteRegistration>
+      <CompleteRegistrationPage />
+    </AuthGate>
+  );
+}
+
 export const router = createBrowserRouter([
   {
     path: "/",
@@ -266,6 +289,7 @@ export const router = createBrowserRouter([
       { index: true, Component: HomePage },
       { path: "login", Component: LoginPage },
       { path: "register", Component: RegisterPage },
+      { path: "dokonczenie-rejestracji", Component: ProtectedCompleteRegistration },
       { path: "forgot-password", Component: ForgotPasswordPage },
       { path: "reset-password/:token", Component: ResetPasswordPage },
       { path: "verify-email", Component: VerifyEmailPage },

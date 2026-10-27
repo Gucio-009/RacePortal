@@ -178,7 +178,8 @@ public final class AuthDtos {
             String instagramUrl,
             boolean hasDrivingLicenseB,
             String pzmLicense,
-            String locale
+            String locale,
+            boolean registrationComplete
     ) {
     }
 

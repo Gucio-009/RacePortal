@@ -85,6 +85,15 @@ public class User {
     @Column(name = "pzm_license", length = 40)
     private String pzmLicense;
 
+    /**
+     * Czy użytkownik przeszedł pełną rejestrację (prawo jazdy B / PZM).
+     * Konta lokalne: {@code true} od razu (pola w formularzu). Nowe konta Google: {@code false}
+     * do czasu kroku dokończenia. DEFAULT w SQL — ddl-auto na istniejących wierszach.
+     */
+    @Column(name = "registration_complete", nullable = false,
+            columnDefinition = "tinyint(1) not null default 1")
+    private boolean registrationComplete = true;
+
     /** Flaga weryfikacji adresu e-mail (po rejestracji lokalnej). */
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = true;
@@ -248,6 +257,14 @@ public class User {
 
     public void setPzmLicense(String pzmLicense) {
         this.pzmLicense = pzmLicense;
+    }
+
+    public boolean isRegistrationComplete() {
+        return registrationComplete;
+    }
+
+    public void setRegistrationComplete(boolean registrationComplete) {
+        this.registrationComplete = registrationComplete;
     }
 
     public boolean isEmailVerified() {

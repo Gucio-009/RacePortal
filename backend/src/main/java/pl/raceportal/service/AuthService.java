@@ -254,6 +254,8 @@ public class AuthService {
             user.setPasswordHash(passwordEncoder.encode("oauth-google-" + java.util.UUID.randomUUID()));
             user.setRole(Role.USER);
             user.setEmailVerified(true);
+            // Google nie zbiera prawa jazdy / PZM — wymuszamy krok dokończenia rejestracji.
+            user.setRegistrationComplete(false);
             user.setAvatar(picture != null && !picture.isBlank() ? picture : null);
             if (givenName != null) user.setFirstName(givenName);
             if (familyName != null) user.setLastName(familyName);
@@ -356,6 +358,10 @@ public class AuthService {
         }
         applyProfileFields(user, request.firstName(), request.lastName(), request.phone(),
                 request.hasDrivingLicenseB(), request.pzmLicense(), request.address(), request.instagramUrl());
+        // Dokończenie rejestracji Google: jawne przesłanie hasDrivingLicenseB zamyka onboarding.
+        if (!user.isRegistrationComplete() && request.hasDrivingLicenseB() != null) {
+            user.setRegistrationComplete(true);
+        }
         if (request.locale() != null && !request.locale().isBlank()) {
             user.setLocale(MailTexts.normalize(request.locale()));
         }
@@ -675,7 +681,8 @@ public class AuthService {
                 user.getFirstName(), user.getLastName(), user.getPhone(),
                 user.getAddress(), user.getInstagramUrl(),
                 user.isHasDrivingLicenseB(), user.getPzmLicense(),
-                MailTexts.normalize(user.getLocale()));
+                MailTexts.normalize(user.getLocale()),
+                user.isRegistrationComplete());
     }
 
     private void applyProfileFields(User user, String firstName, String lastName, String phone,

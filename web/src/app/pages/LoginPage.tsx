@@ -72,7 +72,11 @@ export function LoginPage() {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
           toast.success(t("authExtra.googleOk"));
-          navigate("/dashboard");
+          navigate(
+            result.registrationComplete === false
+              ? "/dokonczenie-rejestracji"
+              : "/dashboard",
+          );
         } else {
           toast.error(result.message || t("authExtra.googleFail"));
         }
@@ -80,7 +84,7 @@ export function LoginPage() {
         setIsLoading(false);
       }
     },
-    [loginWithGoogle, navigate],
+    [loginWithGoogle, navigate, t],
   );
 
   return (
