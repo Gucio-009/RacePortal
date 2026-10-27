@@ -8,6 +8,7 @@
  */
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Building2, MessageSquare, Loader2, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -18,16 +19,17 @@ import { api, ApiError } from "../lib/api";
 import type { OrganizerApplication } from "../lib/types";
 import { toast } from "sonner";
 
-const BUSINESS_TYPES = [
-  "Osoba prywatna",
-  "Firma",
-  "Jednoosobowa działalność gospodarcza",
-  "Stowarzyszenie",
-  "Fundacja",
-  "Automobilklub zrzeszony w PZM",
+const BUSINESS_TYPE_KEYS = [
+  "private",
+  "company",
+  "sole",
+  "assoc",
+  "foundation",
+  "club",
 ] as const;
 
 export function BecomeOrganizerPage() {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
   const [company, setCompany] = useState("");
@@ -71,12 +73,12 @@ export function BecomeOrganizerPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      toast.info("Zaloguj się, aby wysłać wniosek");
+      toast.info(t("becomeOrganizer.loginRequired"));
       navigate("/login");
       return;
     }
     if (!businessType) {
-      toast.error("Wybierz typ działalności");
+      toast.error(t("becomeOrganizer.needType"));
       return;
     }
     setLoading(true);
@@ -88,9 +90,9 @@ export function BecomeOrganizerPage() {
       });
       setExisting(created);
       setSent(true);
-      toast.success("Wniosek wysłany! Administrator rozpatrzy go wkrótce.");
+      toast.success(t("becomeOrganizer.okToast"));
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Nie udało się wysłać wniosku");
+      toast.error(err instanceof ApiError ? err.message : t("becomeOrganizer.fail"));
     } finally {
       setLoading(false);
     }
@@ -101,11 +103,10 @@ export function BecomeOrganizerPage() {
       <section className="bg-[var(--race-card)] border-b border-[var(--race-border)] py-16">
         <div className="container mx-auto px-4 max-w-2xl">
           <h1 className="font-display text-[var(--race-fg)] mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
-            ZOSTAŃ <span className="text-[var(--race-accent)]">ORGANIZATOREM</span>
+            {t("becomeOrganizer.titleBefore")} <span className="text-[var(--race-accent)]">{t("becomeOrganizer.titleAccent")}</span>
           </h1>
           <p className="text-[var(--race-muted)]">
-            Organizujesz wyścigi, track daye lub eventy motorsportowe? Wyślij wniosek i zarządzaj wydarzeniami w
-            RACEPORTAL.
+            {t("becomeOrganizer.heroDesc")}
           </p>
         </div>
       </section>
@@ -114,18 +115,18 @@ export function BecomeOrganizerPage() {
         {checking ? (
           <div className="flex items-center justify-center gap-3 text-[var(--race-muted)] py-16">
             <Loader2 className="w-6 h-6 animate-spin text-[var(--race-accent)]" />
-            Sprawdzanie statusu wniosku...
+            {t("becomeOrganizer.checking")}
           </div>
         ) : alreadyOrganizer ? (
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
             <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-              Masz już uprawnienia organizatora
+              {t("becomeOrganizer.alreadyTitle")}
             </p>
-            <p className="text-[var(--race-muted)]">Możesz tworzyć i zarządzać wydarzeniami w panelu organizatora.</p>
+            <p className="text-[var(--race-muted)]">{t("becomeOrganizer.alreadyDesc")}</p>
             <Link to="/organizer">
               <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
-                Panel organizatora
+                {t("nav.organizerPanelFull")}
               </Button>
             </Link>
           </div>
@@ -133,7 +134,7 @@ export function BecomeOrganizerPage() {
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <Clock className="w-12 h-12 text-[var(--race-accent)] mx-auto" />
             <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-              Wniosek oczekuje na decyzję
+              {t("becomeOrganizer.pendingTitle")}
             </p>
             <p className="text-[var(--race-muted)]">
               {existing?.company ? (
@@ -146,7 +147,7 @@ export function BecomeOrganizerPage() {
             </p>
             <Link to="/dashboard">
               <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
-                Wróć do profilu
+                {t("becomeOrganizer.back")}
               </Button>
             </Link>
           </div>
@@ -161,7 +162,7 @@ export function BecomeOrganizerPage() {
             </p>
             <Link to="/organizer">
               <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
-                Panel organizatora
+                {t("nav.organizerPanelFull")}
               </Button>
             </Link>
           </div>
@@ -190,7 +191,7 @@ export function BecomeOrganizerPage() {
             <div className="space-y-2">
               <Label htmlFor="org-apply-company" className="text-[var(--race-fg)] flex items-center gap-2">
                 <Building2 className="w-4 h-4 text-[var(--race-accent)]" />
-                Firma / organizacja *
+                {t("becomeOrganizer.company")} *
               </Label>
               <Input
                 id="org-apply-company"
@@ -205,7 +206,7 @@ export function BecomeOrganizerPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="org-apply-businessType" className="text-[var(--race-fg)]">
-                Typ działalności <span className="text-red-500 font-bold">*</span>
+                {t("becomeOrganizer.businessType")} <span className="text-red-500 font-bold">*</span>
               </Label>
               <select
                 id="org-apply-businessType"
@@ -215,10 +216,10 @@ export function BecomeOrganizerPage() {
                 onChange={(e) => setBusinessType(e.target.value)}
                 className="w-full h-12 rounded-md bg-[var(--race-bg)] border border-[var(--race-border)] text-[var(--race-fg)] px-3"
               >
-                <option value="">Wybierz typ…</option>
-                {BUSINESS_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                <option value="">{t("becomeOrganizer.chooseType")}</option>
+                {BUSINESS_TYPE_KEYS.map((typeKey) => (
+                  <option key={typeKey} value={t(`becomeOrganizer.types.${typeKey}`)}>
+                    {t(`becomeOrganizer.types.${typeKey}`)}
                   </option>
                 ))}
               </select>
@@ -226,7 +227,7 @@ export function BecomeOrganizerPage() {
             <div className="space-y-2">
               <Label htmlFor="org-apply-message" className="text-[var(--race-fg)] flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-[var(--race-accent)]" />
-                Wiadomość *
+                {t("becomeOrganizer.message")} *
               </Label>
               <Textarea
                 id="org-apply-message"
@@ -236,7 +237,7 @@ export function BecomeOrganizerPage() {
                 onChange={(e) => setMessage(e.target.value)}
                 rows={6}
                 className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
-                placeholder="Opisz doświadczenie, planowane wydarzenia..."
+                placeholder={t("becomeOrganizer.messagePlaceholder")}
               />
             </div>
             <Button
@@ -248,10 +249,10 @@ export function BecomeOrganizerPage() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  WYSYŁANIE...
+                  {t("becomeOrganizer.submitting")}
                 </>
               ) : (
-                "WYŚLIJ WNIOSEK"
+                t("becomeOrganizer.submit")
               )}
             </Button>
           </form>

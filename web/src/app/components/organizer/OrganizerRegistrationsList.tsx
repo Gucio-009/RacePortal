@@ -11,13 +11,13 @@
  */
 
 import type { Dispatch, SetStateAction } from "react";
+import { useTranslation } from "react-i18next";
 import { Check, X, Eye } from "lucide-react";
 import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
 import type { Registration, RegistrationStatus } from "../../lib/types";
-import { registrationStatusLabel } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 
 interface OrganizerRegistrationsListProps {
@@ -38,8 +38,12 @@ export function OrganizerRegistrationsList({
   onUpdateStatus,
   onOpenDetail,
 }: OrganizerRegistrationsListProps) {
+  const { t } = useTranslation();
+
   if (registrations.length === 0) {
-    return <p className="text-[var(--race-muted)] text-center py-8">Brak zgłoszeń dla tego wydarzenia.</p>;
+    return (
+      <p className="text-[var(--race-muted)] text-center py-8">{t("registration.noEntries")}</p>
+    );
   }
 
   return (
@@ -54,13 +58,16 @@ export function OrganizerRegistrationsList({
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-                  {reg.user?.username ?? "Kierowca"}
+                  {reg.user?.username ?? t("common.driver")}
                 </p>
                 <p className="text-[var(--race-muted)] text-sm">{reg.user?.email}</p>
                 {reg.car && (
                   <p className="text-[var(--race-muted)] text-sm">
-                    Auto: {reg.car.make} {reg.car.model}
-                    {reg.car.className ? ` · ${reg.car.className}` : ""}
+                    {t("organizer.carColon", {
+                      detail: `${reg.car.make} ${reg.car.model}${
+                        reg.car.className ? ` · ${reg.car.className}` : ""
+                      }`,
+                    })}
                   </p>
                 )}
                 {reg.note && <p className="text-[var(--race-muted)] text-sm italic">{reg.note}</p>}
@@ -72,19 +79,21 @@ export function OrganizerRegistrationsList({
                     className="text-[var(--race-accent)] text-sm underline"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Potwierdzenie przelewu
+                    {t("organizer.transferProof")}
                   </a>
                 )}
                 {reg.organizerComment && (
-                  <p className="text-sm text-[var(--race-muted)] mt-1">Komentarz: {reg.organizerComment}</p>
+                  <p className="text-sm text-[var(--race-muted)] mt-1">
+                    {t("organizer.commentColon", { comment: reg.organizerComment })}
+                  </p>
                 )}
                 <div className="flex flex-wrap items-center gap-2 mt-2">
                   <Badge className="bg-[var(--race-muted-bg)] text-[var(--race-fg)]">
-                    {registrationStatusLabel(reg.status)}
+                    {t(`registration.${reg.status}`)}
                   </Badge>
                   <span className="text-xs text-[var(--race-accent)] inline-flex items-center gap-1">
                     <Eye className="w-3.5 h-3.5" />
-                    Podgląd
+                    {t("common.preview")}
                   </span>
                 </div>
               </div>
@@ -93,7 +102,7 @@ export function OrganizerRegistrationsList({
                 onClick={(e) => e.stopPropagation()}
               >
                 <Input
-                  placeholder="Komentarz (opcjonalnie)"
+                  placeholder={t("registration.commentOptional")}
                   value={comments[reg.id] || ""}
                   onChange={(e) => setComments((prev) => ({ ...prev, [reg.id]: e.target.value }))}
                   className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
@@ -108,7 +117,7 @@ export function OrganizerRegistrationsList({
                       className="bg-green-700 hover:bg-green-600 flex-1"
                     >
                       <Check className="w-4 h-4 mr-1" />
-                      {selectedEvent?.paid ? "Akceptuj" : "Potwierdź"}
+                      {selectedEvent?.paid ? t("organizer.acceptReg") : t("common.confirm")}
                     </Button>
                     <Button
                       size="sm"
@@ -128,7 +137,7 @@ export function OrganizerRegistrationsList({
                       onClick={() => onUpdateStatus(reg.id, "CONFIRMED")}
                       className="bg-green-700 hover:bg-green-600 flex-1 disabled:opacity-40"
                     >
-                      Potwierdź wpłatę
+                      {t("registration.confirmPayment")}
                     </Button>
                     <Button
                       size="sm"

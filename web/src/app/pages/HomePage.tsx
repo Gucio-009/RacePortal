@@ -69,12 +69,12 @@ export function HomePage() {
         .catch((e) => {
           setUpcomingEvents([]);
           setLoadError(
-            e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.",
+            e instanceof ApiError ? e.message : t("home.loadFail"),
           );
         })
         .finally(() => setLoading(false));
     }, 2500);
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void loadPublicStats(false);
@@ -175,7 +175,7 @@ export function HomePage() {
           <div
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
             aria-busy="true"
-            aria-label="Ładowanie wydarzeń"
+            aria-label={t("home.loadingEvents")}
           >
             {Array.from({ length: 6 }, (_, i) => (
               <div
@@ -267,7 +267,7 @@ export function HomePage() {
           <Reveal delay={100} className="flex justify-center text-center">
             <div className="min-w-[10rem] max-w-sm">
               {statsLoading && registeredUsers == null ? (
-                <div className="space-y-3" aria-busy="true" aria-label="Ładowanie liczby użytkowników">
+                <div className="space-y-3" aria-busy="true" aria-label={t("home.loadingUserCount")}>
                   <div className="mx-auto h-10 sm:h-14 w-24 sm:w-32 rounded bg-[var(--race-muted-bg)] animate-pulse" />
                   <div className="mx-auto h-4 w-48 rounded bg-[var(--race-muted-bg)] animate-pulse" />
                 </div>
@@ -282,7 +282,7 @@ export function HomePage() {
                 </>
               ) : statsError ? (
                 <p className="text-[var(--race-muted)] text-sm sm:text-base">
-                  Nie udało się pobrać liczby użytkowników.
+                  {t("home.statsFail")}
                 </p>
               ) : null}
             </div>

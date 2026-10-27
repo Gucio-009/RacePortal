@@ -1,14 +1,9 @@
 /**
  * ForgotPasswordPage — prośba o link resetujący hasło.
- *
- * Cel: użytkownik podaje e-mail; AuthContext.forgotPassword woła API (bez ujawniania
- * czy konto istnieje). Backend wysyła jednorazowy link; hasło bez zmian do kliknięcia.
- * Wzorce: kontrolowany formularz, toast, Link do `/login`.
- * Auth: publiczna; nie ustawia JWT. Theme: `--race-accent`, `font-display`.
- * Docker/nginx: deep link `/forgot-password` → SPA try_files.
  */
 import { useState } from "react";
 import { Link } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { Flag, Mail, ArrowLeft } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -18,6 +13,7 @@ import { toast } from "sonner";
 import { HERO_BG_TRACK } from "../lib/types";
 
 export function ForgotPasswordPage() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,28 +46,26 @@ export function ForgotPasswordPage() {
         <div className="text-center mb-8">
           <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
           <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
-            RESET <span className="text-[var(--race-accent)]">HASŁA</span>
+            {t("forgot.titleBefore")} <span className="text-[var(--race-accent)]">{t("forgot.titleAccent")}</span>
           </h1>
-          <p className="text-[#9ca3af]">Podaj email powiązany z kontem</p>
+          <p className="text-[#9ca3af]">{t("forgot.subtitle")}</p>
         </div>
 
         <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
           {sent ? (
             <div className="text-center space-y-4">
               <p className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                Sprawdź skrzynkę
+                {t("forgot.checkInbox")}
               </p>
               <p className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
-                Jeśli konto z adresem <span className="text-[var(--race-accent)]">{email}</span> istnieje,
-                wysłaliśmy link do ustawienia nowego hasła (ważny 30 minut). Do kliknięcia linku możesz
-                logować się dotychczasowym hasłem.
+                {t("forgot.sentBody", { email })}
               </p>
               <Link to="/login">
                 <Button
                   className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                   style={{ fontWeight: 800 }}
                 >
-                  Wróć do logowania
+                  {t("forgot.backLogin")}
                 </Button>
               </Link>
             </div>
@@ -79,7 +73,7 @@ export function ForgotPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                  Email
+                  {t("auth.email")}
                 </Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
@@ -100,14 +94,14 @@ export function ForgotPasswordPage() {
                 className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
-                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ LINK"}
+                {isLoading ? t("forgot.sending") : t("forgot.sendLink")}
               </Button>
               <Link
                 to="/login"
                 className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Wróć do logowania
+                {t("forgot.backLogin")}
               </Link>
             </form>
           )}

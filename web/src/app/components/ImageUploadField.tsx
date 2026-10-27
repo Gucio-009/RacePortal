@@ -3,6 +3,7 @@
  * URL jest opcjonalnym fallbackiem (ukryty za „Wklej URL”).
  */
 import { useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ImagePlus, Loader2, Link2, X } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError, MAX_IMAGE_UPLOAD_BYTES } from "../lib/api";
@@ -29,6 +30,7 @@ export function ImageUploadField({
   inputClassName = "bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]",
   error,
 }: ImageUploadFieldProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
   const [showUrl, setShowUrl] = useState(false);
@@ -42,9 +44,9 @@ export function ImageUploadField({
       onChange(res.url);
       setShowUrl(false);
       setPreviewBroken(false);
-      toast.success("Zdjęcie wgrane");
+      toast.success(t("upload.ok"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się wgrać zdjęcia");
+      toast.error(e instanceof ApiError ? e.message : t("upload.fail"));
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = "";
@@ -73,10 +75,10 @@ export function ImageUploadField({
           <ImagePlus className="w-8 h-8 text-[var(--race-accent)]" />
         )}
         <span className="text-[var(--race-fg)] text-sm font-semibold">
-          {uploading ? "Wgrywanie…" : "Wybierz plik ze zdjęciem"}
+          {uploading ? t("upload.uploading") : t("upload.chooseFile")}
         </span>
         <span className="text-xs text-[var(--race-muted)]">
-          JPG / PNG / WebP · max {MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024)} MB
+          {t("upload.hint", { mb: MAX_IMAGE_UPLOAD_BYTES / (1024 * 1024) })}
         </span>
       </button>
 
@@ -84,15 +86,15 @@ export function ImageUploadField({
         <div className="relative w-full max-w-xs aspect-video rounded border border-[var(--race-border)] overflow-hidden bg-[var(--race-bg)]">
           <img
             src={value}
-            alt="Podgląd"
+            alt={t("common.preview")}
             className="w-full h-full object-cover"
             onLoad={() => setPreviewBroken(false)}
             onError={() => setPreviewBroken(true)}
           />
           <button
             type="button"
-            aria-label="Usuń zdjęcie"
-            title="Usuń"
+            aria-label={t("upload.clear")}
+            title={t("upload.clear")}
             onClick={() => {
               setPreviewBroken(false);
               onChange("");
@@ -116,7 +118,7 @@ export function ImageUploadField({
             onClick={() => setShowUrl((v) => !v)}
           >
             <Link2 className="w-3 h-3" />
-            {showUrl ? "Ukryj pole URL" : "Albo wklej URL"}
+            {showUrl ? t("upload.hideUrl") : t("upload.pasteUrl")}
           </button>
           {showUrl && (
             <Input

@@ -10,6 +10,7 @@
 
 import { createBrowserRouter, Navigate, useRouteError } from "react-router";
 import { ComponentType, lazy, ReactNode, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { RootLayout } from "./components/RootLayout";
 import { HomePage } from "./pages/HomePage";
 import { useAuth } from "./context/AuthContext";
@@ -69,25 +70,24 @@ function lazyPage(factory: () => Promise<{ default: ComponentType }>) {
 }
 
 function RouteError() {
+  const { t } = useTranslation();
   const error = useRouteError();
   const chunk = isChunkLoadError(error);
 
   return (
     <div className="min-h-[50vh] flex flex-col items-center justify-center gap-4 px-4 text-center">
       <p className="text-lg font-semibold text-[var(--race-fg)]">
-        {chunk ? "Nie udało się wczytać tej części aplikacji." : "Coś poszło nie tak."}
+        {chunk ? t("routeError.chunkTitle") : t("routeError.genericTitle")}
       </p>
       <p className="max-w-md text-sm text-[var(--race-muted)]">
-        {chunk
-          ? "Odśwież stronę, żeby pobrać aktualną wersję."
-          : "Odśwież stronę albo wróć na stronę główną."}
+        {chunk ? t("routeError.chunkHint") : t("routeError.genericHint")}
       </p>
       <button
         type="button"
         className="px-4 py-2 rounded-lg bg-[var(--race-accent)] text-[var(--race-on-accent)] font-semibold"
         onClick={() => window.location.reload()}
       >
-        Odśwież
+        {t("routeError.reload")}
       </button>
     </div>
   );

@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { User, Mail, Lock, Eye, EyeOff, Flag, CheckCircle2, Phone, IdCard } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -32,6 +33,7 @@ import {
 import { HERO_BG_RACE } from "../lib/types";
 
 export function RegisterPage() {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -92,22 +94,22 @@ export function RegisterPage() {
     e.preventDefault();
 
     if (password !== confirmPassword) {
-      toast.error("Hasła nie są identyczne");
+      toast.error(t("validation.passwordsMismatch"));
       return;
     }
 
     if (!acceptTerms) {
-      toast.error("Musisz zaakceptować regulamin");
+      toast.error(t("validation.acceptTerms"));
       return;
     }
 
     if (password.length < 8) {
-      toast.error("Hasło musi mieć minimum 8 znaków");
+      toast.error(t("validation.passwordMin"));
       return;
     }
 
     if (!isStrongPassword(password)) {
-      toast.error("Hasło musi zawierać wielką literę, cyfrę i znak specjalny");
+      toast.error(t("validation.passwordWeak"));
       return;
     }
 
@@ -124,20 +126,20 @@ export function RegisterPage() {
         pzmLicense: hasPzmLicense ? pzmLicense : "",
       });
       if (!result.ok) {
-        toast.error(result.message || "Nie udało się utworzyć konta");
+        toast.error(result.message || t("registerPage.registerFail"));
         return;
       }
       // Etap 2: link w mailu zamiast od razu JWT.
       if ("requiresVerification" in result && result.requiresVerification) {
         enterVerifyStep(result.email);
-        toast.success(result.message || "Link aktywacyjny wysłany na e-mail");
+        toast.success(result.message || t("registerPage.linkSent"));
         return;
       }
       clearPendingVerifyEmail();
-      toast.success("Konto utworzone pomyślnie!");
+      toast.success(t("registerPage.registerOk"));
       navigate("/dashboard");
     } catch {
-      toast.error("Wystąpił błąd podczas rejestracji");
+      toast.error(t("registerPage.registerError"));
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +149,7 @@ export function RegisterPage() {
     e?.preventDefault();
     const target = (pendingEmail || email).trim().toLowerCase();
     if (!target.includes("@")) {
-      toast.error("Podaj adres e-mail, na który wysłać link");
+      toast.error(t("registerPage.needEmail"));
       return;
     }
     setIsLoading(true);
@@ -155,8 +157,8 @@ export function RegisterPage() {
       const result = await resendCode(target);
       if (result.ok) {
         enterVerifyStep(target);
-        toast.success(result.message || "Link wysłany ponownie");
-      } else toast.error(result.message || "Nie udało się wysłać linku");
+        toast.success(result.message || t("registerPage.linkSent"));
+      } else toast.error(result.message || t("registerPage.resendFail"));
     } finally {
       setIsLoading(false);
     }
@@ -166,7 +168,7 @@ export function RegisterPage() {
   const handleGoogle = useCallback(
     async (idToken: string) => {
       if (!acceptTerms) {
-        toast.error("Zaakceptuj regulamin przed kontynuacją");
+        toast.error(t("registerPage.acceptTermsToast"));
         return;
       }
       setIsLoading(true);
@@ -174,10 +176,10 @@ export function RegisterPage() {
         const result = await loginWithGoogle(idToken);
         if (result.ok) {
           const isNew = result.registrationComplete === false;
-          toast.success(isNew ? "Konto Google utworzone" : "Zalogowano przez Google");
+          toast.success(isNew ? t("registerPage.googleCreated") : t("registerPage.googleOk"));
           navigate("/dashboard", { state: isNew ? { googleWelcome: true } : undefined });
         } else {
-          toast.error(result.message || "Nie udało się kontynuować z Google");
+          toast.error(result.message || t("registerPage.googleFail"));
         }
       } finally {
         setIsLoading(false);
@@ -202,10 +204,10 @@ export function RegisterPage() {
             className="font-display text-white mb-2"
             style={{ fontSize: "36px", fontWeight: 800 }}
           >
-            DOŁĄCZ DO <span className="text-[var(--race-accent)]">ZESPOŁU</span>
+            {t("registerPage.titleBefore")} <span className="text-[var(--race-accent)]">{t("registerPage.titleAccent")}</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: "16px" }}>
-            {verifyMode ? "Aktywuj konto linkiem z maila" : "Stwórz konto i rozpocznij wyścig"}
+            {verifyMode ? t("registerPage.subtitleVerify") : t("registerPage.subtitle")}
           </p>
         </div>
 
@@ -213,14 +215,9 @@ export function RegisterPage() {
           {verifyMode ? (
             <form onSubmit={handleResend} className="space-y-5">
               <p className="text-[var(--race-muted)] text-sm">
-                {pendingEmail ? (
-                  <>
-                    Wysłaliśmy link aktywacyjny na <span className="text-[var(--race-fg)]">{pendingEmail}</span>.
-                    Otwórz wiadomość i kliknij przycisk (sprawdź też spam). Link jest ważny 60 minut.
-                  </>
-                ) : (
-                  <>Podaj e-mail z rejestracji – wyślemy nowy link aktywacyjny.</>
-                )}
+                {pendingEmail
+                  ? t("registerPage.verifySent", { email: pendingEmail })
+                  : t("registerPage.verifyAskEmail")}
               </p>
               <div className="space-y-2">
                 <Label htmlFor="verify-email" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
@@ -248,7 +245,7 @@ export function RegisterPage() {
                 className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontSize: "16px", fontWeight: 800 }}
               >
-                {isLoading ? "WYSYŁANIE..." : "WYŚLIJ PONOWNIE LINK"}
+                {isLoading ? t("registerPage.sending") : t("registerPage.resendLink")}
               </Button>
               <Link to="/login">
                 <Button
@@ -256,7 +253,7 @@ export function RegisterPage() {
                   variant="outline"
                   className="w-full border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)] h-12"
                 >
-                  Mam już aktywne konto – logowanie
+                  {t("registerPage.haveAccountLogin")}
                 </Button>
               </Link>
               <button
@@ -264,7 +261,7 @@ export function RegisterPage() {
                 className="w-full text-sm text-[var(--race-muted)] hover:text-[var(--race-accent)]"
                 onClick={leaveVerifyStep}
               >
-                Wróć do rejestracji
+                {t("registerPage.backToRegister")}
               </button>
             </form>
           ) : (
@@ -510,7 +507,7 @@ export function RegisterPage() {
                   className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                   style={{ fontSize: "16px", fontWeight: 800 }}
                 >
-                  {isLoading ? "TWORZENIE KONTA..." : "STWÓRZ KONTO"}
+                  {isLoading ? t("registerPage.creating") : t("registerPage.createAccount")}
                 </Button>
               </form>
 
@@ -522,18 +519,18 @@ export function RegisterPage() {
                       className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)] whitespace-nowrap"
                       style={{ fontSize: "14px" }}
                     >
-                      lub zarejestruj przez Google
+                      {t("registerPage.orGoogle")}
                     </span>
                   </div>
                   <GoogleSignInButton
                     onCredential={handleGoogle}
                     onError={(msg) => toast.error(msg)}
                     disabled={isLoading || !acceptTerms}
-                    label="Zarejestruj się przez Google"
+                    label={t("auth.googleRegister")}
                   />
                   {!acceptTerms ? (
                     <p className="text-[#6b7280] text-xs text-center">
-                      Zaznacz regulamin powyżej, aby utworzyć konto przez Google
+                      {t("registerPage.googleNeedTerms")}
                     </p>
                   ) : null}
                 </div>
@@ -544,20 +541,20 @@ export function RegisterPage() {
           <div className="mt-6 text-center space-y-2">
             {!verifyMode && (
               <p className="text-[var(--race-muted)]">
-                Nie dostałeś linku aktywacyjnego?{" "}
+                {t("registerPage.noLink")}{" "}
                 <button
                   type="button"
                   className="text-[var(--race-accent)] hover:underline font-bold"
                   onClick={() => setVerifyMode(true)}
                 >
-                  Wyślij ponownie
+                  {t("registerPage.resend")}
                 </button>
               </p>
             )}
             <p className="text-[var(--race-muted)]">
-              Masz już konto?{" "}
+              {t("registerPage.haveAccount")}{" "}
               <Link to="/login" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
-                Zaloguj się
+                {t("registerPage.login")}
               </Link>
             </p>
           </div>

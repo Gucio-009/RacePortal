@@ -102,7 +102,10 @@ export function SettingsPage() {
   };
 
   const setAccent = (accent: AccentTheme) => {
-    persist({ ...settings, accent }, t("settings.accentSaved", { label: ACCENTS[accent].label }));
+    persist(
+      { ...settings, accent },
+      t("settings.accentSaved", { label: t(`settings.accents.${accent}.label`) }),
+    );
     // Confetti pomijane w trybie pit-stop (mniej ruchu).
     if (settings.pitStopMode) return;
     confetti({
@@ -115,7 +118,10 @@ export function SettingsPage() {
 
   const saveFlair = () => {
     const teamFlair = teamDraft.trim().slice(0, 32);
-    persist({ ...settings, teamFlair }, teamFlair ? `Flair: ${teamFlair}` : "Flair wyczyszczony");
+    persist(
+      { ...settings, teamFlair },
+      teamFlair ? t("settings.flairSaved", { name: teamFlair }) : t("settings.flairCleared"),
+    );
   };
 
   const handleCloseAccount = async () => {
@@ -232,9 +238,9 @@ export function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {ACCENT_GROUPS.map((group) => (
-                <section key={group.title} className="space-y-3">
+                <section key={group.id} className="space-y-3">
                   <h3 className="font-display text-[11px] tracking-[0.18em] text-[var(--race-muted)] uppercase">
-                    {group.title === "Tryb ciemny" ? t("settings.darkMode") : t("settings.lightMode")}
+                    {group.id === "dark" ? t("settings.darkMode") : t("settings.lightMode")}
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {group.keys.map((key) => {
@@ -262,8 +268,12 @@ export function SettingsPage() {
                             }}
                             aria-hidden="true"
                           />
-                          <div className="text-[var(--race-fg)] font-semibold mb-1">{item.label}</div>
-                          <div className="text-[var(--race-muted)] text-sm">{item.desc}</div>
+                          <div className="text-[var(--race-fg)] font-semibold mb-1">
+                            {t(`settings.accents.${key}.label`)}
+                          </div>
+                          <div className="text-[var(--race-muted)] text-sm">
+                            {t(`settings.accents.${key}.desc`)}
+                          </div>
                           <div
                             className="mt-2 text-[11px] font-display tracking-[0.14em] uppercase min-h-[1rem]"
                             style={{ color: active ? item.color : "transparent" }}
@@ -293,17 +303,17 @@ export function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-[var(--race-fg)] flex items-center gap-2 font-display">
                 <Sparkles className="w-5 h-5 text-[var(--race-accent)]" />
-                Flair zespołu
+                {t("settings.flairTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-[var(--race-muted)] text-sm">
-                Krótka etykieta widoczna przy ustawieniach (np. „Team Gold”, „Night Drift”). Max 32 znaki.
+                {t("settings.flairDesc")}
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
                 <div className="flex-1 space-y-2">
                   <Label htmlFor="flair" className="text-[var(--race-fg)]">
-                    Nazwa flairu
+                    {t("settings.flairLabel")}
                   </Label>
                   <Input
                     id="flair"
@@ -319,7 +329,7 @@ export function SettingsPage() {
                   className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 self-end"
                   style={{ fontWeight: 700 }}
                 >
-                  ZAPISZ FLAIR
+                  {t("settings.flairSave")}
                 </Button>
               </div>
             </CardContent>

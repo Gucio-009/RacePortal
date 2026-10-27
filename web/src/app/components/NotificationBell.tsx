@@ -5,6 +5,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import {
   Bell,
   CalendarCheck,
@@ -19,7 +20,10 @@ import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { AppNotification } from "../lib/types";
 import { Button } from "./ui/button";
 
-function notificationMeta(type: string): {
+function notificationMeta(
+  type: string,
+  t: (key: string) => string,
+): {
   label: string;
   icon: typeof Bell;
   className: string;
@@ -27,49 +31,49 @@ function notificationMeta(type: string): {
   switch (type) {
     case "EVENT_PENDING_REVIEW":
       return {
-        label: "Moderacja",
+        label: t("notificationsUi.typeModeration"),
         icon: Shield,
         className: "bg-amber-500/15 text-amber-400 border-amber-500/30",
       };
     case "EVENT_APPROVED":
       return {
-        label: "Zaakceptowane",
+        label: t("notificationsUi.typeApproved"),
         icon: CheckCircle2,
         className: "bg-green-500/15 text-green-400 border-green-500/30",
       };
     case "EVENT_REJECTED":
       return {
-        label: "Odrzucone",
+        label: t("notificationsUi.typeRejected"),
         icon: CalendarX,
         className: "bg-red-500/15 text-red-400 border-red-500/30",
       };
     case "EVENT_STATUS":
       return {
-        label: "Status wydarzenia",
+        label: t("notificationsUi.typeStatus"),
         icon: CalendarCheck,
         className: "bg-sky-500/15 text-sky-400 border-sky-500/30",
       };
     default:
       return {
-        label: "Powiadomienie",
+        label: t("notificationsUi.typeDefault"),
         icon: Info,
         className: "bg-[var(--race-muted-bg)] text-[var(--race-muted)] border-[#3a3a3a]",
       };
   }
 }
 
-function formatNotificationTime(iso: string): string {
+function formatNotificationTime(iso: string, t: (key: string, opts?: Record<string, unknown>) => string, locale: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   const diffMs = Date.now() - d.getTime();
   const mins = Math.floor(diffMs / 60_000);
-  if (mins < 1) return "przed chwilą";
-  if (mins < 60) return `${mins} min temu`;
+  if (mins < 1) return t("notificationsUi.justNow");
+  if (mins < 60) return t("notificationsUi.minsAgo", { count: mins });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} godz. temu`;
+  if (hours < 24) return t("notificationsUi.hoursAgo", { count: hours });
   const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} dni temu`;
-  return d.toLocaleString("pl-PL", {
+  if (days < 7) return t("notificationsUi.daysAgo", { count: days });
+  return d.toLocaleString(locale === "en" ? "en-GB" : "pl-PL", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -79,6 +83,7 @@ function formatNotificationTime(iso: string): string {
 }
 
 export function NotificationBell() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState<AppNotification[]>([]);
@@ -185,7 +190,7 @@ export function NotificationBell() {
       <Button
         type="button"
         variant="ghost"
-        aria-label="Powiadomienia"
+        aria-label={t("notificationsUi.title")}
         aria-expanded={open}
         onClick={() => {
           setOpen((v) => !v);
@@ -204,23 +209,23 @@ export function NotificationBell() {
       {open && (
         <div className="absolute right-0 mt-2 w-[22rem] max-w-[calc(100vw-2rem)] rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] text-[var(--race-fg)] shadow-xl z-[200] overflow-hidden">
           <div className="px-3 py-2.5 border-b border-[var(--race-border)] flex items-center justify-between gap-2">
-            <span className="font-semibold text-sm">Powiadomienia</span>
+            <span className="font-semibold text-sm">{t("notificationsUi.title")}</span>
             {unread > 0 && (
               <button
                 type="button"
                 className="text-xs text-[var(--race-accent)] hover:underline"
                 onClick={markAll}
               >
-                Oznacz wszystkie
+                {t("notificationsUi.markAll")}
               </button>
             )}
           </div>
           <div className="max-h-80 overflow-y-auto">
             {items.length === 0 ? (
-              <p className="text-[var(--race-muted)] text-sm px-3 py-6 text-center">Brak powiadomień.</p>
+              <p className="text-[var(--race-muted)] text-sm px-3 py-6 text-center">{t("notificationsUi.empty")}</p>
             ) : (
               items.map((n) => {
-                const meta = notificationMeta(n.type);
+                const meta = notificationMeta(n.type, t);
                 const Icon = meta.icon;
                 return (
                   <div
@@ -248,7 +253,7 @@ export function NotificationBell() {
                                 {meta.label}
                               </span>
                               <span className="text-[10px] text-[#6b7280]">
-                                {formatNotificationTime(n.createdAt)}
+                                {formatNotificationTime(n.createdAt, t, i18n.language)}
                               </span>
                             </div>
                             <p className="text-sm font-semibold">{n.title}</p>
@@ -258,8 +263,8 @@ export function NotificationBell() {
                       </button>
                       <button
                         type="button"
-                        aria-label="Usuń powiadomienie"
-                        title="Usuń"
+                        aria-label={t("common.delete")}
+                        title={t("common.delete")}
                         onClick={(e) => void removeItem(n, e)}
                         className="mt-2 mr-1 p-1.5 rounded text-[#6b7280] hover:text-[var(--race-fg)] hover:bg-[var(--race-hover)] shrink-0"
                       >

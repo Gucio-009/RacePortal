@@ -2,6 +2,7 @@
  * OrganizerEventDraftsDialog — lista lokalnych wersji roboczych nowych wydarzeń.
  */
 
+import { useTranslation } from "react-i18next";
 import { FileText, Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import {
@@ -26,9 +27,9 @@ interface OrganizerEventDraftsDialogProps {
   onDeleteDraft: (id: string) => void;
 }
 
-function formatSavedAt(ts: number): string {
+function formatSavedAt(ts: number, locale: string): string {
   try {
-    return new Intl.DateTimeFormat("pl-PL", {
+    return new Intl.DateTimeFormat(locale, {
       dateStyle: "short",
       timeStyle: "short",
     }).format(new Date(ts));
@@ -51,21 +52,23 @@ export function OrganizerEventDraftsDialog({
   onOpenDraft,
   onDeleteDraft,
 }: OrganizerEventDraftsDialogProps) {
+  const { t, i18n } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-            Wersje robocze
+            {t("organizer.drafts")}
           </DialogTitle>
           <DialogDescription className="text-[var(--race-muted)]">
-            Lokalne szkice nowych wydarzeń na tym urządzeniu. Nie są widoczne dla innych.
+            {t("organizer.draftsHint")}
           </DialogDescription>
         </DialogHeader>
 
         {drafts.length === 0 ? (
           <p className="text-sm text-[var(--race-muted)] py-6 text-center">
-            Brak wersji roboczych. Zapisz formularz nowego wydarzenia opcją „Zapisz roboczo”.
+            {t("organizer.draftsEmpty")}
           </p>
         ) : (
           <ul className="space-y-2 py-2">
@@ -89,7 +92,7 @@ export function OrganizerEventDraftsDialog({
                     </div>
                   ) : null}
                   <div className="text-xs text-[var(--race-muted)] mt-1">
-                    Zapisano {formatSavedAt(draft.savedAt)}
+                    {t("organizer.savedAt", { date: formatSavedAt(draft.savedAt, i18n.language) })}
                   </div>
                 </button>
                 <Button
@@ -97,7 +100,7 @@ export function OrganizerEventDraftsDialog({
                   variant="ghost"
                   size="icon"
                   className="shrink-0 text-[var(--race-muted)] hover:text-red-400"
-                  aria-label="Usuń wersję roboczą"
+                  aria-label={t("organizer.deleteDraftAria")}
                   onClick={() => onDeleteDraft(draft.id)}
                 >
                   <Trash2 className="w-4 h-4" />

@@ -28,17 +28,17 @@ export const ACCENTS: Record<
   AccentTheme,
   { label: string; color: string; desc: string; mode: "dark" | "light"; surface: string }
 > = {
-  gold: { label: "Złoty tor", color: "#FFD700", desc: "Żółto-złoty", mode: "dark", surface: "#121212" },
-  redline: { label: "Redline", color: "#FF3B3B", desc: "Czerwony", mode: "dark", surface: "#121212" },
-  ice: { label: "Ice cold", color: "#7DD3FC", desc: "Błękitny", mode: "dark", surface: "#121212" },
-  arctic: { label: "Arctic White", color: "#266CB3", desc: "Niebieski", mode: "light", surface: "#F3F6FA" },
-  sand: { label: "Desert Sand", color: "#B78D54", desc: "Piaskowo-złoty", mode: "light", surface: "#F7F3EB" },
-  blush: { label: "Blush Pink", color: "#C56B89", desc: "Pudroworóżowy", mode: "light", surface: "#FFF5F7" },
+  gold: { label: "Gold Track", color: "#FFD700", desc: "Yellow-gold", mode: "dark", surface: "#121212" },
+  redline: { label: "Redline", color: "#FF3B3B", desc: "Red", mode: "dark", surface: "#121212" },
+  ice: { label: "Ice cold", color: "#7DD3FC", desc: "Sky blue", mode: "dark", surface: "#121212" },
+  arctic: { label: "Arctic White", color: "#266CB3", desc: "Blue", mode: "light", surface: "#F3F6FA" },
+  sand: { label: "Desert Sand", color: "#B78D54", desc: "Sandy gold", mode: "light", surface: "#F7F3EB" },
+  blush: { label: "Blush Pink", color: "#C56B89", desc: "Powder pink", mode: "light", surface: "#FFF5F7" },
 };
 
-export const ACCENT_GROUPS: { title: string; keys: AccentTheme[] }[] = [
-  { title: "Tryb ciemny", keys: ["gold", "redline", "ice"] },
-  { title: "Tryb jasny", keys: ["arctic", "sand", "blush"] },
+export const ACCENT_GROUPS: { id: "dark" | "light"; keys: AccentTheme[] }[] = [
+  { id: "dark", keys: ["gold", "redline", "ice"] },
+  { id: "light", keys: ["arctic", "sand", "blush"] },
 ];
 
 export function isLightAccent(accent: AccentTheme): boolean {

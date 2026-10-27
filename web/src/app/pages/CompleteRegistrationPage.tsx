@@ -1,12 +1,9 @@
 /**
  * CompleteRegistrationPage — dokończenie rejestracji po Google Sign-In.
- *
- * Google nie zbiera prawa jazdy B / licencji PZM; po utworzeniu konta użytkownik
- * musi tu je potwierdzić (tak / nie). PATCH /api/auth/me z hasDrivingLicenseB
- * ustawia registrationComplete=true po stronie API.
  */
 import { useState } from "react";
 import { Navigate, useNavigate } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Flag, IdCard } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -17,6 +14,7 @@ import { Switch } from "../components/ui/switch";
 import { HERO_BG_RACE } from "../lib/types";
 
 export function CompleteRegistrationPage() {
+  const { t } = useTranslation();
   const { user, isLoading, isAuthenticated, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [hasDrivingLicenseB, setHasDrivingLicenseB] = useState(false);
@@ -27,7 +25,7 @@ export function CompleteRegistrationPage() {
   if (isLoading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center text-[var(--race-muted)]">
-        Ładowanie…
+        {t("completeReg.loading")}
       </div>
     );
   }
@@ -43,7 +41,7 @@ export function CompleteRegistrationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (hasPzmLicense && !pzmLicense.trim()) {
-      toast.error("Podaj numer licencji PZM albo wyłącz przełącznik");
+      toast.error(t("completeReg.pzmRequired"));
       return;
     }
     setSaving(true);
@@ -53,10 +51,10 @@ export function CompleteRegistrationPage() {
     });
     setSaving(false);
     if (result.ok) {
-      toast.success("Rejestracja dokończona");
+      toast.success(t("completeReg.ok"));
       navigate("/dashboard", { replace: true });
     } else {
-      toast.error(result.message || "Nie udało się zapisać");
+      toast.error(result.message || t("completeReg.fail"));
     }
   };
 
@@ -72,14 +70,12 @@ export function CompleteRegistrationPage() {
           <div className="flex justify-center mb-4">
             <Flag className="w-16 h-16 text-[var(--race-accent)]" />
           </div>
-          <h1
-            className="font-display text-white mb-2"
-            style={{ fontSize: "32px", fontWeight: 800 }}
-          >
-            DOKOŃCZ <span className="text-[var(--race-accent)]">REJESTRACJĘ</span>
+          <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
+            {t("completeReg.titleBefore")}{" "}
+            <span className="text-[var(--race-accent)]">{t("completeReg.titleAccent")}</span>
           </h1>
           <p className="text-[#9ca3af]" style={{ fontSize: "15px" }}>
-            Konto Google jest aktywne. Uzupełnij dane wymagane przy zgłoszeniach na wydarzenia.
+            {t("completeReg.subtitle")}
           </p>
         </div>
 
@@ -94,9 +90,9 @@ export function CompleteRegistrationPage() {
                     style={{ fontWeight: 600 }}
                   >
                     <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
-                    Prawo jazdy kat. B
+                    {t("completeReg.licenseB")}
                   </Label>
-                  <p className="text-xs text-[var(--race-muted)]">Posiadam ważne prawo jazdy</p>
+                  <p className="text-xs text-[var(--race-muted)]">{t("completeReg.licenseBDesc")}</p>
                 </div>
                 <Switch
                   id="complete-licenseB"
@@ -107,9 +103,9 @@ export function CompleteRegistrationPage() {
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-[var(--race-border)]">
                 <div>
                   <Label htmlFor="complete-hasPzm" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                    Licencja PZM
+                    {t("completeReg.pzm")}
                   </Label>
-                  <p className="text-xs text-[var(--race-muted)]">Niezależnie od prawa jazdy</p>
+                  <p className="text-xs text-[var(--race-muted)]">{t("completeReg.pzmIndependent")}</p>
                 </div>
                 <Switch
                   id="complete-hasPzm"
@@ -123,12 +119,12 @@ export function CompleteRegistrationPage() {
               {hasPzmLicense && (
                 <div className="space-y-2">
                   <Label htmlFor="complete-pzmLicense" className="text-[var(--race-fg)] text-sm">
-                    Numer licencji PZM
+                    {t("completeReg.pzmNumber")}
                   </Label>
                   <Input
                     id="complete-pzmLicense"
                     type="text"
-                    placeholder="Numer licencji PZM"
+                    placeholder={t("completeReg.pzmNumber")}
                     value={pzmLicense}
                     onChange={(e) => setPzmLicense(e.target.value)}
                     className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] focus:border-[var(--race-accent)] h-10"
@@ -137,9 +133,7 @@ export function CompleteRegistrationPage() {
               )}
             </div>
 
-            <p className="text-xs text-[var(--race-muted)]">
-              Możesz zaznaczyć „nie” — ważne jest potwierdzenie. Dane zmienisz później w koncie.
-            </p>
+            <p className="text-xs text-[var(--race-muted)]">{t("completeReg.hint")}</p>
 
             <Button
               type="submit"
@@ -147,7 +141,7 @@ export function CompleteRegistrationPage() {
               className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
               style={{ fontSize: "16px", fontWeight: 800 }}
             >
-              {saving ? "ZAPISYWANIE..." : "ZAPISZ I KONTYNUUJ"}
+              {saving ? t("completeReg.saving") : t("completeReg.submit")}
             </Button>
           </form>
         </div>

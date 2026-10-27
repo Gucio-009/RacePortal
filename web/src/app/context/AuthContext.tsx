@@ -10,7 +10,7 @@ import React, { createContext, useContext, useState, ReactNode, useEffect, useCa
 import { normalizeLocale, type Locale } from "@raceportal/i18n";
 import { api, clearLegacyToken, setOnAuthExpired, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
-import { setAppLocale } from "../i18n";
+import i18n, { setAppLocale } from "../i18n";
 import {
   applyUserSettings,
   loadSettings,
@@ -161,7 +161,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(res.user);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nieprawidłowy email lub hasło";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.loginFail");
       return { ok: false, message };
     }
   };
@@ -211,7 +211,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (res.user) persistAuth(res.user);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się utworzyć konta";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.registerFail");
       return { ok: false, message };
     }
   };
@@ -225,7 +225,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(res.user);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nieprawidłowy lub wygasły link";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.verifyFail");
       return { ok: false, message };
     }
   };
@@ -233,9 +233,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const resendCode = async (email: string) => {
     try {
       const res = await api.post<{ message: string }>("/api/auth/resend-code", { email });
-      return { ok: true, message: res.message || "Kod wysłany ponownie" };
+      return { ok: true, message: res.message || i18n.t("authExtra.codeResent") };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się wysłać kodu";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.codeSendFail");
       return { ok: false, message };
     }
   };
@@ -250,7 +250,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         registrationComplete: res.user.registrationComplete !== false,
       };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się zalogować przez Google";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.googleFail");
       return { ok: false, message };
     }
   };
@@ -295,7 +295,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(updated);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się zaktualizować profilu";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.profileFail");
       return { ok: false, message };
     }
   };
@@ -309,7 +309,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(null);
       return { ok: true, message: res.message };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się zmienić hasła";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.passwordFail");
       return { ok: false, message };
     }
   };
@@ -320,7 +320,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       return { ok: true, message: res.message };
     } catch (e) {
       const message =
-        e instanceof ApiError ? e.message : "Nie udało się wysłać instrukcji resetu hasła";
+        e instanceof ApiError ? e.message : i18n.t("authExtra.resetSendFail");
       return { ok: false, message };
     }
   };
@@ -333,7 +333,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       return { ok: true, message: res.message };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się zmienić hasła";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.passwordFail");
       return { ok: false, message };
     }
   };
@@ -346,7 +346,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       });
       return { ok: true, message: res.message };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się wysłać kodu";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.codeSendFail");
       return { ok: false, message };
     }
   };
@@ -355,9 +355,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       const res = await api.post<{ user: User }>("/api/auth/me/email-change/confirm", { token });
       persistAuth(res.user);
-      return { ok: true, message: "Adres e-mail został zmieniony" };
+      return { ok: true, message: i18n.t("authExtra.emailChangedOk") };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się potwierdzić zmiany e-maila";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.emailConfirmFail");
       return { ok: false, message };
     }
   };
@@ -368,7 +368,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(null);
       return { ok: true, message: res.message };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się zamknąć konta";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.closeFail");
       return { ok: false, message };
     }
   };
@@ -379,7 +379,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       persistAuth(res.user);
       return { ok: true };
     } catch (e) {
-      const message = e instanceof ApiError ? e.message : "Nie udało się odświeżyć sesji";
+      const message = e instanceof ApiError ? e.message : i18n.t("authExtra.sessionRefreshFail");
       return { ok: false, message };
     }
   }, [persistAuth]);

@@ -10,6 +10,7 @@
  * Pomysł (alt): TanStack Query mutations; upload zdjęć do S3; Zod schema formularza;
  * shared types z packages/api-types.
  */
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { Car, Plus, Trash2, Loader2, Pencil } from "lucide-react";
 import { Button } from "../components/ui/button";
@@ -168,16 +169,20 @@ function buildPayload(form: typeof emptyForm, forUpdate: boolean) {
   };
 }
 
-const GARAGE_FIELD_LABELS: Record<string, string> = {
-  make: "Marka",
-  model: "Model",
-  year: "Rok produkcji",
-  driveType: "Rodzaj napędu",
-  powerHp: "Moc (KM)",
-  engineCc: "Pojemność (cm³)",
-  weightKg: "Masa (kg)",
-  imageUrl: "URL zdjęcia",
-};
+type TranslateFn = (key: string, opts?: any) => string;
+
+function garageFieldLabels(t: TranslateFn): Record<string, string> {
+  return {
+    make: t("garage.make"),
+    model: t("garage.model"),
+    year: t("garage.yearProduction"),
+    driveType: t("garage.driveType"),
+    powerHp: t("garage.powerHp"),
+    engineCc: t("garage.engineCc"),
+    weightKg: t("garage.weightKg"),
+    imageUrl: t("garage.imageUrl"),
+  };
+}
 
 /** 0 albo wiodące zero (np. 01, 00) – osobna walidacja od pustego pola. */
 function isZeroOrLeadingZero(raw: string): boolean {
@@ -188,54 +193,59 @@ function isZeroOrLeadingZero(raw: string): boolean {
   return Number(t) === 0;
 }
 
-function zeroFieldMessage(label: string) {
-  return `Wartość w polu „${label}” nie może zaczynać się od cyfry 0 ani wynosić zero.`;
+function zeroFieldMessage(t: TranslateFn, label: string) {
+  return t("garage.zeroField", { label });
 }
 
-function validateGarageForm(form: typeof emptyForm, requireImage: boolean): Record<string, string> {
+function validateGarageForm(
+  form: typeof emptyForm,
+  requireImage: boolean,
+  t: TranslateFn,
+): Record<string, string> {
   const errors: Record<string, string> = {};
   const maxYear = new Date().getFullYear();
+  const labels = garageFieldLabels(t);
 
-  if (!form.make.trim()) errors.make = "Marka jest wymagana";
-  if (!form.model.trim()) errors.model = "Model jest wymagany";
+  if (!form.make.trim()) errors.make = t("garage.makeRequired");
+  if (!form.model.trim()) errors.model = t("garage.modelRequired");
 
   if (!form.year.trim()) {
-    errors.year = "Rok produkcji jest wymagany";
+    errors.year = t("garage.yearRequired");
   } else if (isZeroOrLeadingZero(form.year)) {
-    errors.year = zeroFieldMessage("Rok produkcji");
+    errors.year = zeroFieldMessage(t, labels.year);
   } else {
     const year = Number(form.year);
     if (!Number.isFinite(year) || year < 1900 || year > maxYear) {
-      errors.year = `„Rok produkcji” musi być w zakresie 1900–${maxYear}`;
+      errors.year = t("garage.yearRange", { max: maxYear });
     }
   }
 
-  if (!form.driveType) errors.driveType = "Rodzaj napędu jest wymagany";
+  if (!form.driveType) errors.driveType = t("garage.driveRequired");
 
   if (!form.powerHp.trim()) {
-    errors.powerHp = "Moc (KM) jest wymagana";
+    errors.powerHp = t("garage.powerRequired");
   } else if (isZeroOrLeadingZero(form.powerHp)) {
-    errors.powerHp = zeroFieldMessage("Moc (KM)");
+    errors.powerHp = zeroFieldMessage(t, labels.powerHp);
   } else if (Number(form.powerHp) > 5000) {
-    errors.powerHp = "„Moc (KM)” nie może być większe niż 5000";
+    errors.powerHp = t("garage.powerMax");
   }
 
   if (!form.engineCc.trim()) {
-    errors.engineCc = "Pojemność (cm³) jest wymagana";
+    errors.engineCc = t("garage.engineRequired");
   } else if (form.engineCc.trim() === "0") {
     // 0 dozwolone — auta elektryczne (informacja w UI pod polem)
   } else if (isZeroOrLeadingZero(form.engineCc)) {
-    errors.engineCc = zeroFieldMessage("Pojemność (cm³)");
+    errors.engineCc = zeroFieldMessage(t, labels.engineCc);
   } else if (Number(form.engineCc) > 20000) {
-    errors.engineCc = "„Pojemność (cm³)” nie może być większe niż 20000";
+    errors.engineCc = t("garage.engineMax");
   }
 
   if (!form.weightKg.trim()) {
-    errors.weightKg = "Masa (kg) jest wymagana";
+    errors.weightKg = t("garage.weightRequired");
   } else if (isZeroOrLeadingZero(form.weightKg)) {
-    errors.weightKg = zeroFieldMessage("Masa (kg)");
+    errors.weightKg = zeroFieldMessage(t, labels.weightKg);
   } else if (Number(form.weightKg) > 10000) {
-    errors.weightKg = "„Masa (kg)” nie może być większe niż 10000";
+    errors.weightKg = t("garage.weightMax");
   }
 
   const imageErr = validateImageReference(form.imageUrl, requireImage);
@@ -249,29 +259,32 @@ function toastAllFieldErrors(errors: Record<string, string>) {
   Object.values(errors).forEach((msg) => toast.error(msg));
 }
 
-function formatGarageApiError(e: ApiError): { message: string; fields: Record<string, string> } {
+function formatGarageApiError(
+  e: ApiError,
+  t: TranslateFn,
+): { message: string; fields: Record<string, string> } {
   const fields: Record<string, string> = {};
+  const labels = garageFieldLabels(t);
   if (e.details) {
     for (const [key, raw] of Object.entries(e.details)) {
-      const label = GARAGE_FIELD_LABELS[key] || key;
+      const label = labels[key] || key;
       const maxMatch = raw.match(/(?:mniejsze od|less than or equal to|<=)\s*(\d+)/i)
         || raw.match(/(\d+)\s*$/);
       if (/mniejsze|less than or equal|Max/i.test(raw) && maxMatch) {
-        fields[key] = `„${label}” nie może być większe niż ${maxMatch[1]}`;
+        fields[key] = t("garage.fieldMax", { label, max: maxMatch[1] });
       } else if (/większe|greater|Min|zero|0/i.test(raw)) {
-        fields[key] =
-          `Wartość w polu „${label}” nie może zaczynać się od cyfry 0 ani wynosić zero.`;
+        fields[key] = zeroFieldMessage(t, label);
       } else {
-        fields[key] = `„${label}”: ${raw}`;
+        fields[key] = t("garage.fieldRaw", { label, raw });
       }
     }
   }
   const unique = [...new Set(Object.values(fields))];
   const message = unique.length
-    ? `Nieprawidłowe dane. ${unique.join(" ")}`
+    ? t("garage.invalidData", { details: unique.join(" ") })
     : e.message.startsWith("Nieprawidłowe")
       ? e.message
-      : `Nieprawidłowe dane. ${e.message}`;
+      : t("garage.invalidData", { details: e.message });
   return { message, fields };
 }
 
@@ -282,6 +295,7 @@ function fieldClass(hasError: boolean) {
 }
 
 export function GaragePage() {
+  const { t } = useTranslation();
   const [cars, setCars] = useState<GarageCar[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -309,7 +323,7 @@ export function GaragePage() {
       })
       .catch((e) => {
         setCars([]);
-        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać garażu");
+        setLoadError(e instanceof ApiError ? e.message : t("garage.loadFail"));
       })
       .finally(() => setLoading(false));
   };
@@ -326,7 +340,7 @@ export function GaragePage() {
     setFormBaseline(initial);
     setFieldErrors({});
     setDialogOpen(true);
-    if (draft) toast.message("Przywrócono zapis roboczy auta");
+    if (draft) toast.message(t("garage.draftRestored"));
   };
 
   const openEdit = (car: GarageCar) => {
@@ -337,7 +351,7 @@ export function GaragePage() {
     setFormBaseline(initial);
     setFieldErrors({});
     setDialogOpen(true);
-    if (draft) toast.message("Przywrócono zapis roboczy auta");
+    if (draft) toast.message(t("garage.draftRestored"));
   };
 
   const closeFormClean = () => {
@@ -359,7 +373,7 @@ export function GaragePage() {
 
   const handleSaveDraft = () => {
     saveFormDraft(garageDraftKey, form);
-    toast.success("Zapisano wersję roboczą lokalnie");
+    toast.success(t("garage.draftSaved"));
     closeFormClean();
   };
 
@@ -375,7 +389,7 @@ export function GaragePage() {
 
   /** POST nowe / PATCH istniejące – potem reload listy. */
   const handleSave = async () => {
-    const errors = validateGarageForm(form, !editingId);
+    const errors = validateGarageForm(form, !editingId, t);
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       toastAllFieldErrors(errors);
@@ -387,17 +401,17 @@ export function GaragePage() {
     try {
       if (editingId) {
         await api.patch(`/api/garage/${editingId}`, payload);
-        toast.success("Auto zaktualizowane");
+        toast.success(t("garage.updatedOk"));
       } else {
         await api.post("/api/garage", payload);
-        toast.success("Auto dodane do garażu");
+        toast.success(t("garage.addedOk"));
       }
       clearFormDraft(garageDraftKey);
       closeFormClean();
       loadCars();
     } catch (e) {
       if (e instanceof ApiError) {
-        const formatted = formatGarageApiError(e);
+        const formatted = formatGarageApiError(e, t);
         setFieldErrors(formatted.fields);
         if (Object.keys(formatted.fields).length > 0) {
           toastAllFieldErrors(formatted.fields);
@@ -405,7 +419,7 @@ export function GaragePage() {
           toast.error(formatted.message);
         }
       } else {
-        toast.error("Nie udało się zapisać auta");
+        toast.error(t("garage.saveFail"));
       }
     } finally {
       setSaving(false);
@@ -426,11 +440,11 @@ export function GaragePage() {
     setDeleting(true);
     try {
       await api.delete(`/api/garage/${deleteTarget.id}`);
-      toast.success("Auto usunięte");
+      toast.success(t("garage.deletedOk"));
       setCars((prev) => prev.filter((c) => c.id !== deleteTarget.id));
       setDeleteTarget(null);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć auta");
+      toast.error(e instanceof ApiError ? e.message : t("garage.deleteFail"));
     } finally {
       setDeleting(false);
     }
@@ -442,9 +456,9 @@ export function GaragePage() {
         <Reveal className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
-              MÓJ <span className="text-[var(--race-accent)]">GARAŻ</span>
+              {t("garage.myPrefix")} <span className="text-[var(--race-accent)]">{t("garage.titleCaps")}</span>
             </h1>
-            <p className="text-[var(--race-muted)]">Zarządzaj autami używanymi przy zgłoszeniach na wydarzenia.</p>
+            <p className="text-[var(--race-muted)]">{t("garage.pageSubtitle")}</p>
           </div>
           <Button
             onClick={openAdd}
@@ -452,7 +466,7 @@ export function GaragePage() {
             style={{ fontWeight: 800 }}
           >
             <Plus className="w-4 h-4 mr-2" />
-            DODAJ AUTO
+            {t("garage.addCarCta")}
           </Button>
         </Reveal>
       </section>
@@ -461,7 +475,7 @@ export function GaragePage() {
         {loading ? (
           <div className="text-center py-16 text-[var(--race-muted)]">
             <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-[var(--race-accent)]" />
-            Ładowanie garażu...
+            {t("garage.loading")}
           </div>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
@@ -469,9 +483,9 @@ export function GaragePage() {
           <Card className="bg-[var(--race-card)] border-[var(--race-border)]">
             <CardContent className="py-16 text-center">
               <Car className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
-              <p className="text-[var(--race-muted)] mb-6">Twój garaż jest pusty. Dodaj pierwsze auto!</p>
+              <p className="text-[var(--race-muted)] mb-6">{t("garage.emptyTitle")}</p>
               <Button onClick={openAdd} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
-                Dodaj auto
+                {t("garage.addCar")}
               </Button>
             </CardContent>
           </Card>
@@ -494,9 +508,9 @@ export function GaragePage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-[var(--race-muted)]">
-                  {car.year && <p>Rocznik: {car.year}</p>}
-                  {car.driveType && <p>Napęd: {car.driveType}</p>}
-                  {car.powerHp && <p>Moc: {car.powerHp} KM</p>}
+                  {car.year && <p>{t("garage.yearLabel", { year: car.year })}</p>}
+                  {car.driveType && <p>{t("garage.driveLabel", { drive: car.driveType })}</p>}
+                  {car.powerHp && <p>{t("garage.powerLabel", { hp: car.powerHp })}</p>}
                   {parseCarClasses(car.className).length > 0 && (
                     <div className="flex flex-wrap gap-1.5 pt-1">
                       {parseCarClasses(car.className).map((tag) => (
@@ -510,7 +524,7 @@ export function GaragePage() {
                       ))}
                     </div>
                   )}
-                  {car.registered && car.plate && <p>Rejestracja: {car.plate}</p>}
+                  {car.registered && car.plate && <p>{t("garage.plateLabel", { plate: car.plate })}</p>}
                   <div className="flex gap-2 mt-4">
                     <Button
                       variant="outline"
@@ -519,7 +533,7 @@ export function GaragePage() {
                       className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                     >
                       <Pencil className="w-4 h-4 mr-2" />
-                      Edytuj
+                      {t("common.edit")}
                     </Button>
                     <Button
                       variant="outline"
@@ -528,7 +542,7 @@ export function GaragePage() {
                       className="border-red-900 text-red-400 hover:bg-red-950"
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
-                      Usuń
+                      {t("common.delete")}
                     </Button>
                   </div>
                 </CardContent>
@@ -549,25 +563,25 @@ export function GaragePage() {
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-              {editingId ? "Edytuj auto" : "Dodaj auto"}
+              {editingId ? t("garage.editCar") : t("garage.addCar")}
             </DialogTitle>
             <DialogDescription className="text-[var(--race-muted)]">
-              Wypełnij wymagane pola pojazdu. Zdjęcie jest opcjonalne – wgraj plik z dysku (max 5 MB).
+              {t("garage.formDesc")}
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
             <div className="space-y-2">
-              <ReqLabel required>Marka</ReqLabel>
+              <ReqLabel required>{t("garage.make")}</ReqLabel>
               <Input value={form.make} onChange={(e) => setFormField("make", e.target.value)} className={fieldClass(!!fieldErrors.make)} />
               {fieldErrors.make && <p className="text-xs text-red-400">{fieldErrors.make}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Model</ReqLabel>
+              <ReqLabel required>{t("garage.model")}</ReqLabel>
               <Input value={form.model} onChange={(e) => setFormField("model", e.target.value)} className={fieldClass(!!fieldErrors.model)} />
               {fieldErrors.model && <p className="text-xs text-red-400">{fieldErrors.model}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Rok produkcji</ReqLabel>
+              <ReqLabel required>{t("garage.yearProduction")}</ReqLabel>
               <Input
                 value={form.year}
                 onChange={(e) => setFormField("year", digitsOnly(e.target.value).slice(0, 4))}
@@ -577,13 +591,13 @@ export function GaragePage() {
               {fieldErrors.year && <p className="text-xs text-red-400">{fieldErrors.year}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Napęd</ReqLabel>
+              <ReqLabel required>{t("garage.drive")}</ReqLabel>
               <Select
                 value={form.driveType || "none"}
                 onValueChange={(v) => setFormField("driveType", v === "none" ? "" : v)}
               >
                 <SelectTrigger className={fieldClass(!!fieldErrors.driveType)}>
-                  <SelectValue placeholder="Wybierz napęd" />
+                  <SelectValue placeholder={t("garage.selectDrive")} />
                 </SelectTrigger>
                 <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                   <SelectItem value="none">–</SelectItem>
@@ -597,7 +611,7 @@ export function GaragePage() {
               {fieldErrors.driveType && <p className="text-xs text-red-400">{fieldErrors.driveType}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Moc (KM)</ReqLabel>
+              <ReqLabel required>{t("garage.powerHp")}</ReqLabel>
               <Input
                 value={form.powerHp}
                 onChange={(e) => setFormField("powerHp", digitsOnly(e.target.value))}
@@ -607,7 +621,7 @@ export function GaragePage() {
               {fieldErrors.powerHp && <p className="text-xs text-red-400">{fieldErrors.powerHp}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Pojemność (cm³)</ReqLabel>
+              <ReqLabel required>{t("garage.engineCc")}</ReqLabel>
               <Input
                 value={form.engineCc}
                 onChange={(e) => setFormField("engineCc", digitsOnly(e.target.value))}
@@ -615,12 +629,12 @@ export function GaragePage() {
                 className={fieldClass(!!fieldErrors.engineCc)}
               />
               <p className="text-xs text-[var(--race-muted)]">
-                Dla aut elektrycznych wpisz 0.
+                {t("garage.engineEvHint")}
               </p>
               {fieldErrors.engineCc && <p className="text-xs text-red-400">{fieldErrors.engineCc}</p>}
             </div>
             <div className="space-y-2">
-              <ReqLabel required>Masa (kg)</ReqLabel>
+              <ReqLabel required>{t("garage.weightKg")}</ReqLabel>
               <Input
                 value={form.weightKg}
                 onChange={(e) => setFormField("weightKg", digitsOnly(e.target.value))}
@@ -630,9 +644,9 @@ export function GaragePage() {
               {fieldErrors.weightKg && <p className="text-xs text-red-400">{fieldErrors.weightKg}</p>}
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label className="text-[var(--race-fg)]">Kategoria / klasa</Label>
+              <Label className="text-[var(--race-fg)]">{t("garage.categoryClass")}</Label>
               <p className="text-xs text-[var(--race-muted)]">
-                Możesz wybrać kilka tagów (np. Time Attack, KJS i Drift jednocześnie).
+                {t("garage.categoryHint")}
               </p>
               <div className="flex flex-wrap gap-2">
                 {CAR_CATEGORIES.map((cat) => {
@@ -671,8 +685,8 @@ export function GaragePage() {
 
             <div className="sm:col-span-2 flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden">
               <div className="flex-1 min-w-0 pr-1">
-                <ReqLabel required>Zarejestrowane</ReqLabel>
-                <p className="text-xs text-[var(--race-muted)] truncate">Auto posiada ważną rejestrację</p>
+                <ReqLabel required>{t("garage.registered")}</ReqLabel>
+                <p className="text-xs text-[var(--race-muted)] truncate">{t("garage.registeredHint")}</p>
               </div>
               <Switch
                 className="shrink-0"
@@ -692,7 +706,7 @@ export function GaragePage() {
             {form.registered && (
               <>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label className="text-[var(--race-fg)]">Tablica rejestracyjna</Label>
+                  <Label className="text-[var(--race-fg)]">{t("garage.plate")}</Label>
                   <Input
                     value={form.plate}
                     onChange={(e) => setForm({ ...form, plate: e.target.value })}
@@ -700,7 +714,7 @@ export function GaragePage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[var(--race-fg)]">Typ rejestracji</Label>
+                  <Label className="text-[var(--race-fg)]">{t("garage.registrationType")}</Label>
                   <Select
                     value={form.registrationType || "none"}
                     onValueChange={(v) =>
@@ -712,7 +726,7 @@ export function GaragePage() {
                     }
                   >
                     <SelectTrigger className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
-                      <SelectValue placeholder="Wybierz typ" />
+                      <SelectValue placeholder={t("garage.selectType")} />
                     </SelectTrigger>
                     <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
                       <SelectItem value="none">–</SelectItem>
@@ -726,7 +740,7 @@ export function GaragePage() {
                 </div>
                 {form.registrationType === "sportowe" && (
                   <div className="space-y-2">
-                    <Label className="text-[var(--race-fg)]">Numer KSS</Label>
+                    <Label className="text-[var(--race-fg)]">{t("garage.kssNumber")}</Label>
                     <Input
                       value={form.kssNumber}
                       onChange={(e) => setForm({ ...form, kssNumber: e.target.value })}
@@ -741,17 +755,17 @@ export function GaragePage() {
             <div className="sm:col-span-2 flex flex-col gap-3">
               {(
                 [
-                  ["hasRollCage", "Klatka bezpieczeństwa"],
-                  ["hasOc", "Ubezpieczenie OC"],
-                  ["hasPt", "Przegląd techniczny"],
+                  ["hasRollCage", "garage.cage"],
+                  ["hasOc", "garage.hasOc"],
+                  ["hasPt", "garage.hasPt"],
                 ] as const
-              ).map(([key, label]) => (
+              ).map(([key, labelKey]) => (
                 <div
                   key={key}
                   className="flex items-center gap-3 border border-[var(--race-border)] rounded-md px-3 py-2.5 box-border overflow-hidden"
                 >
                   <div className="flex-1 min-w-0 pr-1">
-                    <ReqLabel required>{label}</ReqLabel>
+                    <ReqLabel required>{t(labelKey)}</ReqLabel>
                   </div>
                   <Switch
                     className="shrink-0"
@@ -763,7 +777,7 @@ export function GaragePage() {
             </div>
 
             <div className="space-y-2 sm:col-span-2">
-              <ReqLabel required={!editingId}>Zdjęcie</ReqLabel>
+              <ReqLabel required={!editingId}>{t("garage.photo")}</ReqLabel>
               <ImageUploadField
                 value={form.imageUrl}
                 onChange={(url) => setFormField("imageUrl", url)}
@@ -772,20 +786,20 @@ export function GaragePage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[var(--race-fg)]">Profil społecznościowy</Label>
+              <Label className="text-[var(--race-fg)]">{t("garage.social")}</Label>
               <Input value={form.socialUrl} onChange={(e) => setForm({ ...form, socialUrl: e.target.value })} className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]" placeholder="https://instagram.com/..." />
             </div>
             <div className="space-y-2">
-              <Label className="text-[var(--race-fg)]">Link do wideo</Label>
+              <Label className="text-[var(--race-fg)]">{t("garage.video")}</Label>
               <Input value={form.videoUrl} onChange={(e) => setForm({ ...form, videoUrl: e.target.value })} className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]" placeholder="https://youtube.com/..." />
             </div>
             <div className="space-y-2 sm:col-span-2">
-              <Label className="text-[var(--race-fg)]">Modyfikacje</Label>
+              <Label className="text-[var(--race-fg)]">{t("garage.modifications")}</Label>
               <Textarea
                 value={form.modifications}
                 onChange={(e) => setForm({ ...form, modifications: e.target.value })}
                 rows={3}
-                placeholder="Opis modyfikacji, tuning, wyposażenie wyścigowe…"
+                placeholder={t("garage.modificationsPlaceholder")}
                 className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
               />
             </div>
@@ -796,7 +810,7 @@ export function GaragePage() {
               onClick={requestCloseForm}
               className="flex-1 h-11 border-[var(--race-border)] text-[var(--race-fg)]"
             >
-              Anuluj
+              {t("common.cancel")}
             </Button>
             <Button
               variant="outline"
@@ -804,7 +818,7 @@ export function GaragePage() {
               disabled={saving || !formDirty}
               className="flex-1 h-11 border-[var(--race-accent)] text-[var(--race-accent)]"
             >
-              Zapisz roboczo
+              {t("common.saveDraft")}
             </Button>
             <Button
               onClick={handleSave}
@@ -812,7 +826,7 @@ export function GaragePage() {
               className="flex-1 h-11 bg-[var(--race-accent)] text-[var(--race-on-accent)]"
               style={{ fontWeight: 700 }}
             >
-              {saving ? "ZAPISYWANIE..." : editingId ? "Zapisz" : "Dodaj"}
+              {saving ? t("garage.saving") : editingId ? t("common.save") : t("garage.add")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -837,10 +851,10 @@ export function GaragePage() {
         <AlertDialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
           <AlertDialogHeader>
             <AlertDialogTitle className="font-display" style={{ fontWeight: 800 }}>
-              Usuń auto
+              {t("garage.deleteCar")}
             </AlertDialogTitle>
             <AlertDialogDescription className="text-[var(--race-muted)]">
-              Czy na pewno chcesz usunąć auto
+              {t("garage.deleteConfirm")}
               {deleteTarget ? ` ${deleteTarget.make} ${deleteTarget.model}` : ""}?
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -849,7 +863,7 @@ export function GaragePage() {
               disabled={deleting}
               className="border-[var(--race-border)] text-[var(--race-fg)] bg-transparent hover:bg-[var(--race-hover)]"
             >
-              Anuluj
+              {t("common.cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
               disabled={deleting}
@@ -859,7 +873,7 @@ export function GaragePage() {
               }}
               className="bg-red-700 text-white hover:bg-red-600"
             >
-              {deleting ? "Usuwanie..." : "Usuń"}
+              {deleting ? t("common.deleting") : t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

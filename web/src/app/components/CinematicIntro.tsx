@@ -11,6 +11,7 @@
  */
 
 import { Component, useCallback, useEffect, useLayoutEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../context/AuthContext";
 import { loadSettings } from "../lib/userSettings";
 import "../../styles/cinematic-intro.css";
@@ -76,6 +77,7 @@ function Letters({ word, from, accent }: { word: string; from: number; accent?: 
 }
 
 function Sequence({ reduced, onDone }: { reduced: boolean; onDone: () => void }) {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"play" | "complete" | "exit" | "done">("play");
 
   useEffect(() => {
@@ -144,7 +146,7 @@ function Sequence({ reduced, onDone }: { reduced: boolean; onDone: () => void })
 
   return (
     <div className={className} role="status" aria-live="polite" aria-busy={phase === "play"}>
-      <span className="sr-only">Ładowanie RacePortal</span>
+      <span className="sr-only">{t("intro.loading")}</span>
       <div className="cinematic-intro__half cinematic-intro__half--left" aria-hidden="true" />
       <div className="cinematic-intro__half cinematic-intro__half--right" aria-hidden="true" />
       <div className="cinematic-intro__stage" aria-hidden="true">
@@ -230,6 +232,7 @@ export function CinematicIntro() {
  * Bez tokena auth rozwiązuje się od razu — pasek się nie pojawia.
  */
 export function BootPulse() {
+  const { t } = useTranslation();
   const { isLoading } = useAuth();
   const [blocked, setBlocked] = useState(introActive);
   const [visible, setVisible] = useState(false);
@@ -254,7 +257,7 @@ export function BootPulse() {
 
   return (
     <div className="cinematic-boot" role="status" aria-live="polite">
-      <span className="sr-only">Ładowanie danych RacePortal</span>
+      <span className="sr-only">{t("intro.loadingData")}</span>
       <div className="cinematic-boot__bar" aria-hidden="true" />
     </div>
   );

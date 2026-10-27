@@ -32,7 +32,6 @@ import { api, ApiError } from "../lib/api";
 import { ImageUploadField } from "../components/ImageUploadField";
 import type { Car as GarageCar, Registration } from "../lib/types";
 import {
-  registrationStatusLabel,
   eventDateLabel,
   isOpenRegistration,
   isPositiveRegistration,
@@ -94,9 +93,9 @@ export function DashboardPage() {
     try {
       const updated = await api.post<Registration>(`/api/registrations/${id}/cancel`, {});
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      toast.success("Zgłoszenie anulowane");
+      toast.success(t("dashboard.cancelOk"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się anulować");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.cancelFail"));
     }
   };
 
@@ -104,7 +103,7 @@ export function DashboardPage() {
   const attachProof = async (id: string) => {
     const url = (proofUrls[id] || "").trim();
     if (!url) {
-      toast.error("Wgraj zdjęcie lub podaj URL potwierdzenia przelewu");
+      toast.error(t("dashboard.proofRequired"));
       return;
     }
     try {
@@ -112,18 +111,18 @@ export function DashboardPage() {
         paymentProofUrl: url,
       });
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
-      toast.success("Potwierdzenie przelewu dołączone");
+      toast.success(t("dashboard.proofOkTransfer"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się zapisać potwierdzenia");
+      toast.error(e instanceof ApiError ? e.message : t("dashboard.proofFail"));
     }
   };
 
   const roleBadge =
     user?.role === "ADMIN"
-      ? "ADMIN"
+      ? t("dashboard.roleAdmin")
       : user?.role === "ORGANIZER"
-        ? "ORGANIZATOR"
-        : "KIEROWCA";
+        ? t("dashboard.roleOrganizer")
+        : t("dashboard.roleDriver");
 
   return (
     <div className="min-h-screen bg-[var(--race-bg)]">
@@ -193,7 +192,7 @@ export function DashboardPage() {
                     {roleBadge}
                   </Badge>
                   <Badge variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)]">
-                    Członek od {user?.memberSince ?? "2026"}
+                    {t("dashboard.memberSince", { year: user?.memberSince ?? "2026" })}
                   </Badge>
                 </div>
               </div>
@@ -203,7 +202,7 @@ export function DashboardPage() {
                   className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
                   style={{ fontWeight: 700 }}
                 >
-                  EDYTUJ PROFIL
+                  {t("dashboard.editProfile")}
                 </Button>
               </Link>
             </div>
@@ -218,9 +217,9 @@ export function DashboardPage() {
               <div className="flex items-start gap-3">
                 <Flag className="w-8 h-8 text-[var(--race-accent)] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[var(--race-fg)] font-semibold mb-1">Chcesz organizować wydarzenia?</p>
+                  <p className="text-[var(--race-fg)] font-semibold mb-1">{t("dashboard.becomeOrgTitle")}</p>
                   <p className="text-[var(--race-muted)] text-sm">
-                    Złóż wniosek o konto organizatora – administrator rozpatrzy go w panelu.
+                    {t("dashboard.becomeOrgDesc")}
                   </p>
                 </div>
               </div>
@@ -229,7 +228,7 @@ export function DashboardPage() {
                   className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 shrink-0"
                   style={{ fontWeight: 700 }}
                 >
-                  ZOSTAŃ ORGANIZATOREM
+                  {t("dashboard.becomeOrgCta")}
                 </Button>
               </Link>
             </CardContent>
@@ -245,7 +244,7 @@ export function DashboardPage() {
                 {upcomingRegistrations.length}
               </div>
               <p className="text-[var(--race-muted)]" style={{ fontWeight: 600 }}>
-                Nadchodzące starty
+                {t("dashboard.upcomingStarts")}
               </p>
             </CardContent>
           </Card>
@@ -257,7 +256,7 @@ export function DashboardPage() {
                 {cars.length}
               </div>
               <p className="text-[var(--race-muted)]" style={{ fontWeight: 600 }}>
-                Auta w garażu
+                {t("garage.carsInGarage")}
               </p>
             </CardContent>
           </Card>
@@ -269,7 +268,7 @@ export function DashboardPage() {
                 {registrations.length}
               </div>
               <p className="text-[var(--race-muted)]" style={{ fontWeight: 600 }}>
-                Wszystkie zgłoszenia
+                {t("dashboard.allRegistrations")}
               </p>
             </CardContent>
           </Card>
@@ -283,17 +282,17 @@ export function DashboardPage() {
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
                 <Calendar className="w-6 h-6 text-[var(--race-accent)]" />
-                Moje zgłoszenia
+                {t("dashboard.myRegistrations")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {loading ? (
                 <div className="text-center py-8 text-[var(--race-muted)]">
                   <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2 text-[var(--race-accent)]" />
-                  Ładowanie...
+                  {t("dashboard.loading")}
                 </div>
               ) : registrations.length === 0 ? (
-                <p className="text-[var(--race-muted)] text-center py-8">Brak zgłoszeń. Zapisz się na wydarzenie!</p>
+                <p className="text-[var(--race-muted)] text-center py-8">{t("dashboard.noRegistrations")}</p>
               ) : (
                 registrations.map((reg, idx) => (
                   <div key={reg.id}>
@@ -308,11 +307,11 @@ export function DashboardPage() {
                             }
                             style={{ fontWeight: 700, fontSize: "12px" }}
                           >
-                            {registrationStatusLabel(reg.status)}
+                            {t(`registration.${reg.status}`)}
                           </Badge>
                           {reg.event?.paid && (
                             <Badge variant="outline" className="border-[var(--race-border)] text-[var(--race-accent)]">
-                              Płatne
+                              {t("common.paid")}
                               {reg.event.entryFee != null ? ` · ${reg.event.entryFee} PLN` : ""}
                             </Badge>
                           )}
@@ -323,7 +322,7 @@ export function DashboardPage() {
                           )}
                         </div>
                         <h4 className="text-[var(--race-fg)] mb-1" style={{ fontWeight: 700 }}>
-                          {reg.event?.name ?? "Wydarzenie"}
+                          {reg.event?.name ?? t("dashboard.eventFallback")}
                         </h4>
                         {reg.event && (
                           <div className="flex items-center gap-4 text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
@@ -339,18 +338,19 @@ export function DashboardPage() {
                         )}
                         {reg.car && (
                           <p className="text-[var(--race-muted)] text-sm mt-1">
-                            Auto: {reg.car.make} {reg.car.model}
+                            {t("dashboard.carLabel", { make: reg.car.make, model: reg.car.model })}
                           </p>
                         )}
                         {reg.status === "ACCEPTED" && reg.event?.paid && (
                           <div className="mt-3 space-y-2">
                             {reg.event.bankAccount && (
                               <p className="text-sm text-[var(--race-muted)]">
-                                Wpłać na konto: <span className="text-[var(--race-fg)]">{reg.event.bankAccount}</span>
+                                {t("dashboard.payToAccount")}{" "}
+                                <span className="text-[var(--race-fg)]">{reg.event.bankAccount}</span>
                               </p>
                             )}
                             {reg.paymentProofUrl ? (
-                              <p className="text-sm text-green-400">Potwierdzenie dołączone</p>
+                              <p className="text-sm text-green-400">{t("dashboard.proofAttached")}</p>
                             ) : (
                               <div className="space-y-2">
                                 <ImageUploadField
@@ -366,7 +366,7 @@ export function DashboardPage() {
                                   className="bg-[var(--race-accent)] text-[var(--race-on-accent)]"
                                   style={{ fontWeight: 700 }}
                                 >
-                                  Dołącz potwierdzenie
+                                  {t("dashboard.attachProof")}
                                 </Button>
                               </div>
                             )}
@@ -382,7 +382,7 @@ export function DashboardPage() {
                               className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)] w-full"
                               style={{ fontWeight: 700 }}
                             >
-                              SZCZEGÓŁY
+                              {t("dashboard.detailsCta")}
                             </Button>
                           </Link>
                         )}
@@ -393,7 +393,7 @@ export function DashboardPage() {
                             onClick={() => cancelRegistration(reg.id)}
                             className="border-red-900 text-red-400 hover:bg-red-950"
                           >
-                            Anuluj
+                            {t("dashboard.cancelReg")}
                           </Button>
                         )}
                       </div>
@@ -412,12 +412,12 @@ export function DashboardPage() {
                 style={{ fontSize: "24px", fontWeight: 800 }}
               >
                 <Car className="w-6 h-6 text-[var(--race-accent)]" />
-                Mój garaż
+                {t("garage.myGarage")}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {cars.length === 0 ? (
-                <p className="text-[var(--race-muted)] text-center py-8">Brak aut w garażu.</p>
+                <p className="text-[var(--race-muted)] text-center py-8">{t("garage.noCars")}</p>
               ) : (
                 cars.map((car, idx) => (
                   <div key={car.id}>
@@ -438,7 +438,7 @@ export function DashboardPage() {
               )}
               <Link to="/garaz">
                 <Button variant="ghost" className="w-full text-[var(--race-accent)] hover:bg-[var(--race-hover)]" style={{ fontWeight: 700 }}>
-                  Zarządzaj garażem
+                  {t("garage.manage")}
                 </Button>
               </Link>
             </CardContent>

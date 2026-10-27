@@ -9,6 +9,7 @@
  * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FileText, Plus } from "lucide-react";
 import { Reveal } from "../components/Reveal";
 import { Button } from "../components/ui/button";
@@ -23,7 +24,6 @@ import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { Registration, RegistrationStatus } from "../lib/types";
-import { registrationStatusLabel } from "../lib/types";
 import { OTHER } from "../lib/eventFormPresets";
 import { toast } from "sonner";
 import { validateImageReference } from "../lib/profileValidation";
@@ -51,6 +51,7 @@ import { OrganizerEventFormDialog } from "../components/organizer/OrganizerEvent
 import { OrganizerEventDraftsDialog } from "../components/organizer/OrganizerEventDraftsDialog";
 
 export function OrganizerPanelPage() {
+  const { t } = useTranslation();
   const { refreshSession } = useAuth();
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
@@ -115,22 +116,22 @@ export function OrganizerPanelPage() {
 
   const validateEventForm = (): Record<string, string> => {
     const errors: Record<string, string> = {};
-    if (!form.name.trim()) errors.name = "Nazwa jest wymagana";
-    if (!form.description.trim()) errors.description = "Opis jest wymagany";
-    if (!resolvedCategory) errors.category = "Kategoria jest wymagana";
+    if (!form.name.trim()) errors.name = t("organizer.nameRequired");
+    if (!form.description.trim()) errors.description = t("organizer.descRequired");
+    if (!resolvedCategory) errors.category = t("organizer.categoryRequired");
     if (!form.date) {
-      errors.date = "Data jest wymagana";
+      errors.date = t("organizer.dateRequired");
     } else if (form.date < todayIso()) {
-      errors.date = "Data wydarzenia nie może być z przeszłości";
+      errors.date = t("organizer.datePast");
     }
-    if (!resolvedTrack) errors.track = "Tor / lokalizacja jest wymagana";
-    if (!resolvedCity) errors.city = "Miasto jest wymagane";
-    if (!form.voivodeship.trim()) errors.voivodeship = "Województwo jest wymagane";
+    if (!resolvedTrack) errors.track = t("organizer.trackRequired");
+    if (!resolvedCity) errors.city = t("organizer.cityRequired");
+    if (!form.voivodeship.trim()) errors.voivodeship = t("organizer.voivodeshipRequired");
     if (form.endDate.trim() && form.date && form.endDate < form.date) {
-      errors.endDate = "Data zakończenia nie może być wcześniejsza niż data startu";
+      errors.endDate = t("organizer.endDateBefore");
     }
     if (form.paid && form.acceptRegistrations && !form.bankAccount.trim()) {
-      errors.bankAccount = "Dla płatnego wydarzenia ze zgłoszeniami online podaj numer konta";
+      errors.bankAccount = t("organizer.bankRequired");
     }
     const imageErr = validateImageReference(form.imageUrl, false);
     if (imageErr) errors.imageUrl = imageErr;
@@ -148,7 +149,7 @@ export function OrganizerPanelPage() {
       })
       .catch((e) => {
         setEvents([]);
-        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń");
+        setLoadError(e instanceof ApiError ? e.message : t("organizer.loadFail"));
       })
       .finally(() => setLoading(false));
   };
@@ -176,7 +177,7 @@ export function OrganizerPanelPage() {
       const items = await api.get<Registration[]>(`/api/registrations/event/${eventId}`);
       setRegistrations(items);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować zgłoszeń");
+      toast.error(e instanceof ApiError ? e.message : t("organizer.regsLoadFail"));
       setRegistrations([]);
     }
   };
@@ -199,7 +200,7 @@ export function OrganizerPanelPage() {
     setFormBaseline(initial);
     setFieldErrors({});
     setCreateOpen(true);
-    if (draft) toast.message("Przywrócono zapis roboczy wydarzenia");
+    if (draft) toast.message(t("organizer.draftRestored"));
   };
 
   const openDraft = (draft: EventDraftEntry<FormState>) => {
@@ -229,14 +230,14 @@ export function OrganizerPanelPage() {
       upsertEventDraft(form, activeDraftId);
       refreshDrafts();
     }
-    toast.success("Zapisano wersję roboczą lokalnie");
+    toast.success(t("organizer.draftSaved"));
     closeEventFormClean();
   };
 
   const handleDeleteDraft = (id: string) => {
     removeEventDraft(id);
     refreshDrafts();
-    toast.success("Usunięto wersję roboczą");
+    toast.success(t("organizer.draftDeleted"));
   };
 
   const handleSave = async () => {
@@ -282,10 +283,10 @@ export function OrganizerPanelPage() {
     try {
       if (editingId) {
         await api.patch(`/api/events/${editingId}`, payload);
-        toast.success("Wydarzenie zaktualizowane");
+        toast.success(t("organizer.eventUpdated"));
       } else {
         await api.post("/api/events", payload);
-        toast.success("Wydarzenie utworzone – oczekuje na akceptację admina");
+        toast.success(t("organizer.eventCreatedPending"));
       }
       if (editingId) {
         clearFormDraft(`${EVENT_DRAFT_KEY}_${editingId}`);
@@ -300,8 +301,8 @@ export function OrganizerPanelPage() {
         e instanceof ApiError
           ? e.message
           : editingId
-            ? "Nie udało się zaktualizować wydarzenia"
-            : "Nie udało się utworzyć wydarzenia",
+            ? t("organizer.updateFail")
+            : t("organizer.createFail"),
       );
     } finally {
       setSaving(false);
@@ -316,19 +317,21 @@ export function OrganizerPanelPage() {
       });
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
       setDetailReg((prev) => (prev?.id === id ? updated : prev));
-      toast.success(`Zgłoszenie: ${registrationStatusLabel(updated.status)}`);
+      toast.success(
+        t("registration.statusToast", { status: t(`registration.${updated.status}`) }),
+      );
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
+      toast.error(e instanceof ApiError ? e.message : t("organizer.updateStatusFail"));
     }
   };
 
   const cancelEvent = async (eventId: string) => {
-    if (!confirm("Na pewno anulować wydarzenie? Wszystkie otwarte zgłoszenia zostaną anulowane.")) {
+    if (!confirm(t("organizer.cancelConfirm"))) {
       return;
     }
     try {
       await api.post(`/api/events/${eventId}/cancel`, {});
-      toast.success("Wydarzenie anulowane");
+      toast.success(t("organizer.eventCancelled"));
       loadEvents();
       if (selectedEventId === eventId) {
         setRegistrations([]);
@@ -336,17 +339,17 @@ export function OrganizerPanelPage() {
         setRegistrationsOpen(false);
       }
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się anulować wydarzenia");
+      toast.error(e instanceof ApiError ? e.message : t("organizer.cancelFail"));
     }
   };
 
   const deleteEvent = async (eventId: string) => {
-    if (!confirm("Na pewno trwale usunąć wydarzenie? Tej operacji nie można cofnąć.")) {
+    if (!confirm(t("organizer.deleteConfirmHard"))) {
       return;
     }
     try {
       await api.delete(`/api/events/${eventId}`);
-      toast.success("Wydarzenie usunięte");
+      toast.success(t("organizer.eventDeleted"));
       loadEvents();
       if (selectedEventId === eventId) {
         setRegistrations([]);
@@ -354,7 +357,7 @@ export function OrganizerPanelPage() {
         setRegistrationsOpen(false);
       }
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć wydarzenia");
+      toast.error(e instanceof ApiError ? e.message : t("organizer.deleteEventFail"));
     }
   };
 
@@ -376,9 +379,10 @@ export function OrganizerPanelPage() {
         <Reveal className="container mx-auto px-4 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="font-display text-[var(--race-fg)] mb-2" style={{ fontSize: "40px", fontWeight: 800 }}>
-              PANEL <span className="text-[var(--race-accent)]">ORGANIZATORA</span>
+              {t("organizer.titleBefore")}{" "}
+              <span className="text-[var(--race-accent)]">{t("organizer.titleAccent")}</span>
             </h1>
-            <p className="text-[var(--race-muted)]">Twórz wydarzenia i zarządzaj zgłoszeniami kierowców.</p>
+            <p className="text-[var(--race-muted)]">{t("organizer.pageSubtitle")}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -392,7 +396,7 @@ export function OrganizerPanelPage() {
               style={{ fontWeight: 700 }}
             >
               <FileText className="w-4 h-4 mr-2" />
-              WERSJE ROBOCZE
+              {t("organizer.draftsCaps")}
               {drafts.length > 0 ? (
                 <span className="ml-2 inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-[var(--race-accent)] px-1.5 text-xs text-[var(--race-on-accent)]">
                   {drafts.length}
@@ -401,7 +405,7 @@ export function OrganizerPanelPage() {
             </Button>
             <Button onClick={openCreate} className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 800 }}>
               <Plus className="w-4 h-4 mr-2" />
-              NOWE WYDARZENIE
+              {t("organizer.createEventCaps")}
             </Button>
           </div>
         </Reveal>
@@ -409,7 +413,7 @@ export function OrganizerPanelPage() {
 
       <section className="container mx-auto px-4 py-10">
         <h2 className="font-display text-[var(--race-fg)] mb-4" style={{ fontWeight: 800 }}>
-          Moje wydarzenia
+          {t("organizer.myEvents")}
         </h2>
         <OrganizerEventList
           events={filteredEvents}
@@ -434,10 +438,10 @@ export function OrganizerPanelPage() {
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-3xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-              Zgłoszenia
+              {t("organizer.registrations")}
             </DialogTitle>
             <DialogDescription className="text-[var(--race-muted)]">
-              {selectedEvent ? selectedEvent.name : "Wybierz wydarzenie"}
+              {selectedEvent ? selectedEvent.name : t("organizer.selectEvent")}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">

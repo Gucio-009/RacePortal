@@ -11,6 +11,7 @@
  * pełna galeria dopiero w kolejnej iteracji produktu.
  */
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../components/ui/dialog";
 import { ImageWithFallback } from "../components/figma/ImageWithFallback";
 import { Badge } from "../components/ui/badge";
@@ -29,6 +30,7 @@ interface GalleryItem {
 }
 
 export function GalleryPage() {
+  const { t } = useTranslation();
   const [category, setCategory] = useState("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [items, setItems] = useState<GalleryItem[]>([]);
@@ -63,7 +65,7 @@ export function GalleryPage() {
       })
       .catch((e) => {
         setItems([]);
-        setLoadError(e instanceof ApiError ? e.message : "Nie udało się pobrać galerii. Sprawdź API / połączenie.");
+        setLoadError(e instanceof ApiError ? e.message : t("gallery.loadFail"));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -82,20 +84,18 @@ export function GalleryPage() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <div>
             <h1 className="font-display text-[var(--race-fg)] mb-3" style={{ fontSize: "40px", fontWeight: 800 }}>
-              GALERIA <span className="text-[var(--race-accent)]">(ODŁOŻONA)</span>
+              {t("gallery.titleBefore")} <span className="text-[var(--race-accent)]">{t("gallery.titleAccent")}</span>
             </h1>
-            <p className="text-[var(--race-muted)] max-w-2xl">
-              Zgodnie z uwagami przeglądu – rozwój galerii odłożony. Poniżej prosty podgląd zdjęć z wydarzeń.
-            </p>
+            <p className="text-[var(--race-muted)] max-w-2xl">{t("gallery.subtitle")}</p>
           </div>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger className="w-full md:w-56 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] h-12">
-              <SelectValue placeholder="Kategoria" />
+              <SelectValue placeholder={t("events.category")} />
             </SelectTrigger>
             <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
               {categories.map((cat) => (
                 <SelectItem key={cat} value={cat}>
-                  {cat === "all" ? "Wszystkie" : cat}
+                  {cat === "all" ? t("gallery.allCategories") : cat}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -105,11 +105,11 @@ export function GalleryPage() {
 
       <section className="container mx-auto px-4 py-10">
         {loading ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Ładowanie galerii...</p>
+          <p className="text-center text-[var(--race-muted)] py-16">{t("gallery.loading")}</p>
         ) : loadError ? (
           <p className="text-center text-red-400 py-16">{loadError}</p>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-[var(--race-muted)] py-16">Brak zdjęć z wydarzeń (galeria odłożona – podgląd z API).</p>
+          <p className="text-center text-[var(--race-muted)] py-16">{t("gallery.empty")}</p>
         ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {filtered.map((item) => (

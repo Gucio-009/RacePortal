@@ -1,11 +1,9 @@
 /**
  * VerifyEmailPage – aktywacja konta / potwierdzenie e-maila z linku w mailu.
- *
- * Deep link (preferowany): `/verify-email/:token`
- * Fallback (stare maile): `/verify-email?token=…` (+ opcjonalnie `&email=`).
  */
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Flag, Loader2 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
@@ -21,13 +19,18 @@ function readTokenFromHash(): string {
 }
 
 export function VerifyEmailPage() {
+  const { t } = useTranslation();
   const { token: pathToken } = useParams();
   const [searchParams] = useSearchParams();
   const { verifyEmail } = useAuth();
   const navigate = useNavigate();
   const [status, setStatus] = useState<"working" | "ok" | "error">("working");
-  const [message, setMessage] = useState("Aktywujemy konto…");
+  const [message, setMessage] = useState("");
   const ran = useRef(false);
+
+  useEffect(() => {
+    setMessage(t("verify.workingMsg"));
+  }, [t]);
 
   useEffect(() => {
     if (ran.current) return;
@@ -41,7 +44,7 @@ export function VerifyEmailPage() {
     const email = searchParams.get("email")?.trim() || undefined;
     if (token.length < 20) {
       setStatus("error");
-      setMessage("Brak prawidłowego linku aktywacyjnego.");
+      setMessage(t("verify.badLink"));
       return;
     }
 
@@ -50,17 +53,16 @@ export function VerifyEmailPage() {
       if (result.ok) {
         clearPendingVerifyEmail();
         setStatus("ok");
-        setMessage("Konto aktywowane – przekierowujemy…");
-        toast.success("Konto aktywowane!");
-        // Lekki delay – localStorage JWT zdąży się zapisać przed AuthGate na /dashboard.
+        setMessage(t("verify.okRedirect"));
+        toast.success(t("verify.okToast"));
         window.setTimeout(() => navigate("/dashboard", { replace: true }), 150);
       } else {
         setStatus("error");
-        setMessage(result.message || "Nieprawidłowy lub wygasły link");
-        toast.error(result.message || "Nie udało się aktywować konta");
+        setMessage(result.message || t("verify.expired"));
+        toast.error(result.message || t("verify.failToast"));
       }
     })();
-  }, [pathToken, searchParams, verifyEmail, navigate]);
+  }, [pathToken, searchParams, verifyEmail, navigate, t]);
 
   return (
     <div
@@ -74,20 +76,20 @@ export function VerifyEmailPage() {
         data-reveal=""
       >
         <Flag className="w-12 h-12 text-[var(--race-accent)] mx-auto" />
-        <h1 className="font-display text-[var(--race-fg)] text-2xl font-extrabold">AKTYWACJA KONTA</h1>
+        <h1 className="font-display text-[var(--race-fg)] text-2xl font-extrabold">{t("verify.titleCaps")}</h1>
         <div className="flex items-center justify-center gap-2 text-[var(--race-muted)]">
           {status === "working" && <Loader2 className="w-5 h-5 animate-spin text-[var(--race-accent)]" />}
-          <p>{message}</p>
+          <p>{message || t("verify.workingMsg")}</p>
         </div>
         {status === "error" && (
           <div className="space-y-3 pt-2">
             <Link to="/register?verify=1">
               <Button className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95" style={{ fontWeight: 800 }}>
-                Wyślij nowy link
+                {t("verify.resend")}
               </Button>
             </Link>
             <Link to="/login" className="block text-sm text-[var(--race-muted)] hover:text-[var(--race-accent)]">
-              Wróć do logowania
+              {t("verify.backLogin")}
             </Link>
           </div>
         )}

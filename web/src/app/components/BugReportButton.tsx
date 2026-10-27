@@ -1,8 +1,8 @@
 /**
  * Przycisk „Zgłoś błąd” na każdej stronie, także bez logowania.
- * Ścieżka bierze się z adresu w przeglądarce. Konto dopina API z JWT.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Bug, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
@@ -21,6 +21,7 @@ import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 
 export function BugReportButton() {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuth();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -31,7 +32,7 @@ export function BugReportButton() {
     e.preventDefault();
     const text = message.trim();
     if (text.length < 10) {
-      toast.error("Opisz błąd w co najmniej 10 znakach.");
+      toast.error(t("bugReport.minLength"));
       return;
     }
     setSending(true);
@@ -42,12 +43,12 @@ export function BugReportButton() {
         pageUrl,
         email: isAuthenticated ? undefined : email.trim() || undefined,
       });
-      toast.success("Zgłoszenie zapisane. Dziękujemy.");
+      toast.success(t("bugReport.ok"));
       setMessage("");
       setEmail("");
       setOpen(false);
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Nie udało się wysłać zgłoszenia.");
+      toast.error(err instanceof ApiError ? err.message : t("bugReport.fail"));
     } finally {
       setSending(false);
     }
@@ -62,37 +63,37 @@ export function BugReportButton() {
         style={{ fontWeight: 700 }}
       >
         <Bug className="w-4 h-4 mr-2" aria-hidden />
-        Zgłoś błąd
+        {t("bugReport.button")}
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
           <DialogHeader>
-            <DialogTitle className="font-display">Zgłoś błąd</DialogTitle>
+            <DialogTitle className="font-display">{t("bugReport.title")}</DialogTitle>
             <DialogDescription className="text-[var(--race-muted)]">
               {isAuthenticated
-                ? `Zgłoszenie przypiszemy do konta ${user?.username ?? ""}.`
-                : "Możesz wysłać bez konta. E-mail jest opcjonalny, jeśli chcesz, żebyśmy odpisali."}
+                ? t("bugReport.descAuth", { username: user?.username ?? "" })
+                : t("bugReport.descGuest")}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="bug-message" className="text-[var(--race-fg)]">
-                Co nie działa
+                {t("bugReport.whatBroken")}
               </Label>
               <Textarea
                 id="bug-message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 maxLength={2000}
-                placeholder="Np. po zapisie na wydarzenie wraca pusta lista zgłoszeń."
+                placeholder={t("bugReport.placeholder")}
                 className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] min-h-[120px]"
               />
             </div>
             {!isAuthenticated && (
               <div className="space-y-2">
                 <Label htmlFor="bug-email" className="text-[var(--race-fg)]">
-                  E-mail (opcjonalnie)
+                  {t("bugReport.emailOptional")}
                 </Label>
                 <Input
                   id="bug-email"
@@ -113,7 +114,7 @@ export function BugReportButton() {
                 style={{ fontWeight: 700 }}
               >
                 {sending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Wyślij
+                {t("bugReport.send")}
               </Button>
             </DialogFooter>
           </form>

@@ -5,6 +5,7 @@
  * Oficjalny GSI ładuje się w tle; klik custom przycisku odpala credential callback.
  */
 import { useEffect, useId, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 declare global {
   interface Window {
@@ -90,8 +91,11 @@ export function GoogleSignInButton({
   onCredential,
   onError,
   disabled,
-  label = "Kontynuuj z Google",
+  label,
 }: Props) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("auth.googleContinue");
+  const connectingLabel = t("auth.googleConnecting");
   const slotId = useId();
   const hostRef = useRef<HTMLDivElement>(null);
   const onCredentialRef = useRef(onCredential);
@@ -117,7 +121,7 @@ export function GoogleSignInButton({
             setBusy(true);
             void Promise.resolve(onCredentialRef.current(response.credential))
               .catch((e) => {
-                onErrorRef.current?.(e instanceof Error ? e.message : "Błąd logowania Google");
+                onErrorRef.current?.(e instanceof Error ? e.message : t("auth.googleSignInFail"));
               })
               .finally(() => setBusy(false));
           },
@@ -134,12 +138,12 @@ export function GoogleSignInButton({
         });
         if (!cancelled) setReady(true);
       })
-      .catch(() => onErrorRef.current?.("Nie udało się załadować Google Sign-In"));
+      .catch(() => onErrorRef.current?.(t("auth.googleLoadFail")));
 
     return () => {
       cancelled = true;
     };
-  }, [clientId]);
+  }, [clientId, t]);
 
   if (!clientId) return null;
 
@@ -159,13 +163,13 @@ export function GoogleSignInButton({
         type="button"
         disabled={disabled || busy || !ready}
         onClick={triggerGoogle}
-        aria-label={label}
+        aria-label={resolvedLabel}
         className="google-auth-btn group relative w-full h-12 inline-flex items-center justify-center gap-3 rounded-lg border border-[var(--race-border)] bg-white text-[#1f1f1f] font-extrabold tracking-wide shadow-[0_8px_24px_rgba(0,0,0,0.18)] transition-[transform,box-shadow,brightness] hover:brightness-[0.98] hover:shadow-[0_10px_28px_rgba(0,0,0,0.28)] active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none disabled:shadow-none"
       >
         <span className="absolute inset-y-0 left-0 w-12 flex items-center justify-center border-r border-black/10 bg-[#f8f9fa] rounded-l-[calc(0.5rem-1px)]">
           <GoogleMark />
         </span>
-        <span className="pl-8 text-sm sm:text-[15px]">{busy ? "Łączenie z Google…" : label}</span>
+        <span className="pl-8 text-sm sm:text-[15px]">{busy ? connectingLabel : resolvedLabel}</span>
         <span
           className="pointer-events-none absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
           style={{

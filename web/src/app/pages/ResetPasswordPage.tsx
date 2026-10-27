@@ -1,21 +1,20 @@
 /**
  * ResetPasswordPage — ustawienie nowego hasła po kliknięciu linku z maila.
- *
- * Deep link: `/reset-password/:token` (token w ścieżce, jak verify-email).
- * Hasło zmienia się dopiero po submit; stary login działa do tego momentu.
  */
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { Flag, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
-import { isStrongPassword, STRONG_PASSWORD_HINT } from "../lib/profileValidation";
+import { isStrongPassword, strongPasswordHint } from "../lib/profileValidation";
 import { HERO_BG_TRACK } from "../lib/types";
 import { toast } from "sonner";
 
 export function ResetPasswordPage() {
+  const { t } = useTranslation();
   const { token: pathToken } = useParams();
   const token = pathToken?.trim() ?? "";
   const { resetPassword } = useAuth();
@@ -30,15 +29,15 @@ export function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tokenOk) {
-      toast.error("Brak prawidłowego linku resetującego");
+      toast.error(t("reset.invalidLink"));
       return;
     }
     if (!isStrongPassword(password)) {
-      toast.error(STRONG_PASSWORD_HINT);
+      toast.error(strongPasswordHint());
       return;
     }
     if (password !== confirmPassword) {
-      toast.error("Hasła nie są takie same");
+      toast.error(t("reset.mismatch"));
       return;
     }
     setIsLoading(true);
@@ -66,23 +65,23 @@ export function ResetPasswordPage() {
         <div className="text-center mb-8">
           <Flag className="w-16 h-16 text-[var(--race-accent)] mx-auto mb-4" />
           <h1 className="font-display text-white mb-2" style={{ fontSize: "32px", fontWeight: 800 }}>
-            NOWE <span className="text-[var(--race-accent)]">HASŁO</span>
+            {t("reset.titleBefore")} <span className="text-[var(--race-accent)]">{t("reset.titleAccent")}</span>
           </h1>
-          <p className="text-[#9ca3af]">Ustaw hasło do konta RacePortal</p>
+          <p className="text-[#9ca3af]">{t("reset.setPasswordSubtitle")}</p>
         </div>
 
         <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 shadow-[var(--race-card-shadow)]">
           {!tokenOk ? (
             <div className="text-center space-y-4">
               <p className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
-                Link jest nieprawidłowy lub niekompletny. Poproś o nowy reset hasła.
+                {t("reset.invalidLinkBody")}
               </p>
               <Link to="/forgot-password">
                 <Button
                   className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                   style={{ fontWeight: 800 }}
                 >
-                  Wyślij nowy link
+                  {t("reset.requestNew")}
                 </Button>
               </Link>
             </div>
@@ -90,7 +89,7 @@ export function ResetPasswordPage() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                  Nowe hasło
+                  {t("reset.newPassword")}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
@@ -107,16 +106,16 @@ export function ResetPasswordPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--race-muted)]"
-                    aria-label={showPassword ? "Ukryj hasło" : "Pokaż hasło"}
+                    aria-label={showPassword ? t("reset.hidePassword") : t("reset.showPassword")}
                   >
                     {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
-                <p className="text-[var(--race-muted)] text-xs">{STRONG_PASSWORD_HINT}</p>
+                <p className="text-[var(--race-muted)] text-xs">{strongPasswordHint()}</p>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="confirm" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
-                  Powtórz hasło
+                  {t("reset.confirmPassword")}
                 </Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--race-muted)]" />
@@ -137,14 +136,14 @@ export function ResetPasswordPage() {
                 className="w-full bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 h-12"
                 style={{ fontWeight: 800 }}
               >
-                {isLoading ? "ZAPISYWANIE..." : "ZMIEŃ HASŁO"}
+                {isLoading ? t("reset.saving") : t("reset.submit")}
               </Button>
               <Link
                 to="/login"
                 className="flex items-center justify-center gap-2 text-[var(--race-muted)] hover:text-[var(--race-accent)]"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Wróć do logowania
+                {t("reset.backLogin")}
               </Link>
             </form>
           )}

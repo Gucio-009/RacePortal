@@ -1,9 +1,7 @@
 /**
  * UnsavedChangesDialog — potwierdzenie zamknięcia formularza z niezapisanych zmianami.
- *
- * Opcje: zostać / wyjść bez zapisu / zapisać roboczo (localStorage) i wyjść.
  */
-
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,23 +27,24 @@ export function UnsavedChangesDialog({
   onOpenChange,
   onDiscard,
   onSaveDraft,
-  title = "Niezapisane zmiany",
-  description = "Masz niezapisane zmiany. Możesz wyjść bez zapisu albo zapisać wersję roboczą lokalnie i wrócić do niej później.",
+  title,
+  description,
 }: UnsavedChangesDialogProps) {
+  const { t } = useTranslation();
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
         <AlertDialogHeader>
           <AlertDialogTitle className="font-display" style={{ fontWeight: 800 }}>
-            {title}
+            {title ?? t("unsaved.title")}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-[var(--race-muted)]">
-            {description}
+            {description ?? t("unsaved.description")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="flex-col sm:flex-row gap-2">
           <AlertDialogCancel className="border-[var(--race-border)] text-[var(--race-fg)] bg-transparent hover:bg-[var(--race-hover)]">
-            Zostań
+            {t("unsaved.stay")}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
@@ -54,7 +53,7 @@ export function UnsavedChangesDialog({
             }}
             className="border border-[var(--race-border)] bg-transparent text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
           >
-            Wyjdź bez zapisu
+            {t("unsaved.discard")}
           </AlertDialogAction>
           <AlertDialogAction
             onClick={(e) => {
@@ -63,7 +62,7 @@ export function UnsavedChangesDialog({
             }}
             className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95"
           >
-            Zapisz roboczo i wyjdź
+            {t("unsaved.saveDraft")}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

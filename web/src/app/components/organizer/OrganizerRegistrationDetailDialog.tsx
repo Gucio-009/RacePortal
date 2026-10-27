@@ -4,10 +4,10 @@
  * Otwierany z listy zgłoszeń wydarzenia. Dane z API (UserRef rozszerzony + CarResponse).
  */
 
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Badge } from "../ui/badge";
 import type { Registration } from "../../lib/types";
-import { registrationStatusLabel } from "../../lib/types";
 import { parseCarClasses } from "../../lib/carMatch";
 
 interface OrganizerRegistrationDetailDialogProps {
@@ -17,8 +17,10 @@ interface OrganizerRegistrationDetailDialogProps {
 }
 
 function Row({ label, value }: { label: string; value?: string | number | boolean | null }) {
+  const { t } = useTranslation();
   if (value == null || value === "") return null;
-  const display = typeof value === "boolean" ? (value ? "Tak" : "Nie") : String(value);
+  const display =
+    typeof value === "boolean" ? (value ? t("common.yes") : t("common.no")) : String(value);
   return (
     <div className="flex justify-between gap-3 text-sm py-1 border-b border-[var(--race-border)]/60 last:border-0">
       <span className="text-[var(--race-muted)] shrink-0">{label}</span>
@@ -32,20 +34,24 @@ export function OrganizerRegistrationDetailDialog({
   open,
   onOpenChange,
 }: OrganizerRegistrationDetailDialogProps) {
+  const { t, i18n } = useTranslation();
   const reg = registration;
   const user = reg?.user;
   const car = reg?.car;
-  const driverName = [user?.firstName, user?.lastName].filter(Boolean).join(" ") || user?.username || "Kierowca";
+  const driverName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    user?.username ||
+    t("common.driver");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-            Podgląd zgłoszenia
+            {t("registration.detailTitle")}
           </DialogTitle>
           <DialogDescription className="text-[var(--race-muted)]">
-            Pełne dane kierowcy i pojazdu.
+            {t("registration.detailSubtitle")}
           </DialogDescription>
         </DialogHeader>
 
@@ -53,18 +59,20 @@ export function OrganizerRegistrationDetailDialog({
           <div className="space-y-6 py-2">
             <div className="flex flex-wrap items-center gap-2">
               <Badge className="bg-[var(--race-muted-bg)] text-[var(--race-fg)]">
-                {registrationStatusLabel(reg.status)}
+                {t(`registration.${reg.status}`)}
               </Badge>
               {reg.paymentDueAt && (
                 <span className="text-xs text-[var(--race-muted)]">
-                  Termin wpłaty: {new Date(reg.paymentDueAt).toLocaleString("pl-PL")}
+                  {t("registration.paymentDue", {
+                    date: new Date(reg.paymentDueAt).toLocaleString(i18n.language),
+                  })}
                 </span>
               )}
             </div>
 
             <section className="space-y-3">
               <h3 className="text-[var(--race-accent)] text-sm" style={{ fontWeight: 800 }}>
-                Kierowca
+                {t("common.driver")}
               </h3>
               <div className="flex gap-4 items-start">
                 {user?.avatar ? (
@@ -79,24 +87,27 @@ export function OrganizerRegistrationDetailDialog({
                   </div>
                 )}
                 <div className="flex-1 min-w-0 space-y-0.5">
-                  <Row label="Imię i nazwisko" value={driverName} />
-                  <Row label="Login" value={user?.username} />
-                  <Row label="E-mail" value={user?.email} />
-                  <Row label="Telefon" value={user?.phone} />
-                  <Row label="Adres" value={user?.address} />
-                  <Row label="Instagram" value={user?.instagramUrl} />
-                  <Row label="Prawo jazdy kat. B" value={user?.hasDrivingLicenseB} />
-                  <Row label="Licencja PZM" value={user?.pzmLicense?.trim() ? user.pzmLicense : "Brak"} />
+                  <Row label={t("organizer.fullName")} value={driverName} />
+                  <Row label={t("organizer.login")} value={user?.username} />
+                  <Row label={t("auth.email")} value={user?.email} />
+                  <Row label={t("organizer.phone")} value={user?.phone} />
+                  <Row label={t("organizer.address")} value={user?.address} />
+                  <Row label={t("organizer.instagram")} value={user?.instagramUrl} />
+                  <Row label={t("organizer.licenseB")} value={user?.hasDrivingLicenseB} />
+                  <Row
+                    label={t("organizer.pzmLicense")}
+                    value={user?.pzmLicense?.trim() ? user.pzmLicense : t("common.none")}
+                  />
                 </div>
               </div>
               {reg.note && (
                 <p className="text-sm text-[var(--race-muted)] italic border border-[var(--race-border)] rounded-md p-3">
-                  Notatka: {reg.note}
+                  {t("organizer.noteColon", { note: reg.note })}
                 </p>
               )}
               {reg.organizerComment && (
                 <p className="text-sm text-[var(--race-muted)] border border-[var(--race-border)] rounded-md p-3">
-                  Komentarz organizatora: {reg.organizerComment}
+                  {t("organizer.organizerCommentColon", { comment: reg.organizerComment })}
                 </p>
               )}
               {reg.paymentProofUrl && (
@@ -106,17 +117,17 @@ export function OrganizerRegistrationDetailDialog({
                   rel="noreferrer"
                   className="text-[var(--race-accent)] text-sm underline"
                 >
-                  Potwierdzenie przelewu
+                  {t("organizer.transferProof")}
                 </a>
               )}
             </section>
 
             <section className="space-y-3">
               <h3 className="text-[var(--race-accent)] text-sm" style={{ fontWeight: 800 }}>
-                Pojazd
+                {t("organizer.vehicle")}
               </h3>
               {!car ? (
-                <p className="text-sm text-[var(--race-muted)]">Brak wybranego auta.</p>
+                <p className="text-sm text-[var(--race-muted)]">{t("organizer.noCarSelected")}</p>
               ) : (
                 <div className="space-y-3">
                   {car.imageUrl && (
@@ -127,23 +138,40 @@ export function OrganizerRegistrationDetailDialog({
                     />
                   )}
                   <div className="space-y-0.5">
-                    <Row label="Marka / model" value={`${car.make} ${car.model}`} />
-                    <Row label="Rocznik" value={car.year} />
-                    <Row label="Napęd" value={car.driveType} />
-                    <Row label="Moc" value={car.powerHp != null ? `${car.powerHp} KM` : null} />
+                    <Row label={t("organizer.makeModel")} value={`${car.make} ${car.model}`} />
+                    <Row label={t("organizer.year")} value={car.year} />
+                    <Row label={t("organizer.drive")} value={car.driveType} />
                     <Row
-                      label="Pojemność"
-                      value={car.engineCc != null ? `${car.engineCc} cm³` : null}
+                      label={t("organizer.power")}
+                      value={car.powerHp != null ? t("organizer.powerHpValue", { hp: car.powerHp }) : null}
                     />
-                    <Row label="Masa" value={car.weightKg != null ? `${car.weightKg} kg` : null} />
-                    <Row label="Rejestracja" value={car.registered ? car.plate || "Tak" : "Nie"} />
-                    <Row label="Typ rejestracji" value={car.registrationType} />
-                    <Row label="Numer KSS" value={car.kssNumber} />
-                    <Row label="Klatka" value={car.hasRollCage} />
-                    <Row label="OC" value={car.hasOc} />
-                    <Row label="PT" value={car.hasPt} />
-                    <Row label="Social" value={car.socialUrl} />
-                    <Row label="Wideo" value={car.videoUrl} />
+                    <Row
+                      label={t("organizer.capacity")}
+                      value={
+                        car.engineCc != null
+                          ? t("organizer.capacityValue", { cc: car.engineCc })
+                          : null
+                      }
+                    />
+                    <Row
+                      label={t("organizer.weight")}
+                      value={
+                        car.weightKg != null
+                          ? t("organizer.weightValue", { kg: car.weightKg })
+                          : null
+                      }
+                    />
+                    <Row
+                      label={t("organizer.registration")}
+                      value={car.registered ? car.plate || t("common.yes") : t("common.no")}
+                    />
+                    <Row label={t("organizer.registrationType")} value={car.registrationType} />
+                    <Row label={t("organizer.kssNumber")} value={car.kssNumber} />
+                    <Row label={t("organizer.cage")} value={car.hasRollCage} />
+                    <Row label={t("organizer.ocShort")} value={car.hasOc} />
+                    <Row label={t("organizer.ptShort")} value={car.hasPt} />
+                    <Row label={t("organizer.social")} value={car.socialUrl} />
+                    <Row label={t("organizer.video")} value={car.videoUrl} />
                   </div>
                   {parseCarClasses(car.className).length > 0 && (
                     <div className="flex flex-wrap gap-1.5">
@@ -159,7 +187,7 @@ export function OrganizerRegistrationDetailDialog({
                   )}
                   {car.modifications && (
                     <p className="text-sm text-[var(--race-muted)] border border-[var(--race-border)] rounded-md p-3 whitespace-pre-wrap">
-                      Modyfikacje: {car.modifications}
+                      {t("organizer.modificationsColon", { text: car.modifications })}
                     </p>
                   )}
                 </div>
