@@ -174,7 +174,7 @@ function Sequence({ reduced, onDone }: { reduced: boolean; onDone: () => void })
             <Letters word="PORTAL" from={4} accent />
           </div>
         </div>
-        <p className="cinematic-intro__tagline">TWOJE CENTRUM MOTORSPORTU</p>
+        <p className="cinematic-intro__tagline">{t("intro.tagline")}</p>
         <div className="cinematic-intro__progress">
           <div className="cinematic-intro__lights">
             {Array.from({ length: 5 }, (_, n) => (

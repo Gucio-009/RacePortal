@@ -398,6 +398,9 @@ public class AuthService {
         if (request.locale() != null && !request.locale().isBlank()) {
             user.setLocale(MailTexts.normalize(request.locale()));
         }
+        if (request.theme() != null && !request.theme().isBlank()) {
+            user.setTheme(normalizeTheme(request.theme()));
+        }
         user = userRepository.save(user);
         return toUserDto(user);
     }
@@ -769,8 +772,20 @@ public class AuthService {
                 user.getAddress(), user.getInstagramUrl(),
                 user.isHasDrivingLicenseB(), user.getPzmLicense(),
                 MailTexts.normalize(user.getLocale()),
+                normalizeTheme(user.getTheme()),
                 user.isRegistrationComplete(),
                 user.isGoogleAccount());
+    }
+
+    private static String normalizeTheme(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return "gold";
+        }
+        String key = raw.trim().toLowerCase(Locale.ROOT);
+        return switch (key) {
+            case "gold", "redline", "ice", "arctic", "sand", "blush" -> key;
+            default -> "gold";
+        };
     }
 
     private void applyProfileFields(User user, String firstName, String lastName, String phone,

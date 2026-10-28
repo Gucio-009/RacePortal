@@ -90,7 +90,10 @@
     "googleRegisterLabel": "Sign up with Google",
     "googleConnecting": "Connecting to Google…",
     "googleSignInFail": "Google sign-in failed",
-    "googleLoadFail": "Could not load Google Sign-In"
+    "googleLoadFail": "Could not load Google Sign-In",
+    "orDivider": "or",
+    "noActivationLink": "Didn't get an activation link?",
+    "resendActivation": "Resend"
   },
   "home": {
     "heroTitleBefore": "JOIN THE",
@@ -109,7 +112,12 @@
     "loadingEvents": "Loading events",
     "loadingUserCount": "Loading user count",
     "loadFail": "Could not load events. Check the API / connection.",
-    "statsFail": "Could not load the user count."
+    "statsFail": "Could not load the user count.",
+    "noUpcoming": "No upcoming events.",
+    "aboutTitle": "About",
+    "aboutBody": "We connect drivers, fans, and organizers. Event calendar, live results, and track gallery — all in one place.",
+    "registeredUsersCaps": "REGISTERED USERS",
+    "goToCalendar": "GO TO CALENDAR"
   },
   "authExtra": {
     "loginOk": "Signed in successfully!",
@@ -223,7 +231,11 @@
     "reqPt": "PT",
     "reqCage": "roll cage",
     "reqRegistered": "registered vehicle",
-    "reqNone": "no extra requirements"
+    "reqTires": "restricted tires",
+    "reqNone": "no extra requirements",
+    "allowedTires": "Allowed tires",
+    "regulations": "Regulations",
+    "regulationsPdf": "Regulations PDF {{n}}"
   },
   "eventStatus": {
     "APPROVED": "Confirmed",
@@ -418,6 +430,12 @@
     "reqPt": "Technical inspection (PT)",
     "reqCage": "Roll cage",
     "reqRegistered": "Registered car",
+    "restrictTires": "Restrict allowed tires",
+    "restrictTiresHint": "Entry only with a car that has at least one selected tire type",
+    "allowedTiresHint": "Select tire types allowed at this event.",
+    "allowedTiresRequired": "When restricting tires, select at least one type",
+    "regulationsPdfs": "Regulations (PDF)",
+    "regulationsPdfsHint": "You can attach several PDF regulation files for the event.",
     "endDateOptional": "End date (optional)",
     "endTimeOptional": "End time (optional)",
     "spectatorFee": "Spectator ticket (PLN, optional)",
@@ -599,7 +617,10 @@
   "settings": {
     "cockpit": "COCKPIT",
     "title": "SETTINGS",
-    "subtitle": "Local preferences for {{username}} — stored in this browser.",
+    "subtitle": "Account preferences for {{username}} — language and theme sync across devices.",
+    "backToAccount": "Back to account",
+    "privacyLink": "Privacy policy",
+    "checkeredFlag": "CHECKERED FLAG",
     "notifications": "Notifications",
     "emailAlerts": "Email alerts",
     "emailAlertsDesc": "Entry and status confirmations (SMTP email)",
@@ -936,9 +957,16 @@
     "alreadyDesc": "You have access to the organizer panel.",
     "goPanel": "Go to panel",
     "pendingTitle": "Application pending",
-    "pendingDesc": "An admin will review it soon.",
+    "pendingDesc": "An admin will review the application soon — you will get organizer panel access after approval.",
+    "pendingCompany": "Company: {{company}}",
+    "approvedTitle": "Application approved",
+    "approvedDesc": "Refresh your session (sign out and sign in again) if you do not see the organizer panel.",
     "rejectedTitle": "Application rejected",
     "rejectedDesc": "You can submit a new application or contact support.",
+    "rejectedBannerTitle": "Your previous application was rejected",
+    "rejectedBannerDesc": "You can submit a new application with updated details.",
+    "mustLogin": "You must be signed in.",
+    "signInLink": "Sign in",
     "company": "Company / organizer name",
     "businessType": "Business type",
     "chooseType": "Select business type",
@@ -997,7 +1025,12 @@
     "hint": "JPG / PNG / WebP · max {{mb}} MB",
     "pasteUrl": "Paste URL",
     "hideUrl": "Hide URL",
-    "clear": "Remove photo"
+    "clear": "Remove photo",
+    "pdfOk": "PDF uploaded",
+    "pdfFail": "Could not upload PDF",
+    "pdfAdd": "Add regulations PDF",
+    "pdfRemove": "Remove PDF",
+    "pdfHint": "PDF · max {{mb}} MB"
   },
   "avatarPicker": {
     "hint": "Default avatar uses initials. Pick a style or switch back to initials.",
@@ -1025,7 +1058,8 @@
   },
   "intro": {
     "loading": "Loading RacePortal",
-    "loadingData": "Loading RacePortal data"
+    "loadingData": "Loading RacePortal data",
+    "tagline": "YOUR MOTORSPORT HUB"
   },
   "routeError": {
     "chunkTitle": "Could not load this part of the app.",

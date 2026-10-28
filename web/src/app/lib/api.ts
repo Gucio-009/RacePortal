@@ -151,37 +151,55 @@ export const api = {
     if (!resolveImageType(file)) {
       throw new ApiError(400, "Dozwolone formaty: JPG, PNG, WebP");
     }
-    const form = new FormData();
-    form.append("file", file, file.name || "image");
-    const doUpload = async () =>
-      fetch(`${API_URL}/api/uploads/image`, {
-        method: "POST",
-        credentials: "include",
-        headers: { Accept: "application/json" },
-        body: form,
-      });
-    let res = await doUpload();
-    if (res.status === 401) {
-      const ok = await tryRefreshSession();
-      if (ok) res = await doUpload();
+    return uploadMultipart("/api/uploads/image", file);
+  },
+  uploadPdf: async (file: File): Promise<{ url: string; contentType: string; sizeBytes: number }> => {
+    if (file.size > MAX_IMAGE_UPLOAD_BYTES) {
+      throw new ApiError(400, "Plik za duży (max 5 MB)");
     }
-    let data: { error?: string; message?: string; url?: string; contentType?: string; sizeBytes?: number } = {};
-    try {
-      data = await res.json();
-    } catch {
-      /* HTML z proxy / nginx */
+    const type = file.type.trim().toLowerCase();
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (type !== "application/pdf" && ext !== "pdf") {
+      throw new ApiError(400, "Dozwolony format: PDF");
     }
-    if (!res.ok) {
-      if (res.status === 401) {
-        clearLegacyToken();
-        onAuthExpired?.();
-      }
-      const fallback = res.status === 413 ? "Plik za duży (max 5 MB)" : "Upload nie powiódł się";
-      throw new ApiError(res.status, data.error || data.message || fallback);
-    }
-    if (!data.url) {
-      throw new ApiError(500, "Brak URL w odpowiedzi uploadu");
-    }
-    return { url: data.url, contentType: data.contentType || file.type, sizeBytes: data.sizeBytes ?? file.size };
+    return uploadMultipart("/api/uploads/pdf", file);
   },
 };
+
+async function uploadMultipart(
+  path: string,
+  file: File,
+): Promise<{ url: string; contentType: string; sizeBytes: number }> {
+  const form = new FormData();
+  form.append("file", file, file.name || "file");
+  const doUpload = async () =>
+    fetch(`${API_URL}${path}`, {
+      method: "POST",
+      credentials: "include",
+      headers: { Accept: "application/json" },
+      body: form,
+    });
+  let res = await doUpload();
+  if (res.status === 401) {
+    const ok = await tryRefreshSession();
+    if (ok) res = await doUpload();
+  }
+  let data: { error?: string; message?: string; url?: string; contentType?: string; sizeBytes?: number } = {};
+  try {
+    data = await res.json();
+  } catch {
+    /* HTML z proxy / nginx */
+  }
+  if (!res.ok) {
+    if (res.status === 401) {
+      clearLegacyToken();
+      onAuthExpired?.();
+    }
+    const fallback = res.status === 413 ? "Plik za duży (max 5 MB)" : "Upload nie powiódł się";
+    throw new ApiError(res.status, data.error || data.message || fallback);
+  }
+  if (!data.url) {
+    throw new ApiError(500, "Brak URL w odpowiedzi uploadu");
+  }
+  return { url: data.url, contentType: data.contentType || file.type, sizeBytes: data.sizeBytes ?? file.size };
+}

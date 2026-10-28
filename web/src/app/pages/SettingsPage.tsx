@@ -3,7 +3,7 @@
  *
  * Cel: pozwala kierowcy / organizatorowi / adminowi ustawić powiadomienia (demo),
  * akcent kolorystyczny, tryb pit-stop (minimalne animacje) oraz flair zespołu.
- * Ustawienia żyją wyłącznie w przeglądarce – nie idą na backend.
+ * Motyw (accent) + locale sync z kontem (PATCH /me); reszta lokalnie w przeglądarce.
  *
  * Wzorce: React useState/useEffect, AuthContext (tylko odczyt user.role),
  * localStorage pod kluczem `raceportal_settings`, CSS variables na <html>.
@@ -40,6 +40,7 @@ import { Input } from "../components/ui/input";
 import { Badge } from "../components/ui/badge";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { api } from "../lib/api";
 import {
   ACCENTS,
   applyUserSettings,
@@ -54,7 +55,7 @@ import { Reveal } from "../components/Reveal";
 
 export function SettingsPage() {
   const { t } = useTranslation();
-  const { user, closeAccount } = useAuth();
+  const { user, closeAccount, isAuthenticated, setUserTheme } = useAuth();
   const navigate = useNavigate();
   const [settings, setSettings] = useState<UserSettings>(defaultSettings);
   const [ready, setReady] = useState(false);
@@ -72,11 +73,21 @@ export function SettingsPage() {
     setReady(true);
   }, []);
 
-  /** Zapis do state + localStorage + natychmiastowe zastosowanie CSS vars. */
-  const persist = (next: UserSettings, message?: string) => {
+  /** Zapis do state + localStorage + CSS vars; motyw sync z kontem gdy zalogowany. */
+  const persist = (next: UserSettings, message?: string, syncTheme = false) => {
     setSettings(next);
     persistSettings(next);
     applyUserSettings(next);
+    if (syncTheme && isAuthenticated) {
+      void api
+        .patch<{ theme?: string }>("/api/auth/me", { theme: next.accent })
+        .then((updated) => {
+          setUserTheme((updated.theme as AccentTheme) || next.accent);
+        })
+        .catch(() => {
+          /* lokalny motyw zostaje */
+        });
+    }
     if (message) toast.success(message);
   };
 
@@ -105,6 +116,7 @@ export function SettingsPage() {
     persist(
       { ...settings, accent },
       t("settings.accentSaved", { label: t(`settings.accents.${accent}.label`) }),
+      true,
     );
     // Confetti pomijane w trybie pit-stop (mniej ruchu).
     if (settings.pitStopMode) return;
@@ -388,16 +400,16 @@ export function SettingsPage() {
               style={{ fontWeight: 700 }}
             >
               <Sparkles className="w-4 h-4 mr-2" />
-              CHECKERED FLAG
+              {t("settings.checkeredFlag")}
             </Button>
             <Link to="/dashboard">
               <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
-                Wróć do konta
+                {t("settings.backToAccount")}
               </Button>
             </Link>
             <Link to="/privacy">
               <Button variant="outline" className="border-[var(--race-border)] text-[var(--race-fg)] hover:bg-[var(--race-hover)]">
-                Polityka prywatności
+                {t("settings.privacyLink")}
               </Button>
             </Link>
           </div>

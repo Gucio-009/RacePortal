@@ -72,6 +72,23 @@ public class UploadService {
         }
 
         String ext = EXT_BY_TYPE.get(contentType);
+        return storeFile(file, contentType, ext);
+    }
+
+    public UploadResponse storePdf(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw ApiException.badRequest("Brak pliku");
+        }
+        if (file.getSize() > maxBytes) {
+            throw ApiException.badRequest("Plik za duży (max " + (maxBytes / (1024 * 1024)) + " MB)");
+        }
+        if (!isPdf(file)) {
+            throw ApiException.badRequest("Dozwolony format: PDF");
+        }
+        return storeFile(file, MediaType.APPLICATION_PDF_VALUE, ".pdf");
+    }
+
+    private UploadResponse storeFile(MultipartFile file, String contentType, String ext) {
         String filename = UUID.randomUUID().toString().replace("-", "") + ext;
         Path target = uploadDir.resolve(filename).normalize();
         if (!target.startsWith(uploadDir)) {
@@ -112,6 +129,9 @@ public class UploadService {
 
     public MediaType mediaTypeFor(String filename) {
         String lower = filename.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(".pdf")) {
+            return MediaType.APPLICATION_PDF;
+        }
         if (lower.endsWith(".png")) {
             return MediaType.IMAGE_PNG;
         }
@@ -123,13 +143,8 @@ public class UploadService {
 
     /** Typ z sygnatury pliku, nie z nagłówka przeglądarki (często pusty albo octet-stream). */
     private static String sniffedType(MultipartFile file) {
-        byte[] head = new byte[16];
-        int read;
-        try (InputStream in = file.getInputStream()) {
-            read = in.read(head);
-        } catch (IOException e) {
-            throw ApiException.badRequest("Nie udało się odczytać pliku");
-        }
+        byte[] head = readHead(file, 16);
+        int read = head.length;
         if (read >= 3 && (head[0] & 0xFF) == 0xFF && (head[1] & 0xFF) == 0xD8 && (head[2] & 0xFF) == 0xFF) {
             return MediaType.IMAGE_JPEG_VALUE;
         }
@@ -152,12 +167,40 @@ public class UploadService {
         return "";
     }
 
+    private static boolean isPdf(MultipartFile file) {
+        byte[] head = readHead(file, 5);
+        return head.length >= 4
+                && head[0] == '%'
+                && head[1] == 'P'
+                && head[2] == 'D'
+                && head[3] == 'F';
+    }
+
+    private static byte[] readHead(MultipartFile file, int max) {
+        byte[] head = new byte[max];
+        int read;
+        try (InputStream in = file.getInputStream()) {
+            read = in.read(head);
+        } catch (IOException e) {
+            throw ApiException.badRequest("Nie udało się odczytać pliku");
+        }
+        if (read <= 0) {
+            return new byte[0];
+        }
+        if (read == head.length) {
+            return head;
+        }
+        byte[] trimmed = new byte[read];
+        System.arraycopy(head, 0, trimmed, 0, read);
+        return trimmed;
+    }
+
     private static String sanitizeFilename(String filename) {
         if (filename == null || filename.isBlank()) {
             throw ApiException.badRequest("Brak nazwy pliku");
         }
         String base = Path.of(filename).getFileName().toString();
-        if (!base.matches("[a-f0-9]{32}\\.(jpg|png|webp)")) {
+        if (!base.matches("[a-f0-9]{32}\\.(jpg|png|webp|pdf)")) {
             throw ApiException.badRequest("Nieprawidłowa nazwa pliku");
         }
         return base;

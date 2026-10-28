@@ -412,7 +412,7 @@ export function RegisterPage() {
                         <IdCard className="w-4 h-4 text-[var(--race-accent)]" />
                         Prawo jazdy kat. B
                       </Label>
-                      <p className="text-xs text-[var(--race-muted)]">Posiadam ważne prawo jazdy</p>
+                      <p className="text-xs text-[var(--race-muted)]">{t("registerPage.licenseBDesc")}</p>
                     </div>
                     <Switch
                       id="licenseB"
@@ -425,7 +425,7 @@ export function RegisterPage() {
                       <Label htmlFor="hasPzm" className="text-[var(--race-fg)]" style={{ fontWeight: 600 }}>
                         Licencja PZM
                       </Label>
-                      <p className="text-xs text-[var(--race-muted)]">Niezależnie od prawa jazdy</p>
+                      <p className="text-xs text-[var(--race-muted)]">{t("registerPage.pzmIndependent")}</p>
                     </div>
                     <Switch
                       id="hasPzm"

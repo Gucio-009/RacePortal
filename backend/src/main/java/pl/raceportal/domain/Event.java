@@ -136,9 +136,27 @@ public class Event {
     @Column(name = "spectator_fee", precision = 10, scale = 2)
     private BigDecimal spectatorFee;
 
-    /** Link zewnętrzny (regulamin, bilety itd.). */
+    /** Link zewnętrzny (bilety, strona wydarzenia itd.). */
     @Column(name = "external_url", length = 500)
     private String externalUrl;
+
+    /**
+     * Załączniki PDF regulaminów — CSV ścieżek {@code /api/uploads/….pdf}
+     * lub absolutnych http(s).
+     */
+    @Column(name = "regulations_urls", columnDefinition = "TEXT")
+    private String regulationsUrls;
+
+    /** Czy ograniczać zgłoszenia do wybranych rodzajów opon. */
+    @Column(name = "restrict_allowed_tires", nullable = false)
+    private boolean restrictAllowedTires = false;
+
+    /**
+     * Dozwolone opony (CSV kluczy: road, semislick, slick, gravel, rain, studded).
+     * Ma znaczenie tylko gdy {@link #restrictAllowedTires}.
+     */
+    @Column(name = "allowed_tire_types", length = 200)
+    private String allowedTireTypes;
 
     /** Wymaga prawa jazdy B u zawodnika. */
     @Column(name = "require_driving_license", nullable = false)
@@ -397,6 +415,30 @@ public class Event {
 
     public void setExternalUrl(String externalUrl) {
         this.externalUrl = externalUrl;
+    }
+
+    public String getRegulationsUrls() {
+        return regulationsUrls;
+    }
+
+    public void setRegulationsUrls(String regulationsUrls) {
+        this.regulationsUrls = regulationsUrls;
+    }
+
+    public boolean isRestrictAllowedTires() {
+        return restrictAllowedTires;
+    }
+
+    public void setRestrictAllowedTires(boolean restrictAllowedTires) {
+        this.restrictAllowedTires = restrictAllowedTires;
+    }
+
+    public String getAllowedTireTypes() {
+        return allowedTireTypes;
+    }
+
+    public void setAllowedTireTypes(String allowedTireTypes) {
+        this.allowedTireTypes = allowedTireTypes;
     }
 
     public boolean isRequireDrivingLicense() {

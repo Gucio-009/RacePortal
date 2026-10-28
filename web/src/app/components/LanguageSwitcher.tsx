@@ -1,9 +1,8 @@
 /**
- * Przełącznik PL | EN — sliding thumb, font-display, akcent marki.
+ * Segmentowy przełącznik PL | EN — minimalistyczny, bez glow.
  * Widoczny bez logowania; zapis lokalny + opcjonalnie PATCH /me.
  */
 import { useTranslation } from "react-i18next";
-import { Languages } from "lucide-react";
 import { normalizeLocale, type Locale } from "@raceportal/i18n";
 import { setAppLocale } from "../i18n";
 import {
@@ -23,7 +22,6 @@ export function LanguageSwitcher({ className = "", compact = false }: Props) {
   const { t, i18n } = useTranslation();
   const { isAuthenticated, setUserLocale } = useAuth();
   const current = normalizeLocale(i18n.language);
-  const enActive = current === "en";
 
   const apply = async (locale: Locale) => {
     if (locale === current) return;
@@ -43,17 +41,11 @@ export function LanguageSwitcher({ className = "", compact = false }: Props) {
 
   return (
     <div
-      className={`lang-switch ${compact ? "lang-switch--compact" : ""} ${className}`}
+      className={`lang-switch ${compact ? "lang-switch--compact" : ""} ${className}`.trim()}
       role="group"
       aria-label={t("lang.language")}
     >
-      <Languages className="lang-switch__icon" aria-hidden />
       <div className="lang-switch__track">
-        <span
-          className="lang-switch__thumb"
-          data-side={enActive ? "en" : "pl"}
-          aria-hidden
-        />
         {(["pl", "en"] as Locale[]).map((code) => {
           const active = current === code;
           return (
@@ -66,12 +58,7 @@ export function LanguageSwitcher({ className = "", compact = false }: Props) {
               onClick={() => void apply(code)}
               className={`lang-switch__btn ${active ? "is-active" : ""}`}
             >
-              <span className="lang-switch__code">{code.toUpperCase()}</span>
-              {!compact && (
-                <span className="lang-switch__name">
-                  {code === "pl" ? t("lang.plFull") : t("lang.enFull")}
-                </span>
-              )}
+              {code.toUpperCase()}
             </button>
           );
         })}

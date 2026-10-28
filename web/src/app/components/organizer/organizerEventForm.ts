@@ -17,6 +17,7 @@
 
 import type { ApiEvent } from "../../lib/types";
 import { ALL_EVENT_CATEGORIES } from "../../lib/eventCategories";
+import { parseCarClasses } from "../../lib/carMatch";
 import {
   OTHER,
   TRACK_PRESETS,
@@ -59,6 +60,9 @@ export const emptyForm = {
   endTime: "",
   spectatorFee: "",
   externalUrl: "",
+  regulationsUrls: [] as string[],
+  restrictAllowedTires: false,
+  allowedTireTypes: [] as string[],
   requireDrivingLicense: false,
   requirePzmLicense: false,
   requireDrivingLicenseOrPzm: false,
@@ -148,6 +152,9 @@ export function eventToForm(event: ApiEvent): FormState {
     endTime: event.endTime ?? "",
     spectatorFee: event.spectatorFee != null ? String(event.spectatorFee) : "",
     externalUrl: event.externalUrl ?? "",
+    regulationsUrls: parseCarClasses(event.regulationsUrls),
+    restrictAllowedTires: event.restrictAllowedTires ?? false,
+    allowedTireTypes: parseCarClasses(event.allowedTireTypes),
     requireDrivingLicense: event.requireDrivingLicense ?? false,
     requirePzmLicense: event.requirePzmLicense ?? false,
     requireDrivingLicenseOrPzm: event.requireDrivingLicenseOrPzm ?? false,

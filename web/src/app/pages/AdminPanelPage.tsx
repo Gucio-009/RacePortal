@@ -50,7 +50,7 @@ import { Label } from "../components/ui/label";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
-import { formatEventDate, formatEntryFee } from "../lib/types";
+import { eventDateLabel, formatEntryFee } from "../lib/types";
 import { EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import { toast } from "sonner";
 import { AdminBugReports } from "../components/AdminBugReports";
@@ -331,7 +331,7 @@ export function AdminPanelPage() {
                             {event.organizer?.verified ? " ✓" : ""}
                           </p>
                           <p className="text-[var(--race-muted)] text-sm">
-                            {event.dateLabel || formatEventDate(event.date)} · {event.time}
+                            {eventDateLabel(event, i18n.language)} · {event.time}
                           </p>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -392,7 +392,7 @@ export function AdminPanelPage() {
                             </p>
                             <p>
                               <span className="text-[var(--race-fg)]">{t("events.entryFee")}:</span>{" "}
-                              {event.paid ? formatEntryFee(event.entryFee) ?? "–" : t("events.freeEntry")}
+                              {event.paid ? formatEntryFee(event.entryFee, i18n.language) ?? "–" : t("events.freeEntry")}
                             </p>
                             <p>
                               <span className="text-[var(--race-fg)]">{t("events.bankAccount")}:</span> {event.bankAccount || "–"}
@@ -423,6 +423,7 @@ export function AdminPanelPage() {
                                 event.requirePt && t("events.reqPt"),
                                 event.requireCage && t("events.reqCage"),
                                 event.requireRegistered && t("events.reqRegistered"),
+                                event.restrictAllowedTires && t("events.reqTires"),
                               ]
                                 .filter(Boolean)
                                 .join(", ") || t("events.reqNone")}

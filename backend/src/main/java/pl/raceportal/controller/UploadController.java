@@ -37,8 +37,14 @@ public class UploadController {
         return ResponseEntity.ok(uploadService.storeImage(file));
     }
 
+    @PostMapping(value = "/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<UploadResponse> uploadPdf(@RequestPart("file") MultipartFile file) {
+        return ResponseEntity.ok(uploadService.storePdf(file));
+    }
+
     @GetMapping("/{filename}")
-    public ResponseEntity<Resource> getImage(@PathVariable String filename) {
+    public ResponseEntity<Resource> getFile(@PathVariable String filename) {
         Resource resource = uploadService.loadAsResource(filename);
         return ResponseEntity.ok()
                 .contentType(uploadService.mediaTypeFor(filename))

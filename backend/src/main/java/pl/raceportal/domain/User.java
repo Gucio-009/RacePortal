@@ -143,6 +143,13 @@ public class User {
     @Column(name = "locale", nullable = false, length = 5, columnDefinition = "varchar(5) not null default 'pl'")
     private String locale = "pl";
 
+    /**
+     * Preferowany motyw UI ({@code gold|redline|ice|arctic|sand|blush}).
+     * Sync między urządzeniami dla zalogowanego użytkownika.
+     */
+    @Column(name = "theme", nullable = false, length = 16, columnDefinition = "varchar(16) not null default 'gold'")
+    private String theme = "gold";
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
@@ -345,6 +352,14 @@ public class User {
 
     public void setLocale(String locale) {
         this.locale = locale;
+    }
+
+    public String getTheme() {
+        return theme;
+    }
+
+    public void setTheme(String theme) {
+        this.theme = theme;
     }
 
     public Instant getCreatedAt() {

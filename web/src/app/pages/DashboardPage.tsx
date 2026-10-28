@@ -324,7 +324,7 @@ export function DashboardPage() {
                           )}
                           {reg.event && (
                             <span className="text-[var(--race-muted)]" style={{ fontSize: "14px" }}>
-                              {eventDateLabel(reg.event)}
+                              {eventDateLabel(reg.event, i18n.language)}
                             </span>
                           )}
                         </div>

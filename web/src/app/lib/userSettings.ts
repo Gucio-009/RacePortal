@@ -1,11 +1,7 @@
 /**
  * Lokalne preferencje UI (localStorage) + zastosowanie CSS vars na <html>.
- * Wspólne dla SettingsPage i bootstrapu w App.
- *
- * Wzorzec: Złoty tor (gold) – ciemne tło + żółty akcent. Redline/Ice zmieniają tylko
- * `--race-accent`. Motywy jasne (arctic, sand, blush) nadpisują powierzchnie
- * (`html[data-accent]`). Układ stron i Scroll Reveal są wspólne.
- * Locale PL/EN: `locale` + `document.documentElement.lang`; zalogowany sync przez PATCH /me.
+ * Locale + theme sync z kontem (PATCH /api/auth/me) gdy zalogowany.
+ * Gość: raceportal_settings; snapshot gościa przy logowaniu → restore przy wylogowaniu.
  */
 import { defaultLocale, isLocale, type Locale } from "@raceportal/i18n";
 
@@ -23,6 +19,7 @@ export type UserSettings = {
 };
 
 export const STORAGE_KEY = "raceportal_settings";
+export const GUEST_STORAGE_KEY = "raceportal_guest_settings";
 
 export const ACCENTS: Record<
   AccentTheme,
@@ -46,6 +43,14 @@ export function isLightAccent(accent: AccentTheme): boolean {
 }
 
 const ACCENT_KEYS = new Set<string>(Object.keys(ACCENTS));
+
+export function isAccentTheme(value: unknown): value is AccentTheme {
+  return typeof value === "string" && ACCENT_KEYS.has(value);
+}
+
+export function normalizeAccent(value: unknown): AccentTheme {
+  return isAccentTheme(value) ? value : "gold";
+}
 
 export function defaultSettings(): UserSettings {
   return {
@@ -76,6 +81,31 @@ export function loadSettings(): UserSettings {
 
 export function persistSettings(settings: UserSettings) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+}
+
+/** Snapshot ustawień gościa przed nadpisaniem preferencjami konta. */
+export function snapshotGuestSettings(settings: UserSettings = loadSettings()) {
+  localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(settings));
+}
+
+export function loadGuestSettings(): UserSettings | null {
+  try {
+    const raw = localStorage.getItem(GUEST_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = { ...defaultSettings(), ...JSON.parse(raw) } as UserSettings;
+    if (!ACCENT_KEYS.has(parsed.accent)) parsed.accent = "gold";
+    if (!isLocale(parsed.locale)) parsed.locale = defaultLocale;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+export function restoreGuestSettings(): UserSettings {
+  const guest = loadGuestSettings() ?? defaultSettings();
+  persistSettings(guest);
+  applyUserSettings(guest);
+  return guest;
 }
 
 /** Stosuje akcent / pit-stop / lang do documentElement (CSS vars + data-*). */

@@ -23,7 +23,7 @@ import { useAuth } from "../context/AuthContext";
 import { api, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { ApiEvent, PublicStats } from "../lib/types";
-import { eventImage, HERO_BG_TRACK } from "../lib/types";
+import { eventDateLabel, eventImage, HERO_BG_TRACK } from "../lib/types";
 
 const STATS_POLL_MS = 30_000;
 
@@ -195,7 +195,7 @@ export function HomePage() {
         ) : loadError ? (
           <p className="text-center text-red-400 py-12 min-h-[20rem]">{loadError}</p>
         ) : upcomingEvents.length === 0 ? (
-          <p className="text-center text-[var(--race-muted)] py-12 min-h-[20rem]">Brak nadchodzących wydarzeń.</p>
+          <p className="text-center text-[var(--race-muted)] py-12 min-h-[20rem]">{t("home.noUpcoming")}</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
             {upcomingEvents.map((event, index) => (
@@ -226,7 +226,9 @@ export function HomePage() {
                   <CardContent className="p-6 flex flex-1 flex-col min-h-0">
                     <div className="flex items-center gap-2 text-[var(--race-accent)] mb-3 min-h-[1.25rem]">
                       <Calendar className="w-4 h-4 shrink-0" />
-                      <span className="truncate text-sm font-bold">{event.dateLabel}</span>
+                      <span className="truncate text-sm font-bold">
+                        {eventDateLabel(event, i18n.language)}
+                      </span>
                     </div>
                     <h3 className="font-display mb-2 text-[var(--race-fg)] text-xl font-bold leading-snug line-clamp-2 min-h-[2.5rem]">
                       {event.name}
@@ -256,12 +258,11 @@ export function HomePage() {
           <Reveal className="text-center mb-8 sm:mb-12 max-w-3xl mx-auto">
             <h2 className="text-[var(--race-fg)] mb-3 sm:mb-4 text-2xl sm:text-3xl md:text-4xl font-extrabold">
               {/* Oxanium „O” wygląda jak zero – łącznik w Montserrat, brand w display */}
-              <span className="font-sans tracking-wide">O </span>
+              <span className="font-sans tracking-wide">{t("home.aboutTitle")} </span>
               <span className="font-display text-[var(--race-accent)]">RACEPORTAL</span>
             </h2>
             <p className="text-[var(--race-muted)] text-sm sm:text-lg">
-              Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów –
-              wszystko w jednym miejscu.
+              {t("home.aboutBody")}
             </p>
           </Reveal>
           <Reveal delay={100} className="flex justify-center text-center">
@@ -277,7 +278,7 @@ export function HomePage() {
                     {registeredUsers.toLocaleString(i18n.language === "en" ? "en-GB" : "pl-PL")}
                   </div>
                   <p className="text-[var(--race-muted)] text-xs sm:text-lg font-semibold leading-tight">
-                    ZAREJESTROWANYCH UŻYTKOWNIKÓW
+                    {t("home.registeredUsersCaps")}
                   </p>
                 </>
               ) : statsError ? (
@@ -293,7 +294,7 @@ export function HomePage() {
                 className="bg-[var(--race-accent)] text-[var(--race-on-accent)] hover:brightness-95 px-8"
                 style={{ fontWeight: 800 }}
               >
-                PRZEJDŹ DO KALENDARZA
+                {t("home.goToCalendar")}
               </Button>
             </Link>
           </Reveal>

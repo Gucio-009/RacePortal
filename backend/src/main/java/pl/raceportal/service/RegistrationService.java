@@ -349,7 +349,9 @@ public class RegistrationService {
                 throw ApiException.badRequest("To wydarzenie wymaga prawa jazdy kat. B lub licencji PZM");
             }
         }
-        if ((event.isRequireOc() || event.isRequirePt() || event.isRequireCage() || event.isRequireRegistered()) && car == null) {
+        boolean needsCar = event.isRequireOc() || event.isRequirePt() || event.isRequireCage()
+                || event.isRequireRegistered() || event.isRestrictAllowedTires();
+        if (needsCar && car == null) {
             throw ApiException.badRequest("To wydarzenie wymaga wyboru auta spełniającego warunki techniczne");
         }
         if (event.isRequireOc() && car != null && !car.isHasOc()) {
@@ -363,6 +365,15 @@ public class RegistrationService {
         }
         if (event.isRequireRegistered() && car != null && !car.isRegistered()) {
             throw ApiException.badRequest("Wybrane auto nie jest zarejestrowane");
+        }
+        if (event.isRestrictAllowedTires() && car != null) {
+            var allowed = new java.util.HashSet<>(TireTypes.parse(event.getAllowedTireTypes()));
+            var carTires = TireTypes.parse(car.getTireTypes());
+            boolean matches = carTires.stream().anyMatch(allowed::contains);
+            if (!matches) {
+                throw ApiException.badRequest(
+                        "Wybrane auto nie ma żadnego z dozwolonych rodzajów opon na to wydarzenie");
+            }
         }
     }
 

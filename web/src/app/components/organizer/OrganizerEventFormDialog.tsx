@@ -26,7 +26,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../ui/select";
 import { LocationMapPicker } from "../LocationMapPicker";
 import { ImageUploadField } from "../ImageUploadField";
+import { PdfAttachmentsField } from "../PdfAttachmentsField";
 import { EVENT_CATEGORY_GROUPS } from "../../lib/eventCategories";
+import { TIRE_TYPE_OPTIONS } from "../../lib/types";
 import {
   OTHER,
   VOIVODESHIPS,
@@ -465,6 +467,8 @@ export function OrganizerEventFormDialog({
                   ...form,
                   acceptRegistrations: v,
                   bankAccount: v ? form.bankAccount : "",
+                  restrictAllowedTires: v ? form.restrictAllowedTires : false,
+                  allowedTireTypes: v ? form.allowedTireTypes : [],
                 })
               }
             />
@@ -489,6 +493,58 @@ export function OrganizerEventFormDialog({
                   </div>
                 ))}
               </div>
+
+              <div className="flex items-center gap-3 rounded border border-[var(--race-border)] px-3 py-2 box-border overflow-hidden">
+                <div className="flex-1 min-w-0 pr-1">
+                  <Label className="text-[var(--race-fg)] text-sm leading-snug">
+                    {t("organizer.restrictTires")}
+                  </Label>
+                  <p className="text-xs text-[var(--race-muted)]">{t("organizer.restrictTiresHint")}</p>
+                </div>
+                <Switch
+                  className="shrink-0"
+                  checked={form.restrictAllowedTires}
+                  onCheckedChange={(v) =>
+                    setForm({
+                      ...form,
+                      restrictAllowedTires: v,
+                      allowedTireTypes: v ? form.allowedTireTypes : [],
+                    })
+                  }
+                />
+              </div>
+              {form.restrictAllowedTires && (
+                <div className="space-y-2">
+                  <p className="text-xs text-[var(--race-muted)]">{t("organizer.allowedTiresHint")}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {TIRE_TYPE_OPTIONS.map((tire) => {
+                      const selected = form.allowedTireTypes.includes(tire);
+                      return (
+                        <button
+                          key={tire}
+                          type="button"
+                          onClick={() =>
+                            setForm((prev) => ({
+                              ...prev,
+                              allowedTireTypes: selected
+                                ? prev.allowedTireTypes.filter((x) => x !== tire)
+                                : [...prev.allowedTireTypes, tire],
+                            }))
+                          }
+                          className={
+                            selected
+                              ? "inline-flex items-center rounded-md border border-[var(--race-accent)] bg-[var(--race-accent)] text-[var(--race-on-accent)] px-2.5 py-1 text-xs font-semibold transition-colors"
+                              : "inline-flex items-center rounded-md border border-[var(--race-border)] bg-[var(--race-bg)] text-[var(--race-fg)] px-2.5 py-1 text-xs font-medium hover:border-[var(--race-accent)]/60 transition-colors"
+                          }
+                          aria-pressed={selected}
+                        >
+                          {t(`garage.tire.${tire}`)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -530,6 +586,14 @@ export function OrganizerEventFormDialog({
               onChange={(e) => setForm({ ...form, externalUrl: e.target.value })}
               placeholder={t("organizer.externalUrlExample")}
               className="bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]"
+            />
+          </div>
+          <div className="space-y-2 sm:col-span-2">
+            <Label>{t("organizer.regulationsPdfs")}</Label>
+            <p className="text-xs text-[var(--race-muted)]">{t("organizer.regulationsPdfsHint")}</p>
+            <PdfAttachmentsField
+              value={form.regulationsUrls}
+              onChange={(urls) => setForm({ ...form, regulationsUrls: urls })}
             />
           </div>
 

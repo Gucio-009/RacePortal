@@ -22,10 +22,10 @@ type Props = {
 
 /** Widoczny marker „Płatne” z opcjonalną kwotą wpisowego. */
 export function PaidEventBadge({ event, variant = "inline", className = "" }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   if (!event.paid) return null;
 
-  const fee = formatEntryFee(event.entryFee);
+  const fee = formatEntryFee(event.entryFee, i18n.language);
   const paid = t("common.paid");
   const label = fee ? `${paid} · ${fee}` : paid;
 

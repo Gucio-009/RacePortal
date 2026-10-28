@@ -21,6 +21,9 @@ try {
       if (c) c.setAttribute("content", "light");
     }
   }
+  if (s.locale === "en" || s.locale === "pl") {
+    document.documentElement.lang = s.locale;
+  }
 } catch (e) {}
 try {
   if (sessionStorage.getItem("raceportal_intro_seen") !== "1") {

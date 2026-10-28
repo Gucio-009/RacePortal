@@ -6,7 +6,7 @@
  * Logout: POST `/api/auth/logout` + clear state.
  */
 
-import React, { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useRef, ReactNode, useEffect, useCallback } from "react";
 import { normalizeLocale, type Locale } from "@raceportal/i18n";
 import { api, clearLegacyToken, setOnAuthExpired, ApiError } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
@@ -14,15 +14,27 @@ import i18n, { setAppLocale } from "../i18n";
 import {
   applyUserSettings,
   loadSettings,
+  normalizeAccent,
   persistSettings,
+  restoreGuestSettings,
+  snapshotGuestSettings,
+  type AccentTheme,
 } from "../lib/userSettings";
 import type { User } from "../lib/types";
 
-function syncLocaleFromUser(user: User | null) {
-  if (!user?.locale) return;
+/** Sync locale + theme z konta; przy wylogowaniu przywraca snapshot gościa. */
+function syncPrefsFromUser(user: User | null, wasLoggedIn: boolean) {
+  if (!user) {
+    if (wasLoggedIn) restoreGuestSettings();
+    return;
+  }
+  if (!wasLoggedIn) {
+    snapshotGuestSettings(loadSettings());
+  }
   const locale = normalizeLocale(user.locale);
+  const accent = normalizeAccent(user.theme);
   setAppLocale(locale);
-  const next = { ...loadSettings(), locale };
+  const next = { ...loadSettings(), locale, accent };
   persistSettings(next);
   applyUserSettings(next);
 }
@@ -69,6 +81,7 @@ interface AuthContextType {
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
     locale?: Locale;
+    theme?: AccentTheme;
   }) => Promise<{ ok: boolean; message?: string }>;
   changePassword: (
     currentPassword: string,
@@ -86,6 +99,8 @@ interface AuthContextType {
   refreshSession: () => Promise<{ ok: boolean; message?: string }>;
   /** Aktualizuje locale w state usera (po LanguageSwitcher / Settings). */
   setUserLocale: (locale: Locale) => void;
+  /** Aktualizuje theme w state usera (po Settings). */
+  setUserTheme: (theme: AccentTheme) => void;
   isAuthenticated: boolean;
 }
 
@@ -102,15 +117,22 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const userRef = useRef<User | null>(null);
 
   const persistAuth = useCallback((nextUser: User | null) => {
+    const wasLoggedIn = userRef.current != null;
+    userRef.current = nextUser;
     setUser(nextUser);
-    syncLocaleFromUser(nextUser);
+    syncPrefsFromUser(nextUser, wasLoggedIn);
     if (!nextUser) clearLegacyToken();
   }, []);
 
   const setUserLocale = useCallback((locale: Locale) => {
     setUser((prev) => (prev ? { ...prev, locale } : prev));
+  }, []);
+
+  const setUserTheme = useCallback((theme: AccentTheme) => {
+    setUser((prev) => (prev ? { ...prev, theme } : prev));
   }, []);
 
   useEffect(() => {
@@ -278,6 +300,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string;
     locale?: Locale;
+    theme?: AccentTheme;
   }) => {
     try {
       const updated = await api.patch<User>("/api/auth/me", {
@@ -291,6 +314,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         hasDrivingLicenseB: data.hasDrivingLicenseB,
         pzmLicense: data.pzmLicense,
         locale: data.locale,
+        theme: data.theme,
       });
       persistAuth(updated);
       return { ok: true };
@@ -404,6 +428,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         closeAccount,
         refreshSession,
         setUserLocale,
+        setUserTheme,
         isAuthenticated: !!user,
       }}
     >

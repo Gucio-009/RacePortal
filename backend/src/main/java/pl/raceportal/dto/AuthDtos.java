@@ -151,7 +151,12 @@ public final class AuthDtos {
             Boolean hasDrivingLicenseB,
             @Size(max = 40) String pzmLicense,
             @Pattern(regexp = "(?i)^(pl|en)?$", message = "locale: pl lub en")
-            String locale
+            String locale,
+            @Pattern(
+                    regexp = "(?i)^(gold|redline|ice|arctic|sand|blush)?$",
+                    message = "theme: gold, redline, ice, arctic, sand lub blush"
+            )
+            String theme
     ) {
     }
 
@@ -179,6 +184,8 @@ public final class AuthDtos {
             boolean hasDrivingLicenseB,
             String pzmLicense,
             String locale,
+            /** Motyw UI: gold|redline|ice|arctic|sand|blush. */
+            String theme,
             boolean registrationComplete,
             /** true = konto Google — bez zmiany hasła / e-maila. */
             boolean googleAccount

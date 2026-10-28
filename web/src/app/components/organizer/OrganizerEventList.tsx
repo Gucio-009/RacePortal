@@ -17,7 +17,7 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Input } from "../ui/input";
-import { formatEventDate } from "../../lib/types";
+import { eventDateLabel } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 
 interface OrganizerEventListProps {
@@ -43,7 +43,7 @@ export function OrganizerEventList({
   onCancelEvent,
   onDeleteEvent,
 }: OrganizerEventListProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const search = (
     <div className="relative mb-4">
@@ -114,7 +114,7 @@ export function OrganizerEventList({
               </h3>
               <p className="text-[var(--race-muted)] text-sm flex items-center gap-2 mt-1">
                 <Calendar className="w-4 h-4" />
-                {event.dateLabel || formatEventDate(event.date)} · {event.track}
+                {eventDateLabel(event, i18n.language)} · {event.track}
               </p>
               <p className="text-[var(--race-muted)] text-sm flex items-center gap-2">
                 <Users className="w-4 h-4" />

@@ -396,6 +396,16 @@ function buildCases(): Case[] {
   add("eventDateLabel empty without date", () => {
     expect(eventDateLabel({})).toBe("");
   });
+  add("eventDateLabel EN ignores Polish API dateLabel", () => {
+    const d = "2026-08-15T00:00:00.000Z";
+    const en = eventDateLabel({ date: d, dateLabel: "15 SIERPNIA 2026" }, "en");
+    expect(en).toBe(formatEventDate(d, "en"));
+    expect(en).not.toContain("SIERPNIA");
+  });
+  add("formatEventDate EN uses English month", () => {
+    const label = formatEventDate("2026-08-15T00:00:00.000Z", "en");
+    expect(label).toMatch(/AUGUST/);
+  });
 
   // Dopełnienie do ≥500: mixed-case + substring per kategoria
   for (const klass of ALL_EVENT_CATEGORIES) {

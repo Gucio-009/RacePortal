@@ -139,11 +139,11 @@ export function BecomeOrganizerPage() {
             <p className="text-[var(--race-muted)]">
               {existing?.company ? (
                 <>
-                  Firma: <span className="text-[var(--race-fg)]">{existing.company}</span>
+                  {t("becomeOrganizer.pendingCompany", { company: existing.company })}
                   {existing.businessType ? ` · ${existing.businessType}` : ""}.{" "}
                 </>
               ) : null}
-              Administrator rozpatrzy wniosek wkrótce – dostaniesz dostęp do panelu organizatora po akceptacji.
+              {t("becomeOrganizer.pendingDesc")}
             </p>
             <Link to="/dashboard">
               <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
@@ -155,10 +155,10 @@ export function BecomeOrganizerPage() {
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 text-center space-y-4">
             <CheckCircle2 className="w-12 h-12 text-green-500 mx-auto" />
             <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-              Wniosek został zaakceptowany
+              {t("becomeOrganizer.approvedTitle")}
             </p>
             <p className="text-[var(--race-muted)]">
-              Odśwież sesję (wyloguj i zaloguj ponownie), jeśli nie widzisz panelu organizatora.
+              {t("becomeOrganizer.approvedDesc")}
             </p>
             <Link to="/organizer">
               <Button className="bg-[var(--race-accent)] text-[var(--race-on-accent)]" style={{ fontWeight: 700 }}>
@@ -172,9 +172,9 @@ export function BecomeOrganizerPage() {
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-6 text-center space-y-2">
             <XCircle className="w-10 h-10 text-red-400 mx-auto" />
             <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-              Poprzedni wniosek został odrzucony
+              {t("becomeOrganizer.rejectedBannerTitle")}
             </p>
-            <p className="text-[var(--race-muted)] text-sm">Możesz złożyć nowy wniosek z aktualnymi danymi.</p>
+            <p className="text-[var(--race-muted)] text-sm">{t("becomeOrganizer.rejectedBannerDesc")}</p>
           </div>
         )}
 
@@ -182,9 +182,9 @@ export function BecomeOrganizerPage() {
           <form onSubmit={handleSubmit} className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-8 space-y-6">
             {!isAuthenticated && (
               <p className="text-[var(--race-accent)] text-sm">
-                Musisz być zalogowany.{" "}
+                {t("becomeOrganizer.mustLogin")}{" "}
                 <Link to="/login" className="underline">
-                  Zaloguj się
+                  {t("becomeOrganizer.signInLink")}
                 </Link>
               </p>
             )}

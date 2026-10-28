@@ -133,6 +133,9 @@ export function OrganizerPanelPage() {
     if (form.paid && form.acceptRegistrations && !form.bankAccount.trim()) {
       errors.bankAccount = t("organizer.bankRequired");
     }
+    if (form.acceptRegistrations && form.restrictAllowedTires && form.allowedTireTypes.length === 0) {
+      errors.allowedTireTypes = t("organizer.allowedTiresRequired");
+    }
     const imageErr = validateImageReference(form.imageUrl, false);
     if (imageErr) errors.imageUrl = imageErr;
     return errors;
@@ -195,7 +198,7 @@ export function OrganizerPanelPage() {
     setEditingId(event.id);
     setActiveDraftId(null);
     const draft = loadFormDraft<FormState>(`${EVENT_DRAFT_KEY}_${event.id}`);
-    const initial = draft ?? eventToForm(event);
+    const initial = { ...emptyForm, ...(draft ?? eventToForm(event)) };
     setForm(initial);
     setFormBaseline(initial);
     setFieldErrors({});
@@ -206,8 +209,9 @@ export function OrganizerPanelPage() {
   const openDraft = (draft: EventDraftEntry<FormState>) => {
     setEditingId(null);
     setActiveDraftId(draft.id);
-    setForm(draft.data);
-    setFormBaseline(draft.data);
+    const initial = { ...emptyForm, ...draft.data };
+    setForm(initial);
+    setFormBaseline(initial);
     setFieldErrors({});
     setDraftsOpen(false);
     setCreateOpen(true);
@@ -272,6 +276,12 @@ export function OrganizerPanelPage() {
       endTime: form.endTime.trim() || undefined,
       spectatorFee: form.spectatorFee.trim() ? Number(form.spectatorFee) : undefined,
       externalUrl: form.externalUrl.trim() || undefined,
+      regulationsUrls: form.regulationsUrls.join(", ") || "",
+      restrictAllowedTires: form.acceptRegistrations ? form.restrictAllowedTires : false,
+      allowedTireTypes:
+        form.acceptRegistrations && form.restrictAllowedTires
+          ? form.allowedTireTypes.join(", ")
+          : "",
       requireDrivingLicense: form.acceptRegistrations ? form.requireDrivingLicense : false,
       requirePzmLicense: form.acceptRegistrations ? form.requirePzmLicense : false,
       requireDrivingLicenseOrPzm: form.acceptRegistrations ? form.requireDrivingLicenseOrPzm : false,

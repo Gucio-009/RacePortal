@@ -60,6 +60,8 @@ export interface User {
   pzmLicense?: string | null;
   /** Preferencja języka (maile + sync UI). Domyślnie pl. */
   locale?: UserLocale | null;
+  /** Motyw UI (gold|redline|ice|arctic|sand|blush). Sync z kontem. */
+  theme?: string | null;
   /**
    * false = konto z Google bez kroku prawa jazdy / PZM — UI wymusza dokończenie rejestracji.
    * Brak pola (stare API) traktuj jak true.
@@ -107,6 +109,12 @@ export interface ApiEvent {
   street?: string | null;
   spectatorFee?: number | null;
   externalUrl?: string | null;
+  /** CSV ścieżek PDF regulaminów (`/api/uploads/….pdf` lub http(s)). */
+  regulationsUrls?: string | null;
+  /** Ogranicz zgłoszenia do wybranych rodzajów opon. */
+  restrictAllowedTires?: boolean;
+  /** CSV kluczy opon (TIRE_TYPE_OPTIONS); tylko gdy restrictAllowedTires. */
+  allowedTireTypes?: string | null;
   requireDrivingLicense?: boolean;
   requirePzmLicense?: boolean;
   /** Wystarczy prawo jazdy B albo licencja PZM. */
@@ -371,10 +379,11 @@ export function eventStatusLabel(status: EventStatus): string {
   }
 }
 
-/** Format daty wydarzenia w locale pl-PL, wielkimi literami (np. „15 SIERPNIA 2026”). */
-export function formatEventDate(date: string): string {
+/** Format daty wydarzenia (wielkie litery), zależny od locale UI. */
+export function formatEventDate(date: string, locale: string = "pl"): string {
+  const tag = locale.toLowerCase().startsWith("en") ? "en-GB" : "pl-PL";
   return new Date(date)
-    .toLocaleDateString("pl-PL", {
+    .toLocaleDateString(tag, {
       day: "numeric",
       month: "long",
       year: "numeric",
@@ -382,9 +391,17 @@ export function formatEventDate(date: string): string {
     .toUpperCase();
 }
 
-/** Preferuje dateLabel z API; w przeciwnym razie formatuje date. */
-export function eventDateLabel(event: { dateLabel?: string; date?: string }): string {
-  return event.dateLabel || (event.date ? formatEventDate(event.date) : "");
+/**
+ * Etykieta daty wydarzenia.
+ * `dateLabel` z API jest zawsze PL — przy EN formatujemy z `date`.
+ */
+export function eventDateLabel(
+  event: { dateLabel?: string; date?: string },
+  locale: string = "pl",
+): string {
+  const en = locale.toLowerCase().startsWith("en");
+  if (en && event.date) return formatEventDate(event.date, "en");
+  return event.dateLabel || (event.date ? formatEventDate(event.date, locale) : "");
 }
 
 /**
@@ -420,12 +437,13 @@ export function isPositiveRegistration(status: RegistrationStatus): boolean {
 }
 
 /**
- * Format opłaty startowej w PLN (locale pl-PL).
+ * Format opłaty startowej w PLN.
  * null/NaN → null (UI może ukryć pole).
  */
-export function formatEntryFee(fee?: number | null): string | null {
+export function formatEntryFee(fee?: number | null, locale: string = "pl"): string | null {
   if (fee == null || Number.isNaN(Number(fee))) return null;
-  return `${Number(fee).toLocaleString("pl-PL", {
+  const tag = locale.toLowerCase().startsWith("en") ? "en-GB" : "pl-PL";
+  return `${Number(fee).toLocaleString(tag, {
     minimumFractionDigits: Number(fee) % 1 === 0 ? 0 : 2,
     maximumFractionDigits: 2,
   })} PLN`;

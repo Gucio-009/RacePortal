@@ -15,7 +15,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2, ShieldCheck, User } from "lucide-react";
+import { Calendar, MapPin, Clock, Flag, ChevronLeft, Navigation, Loader2, ShieldCheck, User, FileText } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Textarea } from "../components/ui/textarea";
@@ -39,15 +39,16 @@ import { api, ApiError } from "../lib/api";
 import type { ApiEvent, Car, Registration, RouteResult } from "../lib/types";
 import {
   eventImage,
+  eventDateLabel,
   formatEntryFee,
   IMAGE_WIDTH_DETAIL,
   isOpenRegistration,
 } from "../lib/types";
-import { formatCarLabel, partitionCarsForEvent } from "../lib/carMatch";
+import { formatCarLabel, parseCarClasses, partitionCarsForEvent } from "../lib/carMatch";
 import { toast } from "sonner";
 
 export function EventDetailPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -303,7 +304,7 @@ export function EventDetailPage() {
           <div className="bg-[var(--race-card)] border border-[var(--race-border)] rounded-lg p-6 space-y-4">
             <div className="flex items-center gap-3 text-[var(--race-fg)]">
               <Calendar className="w-5 h-5 text-[var(--race-accent)]" />
-              <span style={{ fontWeight: 600 }}>{event.dateLabel}</span>
+              <span style={{ fontWeight: 600 }}>{eventDateLabel(event, i18n.language)}</span>
             </div>
             <div className="flex items-center gap-3 text-[var(--race-fg)]">
               <Clock className="w-5 h-5 text-[var(--race-accent)]" />
@@ -341,7 +342,7 @@ export function EventDetailPage() {
                 <p className="text-sm text-[var(--race-muted)]">
                   {t("events.entryFee")}:{" "}
                   <span className="text-[var(--race-accent)]" style={{ fontWeight: 700 }}>
-                    {formatEntryFee(event.entryFee) ?? t("events.feeTbd")}
+                    {formatEntryFee(event.entryFee, i18n.language) ?? t("events.feeTbd")}
                   </span>
                 </p>
                 {event.bankAccount && (
@@ -349,6 +350,48 @@ export function EventDetailPage() {
                     {t("events.payAfterAccept")} <span className="text-[var(--race-fg)]">{event.bankAccount}</span>
                   </p>
                 )}
+              </div>
+            )}
+
+            {event.restrictAllowedTires && parseCarClasses(event.allowedTireTypes).length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-[var(--race-border)]">
+                <p className="text-sm text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
+                  {t("events.allowedTires")}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {parseCarClasses(event.allowedTireTypes).map((tire) => (
+                    <Badge
+                      key={tire}
+                      variant="outline"
+                      className="border-[var(--race-border)] text-[var(--race-muted)]"
+                    >
+                      {t(`garage.tire.${tire}`, { defaultValue: tire })}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {parseCarClasses(event.regulationsUrls).length > 0 && (
+              <div className="space-y-2 pt-2 border-t border-[var(--race-border)]">
+                <p className="text-sm text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
+                  {t("events.regulations")}
+                </p>
+                <ul className="space-y-1.5">
+                  {parseCarClasses(event.regulationsUrls).map((url, index) => (
+                    <li key={url}>
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-[var(--race-accent)] underline"
+                      >
+                        <FileText className="w-4 h-4 shrink-0" />
+                        {t("events.regulationsPdf", { n: index + 1 })}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 

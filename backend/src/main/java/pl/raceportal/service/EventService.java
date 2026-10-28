@@ -380,7 +380,9 @@ public class EventService {
             event.setFreeCancelDays(request.freeCancelDays());
         }
         applyOptionalEventFields(event, request.endDate(), request.endTime(), request.street(),
-                request.spectatorFee(), request.externalUrl(), request.requireDrivingLicense(),
+                request.spectatorFee(), request.externalUrl(), request.regulationsUrls(),
+                request.restrictAllowedTires(), request.allowedTireTypes(),
+                request.requireDrivingLicense(),
                 request.requirePzmLicense(), request.requireDrivingLicenseOrPzm(),
                 request.requireOc(), request.requirePt(),
                 request.requireCage(), request.requireRegistered());
@@ -440,6 +442,20 @@ public class EventService {
         if (request.spectatorFee() != null) event.setSpectatorFee(request.spectatorFee());
         if (request.externalUrl() != null) {
             event.setExternalUrl(SafeHttpUrls.normalizeHttpUrl(request.externalUrl(), "Link zewnętrzny"));
+        }
+        if (request.regulationsUrls() != null) {
+            event.setRegulationsUrls(
+                    DocumentReferences.normalizeCsv(request.regulationsUrls(), "Regulamin PDF"));
+        }
+        if (request.restrictAllowedTires() != null || request.allowedTireTypes() != null) {
+            applyTireRestrictions(
+                    event,
+                    request.restrictAllowedTires() != null
+                            ? request.restrictAllowedTires()
+                            : event.isRestrictAllowedTires(),
+                    request.allowedTireTypes() != null
+                            ? request.allowedTireTypes()
+                            : event.getAllowedTireTypes());
         }
         if (request.requireDrivingLicense() != null) event.setRequireDrivingLicense(request.requireDrivingLicense());
         if (request.requirePzmLicense() != null) event.setRequirePzmLicense(request.requirePzmLicense());
@@ -639,6 +655,9 @@ public class EventService {
                 event.isAcceptRegistrations(),
                 event.getSpectatorFee(),
                 event.getExternalUrl(),
+                event.getRegulationsUrls(),
+                event.isRestrictAllowedTires(),
+                event.getAllowedTireTypes(),
                 event.isRequireDrivingLicense(),
                 event.isRequirePzmLicense(),
                 event.isRequireDrivingLicenseOrPzm(),
@@ -652,6 +671,8 @@ public class EventService {
 
     private void applyOptionalEventFields(Event event, String endDate, String endTime, String street,
                                            java.math.BigDecimal spectatorFee, String externalUrl,
+                                           String regulationsUrls,
+                                           Boolean restrictAllowedTires, String allowedTireTypes,
                                            Boolean requireDrivingLicense, Boolean requirePzmLicense,
                                            Boolean requireDrivingLicenseOrPzm,
                                            Boolean requireOc, Boolean requirePt,
@@ -663,6 +684,15 @@ public class EventService {
         if (externalUrl != null) {
             event.setExternalUrl(SafeHttpUrls.normalizeHttpUrl(externalUrl, "Link zewnętrzny"));
         }
+        if (regulationsUrls != null) {
+            event.setRegulationsUrls(DocumentReferences.normalizeCsv(regulationsUrls, "Regulamin PDF"));
+        }
+        if (restrictAllowedTires != null || allowedTireTypes != null) {
+            applyTireRestrictions(
+                    event,
+                    restrictAllowedTires != null ? restrictAllowedTires : false,
+                    allowedTireTypes);
+        }
         if (requireDrivingLicense != null) event.setRequireDrivingLicense(requireDrivingLicense);
         if (requirePzmLicense != null) event.setRequirePzmLicense(requirePzmLicense);
         if (requireDrivingLicenseOrPzm != null) event.setRequireDrivingLicenseOrPzm(requireDrivingLicenseOrPzm);
@@ -670,6 +700,20 @@ public class EventService {
         if (requirePt != null) event.setRequirePt(requirePt);
         if (requireCage != null) event.setRequireCage(requireCage);
         if (requireRegistered != null) event.setRequireRegistered(requireRegistered);
+    }
+
+    private static void applyTireRestrictions(Event event, boolean restrict, String allowedTireTypes) {
+        if (!restrict) {
+            event.setRestrictAllowedTires(false);
+            event.setAllowedTireTypes(null);
+            return;
+        }
+        String normalized = TireTypes.normalizeCsv(allowedTireTypes, "Dozwolone opony");
+        if (normalized == null) {
+            throw ApiException.badRequest("Przy ograniczeniu opon wybierz co najmniej jeden rodzaj");
+        }
+        event.setRestrictAllowedTires(true);
+        event.setAllowedTireTypes(normalized);
     }
 
     private LocalDate parseOptionalDate(String raw) {

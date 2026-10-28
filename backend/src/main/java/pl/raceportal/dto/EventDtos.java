@@ -61,6 +61,9 @@ public final class EventDtos {
             boolean acceptRegistrations,
             BigDecimal spectatorFee,
             String externalUrl,
+            String regulationsUrls,
+            boolean restrictAllowedTires,
+            String allowedTireTypes,
             boolean requireDrivingLicense,
             boolean requirePzmLicense,
             boolean requireDrivingLicenseOrPzm,
@@ -136,6 +139,10 @@ public final class EventDtos {
             @Size(max = 500)
             @Pattern(regexp = "^$|^https?://.+$", message = "Dozwolone tylko adresy http:// lub https://")
             String externalUrl,
+            /** CSV ścieżek PDF regulaminów. */
+            @Size(max = 8000) String regulationsUrls,
+            Boolean restrictAllowedTires,
+            @Size(max = 200) String allowedTireTypes,
             Boolean requireDrivingLicense,
             Boolean requirePzmLicense,
             Boolean requireDrivingLicenseOrPzm,
@@ -172,6 +179,10 @@ public final class EventDtos {
             @Size(max = 500)
             @Pattern(regexp = "^$|^https?://.+$", message = "Dozwolone tylko adresy http:// lub https://")
             String externalUrl,
+            /** CSV ścieżek PDF regulaminów; pusty string czyści pole. */
+            @Size(max = 8000) String regulationsUrls,
+            Boolean restrictAllowedTires,
+            @Size(max = 200) String allowedTireTypes,
             Boolean requireDrivingLicense,
             Boolean requirePzmLicense,
             Boolean requireDrivingLicenseOrPzm,

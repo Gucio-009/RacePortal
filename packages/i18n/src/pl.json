@@ -90,7 +90,10 @@
     "googleRegisterLabel": "Zarejestruj się przez Google",
     "googleConnecting": "Łączenie z Google…",
     "googleSignInFail": "Błąd logowania Google",
-    "googleLoadFail": "Nie udało się załadować Google Sign-In"
+    "googleLoadFail": "Nie udało się załadować Google Sign-In",
+    "orDivider": "lub",
+    "noActivationLink": "Nie dostałeś linku aktywacyjnego?",
+    "resendActivation": "Wyślij ponownie"
   },
   "home": {
     "heroTitleBefore": "DOŁĄCZ DO",
@@ -109,7 +112,12 @@
     "loadingEvents": "Ładowanie wydarzeń",
     "loadingUserCount": "Ładowanie liczby użytkowników",
     "loadFail": "Nie udało się pobrać wydarzeń. Sprawdź API / połączenie.",
-    "statsFail": "Nie udało się pobrać liczby użytkowników."
+    "statsFail": "Nie udało się pobrać liczby użytkowników.",
+    "noUpcoming": "Brak nadchodzących wydarzeń.",
+    "aboutTitle": "O",
+    "aboutBody": "Łączymy kierowców, kibiców i organizatorów. Kalendarz wydarzeń, wyniki na żywo i galeria z torów – wszystko w jednym miejscu.",
+    "registeredUsersCaps": "ZAREJESTROWANYCH UŻYTKOWNIKÓW",
+    "goToCalendar": "PRZEJDŹ DO KALENDARZA"
   },
   "authExtra": {
     "loginOk": "Zalogowano pomyślnie!",
@@ -223,7 +231,11 @@
     "reqPt": "PT",
     "reqCage": "klatka",
     "reqRegistered": "pojazd zarejestrowany",
-    "reqNone": "brak dodatkowych wymagań"
+    "reqTires": "ograniczone opony",
+    "reqNone": "brak dodatkowych wymagań",
+    "allowedTires": "Dozwolone opony",
+    "regulations": "Regulaminy",
+    "regulationsPdf": "Regulamin PDF {{n}}"
   },
   "eventStatus": {
     "APPROVED": "Potwierdzone",
@@ -418,6 +430,12 @@
     "reqPt": "Przegląd techniczny (PT)",
     "reqCage": "Klatka bezpieczeństwa",
     "reqRegistered": "Zarejestrowane auto",
+    "restrictTires": "Ogranicz dozwolone opony",
+    "restrictTiresHint": "Zgłoszenie tylko z autem mającym co najmniej jeden z wybranych typów",
+    "allowedTiresHint": "Zaznacz opony dopuszczone na tym wydarzeniu.",
+    "allowedTiresRequired": "Przy ograniczeniu opon wybierz co najmniej jeden rodzaj",
+    "regulationsPdfs": "Regulaminy (PDF)",
+    "regulationsPdfsHint": "Możesz dodać kilka plików PDF z regulaminami wydarzenia.",
     "endDateOptional": "Data zakończenia (opcj.)",
     "endTimeOptional": "Godzina zakończenia (opcj.)",
     "spectatorFee": "Bilet widza (PLN, opcj.)",
@@ -599,7 +617,10 @@
   "settings": {
     "cockpit": "KOKPIT",
     "title": "USTAWIENIA",
-    "subtitle": "Preferencje lokalne konta {{username}} – zapisują się w tej przeglądarce.",
+    "subtitle": "Preferencje konta {{username}} – język i motyw synchronizują się między urządzeniami.",
+    "backToAccount": "Wróć do konta",
+    "privacyLink": "Polityka prywatności",
+    "checkeredFlag": "CHECKERED FLAG",
     "notifications": "Powiadomienia",
     "emailAlerts": "Alerty e-mail",
     "emailAlertsDesc": "Potwierdzenia zgłoszeń i statusów (e-mail SMTP)",
@@ -936,9 +957,16 @@
     "alreadyDesc": "Masz dostęp do panelu organizatora.",
     "goPanel": "Przejdź do panelu",
     "pendingTitle": "Wniosek oczekuje",
-    "pendingDesc": "Administrator rozpatrzy go wkrótce.",
+    "pendingDesc": "Administrator rozpatrzy wniosek wkrótce – dostaniesz dostęp do panelu organizatora po akceptacji.",
+    "pendingCompany": "Firma: {{company}}",
+    "approvedTitle": "Wniosek został zaakceptowany",
+    "approvedDesc": "Odśwież sesję (wyloguj i zaloguj ponownie), jeśli nie widzisz panelu organizatora.",
     "rejectedTitle": "Wniosek odrzucony",
     "rejectedDesc": "Możesz złożyć nowy wniosek lub skontaktować się z administracją.",
+    "rejectedBannerTitle": "Poprzedni wniosek został odrzucony",
+    "rejectedBannerDesc": "Możesz złożyć nowy wniosek z aktualnymi danymi.",
+    "mustLogin": "Musisz być zalogowany.",
+    "signInLink": "Zaloguj się",
     "company": "Nazwa firmy / organizatora",
     "businessType": "Typ działalności",
     "chooseType": "Wybierz typ działalności",
@@ -997,7 +1025,12 @@
     "hint": "JPG / PNG / WebP · max {{mb}} MB",
     "pasteUrl": "Wklej URL",
     "hideUrl": "Ukryj URL",
-    "clear": "Usuń zdjęcie"
+    "clear": "Usuń zdjęcie",
+    "pdfOk": "PDF wgrany",
+    "pdfFail": "Nie udało się wgrać PDF",
+    "pdfAdd": "Dodaj PDF regulaminu",
+    "pdfRemove": "Usuń PDF",
+    "pdfHint": "PDF · max {{mb}} MB"
   },
   "avatarPicker": {
     "hint": "Domyślnie awatar z inicjałów. Wybierz gotowy styl albo wróć do inicjałów.",
@@ -1025,7 +1058,8 @@
   },
   "intro": {
     "loading": "Ładowanie RacePortal",
-    "loadingData": "Ładowanie danych RacePortal"
+    "loadingData": "Ładowanie danych RacePortal",
+    "tagline": "TWOJE CENTRUM MOTORSPORTU"
   },
   "routeError": {
     "chunkTitle": "Nie udało się wczytać tej części aplikacji.",

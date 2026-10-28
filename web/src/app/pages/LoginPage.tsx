@@ -177,7 +177,7 @@ export function LoginPage() {
               <div className="relative my-6">
                 <Separator className="bg-[var(--race-muted-bg)]" />
                 <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[var(--race-card)] px-4 text-[var(--race-muted)]" style={{ fontSize: '14px' }}>
-                  lub
+                  {t("auth.orDivider")}
                 </span>
               </div>
               <GoogleSignInButton
@@ -191,7 +191,7 @@ export function LoginPage() {
 
           <div className="mt-6 text-center space-y-3">
             <p className="text-[var(--race-muted)]">
-              Nie dostałeś linku aktywacyjnego?{" "}
+              {t("auth.noActivationLink")}{" "}
               <Link
                 to={
                   email.trim()
@@ -204,13 +204,13 @@ export function LoginPage() {
                   if (email.includes("@")) setPendingVerifyEmail(email);
                 }}
               >
-                Wyślij ponownie
+                {t("auth.resendActivation")}
               </Link>
             </p>
             <p className="text-[var(--race-muted)]">
-              Nie masz konta?{" "}
+              {t("auth.noAccount")}{" "}
               <Link to="/register" className="text-[var(--race-accent)] hover:underline" style={{ fontWeight: 700 }}>
-                Zarejestruj się
+                {t("auth.register")}
               </Link>
             </p>
             <p className="text-[#6b7280] text-xs">
