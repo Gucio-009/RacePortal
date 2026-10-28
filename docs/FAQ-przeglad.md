@@ -1,7 +1,7 @@
 # RacePortal — FAQ dla przeglądu / odbioru
 
 **Jedno miejsce na powtarzające się pytania.** Przed zgłoszeniem „usługa nie działa” / „gdzie seed?” przeczytaj poniższe.  
-Aktualizacja: **2026-10-22**.
+Aktualizacja: **2026-10-28**.
 
 ---
 
@@ -137,6 +137,10 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Admin → Błędy | Status OPEN/DONE, usuwanie, eksport CSV |
 | Mobile Expo | **Wizytówka** — tylko Eventy + CTA „Zapisz się na stronie” (web); bez logowania w app — [`mobile/README.md`](../mobile/README.md); iOS wymaga pełnego **Xcode** |
 | Upload zdjęć (garaż, plakat, dowód przelewu) | Web+API: plik JPG/PNG/WebP ≤5 MB albo URL http(s). Garaż wymaga zdjęcia przy dodaniu auta. Mobile bez pola. Avatar organizatora nadal brak → [`spec-conformity.md`](./spec-conformity.md) |
+| Upload PDF (regulamin eventu) | `POST /api/uploads/pdf` (PDF ≤5 MB) albo URL http(s); org. w formularzu wydarzenia; linki na detalu (`regulationsUrls`) |
+| Opony | Garaż: tagi `tireTypes` (road/semislick/slick/gravel/rain/studded). Event: opcjonalny `restrictAllowedTires` + lista dozwolonych — informacyjnie na detalu (bez twardego bloku zapisu API) |
+| Termin dowodu wpłaty | Po ACCEPTED na płatnym: `paymentDueAt` na dashboardzie kierowcy; po terminie ostrzeżenie **soft** — upload dowodu nadal możliwy |
+| Motyw konta | Sześć palet w `/ustawienia`; zalogowany zapisuje `users.theme` (jak `locale`); przy wylogowaniu wraca snapshot gościa |
 | Specyfikacja Formularzy | Pełna tabela zgodności: [`spec-conformity.md`](./spec-conformity.md) (imię/telefon wymagane w Spec, opcjonalne w UI itd.) |
 
 ---
@@ -167,9 +171,9 @@ Całość stoi na `VM.Standard.A1.Flex` (2 OCPU, 12 GB) we Frankfurcie. Front **
 
 Web (`raceportal.pl`) ma manifest + service worker. Na telefonie: Safari/Chrome → **Dodaj do ekranu początkowego**. Nawigacja: dolny tab bar (Start / Eventy / …) + menu „Więcej” w headerze. Expo (`mobile/`) to osobna wizytówka — nie mylić z PWA weba.
 
-## 12. Język PL / EN
+## 12. Język PL / EN i motyw
 
-Przełącznik **PL | EN** jest w nagłówku weba (i w Ustawieniach). Gość zapisuje wybór lokalnie; zalogowany dodatkowo w `users.locale` — maile (aktywacja, reset, status zgłoszenia) idą w tym języku. Mobile Expo ma ten sam przełącznik w katalogu. Domyślnie polski. Szczegóły: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) §B7.
+Segmentowy przełącznik **PL | EN** w nagłówku (tokeny CSS, działa we wszystkich 6 motywach) oraz w Ustawieniach. Gość: `localStorage` (`raceportal_settings`). Zalogowany: dodatkowo `users.locale` + `users.theme` przez `PATCH /api/auth/me` — sync przy logowaniu, maile systemowe wg `locale`. Mobile Expo: przełącznik języka w katalogu. Domyślnie polski / Złoty tor. Szczegóły: [`know-how-uruchamianie.md`](./know-how-uruchamianie.md) §B7–B8.
 
 ---
 

@@ -24,7 +24,7 @@ Nie dubluje:
 | **Mapa / trasa** | Leaflet + OSRM | „Wydarzenia w pobliżu mnie”; zapisane torowiska; live weather na torze |
 | **Wyszukiwanie** | Filtry + `q` | Autocomplete, zapisane wyszukiwania, „podobne eventy” |
 | **Role** | USER / ORGANIZER / ADMIN | Współorganizatorzy, sędziowie, media-pass |
-| **Treści** | Opisy eventów | Regulamin startu per event (PDF), checklista kierowcy, FAQ organizatora |
+| **Treści** | Opisy + **PDF regulaminów** per event (`regulationsUrls` / upload) | Checklista kierowcy, FAQ organizatora; tłumaczenia treści eventów |
 
 ---
 
@@ -64,8 +64,8 @@ Nie dubluje:
 | Onboarding 3 ekrany na web (gość → po co konto → garaż) | Mniej „pustego” dashboardu dla nowego USER |
 | Empty states z CTA (brak aut → „Dodaj auto”) | Już częściowo jest — warto ujednolicić ton |
 | Skeleton loadery zamiast spinnera na listach | Wrażenie szybkości |
-| Dark/light + kontrast WCAG na złotym akcencie | Dostępność / recenzja |
-| Język EN (i18n) choćby Eventów publicznych | SEO / zagraniczni kierowcy |
+| Dark/light + kontrast WCAG na złotym akcencie | 6 motywów jest; dalej: audyt WCAG na złotym |
+| ~~Język EN (i18n) UI weba~~ | **Zrobione (2026-10-28)** — `packages/i18n` + sync `users.locale`; treści eventów / legal nadal PL |
 | ~~PWA „Dodaj do ekranu głównego” dla weba~~ | **Zrobione (2026-10)** — manifest + SW + bottom nav; dalej: offline cache treści / push |
 
 ---

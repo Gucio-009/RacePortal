@@ -2,7 +2,8 @@
 
 Źródło: `Dokumentacja/Dokumenty/Specyfikacja Formularzy.docx`  
 Porównanie z kodem (web / mobile / API): **2026-09-14 ~18:50**.  
-Wiersze zdjęć garażu i plakatu oraz decyzja P0 o uploadzie sprawdzone ponownie **2026-10-23**.
+Wiersze zdjęć garażu i plakatu oraz decyzja P0 o uploadzie sprawdzone ponownie **2026-10-23**.  
+PDF regulaminów / opony (poza Spec) odnotowane **2026-10-28**.
 
 Ten plik **nie naprawia** luk — tylko je rejestruje, żeby decyzja (naprawiać / świadomie odłożyć) była jasna.
 
@@ -53,6 +54,7 @@ Legenda: **OK** · **Minor** · **Major** · **Blocker**
 | Pole (spec) | Spec | Stan w kodzie | Severity |
 |-------------|------|---------------|----------|
 | Plakat | WYMAGANE file upload | Opcjonalny: preset, plik JPG/PNG/WebP ≤5 MB albo adres http(s). Kolumna `events.image_url` to TEXT | OK / Minor |
+| Regulamin PDF / opony | (poza Spec) | **Ponad Spec (2026-10-28):** `POST /api/uploads/pdf` + `regulationsUrls`; opcjonalny `restrictAllowedTires` / `allowedTireTypes`. Garaż: `tireTypes` | — |
 | Data/godzina końca | WYMAGANE | Opcjonalne | Major |
 | Ulica | OPCJONALNE | W DTO, często brak w UI | Minor |
 | Wpisowe | WYMAGANE (0 = free) | Switch płatne/darmowe, nie zawsze jawne `0` | Minor |

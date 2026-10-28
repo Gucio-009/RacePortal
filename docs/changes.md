@@ -996,5 +996,35 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-28 — filtry panelu admina (użytkownicy + zatwierdzone).*
+## 66. Opony w garażu + termin dowodu wpłaty na dashboardzie (2026-10-28 ~19:30–19:45)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Auto w garażu bez rodzaju opon | `Car.tireTypes` (CSV kluczy: `road` / `semislick` / `slick` / `gravel` / `rain` / `studded`); chipy w formularzu i na karcie; widoczne też w detalu zgłoszenia u org. | Organizator i kierowca widzą, na czym auto stoi — bez osobnej tabeli |
+| Po ACCEPTED na płatnym evencie kierowca nie widział `paymentDueAt` | Dashboard pokazuje termin (`dashboard.paymentDue`) oraz stan po terminie (`paymentDueOverdue`) | Transparentność pay-later (§64) |
+| Obawa: twardy cutoff uploadu | **Soft:** po terminie nadal można wgrać dowód — tylko UX ostrzega | MVP bez PSP; organizator i tak ręcznie potwierdza |
+
+**Proces:** kolumna + DTO garażu → UI garażu/org → etykiety i18n → dashboard `paymentDueAt`.  
+**Pliki:** `Car.java`, `GarageDtos`/`GarageService`, `packages/api-types` (`tireTypes.ts`), `GaragePage`, `DashboardPage`, `OrganizerRegistrationDetailDialog`, `packages/i18n`.  
+**Weryfikacja:** garaż → tagi opon; płatne ACCEPTED → widoczny termin; upload dowodu po dacie nadal działa.
+
+---
+
+## 67. Limit opon na evencie, PDF regulaminów, i18n + motyw na koncie (2026-10-28 ~19:45–20:20)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Event bez deklaracji opon | Opcja `restrictAllowedTires` + CSV `allowedTireTypes` (te same klucze co garaż); checkboxy w formularzu org.; lista na detalu eventu | Org. komunikuje wymagania oponowe przy starcie |
+| Brak załączników regulaminu | `regulationsUrls` (CSV lokalnych `/api/uploads/….pdf` albo http(s)); `POST /api/uploads/pdf`; pole `PdfAttachmentsField` w formularzu org.; linki na detalu | Regulamin startu per event bez zewnętrznego dysku |
+| Preferencje UI tylko w `localStorage` | `users.locale` + `users.theme`; `PATCH /api/auth/me`; sync przy logowaniu, snapshot gościa przy wylogowaniu | Ten sam język/motyw na innym urządzeniu; maile nadal wg `locale` |
+| Przełącznik PL/EN i hardcoded PL w UI | Segmentowy switcher na tokenach CSS; uzupełnione słowniki `packages/i18n` (web) | Spójny EN na ścieżkach auth/garaż/org/dashboard |
+
+**Proces:** Event/User entity + DTO → Upload PDF + `DocumentReferences`/`TireTypes` → formularz org. + detal → AuthContext/`userSettings` → LanguageSwitcher + theme CSS. Fix testu: `UsernameClaimTest` + 11. arg `theme` (`e4093d5`).  
+**Pliki:** `Event.java`, `User.java`, `EventService`, `UploadController`/`UploadService`, `DocumentReferences`, `TireTypes`, `AuthService`/`AuthDtos`, `PdfAttachmentsField`, `OrganizerEventFormDialog`, `EventDetailPage`, `AuthContext`, `userSettings`, `LanguageSwitcher`, `theme.css`, `packages/i18n`.  
+**Docs:** `MVP.md`, `FAQ-przeglad.md` §8/§12, `know-how` §B7–B8, `pomysly-rozwoju.md`, `scenariusz-prezentacji.md`.  
+**Weryfikacja:** org. tworzy event z oponami + PDF → detal pokazuje oba; login syncuje motyw/język; build VM `e4093d5` healthy.
+
+---
+
+*Ostatnia aktualizacja: 2026-10-28 — opony, PDF regulaminów, sync locale/theme (§66–67).*
 

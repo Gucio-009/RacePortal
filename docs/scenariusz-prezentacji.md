@@ -192,13 +192,14 @@ Na slajdzie DEMO napisz „Interaktywna mapa” lub „Mapa Leaflet” — NIGDY
 
 Scena 2 — Kierowca: garaż, inteligentny filtr, zgłoszenie (3,5 min)
 Login: test@wp.pl / test123
-Pokaż: Garaż (auto z parametrami: moc, klatka, OC itd.); filtr „pod moje auto” / carMatch;
-detal wydarzenia + trasa; „Zgłoś się” → wybór auta → akceptacja wymagań → status zgłoszenia.
+Pokaż: Garaż (auto z parametrami: moc, klatka, OC, opony); filtr „pod moje auto” / carMatch;
+detal wydarzenia (+ dozwolone opony / PDF jeśli są) + trasa; „Zgłoś się” → wybór auta → status;
+opcjonalnie dashboard: termin dowodu przy płatnym ACCEPTED.
 
 Scena 3 — Organizator: tworzenie eventu & panel (2,5 min)
 Login: org@raceportal.pl / org123
-Pokaż: formularz eventu z wymaganiami warunkowymi (np. wymagana klatka); panel zgłoszeń
-(podgląd aut, statusy, wpłaty / dowód płatności jeśli event płatny).
+Pokaż: formularz eventu z wymaganiami (klatka, limit opon, PDF regulaminu); panel zgłoszeń
+(podgląd aut + opony, statusy, wpłaty / dowód jeśli event płatny).
 
 Scena 4 — Domknięcie (0,5–1 min)
 Tekst domknięcia:
@@ -214,14 +215,17 @@ FAKTY PRODUKTU (trzymaj się ich — nie zmyślaj)
 ═══════════════════════════════════════
 - Domena: https://raceportal.pl
 - Katalog wydarzeń: trzy widoki (lista, mapa Leaflet, kalendarz) na wspólnych filtrach.
-- Garaż: CRUD aut; zdjęcie (plik lub URL); deklaracje (klatka, OC, PZM…).
+- Garaż: CRUD aut; zdjęcie (plik lub URL); deklaracje (klatka, OC, PZM…); tagi opon.
 - carMatch: dopasowanie auta do kategorii/wymagań eventu; filtr katalogu po aucie z garażu.
-- Zgłoszenia: statusy (np. PENDING → APPROVED / odrzucenie); maile na prawdziwą skrzynkę.
-- Role: DRIVER / ORGANIZER / ADMIN; wniosek „zostań organizatorem”.
+- Event: opcjonalny limit dozwolonych opon + załączniki PDF regulaminów (upload lub URL).
+- Zgłoszenia: statusy (PENDING → ACCEPTED / CONFIRMED / …); płatne: termin dowodu na dashboardzie (soft);
+  maile na prawdziwą skrzynkę.
+- Role: USER / ORGANIZER / ADMIN; wniosek „zostań organizatorem”.
 - Panel admina: szukaj użytkowników (nazwa/e-mail) + filtr roli; zatwierdzone eventy — szukaj (nazwa/org/tor) + kategoria.
+- i18n PL/EN + 6 motywów; zalogowany syncuje język i motyw na koncie.
 - Mobile: web PWA = pełny produkt; Expo = wizytówka discovery + CTA na web (NIE obiecuj store).
 - Świadome luki (uczciwie, 1 zdanie jeśli spytają): brak App Store; galeria uproszczona;
-  Expo nie ma pełnego parity z webem; trasa domyślnie OSRM nie Google.
+  Expo nie ma pełnego parity z webem; trasa domyślnie OSRM nie Google; brak bramki płatności.
 
 ═══════════════════════════════════════
 TREŚĆ NA SLAJDACH (krótko — reszta w live demo)

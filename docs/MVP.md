@@ -7,7 +7,7 @@ Przy każdej większej zmianie aktualizuj sekcje 3–6 poniżej.
 Historia prac: [`changes.md`](./changes.md)  
 Katalog: repo `RacePortal` (branch `main`)
 
-**Ostatnia synchronizacja:** 2026-10-23 (sześć motywów: ciemny i jasny; intro bez błysku treści i bez auta)
+**Ostatnia synchronizacja:** 2026-10-28 (opony garaż/event, PDF regulaminów, soft termin dowodu, locale+theme na koncie)
 
 ---
 
@@ -87,13 +87,13 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 |---|-----------|-------------|---------|
 | 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
-| 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
+| 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** + dozwolone opony + linki PDF regulaminów | **OK** |
 | 4 | Panel admina | `/admin` — userzy (wyszukiwanie nazwa/e-mail + filtr roli), eventy (pending + zatwierdzone: wyszukiwanie nazwa/org/tor + filtr kategorii), wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
-| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie **wymagane przy dodaniu** (plik JPG/PNG/WebP ≤5 MB albo URL), na karcie; przy edycji puste pole je usuwa | **OK** |
-| 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |
+| 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie **wymagane przy dodaniu** (plik JPG/PNG/WebP ≤5 MB albo URL); **tagi opon** (`tireTypes`: road/semislick/slick/gravel/rain/studded) | **OK** |
+| 7 | Zgłoszenia | API registrations + statusy + maile; płatne: ACCEPTED → `paymentDueAt` widoczny na dashboardzie (**soft** — upload dowodu po terminie dozwolony) | **OK** |
 | 8 | Konto organizatora | Rola ORGANIZER; wniosek `/zostan-organizatorem` (`businessType`) + status `GET /api/organizer/my-application`; CTA w dashboard/menu | **OK** |
-| 9 | Narzędzia org. | `/organizer` — create UX: selecty torów, plakat preset/**upload ≤5 MB**/URL, chipy wpisowego | **OK** |
+| 9 | Narzędzia org. | `/organizer` — create UX: selecty torów, plakat preset/**upload ≤5 MB**/URL, chipy wpisowego; opcjonalny **limit opon**; załączniki **PDF regulaminów** (`POST /api/uploads/pdf` lub URL) | **OK** |
 | 10 | Baza wydarzeń | MySQL + Spring Data JPA; seed katalogu torów PL | **OK** |
 | 11 | Maile | SMTP Mailbux → skrzynka (link aktywacyjny path-based, zgłoszenia, statusy, reset) | **OK** |
 | 12 | Mapa | Leaflet w `/wydarzenia` (widok Mapa) + mobile markery | **OK** |
@@ -112,10 +112,10 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 - [x] 3 Szczegóły  
 - [x] 4 Panel admina  
 - [~] 5 Konto kierowcy — OK funkcjonalnie; luki Spec (imię/telefon)  
-- [x] 6 Garaż — zdjęcie wymagane przy dodaniu: plik ≤5 MB albo URL; widoczne na karcie  
-- [x] 7 System zgłoszeń  
+- [x] 6 Garaż — zdjęcie wymagane przy dodaniu: plik ≤5 MB albo URL; tagi opon  
+- [x] 7 System zgłoszeń — soft `paymentDueAt` na dashboardzie  
 - [x] 8 Konto organizatora — wniosek + admin approve/reject  
-- [x] 9 Narzędzia organizatora — plakat preset / upload / URL  
+- [x] 9 Narzędzia organizatora — plakat preset / upload / URL; limit opon; PDF regulaminów  
 - [x] 10 Baza danych (+ katalog torów PL)  
 - [x] 11 Powiadomienia mailowe  
 
@@ -190,7 +190,12 @@ Rzeczy zrobione, choć nie wymagane wprost w zakresie funkcji 1–11 / odbiorze 
 | Google Sign-In (opcjonalny Client ID) | Prawdziwa weryfikacja ID tokenu; poza ścisłym MVP social |
 | `packages/api-types` | Wspólne typy/helpers web+mobile |
 | `GET /api/events/markers` | Pełny zestaw pod mapę/kalendarz bez limitu listy |
-| Sześć motywów w `/ustawienia` | Tryb ciemny: Złoty tor, Redline, Ice cold (palety bez zmian). Tryb jasny: Arctic White (bez zmian), Desert Sand, Blush Pink. Wybór w `raceportal_settings` |
+| Sześć motywów w `/ustawienia` | Tryb ciemny: Złoty tor, Redline, Ice cold. Tryb jasny: Arctic White, Desert Sand, Blush Pink. Gość: `raceportal_settings`; zalogowany: też `users.theme` (`PATCH /api/auth/me`) |
+| Locale + theme na koncie | Sync przy logowaniu; snapshot gościa przy wylogowaniu; maile wg `users.locale` |
+| Segmentowy przełącznik PL \| EN | Tokeny CSS (6 motywów); pełniejsze pokrycie i18n web |
+| Tagi opon w garażu + limit na evencie | Te same klucze CSV; org. deklaruje dozwolone; detal eventu je pokazuje |
+| PDF regulaminów per event | Upload `/api/uploads/pdf` albo http(s); CSV `regulationsUrls` |
+| Soft termin dowodu wpłaty | Dashboard pokazuje `paymentDueAt` / overdue bez twardego cutoffu uploadu |
 | Ekran startowy raz na sesję karty | HTML zasłania stronę zanim wstanie JS (`intro-cover`), potem `CinematicIntro`. Bez grafiki auta. Kolory z aktywnego motywu; pit-stop i reduced-motion skracają ruch |
 
 ---
@@ -202,8 +207,9 @@ MVP funkcje 1–11:     ████████████████░░�
 MVP funkcje 12–15:    ████████████████████   12–15: mapa/archiwum OK; trasa OSRM; mobile + web PWA OK
 Odbiór (e2e + perf):  ████████████░░░░░░░░   unit/API gdy Docker; E2E Playwright; brak 10k/50RPS
 Jakość (Docker/RBAC): ████████████████░░░░   Spring+MySQL+Mailbux; Oracle+TLS przez CF Tunnel
-Ponad MVP:            Mailbux, PWA, Oracle, Expo, api-types, markers, katalog torów PL, sześć motywów
+Ponad MVP:            Mailbux, PWA, Oracle, Expo, api-types, markers, torów PL, 6 motywów, opony, PDF, i18n
 ```
+
 
 ### Komendy
 
@@ -257,4 +263,4 @@ Przepływy z `Dokumentacja/Diagramy` (bez „stare wersje”) wdrożone w API+we
 
 **2026-08-02 08:20–08:31 (ponad / UX):** widoczne płatne eventy w seedzie + filtr + badge; przy zapisie grupa „Proponowane/zalecane” aut po kategorii wydarzenia oraz kompletny garaż demo. Historia i argumenty: [`changes.md`](./changes.md) §14–§15.
 
-*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-23.*
+*MVP / MPC — RACEPORTAL. Format: miało być → jest → zrobione → do zrobienia → ponad MVP. Ostatnia synchronizacja: 2026-10-28.*

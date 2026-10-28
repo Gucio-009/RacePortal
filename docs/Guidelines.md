@@ -7,7 +7,7 @@ Kontekst dla agentów i deweloperów pracujących w tym repozytorium.
 - Frontend: `web/` — Vite + React + Tailwind v4 + shadcn/ui, font display **Oxanium** (PL), accent `var(--race-accent)`, dark UI
 - Backend: `backend/` — Spring Boot 3 + MySQL + JWT + Bean Validation (+ opcjonalnie Google OAuth)
 - Mobile: `mobile/` — Expo 57 **wizytówka** (katalog Eventów + CTA na web; bez auth/garażu); start: [`mobile/README.md`](../mobile/README.md) (Mac/Windows)
-- Shared: `packages/api-types` — typy + carMatch/avatary/kategorie/`TRACK_PRESETS` (Vitest ≥500)
+- Shared: `packages/api-types` — typy + carMatch/avatary/kategorie/`TRACK_PRESETS`/`TIRE_TYPE_OPTIONS` (Vitest ≥500); `packages/i18n` — słowniki PL/EN
 - Docs: `docs/` · E2E: `tests/e2e/` · Scripts: `scripts/`
 - Zgodność formularzy ze Spec: [`docs/spec-conformity.md`](./spec-conformity.md)
 - Docker Compose: `web`, `api`, `mysql`, `backup` (bez Mailpita)
@@ -68,7 +68,7 @@ Zaktualizuj też datę „Ostatnia synchronizacja” i skrót w sekcji 7.
 - Auth idzie wyłącznie przez API (`raceportal_token`); bez działającego `api` logowanie nie działa
 - Nie commitować sekretów; JWT / DB hasła w compose to wartości deweloperskie
 - Nie dodawać mocków localStorage auth z powrotem, o ile użytkownik tego nie zażąda
-- Design: domyślnie Złoty tor (ciemne tło, akcent `#FFD700`). Obok są Redline, Ice cold oraz jasne Arctic White, Desert Sand i Blush Pink. Nie dodawaj kolejnych palet ani domyślnego „AI purple” bez prośby
+- Design: domyślnie Złoty tor (ciemne tło, akcent `#FFD700`). Obok są Redline, Ice cold oraz jasne Arctic White, Desert Sand i Blush Pink. Nie dodawaj kolejnych palet ani domyślnego „AI purple” bez prośby. Zalogowany: `users.theme` + `users.locale` przez `PATCH /api/auth/me` (sync w `AuthContext`)
 - Google OAuth: prawdziwy Sign-In gdy ustawione `GOOGLE_OAUTH_CLIENT_ID` + `VITE_GOOGLE_CLIENT_ID` (ten sam Client ID); bez kluczy przycisk się nie pokazuje. Facebook/Apple — nie (wymagają osobnych app ID)
 - Typy API / carMatch / kategorie: źródło prawdy w `packages/api-types` (web i mobile re-eksportują)
 - Galeria: świadomie **odłożona** (nav „później”); nie dokładać mock-fallback przy błędzie API
