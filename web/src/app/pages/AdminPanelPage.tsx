@@ -28,10 +28,12 @@ import {
   Eye,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
+import { Input } from "../components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
@@ -71,6 +73,8 @@ export function AdminPanelPage() {
   const [rejecting, setRejecting] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<AdminUser | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [userQuery, setUserQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "USER" | "ORGANIZER" | "ADMIN">("all");
 
   /** Równoległe załadowanie całego kokpitu admina. `silent` = odświeżenie bez spinnera. */
   const loadAll = async (silent = false) => {
@@ -216,6 +220,16 @@ export function AdminPanelPage() {
     if (a.status === "PENDING" && b.status !== "PENDING") return -1;
     if (b.status === "PENDING" && a.status !== "PENDING") return 1;
     return (b.createdAt || "").localeCompare(a.createdAt || "");
+  });
+
+  const q = userQuery.trim().toLowerCase();
+  const filteredUsers = users.filter((user) => {
+    const matchesQuery =
+      !q ||
+      user.username.toLowerCase().includes(q) ||
+      user.email.toLowerCase().includes(q);
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    return matchesQuery && matchesRole;
   });
 
   if (loading) {
@@ -458,48 +472,79 @@ export function AdminPanelPage() {
           </TabsContent>
 
           <TabsContent value="users" className="space-y-3">
-            {users.map((user) => (
-              <Card key={user.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
-                <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
-                      {user.username}
-                    </p>
-                    <p className="text-[var(--race-muted)] text-sm">{user.email}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={user.role}
-                      onValueChange={(role) => updateUserRole(user.id, role)}
-                      disabled={me?.id === user.id}
-                    >
-                      <SelectTrigger className="w-40 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] disabled:opacity-50">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
-                        <SelectItem value="USER">USER</SelectItem>
-                        <SelectItem value="ORGANIZER">ORGANIZER</SelectItem>
-                        <SelectItem value="ADMIN">ADMIN</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {me?.id !== user.id && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        className="border-red-800 text-red-400"
-                        onClick={() => setDeleteTarget(user)}
+            <div className="flex flex-col sm:flex-row gap-3 mb-1">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--race-muted)]" />
+                <Input
+                  value={userQuery}
+                  onChange={(e) => setUserQuery(e.target.value)}
+                  placeholder={t("admin.searchUsers")}
+                  className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]"
+                />
+              </div>
+              <Select
+                value={roleFilter}
+                onValueChange={(value) =>
+                  setRoleFilter(value as "all" | "USER" | "ORGANIZER" | "ADMIN")
+                }
+              >
+                <SelectTrigger className="w-full sm:w-48 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                  <SelectItem value="all">{t("admin.allRoles")}</SelectItem>
+                  <SelectItem value="USER">user</SelectItem>
+                  <SelectItem value="ORGANIZER">organizer</SelectItem>
+                  <SelectItem value="ADMIN">admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {filteredUsers.length === 0 ? (
+              <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noUsersMatch")}</p>
+            ) : (
+              filteredUsers.map((user) => (
+                <Card key={user.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
+                  <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
+                        {user.username}
+                      </p>
+                      <p className="text-[var(--race-muted)] text-sm">{user.email}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={user.role}
+                        onValueChange={(role) => updateUserRole(user.id, role)}
+                        disabled={me?.id === user.id}
                       >
-                        {t("admin.deleteUser")}
-                      </Button>
+                        <SelectTrigger className="w-40 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)] disabled:opacity-50">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                          <SelectItem value="USER">USER</SelectItem>
+                          <SelectItem value="ORGANIZER">ORGANIZER</SelectItem>
+                          <SelectItem value="ADMIN">ADMIN</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {me?.id !== user.id && (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="border-red-800 text-red-400"
+                          onClick={() => setDeleteTarget(user)}
+                        >
+                          {t("admin.deleteUser")}
+                        </Button>
+                      )}
+                    </div>
+                    {me?.id === user.id && (
+                      <p className="text-xs text-[var(--race-muted)] sm:absolute sm:sr-only">{t("admin.cannotChangeOwnRole")}</p>
                     )}
-                  </div>
-                  {me?.id === user.id && (
-                    <p className="text-xs text-[var(--race-muted)] sm:absolute sm:sr-only">{t("admin.cannotChangeOwnRole")}</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </TabsContent>
 
           <TabsContent value="applications" className="space-y-4">

@@ -557,7 +557,10 @@
     "submittedAt": "Submitted: {{date}}",
     "appStatusPending": "Pending",
     "appStatusApproved": "Approved",
-    "appStatusRejected": "Rejected"
+    "appStatusRejected": "Rejected",
+    "searchUsers": "Search by name or email…",
+    "allRoles": "All roles",
+    "noUsersMatch": "No users match the filters."
   },
   "bugs": {
     "loading": "Loading reports…",
