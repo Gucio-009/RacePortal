@@ -18,6 +18,7 @@ import {
 import { api } from "../lib/api";
 import { deferUntilIdle } from "../lib/deferUntilIdle";
 import type { AppNotification } from "../lib/types";
+import { isBackofficeHost } from "../bo/host";
 import { Button } from "./ui/button";
 
 function notificationMeta(
@@ -173,12 +174,20 @@ export function NotificationBell() {
     }
     setOpen(false);
     if (n.type === "EVENT_PENDING_REVIEW") {
-      navigate("/admin");
+      navigate(isBackofficeHost() ? "/wydarzenia?tab=pending" : "/admin");
       return;
     }
     if (n.relatedEventId) {
       if (n.type === "EVENT_APPROVED" || n.type === "EVENT_REJECTED" || n.type === "EVENT_STATUS") {
+        if (isBackofficeHost()) {
+          navigate("/wydarzenia");
+          return;
+        }
         navigate("/organizer");
+        return;
+      }
+      if (isBackofficeHost()) {
+        navigate("/wydarzenia?tab=pending");
         return;
       }
       navigate(`/wydarzenia/${n.relatedEventId}`);

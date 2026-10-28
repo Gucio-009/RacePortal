@@ -186,19 +186,36 @@ export function BoHubPage() {
           Kolejka wymagająca akcji
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {queue.map(({ label, count, to, icon: Icon }) => (
-            <Link
-              key={to}
-              to={to}
-              className="rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] p-5 hover:border-[var(--race-accent)] transition-colors"
-            >
-              <Icon className="w-5 h-5 text-[var(--race-accent)] mb-3" />
-              <p className="font-display text-3xl text-[var(--race-accent)]" style={{ fontWeight: 800 }}>
-                {count}
-              </p>
-              <p className="text-sm text-[var(--race-muted)] mt-1">{label}</p>
-            </Link>
-          ))}
+          {queue.map(({ label, count, to, icon: Icon }) => {
+            const needsAction = count > 0;
+            return (
+              <Link
+                key={to}
+                to={to}
+                className={`rounded-lg border p-5 transition-colors ${
+                  needsAction
+                    ? "border-[var(--race-accent)] bg-[var(--race-accent)]/10 hover:bg-[var(--race-accent)]/15"
+                    : "border-[var(--race-border)] bg-[var(--race-card)] hover:border-[var(--race-accent)]"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <Icon className="w-5 h-5 text-[var(--race-accent)]" />
+                  {needsAction && (
+                    <span
+                      className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--race-accent)] text-[var(--race-on-accent)]"
+                      style={{ fontWeight: 800 }}
+                    >
+                      Wymaga akcji
+                    </span>
+                  )}
+                </div>
+                <p className="font-display text-3xl text-[var(--race-accent)]" style={{ fontWeight: 800 }}>
+                  {count}
+                </p>
+                <p className="text-sm text-[var(--race-muted)] mt-1">{label}</p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
