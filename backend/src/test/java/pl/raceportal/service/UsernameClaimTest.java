@@ -84,7 +84,7 @@ class UsernameClaimTest {
         AuthService auth = service(users, encoder);
 
         ApiException ex = assertThrows(ApiException.class, () -> auth.updateMe("me", new UpdateMeRequest(
-                "Stolen", null, null, null, null, null, null, null, null, null)));
+                "Stolen", null, null, null, null, null, null, null, null, null, null)));
 
         assertEquals(HttpStatus.CONFLICT, ex.getStatus());
         verify(users, never()).save(any());
@@ -107,7 +107,7 @@ class UsernameClaimTest {
         AuthService auth = service(users, encoder);
 
         auth.updateMe("me", new UpdateMeRequest(
-                "SameName", null, null, null, null, null, null, null, null, null));
+                "SameName", null, null, null, null, null, null, null, null, null, null));
 
         verify(users).save(me);
         assertEquals("SameName", me.getUsername());
