@@ -218,6 +218,7 @@ FAKTY PRODUKTU (trzymaj się ich — nie zmyślaj)
 - carMatch: dopasowanie auta do kategorii/wymagań eventu; filtr katalogu po aucie z garażu.
 - Zgłoszenia: statusy (np. PENDING → APPROVED / odrzucenie); maile na prawdziwą skrzynkę.
 - Role: DRIVER / ORGANIZER / ADMIN; wniosek „zostań organizatorem”.
+- Panel admina: szukaj użytkowników (nazwa/e-mail) + filtr roli; zatwierdzone eventy — szukaj (nazwa/org/tor) + kategoria.
 - Mobile: web PWA = pełny produkt; Expo = wizytówka discovery + CTA na web (NIE obiecuj store).
 - Świadome luki (uczciwie, 1 zdanie jeśli spytają): brak App Store; galeria uproszczona;
   Expo nie ma pełnego parity z webem; trasa domyślnie OSRM nie Google.
@@ -256,7 +257,7 @@ Nie odpowiadaj scenariuszem. Pierwszy output = slajd tytułowy w Canvas.
 4. Pełny flow zgłoszenia + statusy  
 5. Panel organizatora (event → zgłoszenia)  
 6. Mail na prawdziwą skrzynkę po zmianie statusu  
-7. Panel admina (eventy + wnioski org.) — tylko jeśli czas  
+7. Panel admina (zatwierdzone: szukaj + kategoria; użytkownicy: szukaj + rola; wnioski) — tylko jeśli czas  
 8. Mapa markerów + trasa do toru  
 9. Web PWA na telefonie **lub** Expo → CTA na web  
 10. Health + Compose / Oracle = „działa jak system”, nie mock  

@@ -130,7 +130,7 @@ Backend testuje się przez Maven Wrapper (`backend/./mvnw`) — Java 21 lokalnie
 | TC-WEB-07 | Login → dashboard |
 | TC-WEB-08 | Błędne hasło — komunikat |
 | TC-WEB-09 | Garaż po zalogowaniu |
-| TC-WEB-10 | Panel admina |
+| TC-WEB-10 | Panel admina (userzy: szukaj/rola; zatwierdzone: szukaj/kategoria; pending/wnioski) |
 | TC-WEB-11 | Panel organizatora |
 | TC-WEB-12 | USER nie wchodzi na `/admin` |
 

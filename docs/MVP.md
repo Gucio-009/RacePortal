@@ -88,7 +88,7 @@ Logowanie lokalne: http://127.0.0.1:8081/login · prod: https://raceportal.pl/lo
 | 1 | Kalendarz wydarzeń | Lista z API, paginacja, UI `/wydarzenia` | **OK** |
 | 2 | Filtry / wyszukiwarka | `q`, kategoria, miasto, **`paid` (płatne/darmowe)** | **OK** |
 | 3 | Szczegóły wydarzenia | `/wydarzenia/:id` + zapis + trasa + badge płatne + **proponowane auta** | **OK** |
-| 4 | Panel admina | `/admin` — userzy, eventy, wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
+| 4 | Panel admina | `/admin` — userzy (wyszukiwanie nazwa/e-mail + filtr roli), eventy (pending + zatwierdzone: wyszukiwanie nazwa/org/tor + filtr kategorii), wnioski org. (approve/reject), zgłoszenia błędów (status/CSV) | **OK** |
 | 5 | Konto kierowcy | JWT, `/dashboard`, `/konto`; aktywacja `/verify-email/{token}` (`PUBLIC_BASE_URL`); zmiana e-maila linkiem — **luki vs Spec** (imię/telefon opcjonalne) → [`spec-conformity.md`](./spec-conformity.md) | **Częściowo** |
 | 6 | Garaż | CRUD `/garaz` + API; wymagane pola V3 (web); clear-on-edit; zdjęcie **wymagane przy dodaniu** (plik JPG/PNG/WebP ≤5 MB albo URL), na karcie; przy edycji puste pole je usuwa | **OK** |
 | 7 | Zgłoszenia | API registrations + statusy + maile | **OK** |

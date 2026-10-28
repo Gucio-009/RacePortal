@@ -2,9 +2,10 @@
  * AdminPanelPage – panel roli ADMIN (AuthGate roles=["ADMIN"]).
  *
  * Cel: przegląd statystyk, akceptacja/odrzucanie wydarzeń (z powodem),
- * zmiana ról użytkowników, rozpatrywanie wniosków „zostań organizatorem”.
+ * zmiana ról użytkowników (szukaj nazwa/e-mail + filtr roli), zatwierdzone eventy
+ * (szukaj nazwa/org/tor + filtr kategorii), wnioski „zostań organizatorem”.
  * Wzorce: Promise.all na mount (stats, users, pending events, applications),
- * Tabs + mutate przez api.patch z JWT (`raceportal_token`).
+ * Tabs + mutate przez api.patch; filtry userów/zatwierdzonych client-side.
  * Auth: tylko ADMIN; własnej roli nie można zmienić (disabled Select gdy me.id === user.id).
  * Theme: `--race-accent`, `font-display`.
  * Docker/nginx: deep link panelu admina → SPA try_files.

@@ -128,6 +128,8 @@ Komunikat UI „Nieprawidłowe dane” = walidacja Bean Validation; szczegóły 
 | Filtr po aucie z garażu | Zalogowany kierowca → select auta na `/wydarzenia` |
 | Edycja wydarzenia | Panel organizatora → **Edytuj** (PATCH API) |
 | Admin nie może odebrać sobie roli | API + UI blokują self-demote / ostatniego ADMINA |
+| Admin → Użytkownicy | Wyszukiwanie po nazwie / e-mailu + filtr roli (`USER` / `ORGANIZER` / `ADMIN`) — client-side na liście z `GET /api/admin/users` |
+| Admin → Zatwierdzone | Wyszukiwanie po nazwie wydarzenia / organizatorze / torze + filtr kategorii (`EVENT_CATEGORY_GROUPS`) |
 | Galeria | Świadomie **odłożona** (brak w top-nav) — nie jest luką MVP do domknięcia teraz |
 | Aktywacja konta | Link `/verify-email/{token}` (`PUBLIC_BASE_URL`); query `?token=` = legacy; ponowna wysyłka: `/register?verify=1` |
 | Wniosek organizatora | `/zostan-organizatorem` → admin `/admin` (Wnioski) approve/reject |

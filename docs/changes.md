@@ -984,5 +984,17 @@ Wybór motywu zostaje w `localStorage` (`raceportal_settings`) — odświeżenie
 
 ---
 
-*Ostatnia aktualizacja: 2026-10-25 20:05 — pay-later potwierdzony (#15).*
+## 65. Filtry w panelu admina — użytkownicy i zatwierdzone (2026-10-28)
+
+| Było | Jest | Dlaczego |
+|------|------|----------|
+| Zakładka **Użytkownicy**: długa lista bez szukania | Input (nazwa / e-mail) + Select roli (`all` / `USER` / `ORGANIZER` / `ADMIN`) | Szybkie znalezienie konta przy większej bazie seed/demo |
+| Zakładka **Zatwierdzone**: lista bez filtrów | Input (nazwa eventu / organizator / tor) + Select kategorii (`EVENT_CATEGORY_GROUPS`) | Ta sama wygoda co katalog `/wydarzenia`, bez nowych endpointów |
+
+**Zakres:** tylko UI (`AdminPanelPage` + i18n PL/EN). Filtrowanie client-side na danych z istniejących `GET /api/admin/users` i `GET /api/admin/events/approved`.  
+**Docs:** `MVP.md` §4, `FAQ-przeglad.md` §8, `scenariusz-prezentacji.md`, `testy/TESTY.md` (TC-WEB-10).
+
+---
+
+*Ostatnia aktualizacja: 2026-10-28 — filtry panelu admina (użytkownicy + zatwierdzone).*
 
