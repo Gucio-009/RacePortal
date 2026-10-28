@@ -15,5 +15,6 @@
 export * from "./types";
 export * from "./eventCategories";
 export * from "./carMatch";
+export * from "./tireTypes";
 export * from "./avatars";
 export * from "./trackPresets";

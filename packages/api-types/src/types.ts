@@ -165,6 +165,7 @@ export interface PaginatedEvents {
  * Auto w garażu użytkownika – className to klasa/kategoria sportowa
  * (CAR_CLASS_OPTIONS), ewentualnie kilka rozdzielonych przecinkiem (multi-select);
  * używana przy dopasowaniu do kategorii eventu (carMatch).
+ * tireTypes – CSV kluczy opon (TIRE_TYPE_OPTIONS).
  */
 export interface Car {
   id: string;
@@ -173,6 +174,7 @@ export interface Car {
   model: string;
   year?: number | null;
   className?: string | null;
+  tireTypes?: string | null;
   plate?: string | null;
   imageUrl?: string | null;
   driveType?: string | null;

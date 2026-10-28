@@ -29,6 +29,8 @@ public final class GarageDtos {
             Integer year,
             /** Klasa sportowa — dopasowanie do {@code Event.category}. */
             String className,
+            /** Rodzaje opon (CSV kluczy), np. „road,slick,rain”. */
+            String tireTypes,
             String plate,
             String imageUrl,
             String driveType,
@@ -56,6 +58,8 @@ public final class GarageDtos {
             @Min(1886) @Max(2100) Integer year,
             /** Jedna lub wiele klas (CSV), np. „Time Attack, KJS, Drift”. */
             @Size(max = 500) String className,
+            /** Jedna lub wiele opon (CSV kluczy), np. „road,slick”. */
+            @Size(max = 200) String tireTypes,
             @Size(max = 20) String plate,
             @Size(max = 2000) String imageUrl,
             @Size(max = 10) String driveType,
@@ -86,6 +90,8 @@ public final class GarageDtos {
             @Min(1886) @Max(2100) Integer year,
             /** Jedna lub wiele klas (CSV), np. „Time Attack, KJS, Drift”. */
             @Size(max = 500) String className,
+            /** Jedna lub wiele opon (CSV kluczy), np. „road,slick”. */
+            @Size(max = 200) String tireTypes,
             @Size(max = 20) String plate,
             @Size(max = 2000) String imageUrl,
             @Size(max = 10) String driveType,

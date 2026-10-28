@@ -185,6 +185,19 @@ export function OrganizerRegistrationDetailDialog({
                       ))}
                     </div>
                   )}
+                  {parseCarClasses(car.tireTypes).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {parseCarClasses(car.tireTypes).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="border-[var(--race-border)] text-[var(--race-muted)]"
+                        >
+                          {t(`garage.tire.${tag}`, { defaultValue: tag })}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   {car.modifications && (
                     <p className="text-sm text-[var(--race-muted)] border border-[var(--race-border)] rounded-md p-3 whitespace-pre-wrap">
                       {t("organizer.modificationsColon", { text: car.modifications })}

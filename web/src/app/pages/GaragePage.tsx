@@ -36,6 +36,7 @@ import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { api, ApiError } from "../lib/api";
 import type { Car as GarageCar } from "../lib/types";
 import { CAR_CATEGORIES, parseCarClasses, serializeCarClasses } from "../lib/carMatch";
+import { TIRE_TYPE_OPTIONS } from "../lib/types";
 import { validateImageReference } from "../lib/profileValidation";
 import { ImageUploadField } from "../components/ImageUploadField";
 import { Reveal } from "../components/Reveal";
@@ -56,6 +57,7 @@ const emptyForm = {
   model: "",
   year: "",
   classNames: [] as string[],
+  tireTypes: [] as string[],
   plate: "",
   imageUrl: "",
   driveType: "",
@@ -79,6 +81,7 @@ function carToForm(car: GarageCar) {
     model: car.model,
     year: car.year != null ? String(car.year) : "",
     classNames: parseCarClasses(car.className),
+    tireTypes: parseCarClasses(car.tireTypes),
     plate: car.plate ?? "",
     imageUrl: car.imageUrl ?? "",
     driveType: car.driveType ?? "",
@@ -126,12 +129,14 @@ function buildPayload(form: typeof emptyForm, forUpdate: boolean) {
   const strClearable = (raw: string) => raw.trim(); // "" → backend blankToNull
 
   const classNameSerialized = serializeCarClasses(form.classNames);
+  const tireTypesSerialized = serializeCarClasses(form.tireTypes);
 
   return {
     make: form.make.trim(),
     model: form.model.trim(),
     year: forUpdate ? numOrNull(form.year) : numOrUndef(form.year),
     className: forUpdate ? classNameSerialized : strOrUndef(classNameSerialized),
+    tireTypes: forUpdate ? tireTypesSerialized : strOrUndef(tireTypesSerialized),
     plate: form.registered
       ? forUpdate
         ? strClearable(form.plate)
@@ -435,6 +440,15 @@ export function GaragePage() {
     });
   };
 
+  const toggleTireType = (tire: string) => {
+    setForm((prev) => {
+      const selected = prev.tireTypes.includes(tire)
+        ? prev.tireTypes.filter((c) => c !== tire)
+        : [...prev.tireTypes, tire];
+      return { ...prev, tireTypes: selected };
+    });
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -520,6 +534,20 @@ export function GaragePage() {
                           style={{ fontWeight: 700 }}
                         >
                           {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  {parseCarClasses(car.tireTypes).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {parseCarClasses(car.tireTypes).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="border-[var(--race-border)] text-[var(--race-muted)]"
+                          style={{ fontWeight: 600 }}
+                        >
+                          {t(`garage.tire.${tag}`, { defaultValue: tag })}
                         </Badge>
                       ))}
                     </div>
@@ -680,6 +708,31 @@ export function GaragePage() {
                       {cat}
                     </button>
                   ))}
+              </div>
+            </div>
+
+            <div className="space-y-2 sm:col-span-2">
+              <Label className="text-[var(--race-fg)]">{t("garage.tireTypes")}</Label>
+              <p className="text-xs text-[var(--race-muted)]">{t("garage.tireHint")}</p>
+              <div className="flex flex-wrap gap-2">
+                {TIRE_TYPE_OPTIONS.map((tire) => {
+                  const selected = form.tireTypes.includes(tire);
+                  return (
+                    <button
+                      key={tire}
+                      type="button"
+                      onClick={() => toggleTireType(tire)}
+                      className={
+                        selected
+                          ? "inline-flex items-center rounded-md border border-[var(--race-accent)] bg-[var(--race-accent)] text-[var(--race-on-accent)] px-2.5 py-1 text-xs font-semibold transition-colors"
+                          : "inline-flex items-center rounded-md border border-[var(--race-border)] bg-[var(--race-bg)] text-[var(--race-fg)] px-2.5 py-1 text-xs font-medium hover:border-[var(--race-accent)]/60 transition-colors"
+                      }
+                      aria-pressed={selected}
+                    >
+                      {t(`garage.tire.${tire}`)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 

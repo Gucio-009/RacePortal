@@ -67,6 +67,7 @@ public class GarageService {
         car.setModel(request.model());
         car.setYear(request.year());
         car.setClassName(blankToNull(request.className()));
+        car.setTireTypes(blankToNull(request.tireTypes()));
         car.setPlate(blankToNull(request.plate()));
         car.setImageUrl(ImageReferences.normalize(request.imageUrl(), true));
         applyCarFields(car, request);
@@ -99,6 +100,7 @@ public class GarageService {
         if (request.model() != null) car.setModel(request.model());
         if (request.year() != null) car.setYear(request.year());
         if (request.className() != null) car.setClassName(blankToNull(request.className()));
+        if (request.tireTypes() != null) car.setTireTypes(blankToNull(request.tireTypes()));
         if (request.plate() != null) car.setPlate(blankToNull(request.plate()));
         if (request.imageUrl() != null) car.setImageUrl(ImageReferences.normalize(request.imageUrl(), false));
         applyCarUpdateFields(car, request);
@@ -134,6 +136,7 @@ public class GarageService {
                 car.getModel(),
                 car.getYear(),
                 car.getClassName(),
+                car.getTireTypes(),
                 car.getPlate(),
                 car.getImageUrl(),
                 car.getDriveType(),

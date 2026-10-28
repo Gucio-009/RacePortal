@@ -42,7 +42,7 @@ import { HERO_BG_RACE } from "../lib/types";
 import { Reveal } from "../components/Reveal";
 
 export function DashboardPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -294,7 +294,14 @@ export function DashboardPage() {
               ) : registrations.length === 0 ? (
                 <p className="text-[var(--race-muted)] text-center py-8">{t("dashboard.noRegistrations")}</p>
               ) : (
-                registrations.map((reg, idx) => (
+                registrations.map((reg, idx) => {
+                  const paymentDueDate = reg.paymentDueAt ? new Date(reg.paymentDueAt) : null;
+                  const paymentOverdue =
+                    paymentDueDate != null && paymentDueDate.getTime() < Date.now();
+                  const paymentDueLabel = paymentDueDate
+                    ? paymentDueDate.toLocaleString(i18n.language)
+                    : null;
+                  return (
                   <div key={reg.id}>
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
@@ -349,6 +356,17 @@ export function DashboardPage() {
                                 <span className="text-[var(--race-fg)]">{reg.event.bankAccount}</span>
                               </p>
                             )}
+                            {paymentDueLabel && (
+                              <p
+                                className={`text-sm ${
+                                  paymentOverdue ? "text-amber-400" : "text-[var(--race-muted)]"
+                                }`}
+                              >
+                                {paymentOverdue
+                                  ? t("dashboard.paymentDueOverdue", { date: paymentDueLabel })
+                                  : t("dashboard.paymentDue", { date: paymentDueLabel })}
+                              </p>
+                            )}
                             {reg.paymentProofUrl ? (
                               <p className="text-sm text-green-400">{t("dashboard.proofAttached")}</p>
                             ) : (
@@ -400,7 +418,8 @@ export function DashboardPage() {
                     </div>
                     {idx < registrations.length - 1 && <Separator className="bg-[var(--race-muted-bg)] mt-4" />}
                   </div>
-                ))
+                  );
+                })
               )}
             </CardContent>
           </Card>

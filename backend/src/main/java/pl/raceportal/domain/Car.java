@@ -61,6 +61,12 @@ public class Car {
     @Column(name = "class_name", length = 500)
     private String className;
 
+    /**
+     * Rodzaje opon (CSV kluczy: road, semislick, slick, gravel, rain, studded).
+     */
+    @Column(name = "tire_types", length = 200)
+    private String tireTypes;
+
     @Column(length = 20)
     private String plate;
 
@@ -179,6 +185,14 @@ public class Car {
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public String getTireTypes() {
+        return tireTypes;
+    }
+
+    public void setTireTypes(String tireTypes) {
+        this.tireTypes = tireTypes;
     }
 
     public String getPlate() {
