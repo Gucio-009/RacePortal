@@ -15,6 +15,7 @@ Starszy układ (Pages + osobne API) **nie obowiązuje** — uzasadnienie: [`decy
 ```text
 https://raceportal.pl
 https://www.raceportal.pl
+https://bo.raceportal.pl   # backoffice ADMIN (ten sam nginx :8081)
         →  Cloudflare Tunnel na VM
         →  nginx :8081 (kontener web)
               ├── /       front
@@ -83,7 +84,7 @@ docker compose down -v       # kasuje volumes: baza i wgrane zdjęcia
 | Instancja | `raceportal` |
 | Region | Frankfurt, AD-2 |
 | Kształt | `VM.Standard.A1.Flex`, 2 OCPU, 12 GB |
-| Strona | `https://raceportal.pl` i `https://www.raceportal.pl` |
+| Strona | `https://raceportal.pl`, `https://www.raceportal.pl`, `https://bo.raceportal.pl` |
 | Repo | `~/RacePortal` |
 | SSH | `ubuntu@PUBLICZNE_IP`, klucz `.key` |
 

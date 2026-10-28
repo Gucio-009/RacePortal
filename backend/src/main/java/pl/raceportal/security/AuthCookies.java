@@ -22,12 +22,16 @@ public class AuthCookies {
 
     private final boolean secure;
     private final String sameSite;
+    /** Puste lokalnie; prod: {@code .raceportal.pl} — współdzielenie sesji apex ↔ bo. */
+    private final String domain;
 
     public AuthCookies(
             @Value("${app.cookies.secure:false}") boolean secure,
-            @Value("${app.cookies.same-site:Lax}") String sameSite) {
+            @Value("${app.cookies.same-site:Lax}") String sameSite,
+            @Value("${app.cookies.domain:}") String domain) {
         this.secure = secure;
         this.sameSite = sameSite == null || sameSite.isBlank() ? "Lax" : sameSite;
+        this.domain = domain == null ? "" : domain.trim();
     }
 
     public void setAccessToken(HttpServletResponse response, String token, Duration maxAge) {
@@ -41,6 +45,11 @@ public class AuthCookies {
     public void clear(HttpServletResponse response) {
         response.addHeader(HttpHeaders.SET_COOKIE, build(ACCESS_COOKIE, "", Duration.ZERO, "/").toString());
         response.addHeader(HttpHeaders.SET_COOKIE, build(REFRESH_COOKIE, "", Duration.ZERO, "/api/auth").toString());
+        // Kasuj też stare host-only cookies (przed wprowadzeniem Domain).
+        if (!domain.isBlank()) {
+            response.addHeader(HttpHeaders.SET_COOKIE, buildHostOnly(ACCESS_COOKIE, "", Duration.ZERO, "/").toString());
+            response.addHeader(HttpHeaders.SET_COOKIE, buildHostOnly(REFRESH_COOKIE, "", Duration.ZERO, "/api/auth").toString());
+        }
     }
 
     public String readAccess(HttpServletRequest request) {
@@ -52,6 +61,19 @@ public class AuthCookies {
     }
 
     private ResponseCookie build(String name, String value, Duration maxAge, String path) {
+        ResponseCookie.ResponseCookieBuilder b = ResponseCookie.from(name, value == null ? "" : value)
+                .httpOnly(true)
+                .secure(secure)
+                .sameSite(sameSite)
+                .path(path)
+                .maxAge(maxAge);
+        if (!domain.isBlank()) {
+            b.domain(domain);
+        }
+        return b.build();
+    }
+
+    private ResponseCookie buildHostOnly(String name, String value, Duration maxAge, String path) {
         return ResponseCookie.from(name, value == null ? "" : value)
                 .httpOnly(true)
                 .secure(secure)

@@ -16,10 +16,14 @@ import { RouterProvider } from "react-router";
 import { useEffect } from "react";
 import { AuthProvider } from "./context/AuthContext";
 import { router } from "./routes";
+import { boRouter } from "./bo/routes";
+import { isBackofficeHost } from "./bo/host";
 import { Toaster } from "./components/ui/sonner";
 import { applyUserSettings, isLightAccent, loadSettings } from "./lib/userSettings";
 import { useAccent } from "./hooks/useAccent";
 import { BootPulse } from "./components/CinematicIntro";
+
+const activeRouter = isBackofficeHost() ? boRouter : router;
 
 /** Jednorazowy bootstrap preferencji UI z localStorage (Ustawienia). */
 function SettingsBootstrap() {
@@ -42,11 +46,12 @@ function AppToaster() {
 }
 
 export default function App() {
+  const backoffice = isBackofficeHost();
   return (
     <AuthProvider>
       <SettingsBootstrap />
-      <BootPulse />
-      <RouterProvider router={router} />
+      {!backoffice && <BootPulse />}
+      <RouterProvider router={activeRouter} />
       <AppToaster />
     </AuthProvider>
   );

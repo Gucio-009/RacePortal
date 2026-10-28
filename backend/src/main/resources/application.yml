@@ -85,6 +85,8 @@ app:
     # Prod za HTTPS / Tunnel: COOKIE_SECURE=true
     secure: ${COOKIE_SECURE:false}
     same-site: ${COOKIE_SAME_SITE:Lax}
+    # Prod: .raceportal.pl — sesja wspólna raceportal.pl ↔ bo.raceportal.pl. Lokalnie puste.
+    domain: ${COOKIE_DOMAIN:}
   security:
     # true = lokalnie/demo (compose). Prod: ALLOW_INSECURE_DEFAULTS=false + silny JWT_SECRET + SEED_ENABLED=false.
     allow-insecure-defaults: ${ALLOW_INSECURE_DEFAULTS:true}

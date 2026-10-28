@@ -105,6 +105,7 @@ cloudflared tunnel login
 cloudflared tunnel create raceportal
 cloudflared tunnel route dns --overwrite-dns raceportal raceportal.pl
 cloudflared tunnel route dns --overwrite-dns raceportal www.raceportal.pl
+cloudflared tunnel route dns --overwrite-dns raceportal bo.raceportal.pl
 ```
 
 `login` wypisuje adres. Otwórz go na swoim komputerze i wybierz strefę `raceportal.pl`.
@@ -122,15 +123,19 @@ ingress:
     service: http://127.0.0.1:8081
   - hostname: www.raceportal.pl
     service: http://127.0.0.1:8081
+  - hostname: bo.raceportal.pl
+    service: http://127.0.0.1:8081
   - service: http_status:404
 EOF
 sudo cloudflared --config /etc/cloudflared/config.yml service install
 sudo systemctl restart cloudflared
 ```
 
-Działający tunel (październik 2026): `824ebee9-6492-4406-86ba-e300a5e65b7e`. W DNS oba rekordy to **CNAME** na `824ebee9-6492-4406-86ba-e300a5e65b7e.cfargotunnel.com`, chmurka pomarańczowa. Starszy identyfikator `7accbfb4-…` został skasowany, bo na maszynie nie było jego pliku klucza. Wskazanie DNS na skasowany tunel nie dochodzi do VM.
+Działający tunel (październik 2026): `824ebee9-6492-4406-86ba-e300a5e65b7e`. W DNS rekordy `raceportal.pl`, `www` i `bo` to **CNAME** na `824ebee9-6492-4406-86ba-e300a5e65b7e.cfargotunnel.com`, chmurka pomarańczowa. Starszy identyfikator `7accbfb4-…` został skasowany, bo na maszynie nie było jego pliku klucza. Wskazanie DNS na skasowany tunel nie dochodzi do VM.
 
-`sudo systemctl status cloudflared` ma pokazać `active (running)`. Z zewnątrz: `https://raceportal.pl` i `https://raceportal.pl/api/health`.
+`bo.raceportal.pl` idzie na ten sam nginx (`:8081`) co apex — na razie ta sama SPA; osobny backoffice może później rozróżniać host w nginx / React bez nowej VM.
+
+`sudo systemctl status cloudflared` ma pokazać `active (running)`. Z zewnątrz: `https://raceportal.pl`, `https://bo.raceportal.pl` i `https://raceportal.pl/api/health`.
 
 ---
 
