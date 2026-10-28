@@ -14,6 +14,7 @@ Branch produkcyjny: **`main`**.
 | **Dlaczego** Oracle / Mailbux / PWA (dyplom) | [`decyzje-wdrozeniowe.md`](./decyzje-wdrozeniowe.md) |
 | Plan MVP vs stan kodu | [`MVP.md`](./MVP.md) |
 | Pentest i remedacje (dyplom) | [`cybersecurity-pentest.md`](./cybersecurity-pentest.md) |
+| Audyt bezpieczeństwa 2026-10-28 (Critical prod) | [`security-audit-2026-10-28.md`](./security-audit-2026-10-28.md) |
 | Load test k6 / max RPS (VM) | [`testy/wyniki/k6-vm-rps.md`](./testy/wyniki/k6-vm-rps.md) |
 
 ## Repo — katalogi
@@ -45,6 +46,7 @@ Branch produkcyjny: **`main`**.
 |------|------|
 | [`MVP.md`](./MVP.md) | Miało być / jest / luki / ponad MVP |
 | [`cybersecurity-pentest.md`](./cybersecurity-pentest.md) | Znaleziska pentestu → remedacja → weryfikacja |
+| [`security-audit-2026-10-28.md`](./security-audit-2026-10-28.md) | Audyt 2026-10-28 (kod + live prod; Critical JWT/seed) |
 | [`spec-conformity.md`](./spec-conformity.md) | Specyfikacja Formularzy vs kod |
 | [`scenariusz-prezentacji.md`](./scenariusz-prezentacji.md) | Scenariusz demo |
 | [`pomysly-rozwoju.md`](./pomysly-rozwoju.md) | Luki i pomysły produktowe |

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Check, Download, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -7,6 +7,7 @@ import type { OrganizerApplication } from "../lib/types";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { downloadBoCsv } from "./csv";
+import { useBoQueue } from "./BoQueueContext";
 
 type StatusFilter = "ALL" | "PENDING" | "APPROVED" | "REJECTED";
 
@@ -19,21 +20,31 @@ export function BoApplicationsPage() {
       : "ALL";
   const [apps, setApps] = useState<OrganizerApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const { revisions, refresh: refreshQueue } = useBoQueue();
+  const appsRevSeen = useRef(revisions.pendingApps);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     try {
       setApps(await api.get<OrganizerApplication[]>("/api/admin/organizer-applications"));
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać wniosków");
+      if (!opts?.silent) {
+        toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać wniosków");
+      }
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (revisions.pendingApps === appsRevSeen.current) return;
+    appsRevSeen.current = revisions.pendingApps;
+    void load({ silent: true });
+  }, [revisions.pendingApps]);
 
   const filtered = useMemo(() => {
     const list =
@@ -57,6 +68,7 @@ export function BoApplicationsPage() {
       await api.patch(`/api/admin/organizer-applications/${id}`, { status });
       toast.success(status === "APPROVED" ? "Wniosek zaakceptowany" : "Wniosek odrzucony");
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+      void refreshQueue();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji wniosku");
     }

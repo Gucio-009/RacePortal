@@ -4,6 +4,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.raceportal.domain.ApplicationStatus;
+import pl.raceportal.domain.BugReportStatus;
 import pl.raceportal.domain.Event;
 import pl.raceportal.domain.EventStatus;
 import pl.raceportal.domain.OrganizerApplication;
@@ -112,7 +113,8 @@ public class AdminService {
         long pendingApps = organizerApplicationRepository.findAllByOrderByCreatedAtDesc().stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.PENDING)
                 .count();
-        return new StatsResponse(users, events, pendingEvents, registrations, pendingApps);
+        long openBugs = bugReportRepository.countByStatus(BugReportStatus.OPEN);
+        return new StatsResponse(users, events, pendingEvents, registrations, pendingApps, openBugs);
     }
 
     @Transactional(readOnly = true)

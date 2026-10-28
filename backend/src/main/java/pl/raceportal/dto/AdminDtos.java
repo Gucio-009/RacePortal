@@ -17,13 +17,14 @@ public final class AdminDtos {
     private AdminDtos() {
     }
 
-    /** Liczniki dashboardu admina. */
+    /** Liczniki dashboardu admina (także lekki poll kolejki BO). */
     public record StatsResponse(
             long users,
             long events,
             long pendingEvents,
             long registrations,
-            long pendingApps
+            long pendingApps,
+            long openBugs
     ) {
     }
 

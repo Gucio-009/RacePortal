@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import {
   Archive,
@@ -28,6 +28,7 @@ import { Label } from "../components/ui/label";
 import { Textarea } from "../components/ui/textarea";
 import { downloadBoCsv } from "./csv";
 import { apexEventUrl } from "./host";
+import { useBoQueue } from "./BoQueueContext";
 
 interface BoEvent extends ApiEvent {
   organizer?: { id: string; username: string; email: string; verified?: boolean } | null;
@@ -45,9 +46,11 @@ export function BoEventsPage() {
   const [rejectTarget, setRejectTarget] = useState<BoEvent | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  const { revisions, refresh: refreshQueue } = useBoQueue();
+  const eventsRevSeen = useRef(revisions.pendingEvents);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async (opts?: { silent?: boolean }) => {
+    if (!opts?.silent) setLoading(true);
     try {
       const [pe, ae] = await Promise.all([
         api.get<BoEvent[]>("/api/admin/events/pending"),
@@ -56,15 +59,23 @@ export function BoEventsPage() {
       setPending(pe);
       setApproved(ae);
     } catch (e) {
-      toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń");
+      if (!opts?.silent) {
+        toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać wydarzeń");
+      }
     } finally {
-      setLoading(false);
+      if (!opts?.silent) setLoading(false);
     }
   };
 
   useEffect(() => {
     void load();
   }, []);
+
+  useEffect(() => {
+    if (revisions.pendingEvents === eventsRevSeen.current) return;
+    eventsRevSeen.current = revisions.pendingEvents;
+    void load({ silent: true });
+  }, [revisions.pendingEvents]);
 
   const list = tab === "pending" ? pending : approved;
   const filtered = useMemo(() => {
@@ -98,7 +109,8 @@ export function BoEventsPage() {
             ? "Wydarzenie odrzucone"
             : `Status: ${status}`,
       );
-      await load();
+      await load({ silent: true });
+      void refreshQueue();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
       throw e;

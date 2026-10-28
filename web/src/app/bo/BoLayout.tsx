@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { apexOrigin } from "./host";
-import { useBoActionCounts } from "./useBoActionCounts";
+import { useBoQueue } from "./BoQueueContext";
 import { Button } from "../components/ui/button";
 import { NotificationBell } from "../components/NotificationBell";
 
@@ -46,7 +46,7 @@ function NavBadge({ count, active }: { count: number; active: boolean }) {
 export function BoLayout() {
   const { user, logout } = useAuth();
   const apex = apexOrigin();
-  const counts = useBoActionCounts();
+  const { counts } = useBoQueue();
   const hubTotal = counts.pendingEvents + counts.pendingApps + counts.openBugs;
 
   const badgeFor = (key: (typeof NAV)[number]["badgeKey"]) => {

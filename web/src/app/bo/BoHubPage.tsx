@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
 import { Calendar, ClipboardList, Bug, Users, Download, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
-import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
+import type { AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
 import { Button } from "../components/ui/button";
 import { downloadBoCsv } from "./csv";
+import { useBoQueue } from "./BoQueueContext";
 
 interface PendingEvent extends ApiEvent {
   organizer?: { id: string; username: string; email: string } | null;
@@ -25,32 +26,8 @@ interface BugReport {
 
 export function BoHubPage() {
   const { user } = useAuth();
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [openBugs, setOpenBugs] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const { counts, stats } = useBoQueue();
   const [dumping, setDumping] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([
-      api.get<AdminStats>("/api/admin/stats"),
-      api.get<BugReport[]>("/api/bug-reports").catch(() => [] as BugReport[]),
-    ])
-      .then(([s, bugs]) => {
-        if (cancelled) return;
-        setStats(s);
-        setOpenBugs(bugs.filter((b) => b.status !== "DONE").length);
-      })
-      .catch((e) => {
-        if (!cancelled) toast.error(e instanceof ApiError ? e.message : "Nie udało się załadować hubu");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const exportAll = async () => {
     setDumping(true);
@@ -123,7 +100,7 @@ export function BoHubPage() {
     }
   };
 
-  if (loading) {
+  if (!stats) {
     return (
       <div className="flex items-center justify-center py-24 text-[var(--race-muted)]">
         <Loader2 className="w-6 h-6 animate-spin text-[var(--race-accent)] mr-2" />
@@ -135,19 +112,19 @@ export function BoHubPage() {
   const queue = [
     {
       label: "Wydarzenia oczekujące",
-      count: stats?.pendingEvents ?? 0,
+      count: counts.pendingEvents,
       to: "/wydarzenia?tab=pending",
       icon: Calendar,
     },
     {
       label: "Wnioski organizatora",
-      count: stats?.pendingApps ?? 0,
+      count: counts.pendingApps,
       to: "/wnioski?status=PENDING",
       icon: ClipboardList,
     },
     {
       label: "Otwarte błędy",
-      count: openBugs,
+      count: counts.openBugs,
       to: "/bledy?status=OPEN",
       icon: Bug,
     },
@@ -162,6 +139,9 @@ export function BoHubPage() {
           </h1>
           <p className="text-[var(--race-muted)] mt-1">
             Witaj, <span className="text-[var(--race-fg)]">{user?.username}</span> ({user?.email})
+          </p>
+          <p className="text-xs text-[var(--race-muted)] mt-1">
+            Kolejka odświeża się automatycznie co ~15 s (gdy karta jest widoczna).
           </p>
         </div>
         <Button
@@ -243,11 +223,9 @@ export function BoHubPage() {
         </div>
       </section>
 
-      {stats && (
-        <p className="text-xs text-[var(--race-muted)]">
-          Razem: {stats.users} użytkowników · {stats.events} wydarzeń · {stats.registrations} zgłoszeń
-        </p>
-      )}
+      <p className="text-xs text-[var(--race-muted)]">
+        Razem: {stats.users} użytkowników · {stats.events} wydarzeń · {stats.registrations} zgłoszeń
+      </p>
     </div>
   );
 }

@@ -11,9 +11,14 @@ import { BoEventsPage } from "./BoEventsPage";
 import { BoUsersPage } from "./BoUsersPage";
 import { BoApplicationsPage } from "./BoApplicationsPage";
 import { BoBugsPage } from "./BoBugsPage";
+import { BoQueueProvider } from "./BoQueueContext";
 
 function Protected({ children }: { children: ReactNode }) {
-  return <BoAuthGate>{children}</BoAuthGate>;
+  return (
+    <BoAuthGate>
+      <BoQueueProvider>{children}</BoQueueProvider>
+    </BoAuthGate>
+  );
 }
 
 export const boRouter = createBrowserRouter([

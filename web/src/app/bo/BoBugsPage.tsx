@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { Download, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
@@ -6,6 +6,7 @@ import { api, ApiError } from "../lib/api";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { downloadBoCsv } from "./csv";
+import { useBoQueue } from "./BoQueueContext";
 
 type BugStatus = "OPEN" | "DONE";
 type Filter = "ALL" | BugStatus;
@@ -34,18 +35,31 @@ export function BoBugsPage() {
   const [reports, setReports] = useState<BugReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const { revisions, refresh: refreshQueue } = useBoQueue();
+  const bugsRevSeen = useRef(revisions.openBugs);
 
-  const reload = useCallback(() => {
-    return api.get<BugReport[]>("/api/bug-reports").then((data) =>
-      setReports(data.map((r) => ({ ...r, status: r.status === "DONE" ? "DONE" : "OPEN" }))),
-    );
+  const reload = useCallback((opts?: { silent?: boolean }) => {
+    return api
+      .get<BugReport[]>("/api/bug-reports")
+      .then((data) =>
+        setReports(data.map((r) => ({ ...r, status: r.status === "DONE" ? "DONE" : "OPEN" }))),
+      )
+      .catch((e) => {
+        if (!opts?.silent) {
+          toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać zgłoszeń");
+        }
+      });
   }, []);
 
   useEffect(() => {
-    reload()
-      .catch((e) => toast.error(e instanceof ApiError ? e.message : "Nie udało się pobrać zgłoszeń"))
-      .finally(() => setLoading(false));
+    reload().finally(() => setLoading(false));
   }, [reload]);
+
+  useEffect(() => {
+    if (revisions.openBugs === bugsRevSeen.current) return;
+    bugsRevSeen.current = revisions.openBugs;
+    void reload({ silent: true });
+  }, [revisions.openBugs, reload]);
 
   const filtered = useMemo(() => {
     if (filter === "ALL") return reports;
@@ -64,6 +78,7 @@ export function BoBugsPage() {
       await api.patch(`/api/bug-reports/${id}/status`, { status: "DONE" });
       setReports((prev) => prev.map((r) => (r.id === id ? { ...r, status: "DONE" } : r)));
       toast.success("Oznaczono jako załatwione");
+      void refreshQueue();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Błąd aktualizacji");
     } finally {
@@ -78,6 +93,7 @@ export function BoBugsPage() {
       await api.delete(`/api/bug-reports/${id}`);
       setReports((prev) => prev.filter((r) => r.id !== id));
       toast.success("Usunięto");
+      void refreshQueue();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : "Nie udało się usunąć");
     } finally {

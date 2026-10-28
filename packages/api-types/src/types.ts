@@ -249,6 +249,8 @@ export interface AdminStats {
   pendingEvents: number;
   registrations: number;
   pendingApps: number;
+  /** Otwarte zgłoszenia błędów (kolejka BO). */
+  openBugs?: number;
 }
 
 /**

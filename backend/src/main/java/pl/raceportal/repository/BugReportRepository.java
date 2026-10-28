@@ -6,10 +6,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pl.raceportal.domain.BugReport;
+import pl.raceportal.domain.BugReportStatus;
 
 import java.util.List;
 
 public interface BugReportRepository extends JpaRepository<BugReport, String> {
+
+    long countByStatus(BugReportStatus status);
 
     @Query("""
             select b from BugReport b
