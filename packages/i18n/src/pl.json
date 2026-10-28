@@ -560,7 +560,9 @@
     "appStatusRejected": "Odrzucony",
     "searchUsers": "Szukaj po nazwie lub e-mailu…",
     "allRoles": "Wszystkie role",
-    "noUsersMatch": "Brak użytkowników pasujących do filtrów."
+    "noUsersMatch": "Brak użytkowników pasujących do filtrów.",
+    "searchApprovedEvents": "Szukaj po nazwie, organizatorze lub torze…",
+    "noApprovedMatch": "Brak wydarzeń pasujących do filtrów."
   },
   "bugs": {
     "loading": "Ładowanie zgłoszeń…",

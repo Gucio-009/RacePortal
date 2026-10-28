@@ -34,7 +34,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Input } from "../components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "../components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
   Dialog,
@@ -50,6 +50,7 @@ import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
 import type { AdminStats, AdminUser, OrganizerApplication, ApiEvent } from "../lib/types";
 import { formatEventDate, formatEntryFee } from "../lib/types";
+import { EVENT_CATEGORY_GROUPS } from "../lib/eventCategories";
 import { toast } from "sonner";
 import { AdminBugReports } from "../components/AdminBugReports";
 import { Reveal } from "../components/Reveal";
@@ -75,6 +76,8 @@ export function AdminPanelPage() {
   const [deleting, setDeleting] = useState(false);
   const [userQuery, setUserQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "USER" | "ORGANIZER" | "ADMIN">("all");
+  const [approvedQuery, setApprovedQuery] = useState("");
+  const [approvedCategory, setApprovedCategory] = useState("all");
 
   /** Równoległe załadowanie całego kokpitu admina. `silent` = odświeżenie bez spinnera. */
   const loadAll = async (silent = false) => {
@@ -230,6 +233,17 @@ export function AdminPanelPage() {
       user.email.toLowerCase().includes(q);
     const matchesRole = roleFilter === "all" || user.role === roleFilter;
     return matchesQuery && matchesRole;
+  });
+
+  const aq = approvedQuery.trim().toLowerCase();
+  const filteredApprovedEvents = approvedEvents.filter((event) => {
+    const matchesQuery =
+      !aq ||
+      event.name.toLowerCase().includes(aq) ||
+      (event.organizer?.username ?? "").toLowerCase().includes(aq) ||
+      (event.track ?? "").toLowerCase().includes(aq);
+    const matchesCategory = approvedCategory === "all" || event.category === approvedCategory;
+    return matchesQuery && matchesCategory;
   });
 
   if (loading) {
@@ -423,10 +437,43 @@ export function AdminPanelPage() {
           </TabsContent>
 
           <TabsContent value="approved" className="space-y-4">
+            {approvedEvents.length > 0 && (
+              <div className="flex flex-col sm:flex-row gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--race-muted)]" />
+                  <Input
+                    value={approvedQuery}
+                    onChange={(e) => setApprovedQuery(e.target.value)}
+                    placeholder={t("admin.searchApprovedEvents")}
+                    className="pl-10 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]"
+                  />
+                </div>
+                <Select value={approvedCategory} onValueChange={setApprovedCategory}>
+                  <SelectTrigger className="w-full sm:w-56 bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                    <SelectValue placeholder={t("events.category")} />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-h-72">
+                    <SelectItem value="all">{t("events.allCategories")}</SelectItem>
+                    {EVENT_CATEGORY_GROUPS.map((g) => (
+                      <SelectGroup key={g.group}>
+                        <SelectLabel className="text-[var(--race-accent)]">{g.group}</SelectLabel>
+                        {g.items.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {approvedEvents.length === 0 ? (
               <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noApprovedEvents")}</p>
+            ) : filteredApprovedEvents.length === 0 ? (
+              <p className="text-[var(--race-muted)] text-center py-8">{t("admin.noApprovedMatch")}</p>
             ) : (
-              approvedEvents.map((event) => (
+              filteredApprovedEvents.map((event) => (
                 <Card key={event.id} className="bg-[var(--race-card)] border-[var(--race-border)]">
                   <CardContent className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>

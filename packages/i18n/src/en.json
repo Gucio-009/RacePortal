@@ -560,7 +560,9 @@
     "appStatusRejected": "Rejected",
     "searchUsers": "Search by name or email…",
     "allRoles": "All roles",
-    "noUsersMatch": "No users match the filters."
+    "noUsersMatch": "No users match the filters.",
+    "searchApprovedEvents": "Search by name, organizer, or track…",
+    "noApprovedMatch": "No events match the filters."
   },
   "bugs": {
     "loading": "Loading reports…",
