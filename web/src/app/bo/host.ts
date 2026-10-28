@@ -27,3 +27,17 @@ export function apexOrigin(): string {
 export function apexEventUrl(eventId: string): string {
   return `${apexOrigin()}/wydarzenia/${eventId}`;
 }
+
+/** Origin backoffice — link „Backoffice” z menu konta na apexie. */
+export function backofficeOrigin(): string {
+  const { protocol, hostname, port } = window.location;
+  if (hostname.startsWith("bo.")) {
+    const p = port ? `:${port}` : "";
+    return `${protocol}//${hostname}${p}`;
+  }
+  if (hostname === "localhost" || hostname === "127.0.0.1") {
+    const p = port ? `:${port}` : "";
+    return `${protocol}//bo.${hostname}${p}`;
+  }
+  return "https://bo.raceportal.pl";
+}

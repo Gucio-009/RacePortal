@@ -35,6 +35,7 @@ import {
   X,
   Archive,
   Loader2,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -45,6 +46,7 @@ import { BugReportButton } from "./BugReportButton";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { StableI18nLabel } from "./StableI18nLabel";
+import { backofficeOrigin } from "../bo/host";
 
 /** Klasa NavLink: aktywny = `--race-accent`, nieaktywny = szary z hoverem. */
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -266,6 +268,17 @@ export function RootLayout() {
                           {t("nav.adminPanelFull")}
                         </button>
                       )}
+                      {isAdmin && (
+                        <a
+                          role="menuitem"
+                          href={backofficeOrigin()}
+                          className="w-full flex items-center gap-2 px-3 py-2.5 text-left hover:bg-[var(--race-hover)] hover:text-[var(--race-accent)]"
+                          onClick={() => setMenuOpen(false)}
+                        >
+                          <ExternalLink className="h-4 w-4 text-[var(--race-accent)]" />
+                          {t("nav.backoffice")}
+                        </a>
+                      )}
 
                       <div className="border-t border-[var(--race-border)]" />
                       <button
@@ -340,6 +353,15 @@ export function RootLayout() {
               <button type="button" className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]" onClick={() => go("/admin")}>
                 <Shield className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.adminPanelFull")}
               </button>
+            )}
+            {isAdmin && (
+              <a
+                href={backofficeOrigin()}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-left text-[var(--race-fg)] hover:bg-[var(--race-hover)]"
+                onClick={() => setMoreOpen(false)}
+              >
+                <ExternalLink className="w-4 h-4 text-[var(--race-accent)]" /> {t("nav.backoffice")}
+              </a>
             )}
             {isAuthenticated && (
               <>
