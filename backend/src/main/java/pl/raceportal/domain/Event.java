@@ -136,6 +136,10 @@ public class Event {
     @Column(name = "results_published", nullable = false)
     private boolean resultsPublished = false;
 
+    /** Licznik otwarć strony szczegółów (publiczny GET). */
+    @Column(name = "view_count", nullable = false)
+    private long viewCount = 0;
+
     /** Opcjonalna opłata dla widzów (informacyjna). */
     @Column(name = "spectator_fee", precision = 10, scale = 2)
     private BigDecimal spectatorFee;
@@ -411,6 +415,14 @@ public class Event {
 
     public void setResultsPublished(boolean resultsPublished) {
         this.resultsPublished = resultsPublished;
+    }
+
+    public long getViewCount() {
+        return viewCount;
+    }
+
+    public void setViewCount(long viewCount) {
+        this.viewCount = viewCount;
     }
 
     public BigDecimal getSpectatorFee() {

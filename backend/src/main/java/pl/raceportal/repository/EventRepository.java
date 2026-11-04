@@ -2,6 +2,9 @@ package pl.raceportal.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import pl.raceportal.domain.Event;
 import pl.raceportal.domain.EventStatus;
 
@@ -40,4 +43,9 @@ public interface EventRepository extends JpaRepository<Event, String>, JpaSpecif
 
     /** Seed / deduplikacja po nazwie (DataInitializer). */
     java.util.Optional<Event> findFirstByNameIgnoreCase(String name);
+
+    /** Atomowy +1 wyświetleń strony szczegółów. */
+    @Modifying(clearAutomatically = true)
+    @Query("update Event e set e.viewCount = e.viewCount + 1 where e.id = :id")
+    int incrementViewCount(@Param("id") String id);
 }

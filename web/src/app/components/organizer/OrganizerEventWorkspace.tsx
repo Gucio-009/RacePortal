@@ -89,6 +89,7 @@ export function OrganizerEventWorkspace({
     { label: t("organizer.wsKpiConfirmed"), value: confirmed },
     { label: t("organizer.wsKpiCanceled"), value: canceled },
     { label: t("organizer.wsKpiTotal"), value: registrations.length },
+    { label: t("organizer.wsKpiViews"), value: event.viewCount ?? 0 },
   ];
 
   return (
@@ -164,7 +165,7 @@ export function OrganizerEventWorkspace({
         </TabsList>
 
         <TabsContent value="summary" className="space-y-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {kpi.map((item) => (
               <div
                 key={item.label}

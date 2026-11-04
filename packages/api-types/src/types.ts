@@ -96,6 +96,8 @@ export interface ApiEvent {
   /** verified = rola ORGANIZER/ADMIN (zaakceptowany wniosek). */
   organizer?: { id: string; username: string; verified?: boolean } | null;
   registrationsCount?: number;
+  /** Licznik otwarć strony szczegółów (publiczny GET). */
+  viewCount?: number;
   /** Legacy / opcjonalny kształt licznika, który część klientów nadal czyta. */
   _count?: { registrations: number };
   paid?: boolean;

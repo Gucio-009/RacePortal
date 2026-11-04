@@ -53,6 +53,7 @@ public final class EventDtos {
             String organizerId,
             OrganizerRef organizer,
             long registrationsCount,
+            long viewCount,
             boolean paid,
             BigDecimal entryFee,
             String bankAccount,

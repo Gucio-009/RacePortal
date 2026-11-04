@@ -339,20 +339,30 @@ public class EventService {
      * Szczegóły wydarzenia: PENDING/REJECTED widoczne tylko dla właściciela/admina
      * (inaczej 404 — nie ujawnia istnienia nieopublikowanych).
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public EventResponse getById(String id, UserPrincipal currentUser) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono wydarzenia"));
 
-        boolean privileged = currentUser != null && (currentUser.getRole() == Role.ADMIN ||
-                (currentUser.getRole() == Role.ORGANIZER && event.getOrganizer() != null
-                        && event.getOrganizer().getId().equals(currentUser.getId())));
+        boolean isOwner = currentUser != null && event.getOrganizer() != null
+                && event.getOrganizer().getId().equals(currentUser.getId());
+        boolean isAdmin = currentUser != null && currentUser.getRole() == Role.ADMIN;
+        boolean privileged = isAdmin || (currentUser != null && currentUser.getRole() == Role.ORGANIZER && isOwner);
 
         if (event.getStatus() != EventStatus.APPROVED && event.getStatus() != EventStatus.ARCHIVED && !privileged) {
             throw ApiException.notFound("Nie znaleziono wydarzenia");
         }
 
-        return serialize(event);
+        // Publiczne otwarcie szczegółów — bez liczenia podglądu właściciela/admina.
+        boolean publicStatus = event.getStatus() == EventStatus.APPROVED
+                || event.getStatus() == EventStatus.ARCHIVED;
+        long views = event.getViewCount();
+        if (publicStatus && !isOwner && !isAdmin) {
+            eventRepository.incrementViewCount(id);
+            views += 1;
+        }
+
+        return serialize(event, registrationRepository.countByEvent_Id(event.getId()), views);
     }
 
     /**
@@ -631,10 +641,14 @@ public class EventService {
     }
 
     EventResponse serialize(Event event) {
-        return serialize(event, registrationRepository.countByEvent_Id(event.getId()));
+        return serialize(event, registrationRepository.countByEvent_Id(event.getId()), event.getViewCount());
     }
 
     private EventResponse serialize(Event event, long registrationsCount) {
+        return serialize(event, registrationsCount, event.getViewCount());
+    }
+
+    private EventResponse serialize(Event event, long registrationsCount, long viewCount) {
         OrganizerRef organizerRef = null;
         if (event.getOrganizer() != null) {
             User org = event.getOrganizer();
@@ -663,6 +677,7 @@ public class EventService {
                 event.getOrganizer() != null ? event.getOrganizer().getId() : null,
                 organizerRef,
                 registrationsCount,
+                viewCount,
                 event.isPaid(),
                 event.getEntryFee(),
                 event.getBankAccount(),
