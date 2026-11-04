@@ -45,6 +45,7 @@ import {
   isOpenRegistration,
 } from "../lib/types";
 import { formatCarLabel, parseCarClasses, partitionCarsForEvent } from "../lib/carMatch";
+import { EventPublicLists } from "../components/EventPublicLists";
 import { toast } from "sonner";
 
 export function EventDetailPage() {
@@ -267,6 +268,10 @@ export function EventDetailPage() {
               {event.description}
             </p>
           </div>
+          </Reveal>
+
+          <Reveal delay={100}>
+            <EventPublicLists eventId={event.id} resultsPublished={event.resultsPublished} />
           </Reveal>
 
           {mapMarkers.length > 0 && (
