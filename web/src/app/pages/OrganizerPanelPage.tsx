@@ -333,11 +333,16 @@ export function OrganizerPanelPage() {
     }
   };
 
-  const updateRegistrationStatus = async (id: string, status: RegistrationStatus) => {
+  const updateRegistrationStatus = async (
+    id: string,
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => {
     try {
+      const comment = (commentOverride ?? comments[id])?.trim() || undefined;
       const updated = await api.patch<Registration>(`/api/registrations/${id}/status`, {
         status,
-        comment: comments[id]?.trim() || undefined,
+        comment,
       });
       setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
       setDetailReg((prev) => (prev?.id === id ? updated : prev));
@@ -349,14 +354,19 @@ export function OrganizerPanelPage() {
     }
   };
 
-  const bulkUpdateRegistrationStatus = async (ids: string[], status: RegistrationStatus) => {
+  const bulkUpdateRegistrationStatus = async (
+    ids: string[],
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => {
     let ok = 0;
     let fail = 0;
     for (const id of ids) {
       try {
+        const comment = (commentOverride ?? comments[id])?.trim() || undefined;
         const updated = await api.patch<Registration>(`/api/registrations/${id}/status`, {
           status,
-          comment: comments[id]?.trim() || undefined,
+          comment,
         });
         setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
         setDetailReg((prev) => (prev?.id === id ? updated : prev));
@@ -367,6 +377,28 @@ export function OrganizerPanelPage() {
     }
     if (fail === 0) {
       toast.success(t("organizer.wsBulkOk", { count: ok }));
+    } else {
+      toast.error(t("organizer.wsBulkPartial", { ok, total: ids.length, fail }));
+    }
+  };
+
+  const bulkAssignClass = async (ids: string[], classId: string | null) => {
+    let ok = 0;
+    let fail = 0;
+    for (const id of ids) {
+      try {
+        const updated = await api.patch<Registration>(`/api/registrations/${id}/class`, {
+          classId,
+        });
+        setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+        setDetailReg((prev) => (prev?.id === id ? updated : prev));
+        ok += 1;
+      } catch {
+        fail += 1;
+      }
+    }
+    if (fail === 0) {
+      toast.success(t("organizer.wsBulkClassOk", { count: ok }));
     } else {
       toast.error(t("organizer.wsBulkPartial", { ok, total: ids.length, fail }));
     }
@@ -464,6 +496,7 @@ export function OrganizerPanelPage() {
               onEditEvent={() => openEdit(selectedEvent)}
               onUpdateStatus={updateRegistrationStatus}
               onBulkUpdateStatus={bulkUpdateRegistrationStatus}
+              onBulkAssignClass={bulkAssignClass}
               onOpenDetail={setDetailReg}
               onReloadRegistrations={() => {
                 void reloadWorkspaceRegistrations();

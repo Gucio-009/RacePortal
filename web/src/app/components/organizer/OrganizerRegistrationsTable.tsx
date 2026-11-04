@@ -2,7 +2,7 @@
  * Tabela zgłoszeń w workspace wydarzenia:
  * zakładki statusów, widoczność kolumn, sort, filtry, bulk, CSV (widoczne kolumny + filtr).
  */
-import { useMemo, useState, type Dispatch, type SetStateAction } from "react";
+import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ArrowDown,
@@ -23,8 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
 import { downloadCsv } from "../../lib/downloadCsv";
-import type { Registration, RegistrationStatus } from "../../lib/types";
+import { api } from "../../lib/api";
+import type { EventClass, Registration, RegistrationStatus } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 import { toast } from "sonner";
 
@@ -183,8 +192,17 @@ interface Props {
   selectedEvent: OrganizerEvent;
   comments: Record<string, string>;
   setComments: Dispatch<SetStateAction<Record<string, string>>>;
-  onUpdateStatus: (id: string, status: RegistrationStatus) => Promise<void> | void;
-  onBulkUpdateStatus: (ids: string[], status: RegistrationStatus) => Promise<void> | void;
+  onUpdateStatus: (
+    id: string,
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => Promise<void> | void;
+  onBulkUpdateStatus: (
+    ids: string[],
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => Promise<void> | void;
+  onBulkAssignClass?: (ids: string[], classId: string | null) => Promise<void> | void;
   onOpenDetail: (reg: Registration) => void;
 }
 
@@ -195,6 +213,7 @@ export function OrganizerRegistrationsTable({
   setComments,
   onUpdateStatus,
   onBulkUpdateStatus,
+  onBulkAssignClass,
   onOpenDetail,
 }: Props) {
   const { t, i18n } = useTranslation();
@@ -208,6 +227,26 @@ export function OrganizerRegistrationsTable({
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [eventClasses, setEventClasses] = useState<EventClass[]>([]);
+  const [bulkClassId, setBulkClassId] = useState<string>("");
+  const [rejectIds, setRejectIds] = useState<string[] | null>(null);
+  const [rejectComment, setRejectComment] = useState("");
+  const [rejectBusy, setRejectBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<EventClass[]>(`/api/events/${selectedEvent.id}/classes`)
+      .then((list) => {
+        if (!cancelled) setEventClasses(list);
+      })
+      .catch(() => {
+        if (!cancelled) setEventClasses([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEvent.id, registrations]);
 
   const classOptions = useMemo(() => {
     const set = new Set<string>();
@@ -304,12 +343,54 @@ export function OrganizerRegistrationsTable({
 
   const acceptTarget = (selectedEvent.paid ? "ACCEPTED" : "CONFIRMED") as RegistrationStatus;
 
+  const selectedIds = () => filtered.filter((r) => selected.has(r.id)).map((r) => r.id);
+
   const runBulk = async (status: RegistrationStatus) => {
-    const ids = filtered.filter((r) => selected.has(r.id)).map((r) => r.id);
+    const ids = selectedIds();
     if (ids.length === 0) return;
+    if (status === "CANCELED") {
+      setRejectComment("");
+      setRejectIds(ids);
+      return;
+    }
     setBulkBusy(true);
     try {
       await onBulkUpdateStatus(ids, status);
+      setSelected(new Set());
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const openRejectOne = (id: string) => {
+    setRejectComment(comments[id] || "");
+    setRejectIds([id]);
+  };
+
+  const confirmReject = async () => {
+    if (!rejectIds?.length) return;
+    setRejectBusy(true);
+    try {
+      if (rejectIds.length === 1) {
+        await onUpdateStatus(rejectIds[0], "CANCELED", rejectComment);
+      } else {
+        await onBulkUpdateStatus(rejectIds, "CANCELED", rejectComment);
+      }
+      setSelected(new Set());
+      setRejectIds(null);
+      setRejectComment("");
+    } finally {
+      setRejectBusy(false);
+    }
+  };
+
+  const runBulkClass = async () => {
+    const ids = selectedIds();
+    if (!ids.length || !onBulkAssignClass || !bulkClassId) return;
+    setBulkBusy(true);
+    try {
+      const classId = bulkClassId === "__none__" ? null : bulkClassId;
+      await onBulkAssignClass(ids, classId);
       setSelected(new Set());
     } finally {
       setBulkBusy(false);
@@ -493,6 +574,33 @@ export function OrganizerRegistrationsTable({
               </Button>
             </>
           )}
+          {onBulkAssignClass && eventClasses.length > 0 && (
+            <>
+              <Select value={bulkClassId} onValueChange={setBulkClassId}>
+                <SelectTrigger className="w-[200px] h-8 bg-[var(--race-bg)] border-[var(--race-border)] text-[var(--race-fg)]">
+                  <SelectValue placeholder={t("organizer.wsBulkClassPick")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__none__">{t("organizer.wsBulkClassNone")}</SelectItem>
+                  {eventClasses.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={bulkBusy || !bulkClassId}
+                onClick={() => void runBulkClass()}
+                className="border-[var(--race-border)]"
+              >
+                {t("organizer.wsBulkClassApply")}
+              </Button>
+            </>
+          )}
         </div>
       )}
 
@@ -590,7 +698,7 @@ export function OrganizerRegistrationsTable({
                             size="sm"
                             variant="outline"
                             className="h-8 border-red-800 text-red-400"
-                            onClick={() => void onUpdateStatus(reg.id, "CANCELED")}
+                            onClick={() => openRejectOne(reg.id)}
                           >
                             <X className="w-3.5 h-3.5" />
                           </Button>
@@ -610,7 +718,7 @@ export function OrganizerRegistrationsTable({
                             size="sm"
                             variant="outline"
                             className="h-8 border-red-800 text-red-400"
-                            onClick={() => void onUpdateStatus(reg.id, "CANCELED")}
+                            onClick={() => openRejectOne(reg.id)}
                           >
                             <X className="w-3.5 h-3.5" />
                           </Button>
@@ -629,6 +737,54 @@ export function OrganizerRegistrationsTable({
           </table>
         </div>
       )}
+
+      <Dialog
+        open={rejectIds != null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setRejectIds(null);
+            setRejectComment("");
+          }
+        }}
+      >
+        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+          <DialogHeader>
+            <DialogTitle style={{ fontWeight: 800 }}>{t("organizer.wsRejectTitle")}</DialogTitle>
+            <DialogDescription className="text-[var(--race-muted)]">
+              {t("organizer.wsRejectBody", { count: rejectIds?.length ?? 0 })}
+            </DialogDescription>
+          </DialogHeader>
+          <textarea
+            value={rejectComment}
+            onChange={(e) => setRejectComment(e.target.value)}
+            rows={4}
+            maxLength={500}
+            placeholder={t("organizer.wsRejectPlaceholder")}
+            className="w-full rounded-md border border-[var(--race-border)] bg-[var(--race-bg)] px-3 py-2 text-sm text-[var(--race-fg)]"
+          />
+          <DialogFooter className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-[var(--race-border)]"
+              onClick={() => {
+                setRejectIds(null);
+                setRejectComment("");
+              }}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              disabled={rejectBusy}
+              className="bg-red-700 hover:bg-red-600"
+              onClick={() => void confirmReject()}
+            >
+              {t("organizer.rejectReg")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

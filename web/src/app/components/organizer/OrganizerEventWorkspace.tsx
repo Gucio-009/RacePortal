@@ -21,8 +21,17 @@ interface OrganizerEventWorkspaceProps {
   setComments: Dispatch<SetStateAction<Record<string, string>>>;
   onBack: () => void;
   onEditEvent: () => void;
-  onUpdateStatus: (id: string, status: RegistrationStatus) => Promise<void> | void;
-  onBulkUpdateStatus: (ids: string[], status: RegistrationStatus) => Promise<void> | void;
+  onUpdateStatus: (
+    id: string,
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => Promise<void> | void;
+  onBulkUpdateStatus: (
+    ids: string[],
+    status: RegistrationStatus,
+    commentOverride?: string,
+  ) => Promise<void> | void;
+  onBulkAssignClass?: (ids: string[], classId: string | null) => Promise<void> | void;
   onOpenDetail: (reg: Registration) => void;
   onReloadRegistrations?: () => void;
 }
@@ -60,6 +69,7 @@ export function OrganizerEventWorkspace({
   onEditEvent,
   onUpdateStatus,
   onBulkUpdateStatus,
+  onBulkAssignClass,
   onOpenDetail,
   onReloadRegistrations,
 }: OrganizerEventWorkspaceProps) {
@@ -204,6 +214,7 @@ export function OrganizerEventWorkspace({
             setComments={setComments}
             onUpdateStatus={onUpdateStatus}
             onBulkUpdateStatus={onBulkUpdateStatus}
+            onBulkAssignClass={onBulkAssignClass}
             onOpenDetail={onOpenDetail}
           />
         </TabsContent>

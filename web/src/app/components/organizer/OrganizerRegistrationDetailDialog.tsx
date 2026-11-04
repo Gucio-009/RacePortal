@@ -110,15 +110,38 @@ export function OrganizerRegistrationDetailDialog({
                   {t("organizer.organizerCommentColon", { comment: reg.organizerComment })}
                 </p>
               )}
+              <Row label={t("organizer.col.className")} value={reg.assignedClassName} />
+              {reg.calculatedEngineCc != null && (
+                <Row
+                  label={t("organizer.col.calculatedEngineCc")}
+                  value={t("organizer.capacityValue", { cc: reg.calculatedEngineCc })}
+                />
+              )}
               {reg.paymentProofUrl && (
-                <a
-                  href={reg.paymentProofUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-[var(--race-accent)] text-sm underline"
-                >
-                  {t("organizer.transferProof")}
-                </a>
+                <div className="space-y-2">
+                  <a
+                    href={reg.paymentProofUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[var(--race-accent)] text-sm underline"
+                  >
+                    {t("organizer.transferProof")}
+                  </a>
+                  {/\.(jpe?g|png|webp|gif)(\?|$)/i.test(reg.paymentProofUrl) ||
+                  /\/api\/uploads\//i.test(reg.paymentProofUrl) ? (
+                    <img
+                      src={reg.paymentProofUrl}
+                      alt={t("organizer.transferProof")}
+                      className="w-full max-h-64 object-contain rounded-md border border-[var(--race-border)] bg-[var(--race-bg)]"
+                    />
+                  ) : /\.pdf(\?|$)/i.test(reg.paymentProofUrl) ? (
+                    <iframe
+                      title={t("organizer.transferProof")}
+                      src={reg.paymentProofUrl}
+                      className="w-full h-64 rounded-md border border-[var(--race-border)] bg-[var(--race-bg)]"
+                    />
+                  ) : null}
+                </div>
               )}
             </section>
 
@@ -141,6 +164,14 @@ export function OrganizerRegistrationDetailDialog({
                     <Row label={t("organizer.makeModel")} value={`${car.make} ${car.model}`} />
                     <Row label={t("organizer.year")} value={car.year} />
                     <Row label={t("organizer.drive")} value={car.driveType} />
+                    <Row
+                      label={t("organizer.col.boostType")}
+                      value={
+                        car.boostType
+                          ? t(`garage.boost.${car.boostType}`, { defaultValue: car.boostType })
+                          : null
+                      }
+                    />
                     <Row
                       label={t("organizer.power")}
                       value={car.powerHp != null ? t("organizer.powerHpValue", { hp: car.powerHp }) : null}
