@@ -132,6 +132,10 @@ public class Event {
     @Column(name = "accept_registrations", nullable = false)
     private boolean acceptRegistrations = true;
 
+    /** Czy wyniki są opublikowane publicznie. */
+    @Column(name = "results_published", nullable = false)
+    private boolean resultsPublished = false;
+
     /** Opcjonalna opłata dla widzów (informacyjna). */
     @Column(name = "spectator_fee", precision = 10, scale = 2)
     private BigDecimal spectatorFee;
@@ -399,6 +403,14 @@ public class Event {
 
     public void setAcceptRegistrations(boolean acceptRegistrations) {
         this.acceptRegistrations = acceptRegistrations;
+    }
+
+    public boolean isResultsPublished() {
+        return resultsPublished;
+    }
+
+    public void setResultsPublished(boolean resultsPublished) {
+        this.resultsPublished = resultsPublished;
     }
 
     public BigDecimal getSpectatorFee() {

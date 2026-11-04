@@ -13,6 +13,7 @@ import type { Registration, RegistrationStatus } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 import { OrganizerRegistrationsTable } from "./OrganizerRegistrationsTable";
 import { OrganizerClassConfig } from "./OrganizerClassConfig";
+import { OrganizerResultsPanel } from "./OrganizerResultsPanel";
 
 interface OrganizerEventWorkspaceProps {
   event: OrganizerEvent;
@@ -21,6 +22,7 @@ interface OrganizerEventWorkspaceProps {
   setComments: Dispatch<SetStateAction<Record<string, string>>>;
   onBack: () => void;
   onEditEvent: () => void;
+  onEventPatched?: (patch: Partial<OrganizerEvent>) => void;
   onUpdateStatus: (
     id: string,
     status: RegistrationStatus,
@@ -72,6 +74,7 @@ export function OrganizerEventWorkspace({
   onBulkAssignClass,
   onOpenDetail,
   onReloadRegistrations,
+  onEventPatched,
 }: OrganizerEventWorkspaceProps) {
   const { t, i18n } = useTranslation();
   const pending = countByStatus(registrations, "PENDING");
@@ -220,8 +223,12 @@ export function OrganizerEventWorkspace({
         </TabsContent>
 
         <TabsContent value="results">
-          <div className="rounded-lg border border-dashed border-[var(--race-border)] bg-[var(--race-card)] p-8 text-center text-[var(--race-muted)]">
-            {t("organizer.wsComingSoonResults")}
+          <div className="rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] p-5">
+            <OrganizerResultsPanel
+              eventId={event.id}
+              resultsPublished={event.resultsPublished}
+              onPublishedChange={(published) => onEventPatched?.({ resultsPublished: published })}
+            />
           </div>
         </TabsContent>
 

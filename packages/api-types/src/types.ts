@@ -104,6 +104,7 @@ export interface ApiEvent {
   paymentDeadlineHours?: number | null;
   freeCancelDays?: number | null;
   acceptRegistrations?: boolean;
+  resultsPublished?: boolean;
   endDate?: string | null;
   endTime?: string | null;
   street?: string | null;
@@ -255,6 +256,34 @@ export interface Registration {
   assignedClassId?: string | null;
   assignedClassName?: string | null;
   calculatedEngineCc?: number | null;
+}
+
+export type ResultStatus = "OK" | "DNF" | "DNS" | "DSQ";
+
+export interface EventResult {
+  id: string;
+  eventId: string;
+  registrationId: string;
+  userId: string;
+  driverName: string;
+  carLabel?: string | null;
+  classId?: string | null;
+  className?: string | null;
+  startNumber?: number | null;
+  position?: number | null;
+  timeMs?: number | null;
+  timeDisplay?: string | null;
+  points?: number | null;
+  status: ResultStatus;
+  note?: string | null;
+  updatedAt: string;
+}
+
+export interface PointsRule {
+  id: string;
+  eventId: string;
+  place: number;
+  points: number;
 }
 
 /** Wynik trasy (np. OSRM/Google) – polyline jako pary [lat, lng]. */

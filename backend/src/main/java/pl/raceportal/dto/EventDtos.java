@@ -59,6 +59,7 @@ public final class EventDtos {
             Integer paymentDeadlineHours,
             Integer freeCancelDays,
             boolean acceptRegistrations,
+            boolean resultsPublished,
             BigDecimal spectatorFee,
             String externalUrl,
             String regulationsUrls,

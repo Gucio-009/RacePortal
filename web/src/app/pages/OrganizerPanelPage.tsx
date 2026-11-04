@@ -501,6 +501,12 @@ export function OrganizerPanelPage() {
               onReloadRegistrations={() => {
                 void reloadWorkspaceRegistrations();
               }}
+              onEventPatched={(patch) => {
+                if (!selectedEventId) return;
+                setEvents((prev) =>
+                  prev.map((e) => (e.id === selectedEventId ? { ...e, ...patch } : e)),
+                );
+              }}
             />
           )
         ) : (

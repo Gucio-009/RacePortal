@@ -24,7 +24,9 @@ import pl.raceportal.dto.EventDtos.EventUpdateRequest;
 import pl.raceportal.dto.EventDtos.OrganizerRef;
 import pl.raceportal.repository.CarRepository;
 import pl.raceportal.repository.EventClassRepository;
+import pl.raceportal.repository.EventPointsRuleRepository;
 import pl.raceportal.repository.EventRepository;
+import pl.raceportal.repository.EventResultRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
 import pl.raceportal.i18n.MailTexts;
@@ -70,6 +72,8 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final EventClassRepository eventClassRepository;
+    private final EventResultRepository eventResultRepository;
+    private final EventPointsRuleRepository eventPointsRuleRepository;
     private final RegistrationRepository registrationRepository;
     private final UserRepository userRepository;
     private final CarRepository carRepository;
@@ -77,11 +81,15 @@ public class EventService {
     private final NotificationService notificationService;
 
     public EventService(EventRepository eventRepository, EventClassRepository eventClassRepository,
+                         EventResultRepository eventResultRepository,
+                         EventPointsRuleRepository eventPointsRuleRepository,
                          RegistrationRepository registrationRepository, UserRepository userRepository,
                          CarRepository carRepository, MailService mailService,
                          NotificationService notificationService) {
         this.eventRepository = eventRepository;
         this.eventClassRepository = eventClassRepository;
+        this.eventResultRepository = eventResultRepository;
+        this.eventPointsRuleRepository = eventPointsRuleRepository;
         this.registrationRepository = registrationRepository;
         this.userRepository = userRepository;
         this.carRepository = carRepository;
@@ -547,6 +555,8 @@ public class EventService {
             throw ApiException.forbidden("Brak uprawnień");
         }
 
+        eventResultRepository.deleteByEvent_Id(event.getId());
+        eventPointsRuleRepository.deleteByEvent_Id(event.getId());
         registrationRepository.clearAssignedClassByEventId(event.getId());
         registrationRepository.deleteByEvent_Id(event.getId());
         eventClassRepository.deleteByEvent_Id(event.getId());
@@ -659,6 +669,7 @@ public class EventService {
                 event.getPaymentDeadlineHours(),
                 event.getFreeCancelDays(),
                 event.isAcceptRegistrations(),
+                event.isResultsPublished(),
                 event.getSpectatorFee(),
                 event.getExternalUrl(),
                 event.getRegulationsUrls(),
