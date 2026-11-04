@@ -14,6 +14,7 @@ import type { OrganizerEvent } from "./organizerEventForm";
 import { OrganizerRegistrationsTable } from "./OrganizerRegistrationsTable";
 import { OrganizerClassConfig } from "./OrganizerClassConfig";
 import { OrganizerResultsPanel } from "./OrganizerResultsPanel";
+import { OrganizerCommsPanel } from "./OrganizerCommsPanel";
 
 interface OrganizerEventWorkspaceProps {
   event: OrganizerEvent;
@@ -233,8 +234,8 @@ export function OrganizerEventWorkspace({
         </TabsContent>
 
         <TabsContent value="comms">
-          <div className="rounded-lg border border-dashed border-[var(--race-border)] bg-[var(--race-card)] p-8 text-center text-[var(--race-muted)]">
-            {t("organizer.wsComingSoonComms")}
+          <div className="rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] p-5">
+            <OrganizerCommsPanel eventId={event.id} />
           </div>
         </TabsContent>
       </Tabs>

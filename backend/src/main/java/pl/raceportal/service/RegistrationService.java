@@ -57,11 +57,13 @@ public class RegistrationService {
     private final EventService eventService;
     private final GarageService garageService;
     private final MailService mailService;
+    private final NotificationService notificationService;
 
     public RegistrationService(RegistrationRepository registrationRepository, EventRepository eventRepository,
                                 EventClassRepository eventClassRepository, CarRepository carRepository,
                                 UserRepository userRepository, EventService eventService,
-                                GarageService garageService, MailService mailService) {
+                                GarageService garageService, MailService mailService,
+                                NotificationService notificationService) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
         this.eventClassRepository = eventClassRepository;
@@ -70,6 +72,7 @@ public class RegistrationService {
         this.eventService = eventService;
         this.garageService = garageService;
         this.mailService = mailService;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -221,7 +224,8 @@ public class RegistrationService {
         }
 
         Event event = registration.getEvent();
-        boolean alreadyPaid = event.isPaid() && registration.getStatus() == RegistrationStatus.CONFIRMED;
+        boolean wasConfirmed = registration.getStatus() == RegistrationStatus.CONFIRMED;
+        boolean alreadyPaid = event.isPaid() && wasConfirmed;
         boolean refundByOrganizer = false;
         if (alreadyPaid) {
             int freeCancelDays = event.getFreeCancelDays() != null ? event.getFreeCancelDays() : 7;
@@ -239,6 +243,16 @@ public class RegistrationService {
                 MailTexts.registrationCancelSubject(locale, safeEvent),
                 MailTexts.registrationCancelBody(locale, safeEvent, refundByOrganizer),
                 locale);
+
+        if (wasConfirmed && event.getOrganizer() != null) {
+            String driverLabel = driver.getUsername() != null ? driver.getUsername() : driver.getEmail();
+            notificationService.notifyUser(
+                    event.getOrganizer(),
+                    "REGISTRATION_CANCELED",
+                    "Anulowanie potwierdzonego zgłoszenia",
+                    driverLabel + " anulował potwierdzone zgłoszenie na \"" + safeEvent + "\".",
+                    event.getId());
+        }
 
         return serialize(registration, true, false);
     }
