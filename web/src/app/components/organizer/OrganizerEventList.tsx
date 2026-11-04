@@ -143,7 +143,7 @@ export function OrganizerEventList({
                 className="border-[var(--race-accent)] text-[var(--race-accent)] hover:bg-[var(--race-accent)] hover:text-[var(--race-on-accent)]"
                 style={{ fontWeight: 700 }}
               >
-                {t("organizer.viewRegistrations")}
+                {t("organizer.wsManage")}
               </Button>
               {/* Anulacja tylko dla aktywnych — CANCELLED/ARCHIVED bez akcji */}
               {event.status !== "CANCELLED" && event.status !== "ARCHIVED" && (

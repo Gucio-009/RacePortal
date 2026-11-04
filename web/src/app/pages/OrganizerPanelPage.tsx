@@ -2,24 +2,16 @@
  * OrganizerPanelPage – panel roli ORGANIZER (oraz ADMIN przez AuthGate).
  *
  * Cel: CRUD wydarzeń organizatora + zarządzanie statusami zgłoszeń kierowców.
- * Wzorce: fetch on mount (`/api/organizer/events`), wyszukiwarka listy, dialog zgłoszeń
- * (bez osobnej zakładki), dialog formularza (komponenty organizer/*).
- * Auth: route gated AuthGate roles=["ORGANIZER","ADMIN"] w routes.tsx; API też egzekwuje rolę.
+ * Wzorce: lista wydarzeń → workspace (zakładki KPI / zgłoszenia / stuby).
+ * Auth: AuthGate roles=["ORGANIZER","ADMIN"]; API egzekwuje rolę.
  *
- * Pomysł (alt): TanStack Query + mutations; React Hook Form + Zod.
+ * Pomysł (alt): TanStack Query; osobna trasa `/organizer/events/:id`.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText, Plus } from "lucide-react";
 import { Reveal } from "../components/Reveal";
 import { Button } from "../components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../components/ui/dialog";
 import { UnsavedChangesDialog } from "../components/UnsavedChangesDialog";
 import { api, ApiError } from "../lib/api";
 import { useAuth } from "../context/AuthContext";
@@ -45,7 +37,7 @@ import {
   type OrganizerEvent,
 } from "../components/organizer/organizerEventForm";
 import { OrganizerEventList } from "../components/organizer/OrganizerEventList";
-import { OrganizerRegistrationsList } from "../components/organizer/OrganizerRegistrationsList";
+import { OrganizerEventWorkspace } from "../components/organizer/OrganizerEventWorkspace";
 import { OrganizerRegistrationDetailDialog } from "../components/organizer/OrganizerRegistrationDetailDialog";
 import { OrganizerEventFormDialog } from "../components/organizer/OrganizerEventFormDialog";
 import { OrganizerEventDraftsDialog } from "../components/organizer/OrganizerEventDraftsDialog";
@@ -56,7 +48,8 @@ export function OrganizerPanelPage() {
   const [events, setEvents] = useState<OrganizerEvent[]>([]);
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [registrationsOpen, setRegistrationsOpen] = useState(false);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [regsLoading, setRegsLoading] = useState(false);
   const [detailReg, setDetailReg] = useState<Registration | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -171,18 +164,29 @@ export function OrganizerPanelPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- mount
   }, []);
 
-  /** Pobiera zgłoszenia wybranego wydarzenia i otwiera dialog (bez osobnej zakładki). */
-  const loadRegistrations = async (eventId: string) => {
+  /** Otwiera workspace wydarzenia i ładuje zgłoszenia. */
+  const openWorkspace = async (eventId: string) => {
     setSelectedEventId(eventId);
-    setRegistrationsOpen(true);
+    setWorkspaceOpen(true);
     setComments({});
+    setRegsLoading(true);
     try {
       const items = await api.get<Registration[]>(`/api/registrations/event/${eventId}`);
       setRegistrations(items);
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t("organizer.regsLoadFail"));
       setRegistrations([]);
+    } finally {
+      setRegsLoading(false);
     }
+  };
+
+  const closeWorkspace = () => {
+    setWorkspaceOpen(false);
+    setSelectedEventId(null);
+    setRegistrations([]);
+    setDetailReg(null);
+    setComments({});
   };
 
   const openCreate = () => {
@@ -335,6 +339,29 @@ export function OrganizerPanelPage() {
     }
   };
 
+  const bulkUpdateRegistrationStatus = async (ids: string[], status: RegistrationStatus) => {
+    let ok = 0;
+    let fail = 0;
+    for (const id of ids) {
+      try {
+        const updated = await api.patch<Registration>(`/api/registrations/${id}/status`, {
+          status,
+          comment: comments[id]?.trim() || undefined,
+        });
+        setRegistrations((prev) => prev.map((r) => (r.id === id ? updated : r)));
+        setDetailReg((prev) => (prev?.id === id ? updated : prev));
+        ok += 1;
+      } catch {
+        fail += 1;
+      }
+    }
+    if (fail === 0) {
+      toast.success(t("organizer.wsBulkOk", { count: ok }));
+    } else {
+      toast.error(t("organizer.wsBulkPartial", { ok, total: ids.length, fail }));
+    }
+  };
+
   const cancelEvent = async (eventId: string) => {
     if (!confirm(t("organizer.cancelConfirm"))) {
       return;
@@ -343,11 +370,7 @@ export function OrganizerPanelPage() {
       await api.post(`/api/events/${eventId}/cancel`, {});
       toast.success(t("organizer.eventCancelled"));
       loadEvents();
-      if (selectedEventId === eventId) {
-        setRegistrations([]);
-        setSelectedEventId(null);
-        setRegistrationsOpen(false);
-      }
+      if (selectedEventId === eventId) closeWorkspace();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t("organizer.cancelFail"));
     }
@@ -361,11 +384,7 @@ export function OrganizerPanelPage() {
       await api.delete(`/api/events/${eventId}`);
       toast.success(t("organizer.eventDeleted"));
       loadEvents();
-      if (selectedEventId === eventId) {
-        setRegistrations([]);
-        setSelectedEventId(null);
-        setRegistrationsOpen(false);
-      }
+      if (selectedEventId === eventId) closeWorkspace();
     } catch (e) {
       toast.error(e instanceof ApiError ? e.message : t("organizer.deleteEventFail"));
     }
@@ -422,50 +441,41 @@ export function OrganizerPanelPage() {
       </section>
 
       <section className="container mx-auto px-4 py-10">
-        <h2 className="font-display text-[var(--race-fg)] mb-4" style={{ fontWeight: 800 }}>
-          {t("organizer.myEvents")}
-        </h2>
-        <OrganizerEventList
-          events={filteredEvents}
-          loading={loading}
-          loadError={loadError}
-          searchQuery={eventSearch}
-          onSearchQueryChange={setEventSearch}
-          onEdit={openEdit}
-          onLoadRegistrations={loadRegistrations}
-          onCancelEvent={cancelEvent}
-          onDeleteEvent={deleteEvent}
-        />
-      </section>
-
-      <Dialog
-        open={registrationsOpen}
-        onOpenChange={(open) => {
-          setRegistrationsOpen(open);
-          if (!open) setDetailReg(null);
-        }}
-      >
-        <DialogContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)] max-w-3xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="font-display" style={{ fontWeight: 800 }}>
-              {t("organizer.registrations")}
-            </DialogTitle>
-            <DialogDescription className="text-[var(--race-muted)]">
-              {selectedEvent ? selectedEvent.name : t("organizer.selectEvent")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <OrganizerRegistrationsList
+        {workspaceOpen && selectedEvent ? (
+          regsLoading ? (
+            <p className="text-[var(--race-muted)] text-center py-16">{t("common.loading")}</p>
+          ) : (
+            <OrganizerEventWorkspace
+              event={selectedEvent}
               registrations={registrations}
-              selectedEvent={selectedEvent}
               comments={comments}
               setComments={setComments}
+              onBack={closeWorkspace}
+              onEditEvent={() => openEdit(selectedEvent)}
               onUpdateStatus={updateRegistrationStatus}
+              onBulkUpdateStatus={bulkUpdateRegistrationStatus}
               onOpenDetail={setDetailReg}
             />
-          </div>
-        </DialogContent>
-      </Dialog>
+          )
+        ) : (
+          <>
+            <h2 className="font-display text-[var(--race-fg)] mb-4" style={{ fontWeight: 800 }}>
+              {t("organizer.myEvents")}
+            </h2>
+            <OrganizerEventList
+              events={filteredEvents}
+              loading={loading}
+              loadError={loadError}
+              searchQuery={eventSearch}
+              onSearchQueryChange={setEventSearch}
+              onEdit={openEdit}
+              onLoadRegistrations={openWorkspace}
+              onCancelEvent={cancelEvent}
+              onDeleteEvent={deleteEvent}
+            />
+          </>
+        )}
+      </section>
 
       <OrganizerRegistrationDetailDialog
         registration={detailReg}
