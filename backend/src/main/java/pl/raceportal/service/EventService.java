@@ -354,15 +354,17 @@ public class EventService {
         }
 
         // Publiczne otwarcie szczegółów — bez liczenia podglądu właściciela/admina.
+        // Increment PO serialize: @Modifying(clearAutomatically) czyści persistence context
+        // i psuje lazy organizer przy budowaniu EventResponse.
         boolean publicStatus = event.getStatus() == EventStatus.APPROVED
                 || event.getStatus() == EventStatus.ARCHIVED;
-        long views = event.getViewCount();
-        if (publicStatus && !isOwner && !isAdmin) {
+        boolean countView = publicStatus && !isOwner && !isAdmin;
+        long views = event.getViewCount() + (countView ? 1 : 0);
+        EventResponse response = serialize(event, registrationRepository.countByEvent_Id(event.getId()), views);
+        if (countView) {
             eventRepository.incrementViewCount(id);
-            views += 1;
         }
-
-        return serialize(event, registrationRepository.countByEvent_Id(event.getId()), views);
+        return response;
     }
 
     /**

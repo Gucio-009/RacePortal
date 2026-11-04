@@ -45,7 +45,7 @@ public interface EventRepository extends JpaRepository<Event, String>, JpaSpecif
     java.util.Optional<Event> findFirstByNameIgnoreCase(String name);
 
     /** Atomowy +1 wyświetleń strony szczegółów. */
-    @Modifying(clearAutomatically = true)
+    @Modifying(clearAutomatically = false, flushAutomatically = true)
     @Query("update Event e set e.viewCount = e.viewCount + 1 where e.id = :id")
     int incrementViewCount(@Param("id") String id);
 }
