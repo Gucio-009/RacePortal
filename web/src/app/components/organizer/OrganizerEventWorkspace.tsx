@@ -12,6 +12,7 @@ import { eventDateLabel } from "../../lib/types";
 import type { Registration, RegistrationStatus } from "../../lib/types";
 import type { OrganizerEvent } from "./organizerEventForm";
 import { OrganizerRegistrationsTable } from "./OrganizerRegistrationsTable";
+import { OrganizerClassConfig } from "./OrganizerClassConfig";
 
 interface OrganizerEventWorkspaceProps {
   event: OrganizerEvent;
@@ -23,6 +24,7 @@ interface OrganizerEventWorkspaceProps {
   onUpdateStatus: (id: string, status: RegistrationStatus) => Promise<void> | void;
   onBulkUpdateStatus: (ids: string[], status: RegistrationStatus) => Promise<void> | void;
   onOpenDetail: (reg: Registration) => void;
+  onReloadRegistrations?: () => void;
 }
 
 function countByStatus(regs: Registration[], status: RegistrationStatus) {
@@ -59,6 +61,7 @@ export function OrganizerEventWorkspace({
   onUpdateStatus,
   onBulkUpdateStatus,
   onOpenDetail,
+  onReloadRegistrations,
 }: OrganizerEventWorkspaceProps) {
   const { t, i18n } = useTranslation();
   const pending = countByStatus(registrations, "PENDING");
@@ -173,7 +176,7 @@ export function OrganizerEventWorkspace({
           </div>
         </TabsContent>
 
-        <TabsContent value="settings" className="space-y-3">
+        <TabsContent value="settings" className="space-y-4">
           <div className="rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] p-5 space-y-3">
             <p className="text-[var(--race-fg)]" style={{ fontWeight: 700 }}>
               {t("organizer.wsSettingsTitle")}
@@ -187,6 +190,9 @@ export function OrganizerEventWorkspace({
             >
               {t("organizer.wsOpenEventForm")}
             </Button>
+          </div>
+          <div className="rounded-lg border border-[var(--race-border)] bg-[var(--race-card)] p-5">
+            <OrganizerClassConfig eventId={event.id} onChanged={onReloadRegistrations} />
           </div>
         </TabsContent>
 

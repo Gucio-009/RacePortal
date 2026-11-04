@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pl.raceportal.dto.RegistrationDtos.AssignedClassUpdateRequest;
 import pl.raceportal.dto.RegistrationDtos.PaymentProofRequest;
 import pl.raceportal.dto.RegistrationDtos.RegistrationCreateRequest;
 import pl.raceportal.dto.RegistrationDtos.RegistrationResponse;
@@ -89,5 +90,16 @@ public class RegistrationController {
                                                                     @AuthenticationPrincipal UserPrincipal currentUser) {
         return ResponseEntity.ok(
                 registrationService.attachPaymentProof(id, currentUser.getId(), request.paymentProofUrl()));
+    }
+
+    /** Ręczny przydział / odłączenie klasy zawodów. */
+    @PatchMapping("/{id}/class")
+    @PreAuthorize("hasAnyRole('ORGANIZER','ADMIN')")
+    public ResponseEntity<RegistrationResponse> updateAssignedClass(
+            @PathVariable String id,
+            @RequestBody AssignedClassUpdateRequest request,
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        return ResponseEntity.ok(
+                registrationService.updateAssignedClass(id, request != null ? request.classId() : null, currentUser));
     }
 }

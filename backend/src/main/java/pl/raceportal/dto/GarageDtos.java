@@ -36,6 +36,8 @@ public final class GarageDtos {
             String driveType,
             Integer powerHp,
             Integer engineCc,
+            /** NONE | TURBO | SUPERCHARGER */
+            String boostType,
             Integer weightKg,
             boolean registered,
             String registrationType,
@@ -66,6 +68,8 @@ public final class GarageDtos {
             @Min(1) @Max(5000) Integer powerHp,
             /** 0 dozwolone — auta elektryczne (brak pojemności skokowej). */
             @Min(0) @Max(20000) Integer engineCc,
+            /** NONE | TURBO | SUPERCHARGER — domyślnie NONE. */
+            @Size(max = 20) String boostType,
             @Min(1) @Max(10000) Integer weightKg,
             Boolean registered,
             @Size(max = 20) String registrationType,
@@ -97,6 +101,7 @@ public final class GarageDtos {
             @Size(max = 10) String driveType,
             @Min(1) @Max(5000) Integer powerHp,
             @Min(0) @Max(20000) Integer engineCc,
+            @Size(max = 20) String boostType,
             @Min(1) @Max(10000) Integer weightKg,
             Boolean registered,
             @Size(max = 20) String registrationType,

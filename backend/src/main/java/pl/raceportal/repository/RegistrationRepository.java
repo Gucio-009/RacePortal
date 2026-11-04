@@ -59,4 +59,13 @@ public interface RegistrationRepository extends JpaRepository<Registration, Stri
 
     /** Usuwanie zgłoszeń przy twardym delete wydarzenia (FK event_id). */
     void deleteByEvent_Id(String eventId);
+
+    /** Odłącza klasę przed jej usunięciem (FK assigned_class_id). */
+    @Modifying(clearAutomatically = true)
+    @Query("update Registration r set r.assignedClass = null where r.assignedClass.id = :classId")
+    int clearAssignedClassId(@Param("classId") String classId);
+
+    @Modifying(clearAutomatically = true)
+    @Query("update Registration r set r.assignedClass = null where r.event.id = :eventId")
+    int clearAssignedClassByEventId(@Param("eventId") String eventId);
 }

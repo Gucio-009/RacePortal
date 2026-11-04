@@ -41,6 +41,8 @@ type ColId =
   | "model"
   | "year"
   | "engineCc"
+  | "calculatedEngineCc"
+  | "boostType"
   | "driveType"
   | "powerHp"
   | "weightKg"
@@ -75,6 +77,8 @@ const ALL_COLS: ColId[] = [
   "model",
   "year",
   "engineCc",
+  "calculatedEngineCc",
+  "boostType",
   "driveType",
   "powerHp",
   "weightKg",
@@ -128,6 +132,10 @@ function cellValue(reg: Registration, col: ColId): string {
       return c?.year != null ? String(c.year) : "";
     case "engineCc":
       return c?.engineCc != null ? String(c.engineCc) : "";
+    case "calculatedEngineCc":
+      return reg.calculatedEngineCc != null ? String(reg.calculatedEngineCc) : "";
+    case "boostType":
+      return c?.boostType ?? "";
     case "driveType":
       return c?.driveType ?? "";
     case "powerHp":
@@ -135,7 +143,7 @@ function cellValue(reg: Registration, col: ColId): string {
     case "weightKg":
       return c?.weightKg != null ? String(c.weightKg) : "";
     case "className":
-      return c?.className ?? "";
+      return reg.assignedClassName ?? "";
     case "cage":
       return c?.hasRollCage ? "tak" : "nie";
     case "registered":
@@ -204,7 +212,7 @@ export function OrganizerRegistrationsTable({
   const classOptions = useMemo(() => {
     const set = new Set<string>();
     for (const r of registrations) {
-      const c = r.car?.className?.trim();
+      const c = r.assignedClassName?.trim();
       if (c) set.add(c);
     }
     return [...set].sort((a, b) => a.localeCompare(b));
@@ -221,7 +229,7 @@ export function OrganizerRegistrationsTable({
   const filtered = useMemo(() => {
     let list = registrations.filter((r) => r.status === tab);
     if (classFilter !== "all") {
-      list = list.filter((r) => (r.car?.className ?? "") === classFilter);
+      list = list.filter((r) => (r.assignedClassName ?? "") === classFilter);
     }
     if (onlyWithProof && tab === "ACCEPTED") {
       list = list.filter((r) => Boolean(r.paymentProofUrl));
@@ -236,7 +244,7 @@ export function OrganizerRegistrationsTable({
           r.user?.email,
           r.car?.make,
           r.car?.model,
-          r.car?.className,
+          r.assignedClassName,
         ]
           .filter(Boolean)
           .join(" ")

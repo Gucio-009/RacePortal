@@ -23,6 +23,7 @@ import pl.raceportal.dto.EventDtos.EventResponse;
 import pl.raceportal.dto.EventDtos.EventUpdateRequest;
 import pl.raceportal.dto.EventDtos.OrganizerRef;
 import pl.raceportal.repository.CarRepository;
+import pl.raceportal.repository.EventClassRepository;
 import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
@@ -68,16 +69,19 @@ public class EventService {
             RegistrationStatus.PENDING, RegistrationStatus.ACCEPTED, RegistrationStatus.CONFIRMED);
 
     private final EventRepository eventRepository;
+    private final EventClassRepository eventClassRepository;
     private final RegistrationRepository registrationRepository;
     private final UserRepository userRepository;
     private final CarRepository carRepository;
     private final MailService mailService;
     private final NotificationService notificationService;
 
-    public EventService(EventRepository eventRepository, RegistrationRepository registrationRepository,
-                         UserRepository userRepository, CarRepository carRepository, MailService mailService,
+    public EventService(EventRepository eventRepository, EventClassRepository eventClassRepository,
+                         RegistrationRepository registrationRepository, UserRepository userRepository,
+                         CarRepository carRepository, MailService mailService,
                          NotificationService notificationService) {
         this.eventRepository = eventRepository;
+        this.eventClassRepository = eventClassRepository;
         this.registrationRepository = registrationRepository;
         this.userRepository = userRepository;
         this.carRepository = carRepository;
@@ -543,7 +547,9 @@ public class EventService {
             throw ApiException.forbidden("Brak uprawnień");
         }
 
+        registrationRepository.clearAssignedClassByEventId(event.getId());
         registrationRepository.deleteByEvent_Id(event.getId());
+        eventClassRepository.deleteByEvent_Id(event.getId());
         eventRepository.delete(event);
     }
 

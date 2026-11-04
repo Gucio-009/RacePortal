@@ -61,6 +61,11 @@ public class Registration {
     @JoinColumn(name = "car_id")
     private Car car;
 
+    /** Klasa zawodów przypisana automatycznie lub ręcznie przez organizatora. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "assigned_class_id")
+    private EventClass assignedClass;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private RegistrationStatus status = RegistrationStatus.PENDING;
@@ -129,6 +134,14 @@ public class Registration {
 
     public void setCar(Car car) {
         this.car = car;
+    }
+
+    public EventClass getAssignedClass() {
+        return assignedClass;
+    }
+
+    public void setAssignedClass(EventClass assignedClass) {
+        this.assignedClass = assignedClass;
     }
 
     public RegistrationStatus getStatus() {

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.raceportal.domain.Car;
 import pl.raceportal.domain.Event;
+import pl.raceportal.domain.EventClass;
 import pl.raceportal.domain.EventStatus;
 import pl.raceportal.domain.Registration;
 import pl.raceportal.domain.RegistrationStatus;
@@ -16,6 +17,7 @@ import pl.raceportal.dto.RegistrationDtos.RegistrationCreateRequest;
 import pl.raceportal.dto.RegistrationDtos.RegistrationResponse;
 import pl.raceportal.dto.RegistrationDtos.UserRef;
 import pl.raceportal.repository.CarRepository;
+import pl.raceportal.repository.EventClassRepository;
 import pl.raceportal.repository.EventRepository;
 import pl.raceportal.repository.RegistrationRepository;
 import pl.raceportal.repository.UserRepository;
@@ -49,6 +51,7 @@ public class RegistrationService {
 
     private final RegistrationRepository registrationRepository;
     private final EventRepository eventRepository;
+    private final EventClassRepository eventClassRepository;
     private final CarRepository carRepository;
     private final UserRepository userRepository;
     private final EventService eventService;
@@ -56,10 +59,12 @@ public class RegistrationService {
     private final MailService mailService;
 
     public RegistrationService(RegistrationRepository registrationRepository, EventRepository eventRepository,
-                                CarRepository carRepository, UserRepository userRepository,
-                                EventService eventService, GarageService garageService, MailService mailService) {
+                                EventClassRepository eventClassRepository, CarRepository carRepository,
+                                UserRepository userRepository, EventService eventService,
+                                GarageService garageService, MailService mailService) {
         this.registrationRepository = registrationRepository;
         this.eventRepository = eventRepository;
+        this.eventClassRepository = eventClassRepository;
         this.carRepository = carRepository;
         this.userRepository = userRepository;
         this.eventService = eventService;
@@ -126,6 +131,9 @@ public class RegistrationService {
         registration.setOrganizerComment(null);
         registration.setPaymentProofUrl(null);
         registration.setPaymentDueAt(null);
+
+        List<EventClass> classes = eventClassRepository.findByEvent_IdOrderBySortOrderAscCreatedAtAsc(event.getId());
+        registration.setAssignedClass(ClassAssigner.assign(car, classes));
 
         registration = registrationRepository.save(registration);
 
@@ -263,6 +271,32 @@ public class RegistrationService {
     }
 
     /**
+     * Ręczna zmiana przydzielonej klasy przez organizatora (lub odłączenie przy {@code classId=null}).
+     */
+    @Transactional
+    public RegistrationResponse updateAssignedClass(String id, String classId, UserPrincipal currentUser) {
+        Registration registration = registrationRepository.findById(id)
+                .orElseThrow(() -> ApiException.notFound("Nie znaleziono"));
+
+        Event event = registration.getEvent();
+        boolean isOwner = event.getOrganizer() != null && event.getOrganizer().getId().equals(currentUser.getId());
+        if (currentUser.getRole() != Role.ADMIN && !isOwner) {
+            throw ApiException.forbidden("Brak uprawnień");
+        }
+
+        if (classId == null || classId.isBlank()) {
+            registration.setAssignedClass(null);
+        } else {
+            EventClass clazz = eventClassRepository.findByIdAndEvent_Id(classId, event.getId())
+                    .orElseThrow(() -> ApiException.badRequest("Klasa nie należy do tego wydarzenia"));
+            registration.setAssignedClass(clazz);
+        }
+
+        registration = registrationRepository.save(registration);
+        return serialize(registration, false, true);
+    }
+
+    /**
      * Mapuje surowy status z API (w tym legacy APPROVED/CANCELLED/REJECTED)
      * na docelowy {@link RegistrationStatus} z uwzględnieniem płatności.
      */
@@ -381,6 +415,10 @@ public class RegistrationService {
         EventResponse eventResponse = includeEvent ? eventService.serialize(registration.getEvent()) : null;
         CarResponse carResponse = registration.getCar() != null ? garageService.serialize(registration.getCar()) : null;
         UserRef userRef = includeUser ? UserRef.from(registration.getUser()) : null;
+        EventClass assigned = registration.getAssignedClass();
+        Integer calculated = assigned != null && registration.getCar() != null
+                ? ClassAssigner.calculatedEngineCc(registration.getCar(), assigned)
+                : null;
 
         return new RegistrationResponse(
                 registration.getId(),
@@ -396,7 +434,10 @@ public class RegistrationService {
                 registration.getUpdatedAt().toString(),
                 eventResponse,
                 carResponse,
-                userRef
+                userRef,
+                assigned != null ? assigned.getId() : null,
+                assigned != null ? assigned.getName() : null,
+                calculated
         );
     }
 }

@@ -175,6 +175,8 @@ export interface PaginatedEvents {
  * używana przy dopasowaniu do kategorii eventu (carMatch).
  * tireTypes – CSV kluczy opon (TIRE_TYPE_OPTIONS).
  */
+export type BoostType = "NONE" | "TURBO" | "SUPERCHARGER";
+
 export interface Car {
   id: string;
   userId: string;
@@ -188,6 +190,7 @@ export interface Car {
   driveType?: string | null;
   powerHp?: number | null;
   engineCc?: number | null;
+  boostType?: BoostType | null;
   weightKg?: number | null;
   registered?: boolean;
   registrationType?: string | null;
@@ -198,6 +201,25 @@ export interface Car {
   socialUrl?: string | null;
   videoUrl?: string | null;
   modifications?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Klasa zawodów w ramach wydarzenia (kryteria opcjonalne). */
+export interface EventClass {
+  id: string;
+  eventId: string;
+  name: string;
+  sortOrder: number;
+  minEngineCc?: number | null;
+  maxEngineCc?: number | null;
+  turboMultiplier?: number | null;
+  superchargerMultiplier?: number | null;
+  allowedDriveTypes?: string | null;
+  requireCage?: boolean | null;
+  requireRegistered?: boolean | null;
+  allowedTireTypes?: string | null;
+  maxHpPerTonne?: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -230,6 +252,9 @@ export interface Registration {
     hasDrivingLicenseB?: boolean;
     pzmLicense?: string | null;
   };
+  assignedClassId?: string | null;
+  assignedClassName?: string | null;
+  calculatedEngineCc?: number | null;
 }
 
 /** Wynik trasy (np. OSRM/Google) – polyline jako pary [lat, lng]. */

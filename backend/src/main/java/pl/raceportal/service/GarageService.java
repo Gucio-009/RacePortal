@@ -2,6 +2,7 @@ package pl.raceportal.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.raceportal.domain.BoostType;
 import pl.raceportal.domain.Car;
 import pl.raceportal.domain.RegistrationStatus;
 import pl.raceportal.domain.User;
@@ -86,10 +87,12 @@ public class GarageService {
                 .orElseThrow(() -> ApiException.notFound("Nie znaleziono auta"));
 
         boolean hasOpenRegistration = registrationRepository.existsByCar_IdAndStatusIn(carId, OPEN_STATUSES);
+        BoostType requestedBoost = request.boostType() != null ? parseBoostType(request.boostType()) : null;
         boolean changesConflict = hasOpenRegistration && (
                 (request.make() != null && !Objects.equals(request.make(), car.getMake())) ||
                         (request.model() != null && !Objects.equals(request.model(), car.getModel())) ||
-                        (request.className() != null && !Objects.equals(request.className(), car.getClassName())));
+                        (request.className() != null && !Objects.equals(request.className(), car.getClassName())) ||
+                        (requestedBoost != null && requestedBoost != car.getBoostType()));
 
         if (changesConflict) {
             throw ApiException.badRequest(
@@ -142,6 +145,7 @@ public class GarageService {
                 car.getDriveType(),
                 car.getPowerHp(),
                 car.getEngineCc(),
+                car.getBoostType() != null ? car.getBoostType().name() : BoostType.NONE.name(),
                 car.getWeightKg(),
                 car.isRegistered(),
                 car.getRegistrationType(),
@@ -161,6 +165,7 @@ public class GarageService {
         car.setDriveType(blankToNull(request.driveType()));
         car.setPowerHp(request.powerHp());
         car.setEngineCc(request.engineCc());
+        car.setBoostType(parseBoostType(request.boostType()));
         car.setWeightKg(request.weightKg());
         if (request.registered() != null) car.setRegistered(request.registered());
         car.setRegistrationType(blankToNull(request.registrationType()));
@@ -177,6 +182,7 @@ public class GarageService {
         if (request.driveType() != null) car.setDriveType(blankToNull(request.driveType()));
         if (request.powerHp() != null) car.setPowerHp(request.powerHp());
         if (request.engineCc() != null) car.setEngineCc(request.engineCc());
+        if (request.boostType() != null) car.setBoostType(parseBoostType(request.boostType()));
         if (request.weightKg() != null) car.setWeightKg(request.weightKg());
         if (request.registered() != null) car.setRegistered(request.registered());
         if (request.registrationType() != null) car.setRegistrationType(blankToNull(request.registrationType()));
@@ -191,6 +197,17 @@ public class GarageService {
             car.setVideoUrl(SafeHttpUrls.normalizeHttpUrl(request.videoUrl(), "Link wideo"));
         }
         if (request.modifications() != null) car.setModifications(blankToNull(request.modifications()));
+    }
+
+    private static BoostType parseBoostType(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return BoostType.NONE;
+        }
+        try {
+            return BoostType.valueOf(raw.trim().toUpperCase());
+        } catch (IllegalArgumentException ex) {
+            throw ApiException.badRequest("Nieprawidłowy typ doładowania (NONE, TURBO, SUPERCHARGER)");
+        }
     }
 
     private void validateCreateRequiredFields(CarCreateRequest request) {

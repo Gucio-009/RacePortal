@@ -50,6 +50,7 @@ import {
 import { toast } from "sonner";
 
 const DRIVE_TYPES = ["FWD", "RWD", "AWD"] as const;
+const BOOST_TYPES = ["NONE", "TURBO", "SUPERCHARGER"] as const;
 const REGISTRATION_TYPES = ["cywilne", "sportowe"] as const;
 
 const emptyForm = {
@@ -63,6 +64,7 @@ const emptyForm = {
   driveType: "",
   powerHp: "",
   engineCc: "",
+  boostType: "NONE",
   weightKg: "",
   registered: true,
   registrationType: "",
@@ -87,6 +89,7 @@ function carToForm(car: GarageCar) {
     driveType: car.driveType ?? "",
     powerHp: car.powerHp != null ? String(car.powerHp) : "",
     engineCc: car.engineCc != null ? String(car.engineCc) : "",
+    boostType: car.boostType ?? "NONE",
     weightKg: car.weightKg != null ? String(car.weightKg) : "",
     registered: car.registered ?? true,
     registrationType: car.registrationType ?? "",
@@ -148,6 +151,7 @@ function buildPayload(form: typeof emptyForm, forUpdate: boolean) {
     driveType: forUpdate ? strClearable(form.driveType) : strOrUndef(form.driveType),
     powerHp: forUpdate ? numOrNull(form.powerHp) : numOrUndef(form.powerHp),
     engineCc: forUpdate ? numOrNull(form.engineCc) : numOrUndef(form.engineCc),
+    boostType: form.boostType || "NONE",
     weightKg: forUpdate ? numOrNull(form.weightKg) : numOrUndef(form.weightKg),
     registered: form.registered,
     registrationType: form.registered
@@ -660,6 +664,24 @@ export function GaragePage() {
                 {t("garage.engineEvHint")}
               </p>
               {fieldErrors.engineCc && <p className="text-xs text-red-400">{fieldErrors.engineCc}</p>}
+            </div>
+            <div className="space-y-2">
+              <ReqLabel required>{t("garage.boostType")}</ReqLabel>
+              <Select
+                value={form.boostType || "NONE"}
+                onValueChange={(v) => setFormField("boostType", v)}
+              >
+                <SelectTrigger className={fieldClass(false)}>
+                  <SelectValue placeholder={t("garage.selectBoost")} />
+                </SelectTrigger>
+                <SelectContent className="bg-[var(--race-card)] border-[var(--race-border)] text-[var(--race-fg)]">
+                  {BOOST_TYPES.map((bt) => (
+                    <SelectItem key={bt} value={bt}>
+                      {t(`garage.boost.${bt}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <ReqLabel required>{t("garage.weightKg")}</ReqLabel>

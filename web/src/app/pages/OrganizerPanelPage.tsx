@@ -181,6 +181,16 @@ export function OrganizerPanelPage() {
     }
   };
 
+  const reloadWorkspaceRegistrations = async () => {
+    if (!selectedEventId) return;
+    try {
+      const items = await api.get<Registration[]>(`/api/registrations/event/${selectedEventId}`);
+      setRegistrations(items);
+    } catch (e) {
+      toast.error(e instanceof ApiError ? e.message : t("organizer.regsLoadFail"));
+    }
+  };
+
   const closeWorkspace = () => {
     setWorkspaceOpen(false);
     setSelectedEventId(null);
@@ -455,6 +465,9 @@ export function OrganizerPanelPage() {
               onUpdateStatus={updateRegistrationStatus}
               onBulkUpdateStatus={bulkUpdateRegistrationStatus}
               onOpenDetail={setDetailReg}
+              onReloadRegistrations={() => {
+                void reloadWorkspaceRegistrations();
+              }}
             />
           )
         ) : (

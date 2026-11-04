@@ -2,6 +2,8 @@ package pl.raceportal.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Lob;
 import jakarta.persistence.GenerationType;
@@ -83,6 +85,11 @@ public class Car {
 
     @Column(name = "engine_cc")
     private Integer engineCc;
+
+    /** Typ doładowania — wejście do przeliczenia pojemności w klasach wydarzenia. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "boost_type", length = 20)
+    private BoostType boostType = BoostType.NONE;
 
     @Column(name = "weight_kg")
     private Integer weightKg;
@@ -233,6 +240,14 @@ public class Car {
 
     public void setEngineCc(Integer engineCc) {
         this.engineCc = engineCc;
+    }
+
+    public BoostType getBoostType() {
+        return boostType != null ? boostType : BoostType.NONE;
+    }
+
+    public void setBoostType(BoostType boostType) {
+        this.boostType = boostType != null ? boostType : BoostType.NONE;
     }
 
     public Integer getWeightKg() {

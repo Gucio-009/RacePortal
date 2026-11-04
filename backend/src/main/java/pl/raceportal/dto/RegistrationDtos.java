@@ -96,7 +96,18 @@ public final class RegistrationDtos {
             String updatedAt,
             EventResponse event,
             CarResponse car,
-            UserRef user
+            UserRef user,
+            /** Przydzielona klasa zawodów (null = brak). */
+            String assignedClassId,
+            String assignedClassName,
+            /** Pojemność obliczeniowa wg mnożników przydzielonej klasy (null gdy brak). */
+            Integer calculatedEngineCc
+    ) {
+    }
+
+    /** Ręczna zmiana przydzielonej klasy (null classId = odłącz). */
+    public record AssignedClassUpdateRequest(
+            String classId
     ) {
     }
 }
