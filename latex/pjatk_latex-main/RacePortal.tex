@@ -2,9 +2,24 @@
 
 \addbibresource{bibliography.bib}
 
+% W bibliografii: odnośniki wstecz do miejsc cytowań (strony + klikalne [n])
+\ExecuteBibliographyOptions{backref=true, backrefstyle=three+}
+% Klasa ładuje biblatex bez babel/polish --- mapuj angielskie napisy na polskie (cyt. na s.)
+\DeclareLanguageMapping{english}{polish}
+
 % Hiperlinki w PDF (spis treści, odwołania, cytowania, URL)
 \usepackage[hidelinks]{hyperref}
 \usepackage{bookmark}
+
+% Kliknięcie numeru [n] w bibliografii przenosi na pierwszą stronę cytowania w tekście
+\makeatletter
+\DeclareFieldFormat{labelnumberwidth}{%
+  \iflistundef{pageref}
+    {\mkbibbrackets{#1}}
+    {\expandafter\rp@biblabel@link\abx@list@pageref\@nil{#1}}}
+\def\rp@biblabel@link#1#2\@nil#3{%
+  \hyperlink{page.#1}{\mkbibbrackets{#3}}}
+\makeatother
 \graphicspath{{img/}}
 
 % Listings: Java + polskie znaki w fragmentach kodu
