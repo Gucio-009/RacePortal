@@ -28,7 +28,7 @@
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
 \successmeasure{Działający stos Docker Compose (web, API, MySQL, backup) z~SMTP Mailbux; realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
-\projlimitations{Brak natywnej bramki płatności (PSP); upload plików zastąpiony adresami URL; aplikacja mobilna bez pełnej parity z~webem (świadoma wizytówka); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
+\projlimitations{Brak natywnej bramki płatności (PSP); lokalny upload obrazów/PDF bez object storage (S3/MinIO); aplikacja mobilna bez pełnej parity z~webem (świadoma wizytówka); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
 \date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
 \nabstract{Praca przedstawia projekt i~implementację systemu RacePortal --- platformy wspierającej katalogowanie wydarzeń motorsportowych oraz proces zapisów uczestników. System obejmuje aplikację webową, backend REST oparty o~Spring Boot i~MySQL oraz aplikację mobilną Expo pełniącą rolę publicznej wizytówki katalogu. W~pracy opisano problem dziedzinowy, wymagania, architekturę, realizację kluczowych modułów (wydarzenia, garaż, zgłoszenia, role), mechanizmy bezpieczeństwa (JWT, RBAC) oraz weryfikację testami automatycznymi. Wynikiem jest działające, konteneryzowane środowisko demonstracyjne zgodne z~zakresem MVP projektu.}
@@ -64,7 +64,7 @@ Zakres projektu obejmuje:
   \item \textbf{Infrastrukturę i~testowanie} --- pełną konteneryzację całego środowiska uruchomieniowego przy użyciu Docker Compose (web, API, baza danych, backupy) z~zabezpieczeniem produkcyjnego ruchu przez Cloudflare Tunnel oraz przygotowanie podstawowego zestawu testów automatycznych (jednostkowych i~integracyjnych).
 \end{itemize}
 
-Poza zakresem MVP (\emph{Minimum Viable Product}) pozostają m.in.\ natywne płatności online (PSP), zaawansowany upload plików binarnych (zastąpiony referencjami URL), powiadomienia typu push (\emph{push notifications}), publikacja aplikacji mobilnej w~oficjalnych sklepach (App Store / Google Play), formalne testy obciążeniowe rzędu 10k rekordów przy 50~RPS, a~także konfiguracja produkcyjnego certyfikatu TLS poza lokalnym zakresem testowym.
+Poza zakresem MVP (\emph{Minimum Viable Product}) pozostają m.in.\ natywne płatności online (PSP), zewnętrzny object storage i~galeria albumów po~imprezie (obecny upload lokalny JPG/PNG/WebP/PDF jest w~zakresie), powiadomienia typu push (\emph{push notifications}), publikacja aplikacji mobilnej w~oficjalnych sklepach (App Store / Google Play), formalne testy obciążeniowe rzędu 10k rekordów przy 50~RPS, a~także konfiguracja produkcyjnego certyfikatu TLS poza lokalnym zakresem testowym.
 
 \section{Wizja rozwiązania}
 \label{sec:wizja}
@@ -321,7 +321,7 @@ W~warstwie odpowiedzialności za treści: organizator odpowiada za merytoryczną
 
 \section{Słabe strony (Weaknesses)}
 \begin{itemize}
-  \item Brak prawdziwego uploadu plików i~bramki płatności.
+  \item Brak bramki płatności (PSP) oraz object storage / galerii albumów (upload lokalny obrazów i~PDF jest dostępny).
   \item Mobilka bez logowania i~garażu (wizytówka).
   \item Zależność od publicznych serwisów map/trasy (CARTO/OSRM).
   \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy.
@@ -761,8 +761,15 @@ Końcowa wersja RacePortal stanowi domknięte MVP demonstracyjne: realizuje cent
 \paragraph{Płatności i~rozliczenia.}
 System nie integruje natywnej bramki płatności online (PSP). Statusy opłat po~stronie organizatora mają charakter operacyjny (oznaczenie w~panelu), a~nie księgowy --- nie ma automatycznego pobierania składek startowych ani zwrotów. Decyzja wynika z~kosztów onboardingu PSP, wymogów KYC/AML oraz ryzyka prawnego nieproporcjonalnego do celów akademickiego MVP.
 
-\paragraph{Przechowywanie plików binarnych.}
-Zamiast pełnego uploadu dokumentów i~zdjęć (regulaminy PDF, galeria imprezy, skany licencji) zastosowano model referencji URL: użytkownik lub organizator wskazuje adres zasobu zewnętrznego. Upraszcza to infrastrukturę (brak dedykowanego object storage, polityk retencji i~skanowania malware), ale ogranicza wygodę w~scenariuszach wymagających lokalnego załącznika.
+\paragraph{Upload plików --- stan obecny i~pozostałe ograniczenia.}
+W~odróżnieniu od wczesnych założeń MVP (wyłącznie referencje URL) aplikacja webowa i~API obsługują już lokalny upload plików. Endpointy \texttt{POST /api/uploads/image} oraz \texttt{POST /api/uploads/pdf} (wymagają uwierzytelnienia) przyjmują multipart z~limitem ok.\ 5~MB; typ pliku weryfikowany jest po~sygnaturze bajtowej (JPG/PNG/WebP oraz PDF), a~nie wyłącznie po~nagłówku przeglądarki. Zapis trafia do katalogu na serwerze aplikacji i~jest serwowany pod \texttt{GET /api/uploads/\{uuid\}.\{ext\}}. Funkcja jest wykorzystana m.in.\ przy:
+\begin{itemize}
+  \item zdjęciach pojazdów w~garażu,
+  \item plakacie / grafice wydarzenia,
+  \item załącznikach regulaminów PDF wydarzenia (\texttt{regulationsUrls}),
+  \item opcjonalnym potwierdzeniu przelewu przy zgłoszeniu (\texttt{paymentProofUrl}).
+\end{itemize}
+Nadal dopuszczalne jest wklejenie zewnętrznego adresu http(s) jako alternatywy dla pliku. Poza zakresem pozostają: zewnętrzny object storage (S3/MinIO), skanowanie antywirusowe, polityki retencji i~podpisane URL-e z~ograniczonym dostępem, pełna galeria albumów po~imprezie oraz upload zdjęć z~klienta mobilnego (wizytówka Expo nie udostępnia formularzy create/edit z~plikami).
 
 \paragraph{Powiadomienia.}
 Kanał e-mail (SMTP Mailbux) pokrywa potwierdzenia rejestracji, weryfikację konta oraz zmiany statusów zgłoszeń. Brakuje natywnych powiadomień push na urządzenia mobilne oraz rozbudowanych kampanii marketingowych. Powiadomienia in-app w~aplikacji webowej stanowią uzupełnienie, a~nie pełny system komunikacji wielokanałowej.
@@ -789,10 +796,10 @@ W~wymaganiach jakościowych MVP zapisano docelowy test obciążenia: \textbf{ok.
 Ograniczenie to jest świadome: priorytetem było domknięcie happy-path funkcjonalnego, bezpieczeństwa podstawowego (JWT/RBAC) i~uruchamialności. Pomiar 10k/50~RPS pozostaje w~backlogu jakościowym.
 
 \section{Możliwości dalszego rozwoju}
-Płatności, upload, watchlista, iCal, waitlista, eksport list startowych, store/PWA --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie testów obciążeniowych RPS.
+Płatności (PSP), object storage / galeria albumów, watchlista, iCal, waitlista, eksport list startowych, store --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie testów obciążeniowych RPS.
 
 \section{Wnioski końcowe}
-RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, upload, load test RPS).
+RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, hardening uploadów / object storage, load test RPS).
 
 \printbibliography[title={Bibliografia}, heading=bibintoc]
 
