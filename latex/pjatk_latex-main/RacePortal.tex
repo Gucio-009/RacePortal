@@ -465,7 +465,15 @@ Implementacja iteracyjna w~monorepo, z~dokumentowaniem zmian i~utrzymywaniem śr
 
 \section{Podział systemu na komponenty}
 \subsection{Backend}
-Spring Boot: kontrolery, serwisy, repozytoria JPA, seed (\texttt{DataInitializer}), joby (np.\ archiwizacja).
+\label{sec:realizacja-backend}
+Komponent backendowy stanowi warstwę serwerową RacePortal i~odpowiada za udostępnienie API REST, trwałe przechowywanie danych oraz egzekwowanie reguł biznesowych i~uprawnień. Został zrealizowany w~technologii Spring Boot (wersja 3.3.x) na platformie Java~21, z~relacyjną bazą MySQL oraz mapowaniem obiektowo-relacyjnym Spring Data JPA. Budowa i~uruchamianie odbywają się w~kontenerze (obraz Maven do kompilacji, obraz JRE do runtime), co zapewnia powtarzalność środowiska lokalnego i~produkcyjnego.
+
+Struktura kodu w~pakiecie \texttt{pl.raceportal} odzwierciedla klasyczny podział warstwowy. Warstwa kontrolerów eksponuje zasoby HTTP (m.in.\ uwierzytelnianie, wydarzenia, zgłoszenia, garaż, tory, mapy, uploady, panele organizatora i~administratora oraz health-check). Warstwa serwisów zawiera logikę dziedzinową --- m.in.\ rejestrację i~logowanie, zarządzanie wydarzeniami, przepływ statusów zgłoszeń, dopasowanie pojazdu do wymagań wydarzenia, powiadomienia e-mail, moderację oraz archiwizację. Warstwa repozytoriów zapewnia dostęp do encji domenowych (użytkownik, pojazd, wydarzenie, zgłoszenie, tor i~encje powiązane). Obiekty DTO oraz walidacja Bean Validation oddzielają kontrakt API od modelu persystencji, a~globalna obsługa wyjątków ujednolica odpowiedzi błędów.
+
+Bezpieczeństwo dostępu oparto o~Spring Security oraz tokeny JWT: część zasobów katalogu pozostaje publiczna (przeglądanie wydarzeń, torów, trasy), natomiast operacje konta, garażu, zgłoszeń i~moderacji wymagają uwierzytelnienia oraz odpowiednich ról. Komponent backendowy realizuje również zadania wspierające demonstrację i~utrzymanie systemu: inicjalizację danych startowych (\texttt{DataInitializer}), katalog torów, cache wybranych list, a~także cykliczną archiwizację minionych wydarzeń (\texttt{ArchiveService}, uruchamiana przy starcie aplikacji oraz codziennie według harmonogramu).
+
+W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu domeny --- klienci webowy i~mobilny nie utrzymują własnej bazy wydarzeń ani zgłoszeń, lecz konsumują wspólny kontrakt JSON. Szczegółowy opis encji, endpointów i~przepływów implementacyjnych przedstawiono w~rozdziale~\ref{ch:backend}.
+
 \subsection{Frontend webowy}
 Vite + React; integracja z~API; stany ról i~formularze dziedzinowe.
 \subsection{Aplikacja mobilna}
