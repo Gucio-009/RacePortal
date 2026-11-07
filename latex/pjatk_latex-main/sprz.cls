@@ -23,6 +23,7 @@
 \RequirePackage{multirow}
 \RequirePackage{graphicx}
 \RequirePackage[backend=biber,style=numeric,sorting=none]{biblatex}
+\RequirePackage{float} % [H] --- karty wymagań zostają w właściwym podrozdziale
 
 \DeclareFieldFormat[article,inbook,incollection,inproceedings,patent,thesis,
    unpublished,techreport,misc,book]{title}{,,#1''}
@@ -244,7 +245,7 @@
 
 
 \newcommand{\generalrequirement}[7]{
-	\begin{table}[h!]
+	\begin{table}[H]
 		\centering
 		\begin{tabular}{|>{\columncolor{lightgray}}l|l|>{\columncolor{lightgray}}l|p{0.1\linewidth}|}
 			\hline
