@@ -35,7 +35,7 @@
 \engtitle{RacePortal --- a platform for motorsports events}
 \acronym{RP}
 \titledate{2025-10-01}
-\supervisor{dr hab.\ Marek Bendarczyk}
+\supervisor{dr hab.\ Marek Bednarczyk}
 \reviewer{mgr Alex Polin}
 \author{Otrombke Natalia}{s26828}{Cyberbezpieczeństwo}{Stacjonarny}
 \author{Kasprowicz Oliwier}{s30290}{Cyberbezpieczeństwo}{Stacjonarny}
@@ -128,19 +128,32 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
 
 \chapter{Słownik pojęć}
 \begin{description}
-  \item[Wydarzenie (event)] Zorganizowany start / impreza motorsportowa (np.\ track day, drift, rally), opisana datą, lokalizacją, kategorią i~wymaganiami.
+  \item[Wydarzenie (event)] Zorganizowana impreza motorsportowa (np.\ track day, drift, rally), opisana datą, lokalizacją, kategorią i~wymaganiami udziału.
   \item[Katalog] Publiczny wykaz wydarzeń z~widokami lista, mapa i~kalendarz oraz filtrami.
   \item[Garaż] Zbiór pojazdów przypisanych do konta kierowcy, wykorzystywanych przy zapisie na wydarzenie.
-  \item[Zgłoszenie (registration)] Wniosek o~udział w~wydarzeniu, posiadający status (np.\ PENDING, APPROVED, CANCELED).
-  \item[carMatch] Mechanizm dopasowania kategorii/klasy pojazdu do kategorii wydarzenia (aliasy nazw).
-  \item[Organizator] Użytkownik z~rolą ORGANIZER, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
-  \item[Administrator] Użytkownik z~rolą ADMIN, moderujący wydarzenia, wnioski o~rolę organizatora i~role kont.
-  \item[Wizytówka mobilna] Wersja aplikacji Expo ograniczona do przeglądania katalogu; zapis odbywa się na webie (CTA).
-  \item[JWT] JSON Web Token --- token dostępu używany przez API; w~warstwie webowej przechowywany w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), a~nie w~\texttt{localStorage}.
-  \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role.
-  \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy wykorzystany jako domyślny provider.
+  \item[Zgłoszenie (registration)] Wniosek o~udział w~wydarzeniu. Statusy dyplomowe: \texttt{PENDING} (oczekuje), \texttt{ACCEPTED} (wstępnie przyjęte), \texttt{CONFIRMED} (potwierdzone), \texttt{CANCELED} (anulowane).
+  \item[Model „zapłać później”] Ścieżka płatnego wydarzenia bez bramki online: po \texttt{ACCEPTED} kierowca dokłada dowód przelewu, a~organizator potwierdza miejsce (\texttt{CONFIRMED}).
+  \item[carMatch] Mechanizm dopasowania kategorii / klasy pojazdu do wymagań wydarzenia (m.in.\ aliasy nazw).
+  \item[Workspace organizatora] Panel zarządzania pojedynczym wydarzeniem (zgłoszenia, klasy, wyniki, komunikacja, wskaźniki).
+  \item[Lista startowa] Publiczny wykaz potwierdzonych uczestników wydarzenia (po stronie weba).
+  \item[Organizator] Użytkownik z~rolą \texttt{ORGANIZER}, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
+  \item[Administrator] Użytkownik z~rolą \texttt{ADMIN}, moderujący wydarzenia, wnioski o~rolę organizatora oraz role kont.
+  \item[Backoffice] Osobny host administracyjny (\texttt{bo.raceportal.pl}) przeznaczony wyłącznie dla roli \texttt{ADMIN}.
+  \item[Wizytówka mobilna] Aplikacja Expo ograniczona do przeglądania katalogu; zapis i~konto realizowane są w~wersji webowej.
+  \item[CTA] Call to Action --- wezwanie do działania; w~mobilce przycisk otwierający zapis na stronie webowej.
+  \item[PWA] Progressive Web App --- aplikacja webowa instalowalna na urządzeniu (manifest, service worker), uzupełniająca ścieżkę mobilną obok Expo.
+  \item[API REST] Interfejs HTTP backendu RacePortal (JSON) współdzielony przez web i~mobile.
+  \item[JWT] JSON Web Token --- token dostępu API; w~warstwie webowej w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), nie w~\texttt{localStorage}.
+  \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role (\texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN}).
+  \item[OAuth Google] Opcjonalne logowanie kontem Google (obok logowania hasłem).
+  \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy dojazdu (domyślny provider).
+  \item[Docker Compose] Narzędzie uruchamiania zestawu kontenerów (web, API, MySQL, backup) jako wspólnego środowiska lokalnego i~produkcyjnego.
+  \item[Cloudflare Tunnel] Tunel zapewniający publiczny dostęp HTTPS do usług na maszynie wirtualnej (bez otwierania portów na firewallu VM).
+  \item[Mailbux] Zewnętrzny SMTP używany do wysyłki maili transakcyjnych RacePortal.
+  \item[PSP] Payment Service Provider --- natywna bramka płatności online; świadomie poza zakresem MVP.
   \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
-  \item[RPS] Requests Per Second --- metryka obciążenia (np.\ docelowy test 50~RPS przy 10k rekordach).
+  \item[RPS] Requests Per Second --- metryka obciążenia (liczba żądań na sekundę); w~projekcie mierzona m.in.\ narzędziem k6.
+  \item[Expo] Framework do budowy aplikacji React Native; wykorzystany w~kliencie mobilnym RacePortal.
 \end{description}
 
 \chapter{Opis problemu}
@@ -335,38 +348,60 @@ Należy rozróżnić \emph{obowiązki już wynikające z~przetwarzania danych} o
 W~warstwie odpowiedzialności za treści: organizator odpowiada za merytoryczną treść publikowanych wydarzeń w~ramach regulaminu, jednak nie wyłącza to obowiązków operatora platformy w~zakresie udostępniania narzędzia, moderacji oraz reagowania na zgłoszenia nadużyć. Model przyjęty w~projekcie łączy weryfikację organizatorów i~moderację wydarzeń przez administratora z~zasadami etycznymi opisanymi w~dokumentacji SAI (transparentność prezentacji, unikanie mechanizmów uzależniających, przeciwdziałanie publikacji niebezpiecznych lub nielegalnych aktywności). Ostateczne decyzje moderacyjne pozostają po stronie człowieka.
 
 \chapter{Analiza SWOT}
+\label{ch:swot}
+Analiza SWOT (ang.\ \emph{Strengths}, \emph{Weaknesses}, \emph{Opportunities}, \emph{Threats}) służy w~tej pracy do uporządkowanej oceny RacePortal jako produktu MVP: co stanowi przewagę rozwiązania względem rozproszonego rynku informacji o~startach, gdzie leżą ograniczenia obecnej wersji, jakie kierunki rozwoju są realne oraz jakie czynniki zewnętrzne mogą utrudnić utrzymanie lub skalowanie systemu. Ocena odnosi się do \textbf{stanu zaimplementowanego} (web, API, mobile, wdrożenie produkcyjne), a~nie wyłącznie do założeń koncepcyjnych.
+
 \section{Mocne strony (Strengths)}
+Mocne strony wynikają przede wszystkim z~domknięcia spójnego happy-path dla wszystkich ról oraz z~uruchamialności środowiska demonstracyjnego i~produkcyjnego.
+
 \begin{itemize}
-  \item Pełny przepływ ról: gość, kierowca, organizator, administrator.
-  \item Trzy widoki katalogu na wspólnych filtrach (lista / mapa / kalendarz).
-  \item Konteneryzacja i~seed kont demonstracyjnych ułatwiają prezentację.
-  \item Testy automatyczne (API, web E2E, unit mobile / api-types).
-  \item Wspólne typy API ograniczają dryf web~$\leftrightarrow$~mobile.
+  \item Pełny przepływ ról: gość, kierowca (\texttt{USER}), organizator (\texttt{ORGANIZER}) i~administrator (\texttt{ADMIN}), z~kontrolą dostępu RBAC oraz uwierzytelnianiem JWT (w~tym opcjonalne logowanie Google).
+  \item Publiczny katalog wydarzeń z~trzema widokami na wspólnych filtrach (lista / mapa / kalendarz), detal wydarzenia, wyznaczanie trasy (OSRM) oraz archiwum.
+  \item Panel organizatora jako workspace wydarzenia: zarządzanie zgłoszeniami (statusy, klasy zawodów, eksport CSV), wyniki z~publikacją, komunikacja masowa oraz KPI wyświetleń.
+  \item Widok publiczny listy startowej i~opublikowanych wyników na stronie wydarzenia.
+  \item Dedykowany backoffice administratora (\texttt{bo.raceportal.pl}) z~moderacją i~eksportami, oddzielony od apexu prezentacyjnego.
+  \item Konteneryzacja (Docker Compose), seed danych demo, powiadomienia e-mail (Mailbux) oraz wdrożenie produkcyjne (Oracle Always Free + Cloudflare Tunnel, TLS po stronie Cloudflare).
+  \item Warstwa web jako PWA; wspólne typy API (\texttt{packages/api-types}) ograniczające dryf web~$\leftrightarrow$~mobile.
+  \item Testy automatyczne (integracyjne API, E2E Playwright, unit mobile / api-types) oraz pomiary obciążenia k6 na VM produkcyjnej (wąskie gardło: endpointy z~bazą danych).
 \end{itemize}
 
 \section{Słabe strony (Weaknesses)}
-\begin{itemize}
-\item Brak natywnej bramki płatności (PSP); upload plików jest w~webie/API, ale nie w~mobilce.
+Słabe strony to świadome lub nierozwiązane ograniczenia MVP, które obniżają kompletność produktową albo utrudniają odbiór jakościowy bez dodatkowych prac.
 
-  \item Mobilka bez logowania i~garażu (wizytówka).
-  \item Zależność od publicznych serwisów map/trasy (CARTO/OSRM).
-  \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy.
-  \item Brak formalnego testu obciążenia 10k rekordów / 50~RPS.
+\begin{itemize}
+  \item Brak natywnej bramki płatności (PSP) --- obowiązuje model „zapłać później” z~dowodem przelewu (upload pliku / URL), a~nie checkout online; upload jest w~webie/API, nie w~mobilce.
+  \item Aplikacja mobilna Expo pozostaje wizytówką katalogu: bez logowania, garażu i~pełnej parity z~webem; brak publikacji w~sklepach App Store / Google Play.
+  \item Zależność od publicznych serwisów mapy i~routingu (CARTO / OSRM; opcjonalnie Google Maps przy kluczu API) --- awaria lub limity zewnętrzne pogarszają UX lokalizacji.
+  \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy
+        (udokumentowane w~rejestrze luk).
+  \item Nie domknięto pierwotnego kryterium jakości „ok.\ 10\,000 rekordów w~katalogu” jako osobnego scenariusza obciążeniowego; pomiary k6 dotyczyły przepustowości RPS na istniejących danych, a~nie zapełnienia katalogu do progu 10k.
+  \item Ograniczenia hostingu Always Free (m.in.\ współdzielone zasoby CPU przy testach obciążeniowych) oraz dalszy hardening produkcyjny (np.\ pełne domknięcie kontroli dostępu do zasobów uploadów) pozostają w~zakresie prac jakościowych, nie jako osobna funkcja produktowa MVP.
 \end{itemize}
 
 \section{Szanse (Opportunities)}
+Szanse wynikają z~rozpoznawalnego problemu rynkowego (rozproszone informacje o~startach) oraz z~już istniejącego rdzenia platformy, który można rozszerzać przyrostowo.
+
 \begin{itemize}
-  \item Rozszerzenie o~PSP, waitlistę, watchlistę i~eksport list startowych.
-  \item Integracje z~kalendarzami (iCal) i~powiadomienia push.
-  \item Budowa społeczności wokół torów i~organizatorów regionalnych.
+  \item Integracja PSP (np.\ Przelewy24 / Stripe) oraz fakturowanie / zwroty --- domknięcie ścieżki płatnej bez ręcznej weryfikacji dowodu.
+  \item Waitlista miejsc, watchlista wydarzeń oraz powiadomienia push / iCal --- zwiększenie retencji kierowców i~redukcja kanałów społecznościowych jako jedynego źródła aktualności.
+  \item Rozszerzenie eksportów i~odprawy (PDF listy startowej, kod QR zgłoszenia) na bazie już działającego CSV i~publicznej listy startowej.
+  \item Budowa społeczności wokół torów i~organizatorów regionalnych (featured events, partnerzy, współorganizatorzy).
+  \item Stopniowe zbliżanie mobile do weba (konto, garaż) albo świadome utrzymanie wizytówki z~silniejszą konwersją PWA / deep-link.
 \end{itemize}
 
 \section{Zagrożenia (Threats)}
+Zagrożenia mają charakter zewnętrzny: konkurencja zachowań użytkowników, zależność od infrastruktury i~dostawców oraz obowiązki prawne przy skali produkcyjnej.
+
 \begin{itemize}
-  \item Konkurencja ze strony grup społecznościowych i~dedykowanych systemów zapisów.
-  \item Zmiany limitów / dostępności publicznych API map i~routingu.
-  \item Wymogi RODO i~odpowiedzialność za dane osobowe przy skali produkcyjnej.
+  \item Konkurencja ze strony grup społecznościowych, komunikatorów oraz dedykowanych systemów zapisów organizatorów --- niska bariera „zostania przy Facebooku / Discordzie”.
+  \item Zmiany limitów, cenników lub dostępności publicznych API mapy i~routingu (oraz polityk OAuth Google).
+  \item Wymogi RODO i~odpowiedzialność za dane osobowe przy wzroście skali (retencja, DPIA, obsługa żądań podmiotów danych) --- UI zawiera politykę prywatności i~notę RODO, ale pełna zgodność procesowa wykracza poza demonstracyjne MVP.
+  \item Ryzyko nadużyć powierzchni ataku typowej dla serwisów publicznych (spam kont / zgłoszeń, scraping katalogu, niewłaściwe użycie uploadów) mimo wdrożonych kontroli JWT/RBAC i~auditów bezpieczeństwa.
+  \item Uzależnienie od limitu darmowej / niskokosztowej infrastruktury chmurowej (Oracle Always Free, Cloudflare Tunnel) przy niespodziewanym wzroście ruchu.
 \end{itemize}
+
+\section{Podsumowanie analizy SWOT}
+RacePortal ma silny rdzeń funkcjonalny i~techniczny jak na MVP akademickie: spójne role, katalog, zapisy, narzędzia organizatora i~administratora, testy oraz działające wdrożenie. Główne słabości dotyczą świadomie odłożonych elementów produktowych (PSP, pełne mobile) oraz domknięcia wybranych kryteriów jakościowych (scenariusz 10k rekordów). Szanse rozwoju są naturalną kontynuacją istniejącego API i~paneli; zagrożenia wymagają przede wszystkim dyscypliny bezpieczeństwa, prywatności i~niezależności od pojedynczych usług zewnętrznych. Wnioski te są spójne z~ograniczeniami i~perspektywami opisanymi w~rozdziale~\ref{ch:podsumowanie}.
 
 \chapter{Planowanie projektu}
 
@@ -651,24 +686,74 @@ Wczesny diagram przypadków użycia (materiały projektowe) przedstawia rys.~\re
 
 \chapter{Projekt systemu}
 \label{ch:projekt}
+Rozdział przedstawia projekt architektury RacePortal: założenia warstwowe, podział logiczny, wdrożenie fizyczne, model danych, kontrakt REST oraz projekt aplikacji mobilnej i~mechanizmów bezpieczeństwa. Projekt warstwy webowej (w~tym prototyp Figma) omówiono osobno w~podrozdziale~\ref{sec:figma}. Celem jest pokazanie, \emph{jak} system został zaprojektowany przed opisem realizacji i~szczegółów implementacji.
+
 \section{Założenia architektoniczne}
-Architektura trójwarstwowa: klienty (web, mobile) $\rightarrow$ API REST $\rightarrow$ MySQL. Statyczny frontend za nginx z~proxy \texttt{/api}.
+Przyjęto klasyczną architekturę trójwarstwową z~jednym kontraktem API dla klientów:
+\begin{itemize}
+  \item \textbf{warstwa prezentacji} --- aplikacja webowa (React/Vite, serwowana statycznie) oraz aplikacja mobilna Expo (wizytówka katalogu);
+  \item \textbf{warstwa aplikacji} --- API REST (Spring Boot) z~logiką domenową, walidacją i~kontrolą dostępu;
+  \item \textbf{warstwa danych} --- relacyjna baza MySQL (JPA / Spring Data).
+\end{itemize}
+
+Kluczowe założenia projektowe:
+\begin{itemize}
+  \item jeden origin produkcyjny (\url{https://raceportal.pl}): nginx serwuje SPA i~przekazuje \texttt{/api} do backendu --- bez osobnego hostingu frontu z~osobnym URL API w~buildzie;
+  \item wspólny kontrakt JSON oraz pakiet typów \texttt{packages/api-types} ograniczający dryf web~$\leftrightarrow$~mobile;
+  \item konteneryzacja Docker Compose jako źródło prawdy uruchomieniowej (lokalnie i~na VM);
+  \item świadomy podział odpowiedzialności: pełny produkt na webie (w~tym PWA), mobilka jako kanał discovery z~CTA zapisu na web;
+  \item bezpieczeństwo bazowe wbudowane w~projekt API (JWT, RBAC, walidacja wejścia), a~TLS na brzegu sieci (Cloudflare).
+\end{itemize}
 
 \section{Architektura logiczna systemu}
-Moduły domenowe: użytkownicy/auth, wydarzenia, zgłoszenia, garaż, organizator, administracja, mapy/trasa, poczta.
+Logicznie system dzieli się na moduły domenowe współpracujące przez warstwę serwisów backendu (bez bezpośredniego dostępu klientów do bazy):
+\begin{itemize}
+  \item \textbf{użytkownicy i~auth} --- rejestracja, weryfikacja e-mail, logowanie hasłem / Google, odświeżanie sesji, profil;
+  \item \textbf{wydarzenia} --- katalog, detal, statusy cyklu życia, archiwizacja, licznik wyświetleń;
+  \item \textbf{zgłoszenia} --- flow statusów, dowód płatności, przypisanie klasy;
+  \item \textbf{garaż} --- pojazdy użytkownika i~dopasowanie do wymagań wydarzenia (\texttt{carMatch});
+  \item \textbf{organizator} --- workspace wydarzenia: klasy, wyniki, komunikacja, eksporty;
+  \item \textbf{administracja} --- moderacja wydarzeń i~ról oraz backoffice na osobnym hoście;
+  \item \textbf{mapy / trasa} --- markery katalogu i~wyznaczanie dojazdu (OSRM);
+  \item \textbf{powiadomienia i~poczta} --- powiadomienia in-app oraz maile transakcyjne (SMTP);
+  \item \textbf{pliki} --- upload obrazów i~PDF (m.in.\ dowody wpłaty, regulaminy) z~odczytem przez API.
+\end{itemize}
+
+Podział odpowiada granicom uprawnień RBAC: gość korzysta z~odczytu publicznego, kierowca ze zgłoszeń i~garażu, organizator z~własnych wydarzeń, administrator z~moderacji całej platformy.
 
 \section{Architektura fizyczna i wdrożeniowa}
 \label{sec:arch-fizyczna}
-Kontenery lokalne: \texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{backup}. Mobile poza Compose. Maile --- SMTP Mailbux (poza Compose; \texttt{SMTP\_PASSWORD} w~\texttt{.env}).
+Środowisko uruchomieniowe oparto o~Docker Compose. Lokalnie (i~analogicznie na VM) pracują kontenery:
+\begin{itemize}
+  \item \texttt{web} --- nginx ze zbudowanym SPA oraz reverse proxy \texttt{/api};
+  \item \texttt{api} --- Spring Boot (JVM);
+  \item \texttt{mysql} --- baza trwała (volume);
+  \item \texttt{backup} --- periodyczne kopie zapasowe bazy.
+\end{itemize}
+Aplikacja mobilna Expo działa poza Compose (Expo Go / emulator). Poczta wychodząca korzysta z~zewnętrznego SMTP Mailbux (poza Compose); dane dostępowe SMTP są trzymane w~\texttt{.env}, poza repozytorium.
 
-Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~Docker Compose; publiczny dostęp przez \textbf{Cloudflare Tunnel} (\texttt{cloudflared}) do nginx na porcie \texttt{:8081}. Domena \url{https://raceportal.pl} jest w~tym samym koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages.
+Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~tym samym stackiem Compose. Publiczny dostęp zapewnia \textbf{Cloudflare Tunnel} (\texttt{cloudflared}) do nginx na porcie \texttt{:8081}. Apex \url{https://raceportal.pl} oraz host backoffice są w~koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages. Dzięki temu deploy sprowadza się do aktualizacji kodu na VM i~przebudowy kontenerów, a~klienci wołają API względną ścieżką \texttt{/api}.
 
 \section{Projekt bazy danych}
-Encje m.in.: użytkownik, pojazd, wydarzenie, zgłoszenie, wniosek organizatora, \textbf{tor} (katalog PL seedowany przy starcie API, odczyt \texttt{GET /api/tracks}); statusy wydarzeń i~zgłoszeń; współrzędne geograficzne. Wspólne presety torów dla UI: \texttt{TRACK\_PRESETS} w~\texttt{packages/api-types}.
+Model danych zaprojektowano wokół wydarzenia motorsportowego i~procesu zapisu. Główne encje implementacyjne obejmują m.in.:
+\begin{itemize}
+  \item użytkownika (rola jako enum: \texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN});
+  \item pojazd w~garażu;
+  \item wydarzenie (lokalizacja i~współrzędne, status cyklu życia, opłaty, regulaminy, flaga publikacji wyników, licznik wyświetleń);
+  \item zgłoszenie (status, dowód płatności, klasa zawodów);
+  \item tor z~katalogu PL (seed przy starcie API; odczyt listy torów przez API);
+  \item klasy zawodów, wyniki i~reguły punktacji powiązane z~wydarzeniem;
+  \item wniosek o~rolę organizatora, powiadomienia, refresh tokeny oraz zgłoszenia błędów.
+\end{itemize}
+
+Wydarzenie przechodzi przez kolejne stany: od szkicu i~moderacji, przez publikację w~katalogu, aż do archiwum albo anulowania.
+Zgłoszenie kierowcy ma osobne stany: najpierw czeka na decyzję organizatora (\texttt{PENDING}), potem może zostać wstępnie przyjęte (\texttt{ACCEPTED}) albo od razu potwierdzone (\texttt{CONFIRMED}); anulowanie oznacza \texttt{CANCELED}.
+Przy wydarzeniach płatnych po \texttt{ACCEPTED} kierowca dokłada dowód przelewu (model „zapłać później”), a~organizator dopiero wtedy potwierdza miejsce.
+Listy torów w~formularzach web i~mobile korzystają ze wspólnego zestawu nazw, żeby obie aplikacje pokazywały te same lokalizacje.
 
 \subsection{Diagram klas}
 \label{sec:diagram-klas}
-Rysunek~\ref{fig:diagram-klas} przedstawia wczesny model bazy danych (ERD) stanowiący punkt wyjścia projektu klas / tabel domenowych. W~implementacji Spring Data JPA model został uproszczony i~dostosowany do MVP (m.in.\ role jako enum użytkownika, lokalizacja osadzona w~wydarzeniu).
+Rysunek~\ref{fig:diagram-klas} przedstawia wczesny model bazy danych (ERD) stanowiący punkt wyjścia projektu klas / tabel domenowych. W~implementacji Spring Data JPA model został uproszczony i~dostosowany do MVP (m.in.\ role jako enum użytkownika, lokalizacja osadzona w~wydarzeniu). Kolejne encje operacyjne (klasy, wyniki, uploady jako URL-e w~polach domenowych) rozbudowano iteracyjnie bez zmiany ogólnego wzorca: jedna baza MySQL, relacje JPA, statusy jako enumy.
 
 \begin{figure}[ht]
   \centering
@@ -791,16 +876,47 @@ Rysunek~\ref{fig:figma-web} przedstawia zrzut ekranu prototypu strony głównej 
 Kod frontendu został przeniesiony z~Figma Make do lokalnego monorepo (\texttt{web/}), a~następnie podpięty pod realne API Spring Boot zamiast mocków i~\texttt{localStorage}. Wczesna wizja produktu i~ról --- jeszcze przed pełną implementacją --- jest też widoczna na diagramach koncepcyjnych (rys.~\ref{fig:use-case}, \ref{fig:podzial-rol}). W~toku realizacji UI dopracowano pod kątem responsywności, stanów pustych/błędów, PWA oraz spójności z~tokenami marki (\texttt{--race-accent}); font Orbitron zastąpiono Oxaniumem ze względu na polskie znaki diakrytyczne. Atrybucje komponentów shadcn/ui oraz zdjęć Unsplash udokumentowano w~\texttt{docs/\allowbreak ATTRIBUTIONS.md}.
 
 \section{Projekt aplikacji mobilnej}
-Stack Expo; nawigacja stack Eventy; publiczny klient HTTP; zmienne \texttt{EXPO\_PUBLIC\_\allowbreak API\_URL} i~\texttt{EXPO\_PUBLIC\_\allowbreak WEB\_URL}; CTA \texttt{Linking} do \texttt{/wydarzenia/:id}.
+Aplikację mobilną zaprojektowano świadomie jako \textbf{wizytówkę katalogu}, a~nie pełny klon weba. Założenia:
+\begin{itemize}
+  \item stack Expo (React Native) z~nawigacją typu stack wokół listy i~detalu wydarzeń;
+  \item publiczny klient HTTP do tych samych endpointów katalogu co web;
+  \item konfiguracja adresów API i~weba przez zmienne środowiskowe Expo
+        (\texttt{EXPO\_PUBLIC\_\allowbreak API\_URL}, \texttt{EXPO\_PUBLIC\_\allowbreak WEB\_URL});
+  \item konwersja zapisu: przycisk CTA otwiera detal wydarzenia w~przeglądarce / PWA
+        (\texttt{Linking} $\rightarrow$ ścieżka wydarzenia na webie).
+\end{itemize}
+Poza zakresem projektu mobilnego pozostają: logowanie, garaż, panele organizatora/admina oraz publikacja w~sklepach. Aplikacja mobilna służy więc głównie do przeglądania katalogu; sam zapis na wydarzenie użytkownik dokańcza w~wersji webowej.
 
 \section{Projekt mechanizmów bezpieczeństwa}
-Sesja webowa: JWT w~ciasteczkach httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}); API akceptuje też nagłówek Bearer (np.\ testy); role na endpointach; walidacja DTO; CORS; CSP nginx.
+Bezpieczeństwo zaprojektowano warstwowo, z~naciskiem na kontrolę dostępu API:
+\begin{itemize}
+  \item uwierzytelnianie JWT --- sesja webowa w~ciasteczkach httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}); API akceptuje też nagłówek Bearer (np.\ testy) oraz opcjonalne OAuth Google;
+  \item autoryzacja RBAC na endpointach i~w~serwisach (rozróżnienie właściciela wydarzenia vs administrator);
+  \item hasła przechowywane hashowane (BCrypt); osobne refresh tokeny;
+  \item walidacja DTO po stronie API oraz odrzucanie niebezpiecznych URL-i tam, gdzie przyjmowane są odnośniki;
+  \item CORS ograniczony do skonfigurowanych originów; na brzegu --- TLS i~nagłówki bezpieczeństwa nginx (m.in.\ CSP);
+  \item rozdzielenie apexu i~backoffice administracyjnego na osobnym hoście, z~twardym wymaganiem roli \texttt{ADMIN}.
+\end{itemize}
+Szczegółową analizę zagrożeń, klasyfikację danych i~ograniczenia przyjętych zabezpieczeń rozwinięto w~rozdziale~\ref{ch:bezpieczenstwo}.
 
 \chapter{Realizacja}
+\label{ch:realizacja}
+Rozdział opisuje, jak projekt z~rozdziału~\ref{ch:projekt} przełożono na działający system: organizację prac implementacyjnych, podział na komponenty, sposób ich integracji oraz uruchamianie środowiska (lokalnie i~produkcyjnie). Szczegóły kodu backendu, frontendu i~mobile rozwijają kolejne rozdziały implementacyjne.
+
 \section{Organizacja implementacji}
-Implementacja iteracyjna w~monorepo, z~dokumentowaniem zmian i~utrzymywaniem środowiska Compose jako źródła prawdy uruchomieniowej.
+Prace prowadzono iteracyjnie we wspólnym monorepo (web, API, mobile, pakiet typów, dokumentacja). Każda istotniejsza zmiana była weryfikowana uruchomieniem Compose oraz --- w~miarę możliwości --- testami automatycznymi. Środowisko Docker Compose traktowano jako źródło prawdy uruchomieniowej: to, co działa w~kontenerach lokalnie, jest tym samym stackiem co na VM produkcyjnej.
+
+Organizacja pracy zakładała:
+\begin{itemize}
+  \item dostarczanie kolejnych ścieżek użytkownika (katalog $\rightarrow$ konto $\rightarrow$ garaż/zapisy $\rightarrow$ panele ról), a~nie budowę wszystkich warstw „na zapas”;
+  \item bieżące dokumentowanie decyzji i~luk (m.in.\ rejestr zgodności ze Specyfikacją Formularzy);
+  \item świadome odkładanie elementów poza MVP (m.in.\ natywne PSP, pełna parity mobile, sklepy aplikacji);
+  \item utrzymanie seedu danych demo, aby prezentacja i~testy E2E miały powtarzalny punkt startu.
+\end{itemize}
 
 \section{Podział systemu na komponenty}
+System zrealizowano jako trzy główne komponenty kliencko-serwerowe plus warstwę danych. Backend i~frontend webowy omówiono skrótowo poniżej (szczegóły --- rozdz.~\ref{ch:backend} i~\ref{ch:frontend}); aplikację mobilną --- skrótowo poniżej, a~szczegółowo w~rozdz.~\ref{ch:mobile}.
+
 \subsection{Backend}
 \label{sec:realizacja-backend}
 Komponent backendowy stanowi warstwę serwerową RacePortal i~odpowiada za udostępnienie API REST, trwałe przechowywanie danych oraz egzekwowanie reguł biznesowych i~uprawnień. Został zrealizowany w~technologii Spring Boot (wersja~3.3.5) na platformie Java~21, z~relacyjną bazą MySQL oraz mapowaniem obiektowo-relacyjnym Spring Data JPA. Budowa i~uruchamianie odbywają się w~kontenerze (obraz Maven do kompilacji, obraz JRE do runtime), co zapewnia powtarzalność środowiska lokalnego i~produkcyjnego.
@@ -814,11 +930,28 @@ W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu d
 \subsection{Frontend webowy}
 Vite + React; integracja z~API; stany ról i~formularze dziedzinowe.
 \subsection{Aplikacja mobilna}
-Expo --- katalog publiczny bez auth.
+Komponent mobilny zrealizowano w~Expo jako publiczną wizytówkę katalogu:
+\begin{itemize}
+  \item lista i~detal wydarzeń na tych samych danych API co web;
+  \item brak logowania, garażu i~paneli organizatora/admina;
+  \item CTA „Zapisz się na stronie” przekierowujące do detalu wydarzenia w~wersji webowej.
+\end{itemize}
+Aplikacja mobilna służy więc głównie do przeglądania katalogu; sam zapis na wydarzenie użytkownik dokańcza w~wersji webowej.
+
 \section{Integracja komponentów}
-Wspólny kontrakt JSON; typy w~\texttt{api-types}; nginx reverse proxy \texttt{/api} w~środowisku Compose.
+Integracja opiera się na wspólnym kontrakcie REST/JSON. Pakiet typów TypeScript (\texttt{packages/api-types}) ogranicza rozjazdy pól między webem a~mobile. W~środowisku Compose nginx w~kontenerze \texttt{web} serwuje SPA i~przekazuje żądania \texttt{/api} do kontenera \texttt{api}, dzięki czemu przeglądarka korzysta z~jednego originu (bez osobnego URL API w~buildzie produkcyjnym).
+
+Przepływ typowy: klient (web lub mobile) woła endpoint API $\rightarrow$ Spring realizuje reguły domenowe i~RBAC $\rightarrow$ MySQL utrwala stan $\rightarrow$ opcjonalnie wychodzi mail transakcyjny (SMTP Mailbux). Pliki (obrazy, PDF) trafiają do volume uploadów i~są odczytywane przez API.
+
 \section{Konteneryzacja i uruchamianie środowiska}
-\texttt{docker compose up --build -d}~\cite{docker:compose}; weryfikacja \texttt{/api/health}; Expo: \texttt{cd mobile \&\& npm start}. Publiczny dostęp produkcyjny: Cloudflare Tunnel $\rightarrow$ nginx \texttt{:8081}.
+Uruchomienie lokalne sprowadza się do zbudowania i~startu stacku Compose, a~następnie sprawdzenia zdrowia API. Mobilkę uruchamia się osobno w~katalogu Expo. W~skrócie:
+\begin{itemize}
+  \item start stacku: \texttt{docker compose up --build -d}~\cite{docker:compose};
+  \item weryfikacja: endpoint health API zwraca stan OK;
+  \item mobile: start Expo w~katalogu aplikacji mobilnej;
+  \item produkcja: ten sam Compose na Oracle VM, a~ruch publiczny przez Cloudflare Tunnel do nginx na porcie \texttt{:8081}.
+\end{itemize}
+Dzięki zastosowaniu tego samego stacku kontenerów w~środowisku deweloperskim i~produkcyjnym wdrożenie nowej wersji polega na aktualizacji kodu na maszynie wirtualnej oraz przebudowie usług Docker Compose. Aplikacja webowa i~API są publikowane łącznie, bez niezależnego procesu wdrożenia frontendu.
 
 \chapter{Szczegóły implementacji backendu}
 \label{ch:backend}
@@ -1125,20 +1258,142 @@ Leaflet~\cite{leaflet:docs} + kafelki CARTO; pickery lokalizacji; proxy trasy \t
 Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent}.
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
+\label{ch:mobile}
+Rozdział opisuje implementację klienta mobilnego RacePortal. Aplikacja powstała w~technologii Expo (React Native) i~pełni rolę publicznej wizytówki katalogu: umożliwia przeglądanie wydarzeń na telefonie, natomiast zapis udziału oraz funkcje konta realizowane są w~wersji webowej.
+
 \section{Założenia aplikacji mobilnej}
-Mobilka ma wspierać odkrywanie wydarzeń, a~nie dublować pełnego klienta webowego.
+Przyjęto świadome ograniczenie zakresu względem klienta webowego. Aplikacja mobilna ma przede wszystkim umożliwić przeglądanie nadchodzących wydarzeń motorsportowych --- w~postaci listy, mapy, kalendarza oraz ekranu szczegółów --- a~nie stanowić drugiej, pełnej aplikacji z~logowaniem i~garażem.
+
+Założenia wynikające z~tego podziału:
+\begin{itemize}
+  \item brak uwierzytelniania i~przechowywania tokenów JWT w~aplikacji mobilnej;
+  \item wyłącznie publiczne operacje odczytu katalogu;
+  \item konwersja zapisu przez otwarcie odpowiedniej strony wydarzenia w~przeglądarce / PWA;
+  \item wspólny kontrakt danych z~API (te same wydarzenia i~filtry co na webie);
+  \item brak publikacji w~sklepach App Store / Google Play w~ramach MVP (uruchomienie przez Expo / emulator).
+\end{itemize}
+We wcześniejszej fazie projektu rozważano szerszą parity z~webem; ostatecznie zakres zawężono do wizytówki, aby uniknąć dublowania logiki zapisów i~utrzymać jeden główny kanał transakcyjny.
+
 \section{Architektura rozwiązania mobilnego}
-Expo SDK, React Navigation (stack Eventy), ThemeProvider, prosty klient API bez sesji JWT.
+Rozwiązanie oparto o~Expo SDK oraz React Native. Warstwa prezentacji korzysta z~React Navigation (native stack) ograniczonego do przepływu wydarzeń. Motyw wizualny (ciemne tło, akcent marki) oraz lokalizacja interfejsu (PL/EN) są dostarczane przez konteksty aplikacji.
+
+Klient HTTP ograniczono do minimum potrzebnego wizytówce: wykonuje wyłącznie publiczne żądania \texttt{GET} do API RacePortal, bez nagłówka autoryzacji. Adres API i~adres wersji webowej (używany przy CTA zapisu) konfigurowane są zmiennymi środowiskowymi Expo, z~domyślnymi wartościami dopasowanymi do środowiska deweloperskiego (m.in.\ inny host dla emulatora Androida niż dla symulatora iOS).
+
+Aplikacja mobilna \textbf{nie} wchodzi w~skład Docker Compose --- uruchamiana jest osobno obok kontenerów web/API/MySQL.
+
 \section{Lista wydarzeń i widok szczegółów}
-Filtry publiczne; przełączanie Lista / Kalendarz / Mapa; detal z~metadanymi wydarzenia.
+Ekran listy pobiera wydarzenia z~publicznego endpointu katalogu i~udostępnia trzy tryby prezentacji: lista, kalendarz oraz mapa (markery). Filtry publiczne obejmują m.in.\ wyszukiwanie tekstowe, kategorię, województwo, miasto, tor, zakres dat oraz oznaczenie wydarzeń płatnych / bezpłatnych. Zestawy lokalizacji (województwa, tory) są spójne z~listami używanymi po stronie weba, aby obie aplikacje operowały na tych samych słownikach.
+
+Dobór zakresu dat korzysta z~natywnego komponentu wyboru daty. Wygląd i~zachowanie różnią się między platformami: na iOS stosowany jest tryb \texttt{inline}, na Androidzie --- systemowy dialog (\texttt{default}). Po wyborze daty na Androidzie selektor jest zamykany od razu (listing~\ref{lst:mobile-datepicker}).
+
+\begin{lstlisting}[language=Java,caption={Wybór daty filtra z~rozróżnieniem iOS / Android},label={lst:mobile-datepicker}]
+const onDatePicked = (event, selectedDate) => {
+  if (Platform.OS === "android") setDatePickerTarget(null);
+  if (event.type !== "set" || !selectedDate || !datePickerTarget) return;
+  const value = formatDate(selectedDate);
+  if (datePickerTarget === "from") setDateFrom(value);
+  if (datePickerTarget === "to") setDateTo(value);
+};
+
+{datePickerTarget && (Platform.OS === "android" || Platform.OS === "ios") ? (
+  <DateTimePicker
+    value={currentPickerDate}
+    mode="date"
+    display={Platform.OS === "ios" ? "inline" : "default"}
+    onChange={onDatePicked}
+  />
+) : null}
+\end{lstlisting}
+
+Widok szczegółów pobiera pojedyncze wydarzenie po identyfikatorze i~prezentuje podstawowe metadane (nazwa, kategoria, data, lokalizacja, opis, multimedia). Z~poziomu detalu użytkownik może otworzyć lokalizację w~zewnętrznej aplikacji map oraz przejść do zapisu na stronie webowej. Otwarcie map realizuje systemowe \texttt{Linking} z~zapytaniem zawierającym tor, miasto i~współrzędne (listing~\ref{lst:mobile-maps}).
+
+\begin{lstlisting}[language=Java,caption={Otwarcie lokalizacji wydarzenia w~zewnętrznej aplikacji map},label={lst:mobile-maps}]
+const openMaps = () => {
+  if (!event?.lat || !event?.lng) return;
+  const q = encodeURIComponent(
+    `${event.track}, ${event.city} ${event.lat},${event.lng}`
+  );
+  void Linking.openURL(
+    `https://www.google.com/maps/search/?api=1&query=${q}`
+  );
+};
+\end{lstlisting}
+
 \section{Nawigacja i interfejs użytkownika}
-Pojedynczy stack: \texttt{EventsList} $\rightarrow$ \texttt{EventDetail}; dark UI spójny z~marką.
+Nawigacja ogranicza się do jednego stosu ekranów: lista wydarzeń oraz detal wybranego wydarzenia. Nie zastosowano dolnych kart (tabów) typowych dla pełnego klienta, ponieważ poza katalogiem nie ma w~mobilce osobnych obszarów konta, garażu ani paneli ról. Ilustruje to listing~\ref{lst:mobile-stack}: zarejestrowane są wyłącznie ekrany katalogu.
+
+\begin{lstlisting}[language=Java,caption={Stos nawigacji ograniczony do listy i~detalu wydarzenia},label={lst:mobile-stack}]
+function EventsNavigator() {
+  const { accentColor } = useTheme();
+  const { t } = useLocale();
+  return (
+    <EventsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.card },
+        headerTintColor: accentColor,
+        headerTitleStyle: { color: colors.text, fontWeight: "800" },
+      }}
+    >
+      <EventsStack.Screen
+        name="EventsList"
+        component={EventsScreen}
+        options={{ headerShown: false }}
+      />
+      <EventsStack.Screen
+        name="EventDetail"
+        component={EventDetailScreen}
+        options={{ title: t("events.details") }}
+      />
+    </EventsStack.Navigator>
+  );
+}
+\end{lstlisting}
+
+Interfejs utrzymuje ciemny motyw motorsportowy spójny z~identyfikacją RacePortal. Elementy wspólne (nagłówki, przyciski, stany ładowania i~braku danych) wydzielono do prostych komponentów UI, aby zachować jednolity wygląd obu ekranów.
+
 \section{Integracja z API}
-Publiczne GET (events, markers, health); konfiguracja hosta API (localhost / LAN / Android emulator).
+Integracja obejmuje wyłącznie publiczne odczyty potrzebne katalogowi, w~szczególności:
+\begin{itemize}
+  \item listę wydarzeń (z~filtrami i~podziałem na strony),
+  \item markery mapy,
+  \item detal wydarzenia,
+  \item opcjonalnie sprawdzenie dostępności API (health) w~scenariuszach diagnostycznych.
+\end{itemize}
+Ścieżki względne multimediów (np.\ uploady) są uzupełniane o~adres bazowy API, ponieważ klient natywny --- w~odróżnieniu od aplikacji webowej serwowanej z~tego samego hosta co API --- nie rozwiązuje automatycznie ścieżek względnych zasobów.
+
+Konfiguracja hosta uwzględnia typowe różnice środowisk: lokalny host na symulatorze iOS, specjalny adres bramy emulatora Androida (\texttt{10.0.2.2}) oraz możliwość wskazania adresu LAN / produkcji przez zmienne Expo. Fragment z~listingu~\ref{lst:mobile-api-url} pokazuje domyślne wyznaczanie adresu API (analogiczna logika dotyczy adresu wersji webowej używanego przy CTA).
+
+\begin{lstlisting}[language=Java,caption={Wyznaczanie bazowego adresu API dla klienta mobilnego},label={lst:mobile-api-url}]
+export const API_URL = (() => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  const expoGoHost = resolveExpoGoHost();
+  if (expoGoHost && expoGoHost !== "localhost"
+      && expoGoHost !== "127.0.0.1") {
+    return `http://${expoGoHost}:4000`;
+  }
+  return Platform.OS === "android"
+    ? "http://10.0.2.2:4000"
+    : "http://127.0.0.1:4000";
+})();
+\end{lstlisting}
+
 \section{Przekierowanie do wersji webowej}
-Przycisk „Zapisz się na stronie” --- \texttt{Linking.openURL(webEventUrl(id))}.
+Zapis na wydarzenie nie jest realizowany w~aplikacji mobilnej. Na ekranie detalu umieszczono przycisk CTA, który buduje adres wersji webowej wydarzenia i~otwiera go systemowym mechanizmem łączy zewnętrznych (\texttt{Linking}). Użytkownik trafia tym samym do pełnego flow zapisu na webie (konto, garaż, statusy zgłoszenia, ewentualny dowód płatności).
+
+Takie rozwiązanie utrzymuje jedną implementację reguł biznesowych zapisów i~zmniejsza ryzyko rozjazdu mobile~$\leftrightarrow$~web.
+
 \section{Ograniczenia wersji mobilnej}
-Brak auth, garażu, paneli ról i~archiwum w~aplikacji; zależność od dostępności weba przy konwersji zapisu.
+Wersja mobilna MVP nie obejmuje:
+\begin{itemize}
+  \item logowania, rejestracji ani zarządzania profilem;
+  \item garażu pojazdów i~składania zgłoszeń bezpośrednio z~aplikacji;
+  \item paneli organizatora i~administratora;
+  \item archiwum, wyników zawodów ani funkcji społecznościowych;
+  \item powiadomień push oraz publikacji w~sklepach aplikacji.
+\end{itemize}
+Ograniczeniem wynikającym z~przyjętego modelu CTA jest zależność od dostępności wersji webowej w~momencie zapisu. Jednocześnie ograniczenie to jest zamierzone: mobilka pozostaje lekkim kanałem przeglądania katalogu, a~kompletny produkt transakcyjny skupia się na webie (w~tym PWA).
 
 \chapter{Bezpieczeństwo systemu}
 \label{ch:bezpieczenstwo}
