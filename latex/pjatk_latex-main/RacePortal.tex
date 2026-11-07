@@ -100,14 +100,14 @@ Wizja produktowa zakłada:
   \item uruchamialne środowisko demonstracyjne (Docker Compose) oraz wdrożenie produkcyjne realizowane za~pośrednictwem Cloudflare Tunnel.
 \end{itemize}
 
-Szczegóły warstw technicznych (web React~\cite{react:docs}/Vite, API Spring Boot~\cite{spring:boot}, MySQL~\cite{mysql:docs}, mobile Expo~\cite{expo:docs}, \texttt{packages/api-types}) opisano w~rozdziale~\ref{ch:projekt} oraz w~rozdziałach implementacyjnych. Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
+Szczegóły warstw technicznych (web React~\cite{react:docs}/Vite~\cite{vite:docs}/TypeScript~\cite{typescript:docs}, API Spring Boot~\cite{spring:boot} z~Spring Security~\cite{spring:security}, MySQL~\cite{mysql:docs}, mobile Expo~\cite{expo:docs}, \texttt{packages/api-types}) opisano w~rozdziale~\ref{ch:projekt} oraz w~rozdziałach implementacyjnych. Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
 
 
 \section{Struktura pracy}
 Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdziały, które w~sposób wyczerpujący przeprowadzają czytelnika przez proces koncepcyjny, analityczny, projektowy oraz implementacyjny systemu RacePortal:
 \begin{itemize}
   \item \textbf{Rozdział 1 (Informacje wstępne)} --- przedstawia cel i~zakres pracy, wizję rozwiązania opartą na architekturze MVP, a~także strukturę całego dokumentu.
-  \item \textbf{Rozdział 2 (Słownik pojęć)} --- definiuje kluczowe terminy dziedzinowe i~technologiczne wykorzystane w~pracy, takie jak wydarzenie, katalog, garaż, zgłoszenie, mechanizm dopasowania pojazdu (\texttt{carMatch}), a~także pojęcia związane z~bezpieczeństwem i~architekturą (JWT, RBAC, OSRM, MVP).
+  \item \textbf{Rozdział 2 (Słownik pojęć)} --- definiuje kluczowe terminy dziedzinowe i~technologiczne wykorzystane w~pracy (wydarzenie, katalog, garaż, zgłoszenie, \texttt{carMatch}, dokumenty KP/DZW/SWS) oraz pojęcia bezpieczeństwa i~stacku (JWT, RBAC, ASVS, testy penetracyjne, Playwright, OSRM, MVP).
   \item \textbf{Rozdział 3 (Opis problemu)} --- charakteryzuje specyfikę rynku amatorskiego i~półprofesjonalnego motorsportu w~Polsce, wskazuje na problemy organizacyjne i~informacyjne po~stronie kierowców oraz organizatorów, a~także uzasadnia potrzebę stworzenia zintegrowanej platformy.
   \item \textbf{Rozdział 4 (Kontekst biznesowy)} --- omawia segmentację użytkowników, mapę interesariuszy, propozycję wartości systemu, kanały komunikacji, model działania platformy oraz uwarunkowania prawne i~etyczne.
   \item \textbf{Rozdział 5 (Analiza SWOT)} --- analizuje mocne i~słabe strony projektu oraz identyfikuje rynkowe szanse i~zagrożenia związane z~wdrożeniem systemu.
@@ -186,9 +186,32 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item[Mailbux] Zewnętrzny SMTP używany do wysyłki maili transakcyjnych RacePortal.
   \item[PSP] Payment Service Provider --- natywna bramka płatności online; świadomie poza zakresem MVP.
   \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
+  \item[KP] Karta projektu --- formalny dokument planistyczny (cele, miary sukcesu, ramy odbioru).
+  \item[DZW] Dokument Założeń Wstępnych --- opis problemu, celów i~zakresu MVP RacePortal.
+  \item[SWS] Specyfikacja Wymagań Systemowych --- uszczegółowienie wymagań jako podstawa implementacji i~testów.
+  \item[BMC] Business Model Canvas --- szablon opisu modelu biznesowego (segmenty, wartość, kanały, koszty itd.).
+  \item[SWOT] Strengths, Weaknesses, Opportunities, Threats --- analiza mocnych/słabych stron oraz szans i~zagrożeń.
+  \item[SPA] Single Page Application --- aplikacja webowa ładująca UI po stronie klienta (tu: React/Vite).
+  \item[DTO] Data Transfer Object --- obiekt kontraktu API oddzielający wejście/wyjście HTTP od modelu bazy.
+  \item[Bean Validation] Jakarta Bean Validation --- deklaratywna walidacja pól DTO (adnotacje, \texttt{@Valid}).
+  \item[Spring Security] Framework zabezpieczeń Springa (uwierzytelnianie, autoryzacja, filtry HTTP) używany w~API.
+  \item[JJWT] Biblioteka Java do wystawiania i~weryfikacji tokenów JWT (HMAC-SHA).
+  \item[TypeScript] Nadzbiór JavaScriptu z~typami statycznymi; używany we froncie webowym i~w~\texttt{packages/api-types}.
+  \item[Vite] Bundler / serwer deweloperski frontendu RacePortal.
+  \item[Tailwind CSS] Biblioteka utility-first CSS do stylowania UI webowego.
+  \item[Leaflet] Biblioteka map interaktywnych w~przeglądarce (katalog / szczegóły wydarzenia).
+  \item[SMTP] Simple Mail Transfer Protocol --- protokół wysyłki poczty; w~projekcie przez Mailbux.
+  \item[Cloudflare] Brzeg sieci produkcji RacePortal (DNS, TLS/HSTS, Tunnel); bez hostowania frontu na Pages.
+  \item[Playwright] Framework E2E do automatycznych testów przeglądarkowych aplikacji webowej.
+  \item[Vitest] Runner testów jednostkowych w~ekosystemie Vite (m.in.\ \texttt{api-types}, mobile).
+  \item[JUnit] Framework testów jednostkowych/integracyjnych Javy (backend RacePortal).
+  \item[E2E] End-to-End --- test pełnej ścieżki użytkownika w~przeglądarce (tu: Playwright).
+  \item[WebAuthn] Standard silnych kluczy / passkeys; poza zakresem MVP (wzmianka przy 2FA).
+  \item[CAPTCHA] Test odróżniający człowieka od bota; poza zakresem MVP (wzmianka przy hardeningu).
   \item[RPS] Requests Per Second --- metryka obciążenia (liczba żądań na sekundę); w~projekcie mierzona m.in.\ narzędziem k6.
   \item[k6] Narzędzie Grafana do testów obciążeniowych HTTP (pomiary RPS na VM).
   \item[Expo] Framework do budowy aplikacji React Native; wykorzystany w~kliencie mobilnym RacePortal.
+  \item[Track day] Impreza torowa bez klasycznej rywalizacji wyścigowej --- jazda treningowa na torze.
 \end{description}
 
 \chapter{Opis problemu}
@@ -457,7 +480,7 @@ W~pracy inżynierskiej celem praktycznym jest działające MVP demonstracyjne: k
 
 \section{Zakres projektu}
 
-Zakres MVP jest spójny między KP, DZW i~\texttt{docs/\allowbreak MVP.md} jako lista piętnastu funkcji: kalendarz i~lista wydarzeń; filtry oraz wyszukiwarka; szczegóły wydarzenia; panel administratora; konto kierowcy; garaż; system zgłoszeń; konto organizatora; narzędzia organizatora; baza danych wydarzeń; powiadomienia mailowe; mapa wydarzeń; integracja mapowa trasy (w~KP i~DZW: Google Maps API); archiwum; aplikacja mobilna (w~KP: PWA / mobile-first).
+Zakres MVP jest spójny między KP, DZW i~\texttt{docs/\allowbreak MVP.md}~\cite{raceportal:mvp} jako lista piętnastu funkcji: kalendarz i~lista wydarzeń; filtry oraz wyszukiwarka; szczegóły wydarzenia; panel administratora; konto kierowcy; garaż; system zgłoszeń; konto organizatora; narzędzia organizatora; baza danych wydarzeń; powiadomienia mailowe; mapa wydarzeń; integracja mapowa trasy (w~KP i~DZW: Google Maps API); archiwum; aplikacja mobilna (w~KP: PWA / mobile-first).
 
 Poza zakresem MVP --- świadomie --- pozostają m.in.\ integracje z~kalendarzami zewnętrznymi, powiadomienia push poza mailami, automatyczna integracja z~mediami społecznościowymi oraz live timing / pomiary czasów. KP wymienia je jako możliwości dalszej rozbudowy; w~planowaniu nie traktuje się ich jako zobowiązań odbiorczych.
 
@@ -767,7 +790,7 @@ Podział odpowiada granicom uprawnień RBAC: gość korzysta z~odczytu publiczne
 \end{itemize}
 Aplikacja mobilna Expo działa poza Compose (Expo Go / emulator). Poczta wychodząca korzysta z~zewnętrznego SMTP Mailbux (poza Compose); dane dostępowe SMTP są trzymane w~\texttt{.env}, poza repozytorium.
 
-Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~tym samym stackiem Compose. Publiczny dostęp zapewnia \textbf{Cloudflare Tunnel} (\texttt{cloudflared}) do nginx na porcie \texttt{:8081}. Apex \url{https://raceportal.pl} oraz host backoffice są w~koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages. Dzięki temu deploy sprowadza się do aktualizacji kodu na VM i~przebudowy kontenerów, a~klienci wołają API względną ścieżką \texttt{/api}.
+Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~tym samym stackiem Compose. Publiczny dostęp zapewnia \textbf{Cloudflare Tunnel}~\cite{cloudflare:tunnel} (\texttt{cloudflared}) do nginx~\cite{nginx:docs} na porcie \texttt{:8081}. Apex \url{https://raceportal.pl} oraz host backoffice są w~koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages. Dzięki temu deploy sprowadza się do aktualizacji kodu na VM i~przebudowy kontenerów, a~klienci wołają API względną ścieżką \texttt{/api}.
 
 \section{Projekt bazy danych}
 Model danych zaprojektowano wokół wydarzenia motorsportowego i~procesu zapisu. Główne encje implementacyjne obejmują m.in.:
@@ -812,7 +835,7 @@ Z~punktu widzenia dostępu projekt rozróżnia zasoby publiczne (m.in.\ odczyt w
 \section{Projekt warstwy webowej}
 \label{sec:figma}
 
-Warstwa webowa RacePortal~\cite{react:docs} to pełny klient transakcyjny systemu: obsługuje katalog wydarzeń, konta użytkowników, wirtualny garaż, zgłoszenia udziału oraz panele organizatora i~administratora. Stack aplikacji to \textbf{Vite~6}~\cite{vite:docs} z~\textbf{React~18} i~\textbf{TypeScript}, stylowanie \textbf{Tailwind CSS~v4} oraz zestaw komponentów zbliżonych do \textbf{shadcn/ui} (Radix UI). Routing realizuje \textbf{React Router~v7} (\texttt{createBrowserRouter}); komunikacja z~backendem --- moduł komunikacji z~API w~\texttt{web/\allowbreak src/\allowbreak app/\allowbreak lib/\allowbreak api.ts}, z~bazą URL z~\texttt{VITE\_API\_URL} albo ścieżkami względnymi \texttt{/api/\ldots} (proxy Vite w~dev, proxy nginx w~Dockerze). Sesja opiera się o~\textbf{httpOnly cookies} (\texttt{rp\_at} / \texttt{rp\_rt}) z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie. Szczegóły implementacji frontendu są rozwinięte w~rozdziale~11; poniżej opisano projekt warstwy i~kluczowe decyzje.
+Warstwa webowa RacePortal~\cite{react:docs} to pełny klient transakcyjny systemu: obsługuje katalog wydarzeń, konta użytkowników, wirtualny garaż, zgłoszenia udziału oraz panele organizatora i~administratora. Stack aplikacji to \textbf{Vite~6}~\cite{vite:docs} z~\textbf{React~18} i~\textbf{TypeScript}~\cite{typescript:docs}, stylowanie \textbf{Tailwind CSS~v4}~\cite{tailwind:docs} oraz zestaw komponentów zbliżonych do \textbf{shadcn/ui} (Radix UI). Routing realizuje \textbf{React Router~v7} (\texttt{createBrowserRouter}); komunikacja z~backendem --- moduł komunikacji z~API w~\texttt{web/\allowbreak src/\allowbreak app/\allowbreak lib/\allowbreak api.ts}, z~bazą URL z~\texttt{VITE\_API\_URL} albo ścieżkami względnymi \texttt{/api/\ldots} (proxy Vite w~dev, proxy nginx w~Dockerze). Sesja opiera się o~\textbf{httpOnly cookies} (\texttt{rp\_at} / \texttt{rp\_rt}) z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie. Szczegóły implementacji frontendu są rozwinięte w~rozdziale~11; poniżej opisano projekt warstwy i~kluczowe decyzje.
 
 \subsection*{Architektura frontendu}
 
@@ -958,7 +981,7 @@ Komponent backendowy stanowi warstwę serwerową RacePortal i~odpowiada za udost
 
 Struktura kodu w~pakiecie \texttt{pl.raceportal} odzwierciedla klasyczny podział warstwowy. Warstwa kontrolerów eksponuje zasoby HTTP (m.in.\ uwierzytelnianie, wydarzenia, zgłoszenia, garaż, tory, mapy, uploady, panele organizatora i~administratora oraz health-check). Warstwa serwisów zawiera logikę dziedzinową --- m.in.\ rejestrację i~logowanie, zarządzanie wydarzeniami, przepływ statusów zgłoszeń, dopasowanie pojazdu do wymagań wydarzenia, powiadomienia e-mail, moderację oraz archiwizację. Warstwa repozytoriów zapewnia dostęp do encji domenowych (użytkownik, pojazd, wydarzenie, zgłoszenie, tor i~encje powiązane). Obiekty DTO oraz walidacja Bean Validation oddzielają kontrakt API od modelu persystencji, a~globalna obsługa wyjątków ujednolica odpowiedzi błędów.
 
-Bezpieczeństwo dostępu oparto o~Spring Security oraz tokeny JWT: część zasobów katalogu pozostaje publiczna (przeglądanie wydarzeń, torów, trasy), natomiast operacje konta, garażu, zgłoszeń i~moderacji wymagają uwierzytelnienia oraz odpowiednich ról. Komponent backendowy realizuje również zadania wspierające demonstrację i~utrzymanie systemu: inicjalizację danych startowych (\texttt{DataInitializer}), katalog torów, cache wybranych list, a~także cykliczną archiwizację minionych wydarzeń (\texttt{ArchiveService}, uruchamiana przy starcie aplikacji oraz codziennie według harmonogramu).
+Bezpieczeństwo dostępu oparto o~Spring Security~\cite{spring:security} oraz tokeny JWT~\cite{jwt:rfc}: część zasobów katalogu pozostaje publiczna (przeglądanie wydarzeń, torów, trasy), natomiast operacje konta, garażu, zgłoszeń i~moderacji wymagają uwierzytelnienia oraz odpowiednich ról. Komponent backendowy realizuje również zadania wspierające demonstrację i~utrzymanie systemu: inicjalizację danych startowych (\texttt{DataInitializer}), katalog torów, cache wybranych list, a~także cykliczną archiwizację minionych wydarzeń (\texttt{ArchiveService}, uruchamiana przy starcie aplikacji oraz codziennie według harmonogramu).
 
 W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu domeny --- klienci webowy i~mobilny nie utrzymują własnej bazy wydarzeń ani zgłoszeń, lecz konsumują wspólny kontrakt JSON. Szczegółowy opis encji, endpointów i~przepływów implementacyjnych przedstawiono w~rozdziale~\ref{ch:backend}.
 
@@ -1532,7 +1555,7 @@ Przyjęto poziom ochrony adekwatny do akademickiego MVP demonstracyjnego (orient
 
 Założenia projektowe:
 \begin{itemize}
-  \item bezpieczeństwo egzekwowane przede wszystkim po stronie API (Spring Security), a~nie wyłącznie w~UI;
+  \item bezpieczeństwo egzekwowane przede wszystkim po stronie API (Spring Security~\cite{spring:security}), a~nie wyłącznie w~UI;
   \item zasada najmniejszych uprawnień: gość ma odczyt publiczny, kierowca --- własne zasoby, organizator --- własne wydarzenia, administrator --- moderację platformy;
   \item obrona wielowarstwowa: Cloudflare (HTTPS/HSTS/Tunnel) $\rightarrow$ nginx (nagłówki bezpieczeństwa, proxy) $\rightarrow$ Spring Boot (JWT, rate limit, walidacja) $\rightarrow$ MySQL;
   \item sekrety i~hasła nie powinny trafiać do repozytorium; w~produkcji TLS kończy się na brzegu sieci (Cloudflare);
@@ -1554,7 +1577,7 @@ Klasyfikacja uzasadnia, dlaczego część endpointów jest publiczna (katalog), 
 \section{Uwierzytelnianie użytkowników}
 Uwierzytelnianie RacePortal zrealizowano w~module \texttt{AuthController} / \texttt{AuthService} bez klasycznej sesji serwerowej w~pamięci. Tożsamość użytkownika opiera się na dwóch warstwach poświadczeń: krótkotrwałym tokenie dostępu JWT oraz rotowanym tokenie odświeżającym przechowywanym w~bazie w~postaci skrótu. Po~stronie klienta webowego sesja jest utrzymywana w~ciasteczkach HTTP-only (\texttt{rp\_at}, \texttt{rp\_rt}), ustawianych przez \texttt{AuthCookies} z~parametrami \texttt{Secure} / \texttt{SameSite} zależnymi od środowiska.
 
-Rejestracja lokalna tworzy konto z~rolą \texttt{USER} w~stanie niezweryfikowanym i~wysyła link aktywacyjny e-mail. Do~momentu weryfikacji system nie wydaje sesji --- logowanie hasłem kończy się odmową z~komunikatem o~konieczności aktywacji. Hasła lokalne są hashowane algorytmem BCrypt (\texttt{PasswordEncoder} w~\texttt{SecurityConfig}). Polityka siły hasła wymaga co najmniej 8~znaków, wielkiej litery, cyfry i~znaku specjalnego (wzorzec w~\texttt{AuthDtos}). Ścieżka rejestracji organizatora równolegle zakłada wniosek o~rolę, lecz sama nie nadaje uprawnień \texttt{ORGANIZER} --- awans następuje dopiero po~akceptacji administratora.
+Rejestracja lokalna tworzy konto z~rolą \texttt{USER} w~stanie niezweryfikowanym i~wysyła link aktywacyjny e-mail. Do~momentu weryfikacji system nie wydaje sesji --- logowanie hasłem kończy się odmową z~komunikatem o~konieczności aktywacji. Hasła lokalne są hashowane algorytmem BCrypt~\cite{bcrypt:openbsd} (\texttt{PasswordEncoder} w~\texttt{SecurityConfig}). Polityka siły hasła wymaga co najmniej 8~znaków, wielkiej litery, cyfry i~znaku specjalnego (wzorzec w~\texttt{AuthDtos}). Ścieżka rejestracji organizatora równolegle zakłada wniosek o~rolę, lecz sama nie nadaje uprawnień \texttt{ORGANIZER} --- awans następuje dopiero po~akceptacji administratora.
 
 Logowanie hasłem stosuje ochronę czasową przed enumeracją kont: zarówno przy braku użytkownika, jak i~przy złym haśle wykonywane jest porównanie BCrypt (w~tym wobec hashu zastępczego), a~komunikat błędu pozostaje jednolity. Dodatkowo \texttt{AttemptRateLimiter} ogranicza liczbę prób w~oknie 15~minut --- osobno per e-mail (5~prób) i~per adres IP (20~prób); przekroczenie limitu zwraca HTTP~429 z~nagłówkiem \texttt{Retry-After}. Opcjonalnie wspierane jest logowanie Google: weryfikacja \texttt{idToken} przy skonfigurowanym identyfikatorze klienta, po~której system wydaje własną sesję RacePortal. Wylogowanie unieważnia refresh tokeny użytkownika, podnosi \texttt{tokenVersion} konta i~czyści ciasteczka, co natychmiast unieważnia wcześniejsze access JWT.
 
@@ -1583,7 +1606,7 @@ return Jwts.builder()
 \end{lstlisting}
 
 \section{Walidacja danych wejściowych}
-Wejście API jest walidowane dwustopniowo: deklaratywnie na rekordach DTO (Jakarta Bean Validation) oraz regułami biznesowymi w~serwisach. Kontrolery stosują \texttt{@Valid} na ciele żądania; naruszenia ograniczeń są mapowane przez \texttt{GlobalExceptionHandler} na odpowiedź HTTP~400 z~mapą pole~$\rightarrow$~komunikat w~polu \texttt{details}, co pozwala frontowi wyróżnić konkretne błędy formularza.
+Wejście API jest walidowane dwustopniowo: deklaratywnie na rekordach DTO (Jakarta Bean Validation~\cite{jakarta:validation}) oraz regułami biznesowymi w~serwisach. Kontrolery stosują \texttt{@Valid} na ciele żądania; naruszenia ograniczeń są mapowane przez \texttt{GlobalExceptionHandler} na odpowiedź HTTP~400 z~mapą pole~$\rightarrow$~komunikat w~polu \texttt{details}, co pozwala frontowi wyróżnić konkretne błędy formularza.
 
 W~module auth wymagane są m.in.\ niepusty, unikalny e-mail (\texttt{@Email}), ograniczenia długości nazwy użytkownika oraz wzorzec silnego hasła. Pola profilu (imię, nazwisko, telefon, Instagram) mają osobne wzorce formatu. Analogiczne adnotacje stosują DTO garażu, wydarzeń, zgłoszeń i~panelu administratora (statusy, role). Poza Bean Validation serwisy egzekwują reguły dziedzinowe --- np.\ dozwolone przejścia statusów zgłoszenia, blokadę edycji pojazdu przy otwartym zgłoszeniu, unikalność telefonu czy bezpieczną normalizację URL mediów (\texttt{SafeHttpUrls} / \texttt{ImageReferences}). Upload plików dodatkowo weryfikuje rozmiar oraz typ po~sygnaturze bajtowej (JPG/PNG/WebP, PDF), a~nie wyłącznie po~nagłówku przeglądarki. Dzięki temu walidacja obejmuje zarówno kontrakt składniowy żądania, jak i~spójność stanu domenowego.
 
@@ -1613,7 +1636,7 @@ Dla RacePortal rozważono typowe zagrożenia aplikacji webowej z~rolami i~public
   \item \textbf{nadużycie zasobów} --- automatyczne próby logowania/resetu, spam publicznych endpointów, nadmierne użycie uploadów;
   \item \textbf{ujawnienie informacji} --- zbyt szczegółowy publiczny health, \texttt{robots.txt} mapujący panele, wersje serwera, tokeny w~logach dostępowych.
 \end{itemize}
-Zagrożenia mapowano orientacyjnie na kategorie OWASP (m.in.\ A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A05 Security Misconfiguration, A07 Identification and Authentication Failures).
+Zagrożenia mapowano orientacyjnie na kategorie OWASP Top~10~\cite{owasp:top10} (m.in.\ A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A05 Security Misconfiguration, A07 Identification and Authentication Failures) oraz na wymagania ASVS~\cite{owasp:asvs}.
 
 \section{Analiza ryzyka}
 Ryzyko oceniono jakościowo (prawdopodobieństwo $\times$ skutek) oraz praktycznie --- przez odtworzenie znalezisk pentestu i~pomiar, czy remedacja je zamyka:
@@ -1652,7 +1675,7 @@ Najważniejsze znaleziska wysokiej istotności oraz remedacje (październik 2026
 
 Znaleziska średnie i~niższe objęły m.in.\ rezerwację/unikalność nazw użytkowników (ochrona przed podszywaniem), zaostrzenie CSP, wymóg hasła przy zmianie e-maila, ograniczenie publicznego \texttt{/api/health}, odchudzenie \texttt{robots.txt}, poprawę kodów błędów HTTP oraz ograniczenie wycieków informacyjnych (np.\ tokeny poza access logami ścieżek weryfikacji). Świadomie potwierdzono też model biznesowy „zapłać później” bez PSP --- nie jako lukę implementacyjną, lecz decyzję zakresu MVP.
 
-Weryfikacja remedacji łączyła testy automatyczne API (MockMvc) z~krótką kontrolą działania kluczowych funkcji na środowisku produkcyjnym (nagłówki bezpieczeństwa, limity odpowiedzi 429, zachowanie resetu hasła i~sesji). Szczegółowy rejestr znalezisk i~commitów utrzymywany jest w~dokumentacji projektowej (\texttt{docs/cybersecurity-pentest.md}).
+Weryfikacja remedacji łączyła testy automatyczne API (MockMvc) z~krótką kontrolą działania kluczowych funkcji na środowisku produkcyjnym (nagłówki bezpieczeństwa, limity odpowiedzi 429, zachowanie resetu hasła i~sesji). Szczegółowy rejestr znalezisk i~commitów utrzymywany jest w~dokumentacji projektowej~\cite{raceportal:pentest}.
 
 \chapter{Testowanie i weryfikacja systemu}
 \label{ch:testy}
@@ -1698,7 +1721,7 @@ Nakład sumaryczny (osobogodziny): \textbf{[do uzupełnienia przez zespół]}.
 \section{Podział zadań w zespole}
 Skrót obszarów --- rozdz.~\ref{ch:wklad}. Szczegółowa tabela godzin per osoba: \textbf{[do uzupełnienia przez zespół]}.
 \section{Narzędzia wspierające zarządzanie pracą}
-Git/GitHub, dokumentacja Markdown w~\texttt{docs/}, Docker, Cursor/IDE, Playwright, Figma Make, Cloudflare Dashboard; skład pracy: \LaTeX{}~\cite{latex:project}.
+Git/GitHub, dokumentacja Markdown w~\texttt{docs/}, Docker, Cursor/IDE, Playwright~\cite{playwright:docs}, Figma Make, Cloudflare Dashboard; skład pracy: \LaTeX{}~\cite{latex:project}.
 \section{Problemy organizacyjne i ich rozwiązanie}
 M.in.\ rozrost zakresu mobile --- decyzja o~wizytówce; luki Spec --- rejestr \texttt{spec-conformity.md}; stabilizacja testów względem seedu/archiwizacji; uproszczenie hostingu (Oracle + Tunnel zamiast GCP Pages).
 

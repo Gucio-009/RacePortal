@@ -27,105 +27,214 @@
       \field{note}{dostęp: 2026-11-07}
       \field{title}{React Documentation}
     \endentry
-    \entry{spring:boot}{misc}{}{}
+    \entry{vite:docs}{misc}{}{}
       \field{sortinit}{2}
       \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://vite.dev/guide/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Vite Documentation}
+    \endentry
+    \entry{typescript:docs}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.typescriptlang.org/docs/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{TypeScript Documentation}
+    \endentry
+    \entry{spring:boot}{misc}{}{}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://docs.spring.io/spring-boot/docs/current/reference/html/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Spring Boot Reference Documentation}
     \endentry
+    \entry{spring:security}{misc}{}{}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.spring.io/spring-security/reference/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Spring Security Reference}
+    \endentry
     \entry{mysql:docs}{misc}{}{}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://dev.mysql.com/doc/refman/8.4/en/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{{MySQL} 8.4 Reference Manual}
     \endentry
     \entry{expo:docs}{misc}{}{}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://docs.expo.dev/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Expo Documentation}
     \endentry
     \entry{raceportal:repo}{misc}{}{}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal}}
       \field{note}{Branch \texttt{main}; dostęp: 2026-11-07}
       \field{title}{RacePortal --- repozytorium projektu}
     \endentry
     \entry{jwt:rfc}{misc}{}{}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://datatracker.ietf.org/doc/html/rfc7519}}
       \field{note}{RFC~7519; dostęp: 2026-11-07}
       \field{title}{JSON Web Token ({JWT})}
     \endentry
     \entry{owasp:asvs}{misc}{}{}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://owasp.org/www-project-application-security-verification-standard/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{{OWASP} Application Security Verification Standard}
     \endentry
     \entry{k6:vm-rps}{misc}{}{}
-      \field{sortinit}{8}
-      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labeltitlesource}{title}
       \field{howpublished}{dokumentacja projektu RacePortal (\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md})}
       \field{note}{sesja pomiarowa 2026-10-25; dostęp: 2026-11-07}
       \field{title}{Wyniki load testu k6 --- Oracle VM (RPS)}
     \endentry
-    \entry{vite:docs}{misc}{}{}
+    \entry{raceportal:mvp}{misc}{}{}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labeltitlesource}{title}
-      \field{howpublished}{\url{https://vite.dev/guide/}}
-      \field{note}{dostęp: 2026-11-07}
-      \field{title}{Vite Documentation}
+      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak MVP.md})}
+      \field{note}{stan 28.10.2026; dostęp: 2026-11-07}
+      \field{title}{RacePortal --- zakres MVP}
     \endentry
-    \entry{docker:compose}{misc}{}{}
+    \entry{cloudflare:tunnel}{misc}{}{}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Cloudflare Tunnel}
+    \endentry
+    \entry{nginx:docs}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://nginx.org/en/docs/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{nginx Documentation}
+    \endentry
+    \entry{tailwind:docs}{misc}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://tailwindcss.com/docs}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Tailwind CSS Documentation}
+    \endentry
+    \entry{docker:compose}{misc}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://docs.docker.com/compose/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Docker Compose overview}
     \endentry
     \entry{osrm:project}{misc}{}{}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{http://project-osrm.org/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Open Source Routing Machine}
     \endentry
     \entry{leaflet:docs}{misc}{}{}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://leafletjs.com/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Leaflet --- an open-source {JavaScript} library for mobile-friendly interactive maps}
     \endentry
+    \entry{bcrypt:openbsd}{misc}{}{}
+      \name{author}{2}{}{%
+        {{hash=60b1af3e10b3553c9b4eb4055120912c}{%
+           family={Provos},
+           familyi={P\bibinitperiod},
+           given={Niels},
+           giveni={N\bibinitperiod}}}%
+        {{hash=d95f845d2bc39e6d692ea4242278e0ef}{%
+           family={Mazières},
+           familyi={M\bibinitperiod},
+           given={David},
+           giveni={D\bibinitperiod}}}%
+      }
+      \strng{namehash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{fullhash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{fullhashraw}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{bibnamehash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{authorbibnamehash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{authornamehash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{authorfullhash}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \strng{authorfullhashraw}{c1deba8a4c55c6c3cec247c8b5d55471}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.usenix.org/legacy/events/usenix99/provos/provos.pdf}}
+      \field{note}{USENIX 1999; dostęp: 2026-11-07}
+      \field{title}{bcrypt --- A Future-Adaptable Password Scheme}
+    \endentry
+    \entry{jakarta:validation}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://beanvalidation.org/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Jakarta Bean Validation}
+    \endentry
+    \entry{owasp:top10}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://owasp.org/www-project-top-ten/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{{OWASP} Top~10 Web Application Security Risks}
+    \endentry
+    \entry{raceportal:pentest}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak cybersecurity-pentest.md})}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{RacePortal --- rejestr testów penetracyjnych i~remedacji}
+    \endentry
     \entry{k6:docs}{misc}{}{}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://grafana.com/docs/k6/latest/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Grafana k6 documentation}
     \endentry
+    \entry{playwright:docs}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://playwright.dev/docs/intro}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Playwright Documentation}
+    \endentry
     \entry{latex:project}{misc}{}{}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://www.latex-project.org/}}
       \field{note}{dostęp: 2026-11-07}
