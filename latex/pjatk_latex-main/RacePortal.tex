@@ -281,21 +281,29 @@ Kluczowe zagadnienia techniczne podjęte w~ramach projektu obejmują:
 
 \chapter{Kontekst biznesowy}
 \label{ch:biznes}
-Ten rozdział opisuje RacePortal od strony biznesowej: segmenty odbiorców, udziałowców i~propozycję wartości, a~następnie kanały dystrybucji, zasoby i~działania kluczowe, model działania platformy, realność wdrożenia oraz kwestie prawne i~etyczne. Punktem wyjścia są założenia Dokumentu Założeń Wstępnych (DZW), karty projektu, Business Model Canvas (BMC / materiały KMR) oraz scenariusze walidacji wywiadami, zestawione z~faktycznym zakresem rozwiązania.
+Celem niniejszego rozdziału jest przedstawienie biznesowych i~organizacyjnych uwarunkowań funkcjonowania systemu RacePortal. Analiza obejmuje identyfikację grup docelowych oraz interesariuszy przedsięwzięcia, określenie propozycji wartości, kanałów komunikacji i~dystrybucji, niezbędnych zasobów, a~także potencjalnego modelu biznesowego i~możliwości dalszego rozwoju platformy.
 
-Należy zaznaczyć, że segmentacja w~materiałach KMR została sformułowana jako \emph{założenie koncepcyjne}, a~nie jako wynik reprezentatywnych badań rynkowych. Dokument \emph{Interview Validation} definiuje hipotezy, skrypt wywiadu oraz metryki sukcesu; nie zawiera wyników przeprowadzonych wywiadów, dlatego w~dalszej części nie są one przytaczane jako dane empiryczne. Analogicznie, wskazany w~materiałach koncepcyjnych przedział wiekowy 16--40~lat traktuje się wyłącznie jako hipotezę dotyczącą grupy docelowej, a~nie jako potwierdzoną charakterystykę demograficzną rynku.
+RacePortal stanowi odpowiedź na problem rozproszenia informacji o~wydarzeniach motorsportowych organizowanych na terenie Polski. Głównym założeniem przedsięwzięcia jest utworzenie scentralizowanej platformy umożliwiającej wyszukiwanie wydarzeń, zarządzanie zgłoszeniami uczestników oraz usprawnienie komunikacji pomiędzy kierowcami i~organizatorami.
+
+Analiza biznesowa opiera się na założeniach projektowych oraz funkcjonalnościach opracowanego systemu. Przedstawione możliwości komercjalizacji i~rozwoju stanowią propozycje kierunków działania, a~nie potwierdzone wyniki badań rynkowych ani prognozy finansowe.
 
 \section{Segmentacja użytkowników}
 \label{sec:segmentacja}
-Z~perspektywy biznesowej wyróżnia się trzy główne segmenty rynku, których potrzeby determinują wartość RacePortal. Segmentację rynkową należy odróżnić od ról dostępowych w~systemie (kontrola dostępu oparta o~role): role techniczne opisują uprawnienia w~aplikacji, natomiast segmenty opisują grupy odbiorców i~ich problemy.
+Segmentacja użytkowników stanowi istotny element analizy biznesowej, ponieważ pozwala określić potrzeby poszczególnych grup odbiorców oraz dopasować do nich oferowane funkcjonalności systemu. W~przypadku RacePortal wyróżniono trzy podstawowe segmenty rynku: uczestników wydarzeń motorsportowych, organizatorów wydarzeń oraz kibiców i~pasjonatów motoryzacji.
 
-\textbf{Odbiorcy informacji (kibice i~pasjonaci)} poszukują aktualnych terminów, lokalizacji oraz podstawowych informacji o~wydarzeniach motorsportowych. Dla tej grupy kluczowy jest niski próg wejścia --- możliwość przeglądania katalogu bez rejestracji --- oraz czytelne filtry i~widoki (lista, mapa, kalendarz). Segment ten odpowiada w~dużej mierze użytkownikowi anonimowemu (gościowi) w~warstwie aplikacji.
+\textbf{Uczestnicy wydarzeń motorsportowych (kierowcy)} stanowią jedną z~głównych grup docelowych platformy. Segment obejmuje osoby zainteresowane zarówno amatorskim, jak i~bardziej zaawansowanym udziałem w~wydarzeniach, takich jak track day, drifting, rajdy czy inne formy rywalizacji samochodowej. Do~ich najważniejszych potrzeb należą łatwy dostęp do aktualnego kalendarza wydarzeń, możliwość wyszukiwania imprez według lokalizacji i~kategorii oraz sprawna rejestracja udziału.
 
-\textbf{Uczestnicy wydarzeń (kierowcy)} to grupa, która nie tylko szuka startu, lecz także sprawdza zgodność wymagań wydarzenia z~posiadanym pojazdem, składa zgłoszenie i~śledzi jego status. W~systemie obsługują ich konta użytkowników z~dostępem do garażu i~zgłoszeń. Hipoteza z~materiałów KMR wiąże tę grupę z~rynkiem polskim i~orientacyjnym przedziałem 16--40~lat; brakuje jednak wyników badań potwierdzających ten rozkład, dlatego nie traktuje się go jako ustalenia empirycznego.
+Istotnym elementem z~punktu widzenia tej grupy jest możliwość utworzenia profilu kierowcy i~przypisania do niego pojazdów. Pozwala to wykorzystać informacje o~posiadanym samochodzie podczas wyboru wydarzeń oraz wstępnego sprawdzania zgodności pojazdu z~określonymi wymaganiami.
 
-\textbf{Organizatorzy wydarzeń} publikują imprezy i~obsługują zapisy. Potrzebują skutecznego kanału dotarcia do uczestników oraz narzędzia do publikacji wydarzenia i~zarządzania listą zgłoszeń (w~tym komunikacji statusów). W~praktyce dostęp organizatora wymaga weryfikacji wniosku przez operatora platformy --- to mechanizm jakościowy, a~nie osobny segment rynku.
+\textbf{Organizatorzy wydarzeń motorsportowych} stanowią drugi kluczowy segment platformy. Są to między innymi kluby motoryzacyjne, podmioty zarządzające torami wyścigowymi, organizatorzy imprez amatorskich oraz przedsiębiorstwa prowadzące wydarzenia komercyjne.
 
-\textbf{Administrator} nie jest segmentem rynkowym, lecz \emph{rolą operacyjną} odpowiedzialną za funkcjonowanie platformy: moderację wydarzeń, rozstrzyganie wniosków o~uprawnienia organizatora oraz nadzór nad jakością katalogu. W~analizie biznesowej administrator należy do strony operatorskiej, a~nie do grup klientów, do których kierowana jest propozycja wartości.
+Podstawową potrzebą tej grupy jest skuteczna promocja wydarzeń oraz usprawnienie obsługi uczestników. RacePortal umożliwia organizatorom publikowanie informacji o~imprezach, określanie warunków uczestnictwa oraz zarządzanie zgłoszeniami. Centralizacja tych działań może ograniczyć konieczność korzystania z~wielu niezależnych kanałów komunikacji.
+
+\textbf{Kibice i~pasjonaci motoryzacji} tworzą trzeci segment użytkowników. Ich głównym celem jest pozyskiwanie informacji o~nadchodzących wydarzeniach, terminach, lokalizacjach i~charakterze imprez. W~przeciwieństwie do kierowców nie muszą oni korzystać z~mechanizmu zgłoszeń. Dostęp do publicznego katalogu bez konieczności rejestracji pozwala tej grupie korzystać z~podstawowych funkcjonalności platformy.
+
+Niezależnie od przedstawionej segmentacji biznesowej w~systemie funkcjonuje również rola administratora. Nie stanowi ona odrębnego segmentu rynku, lecz reprezentuje podmiot odpowiedzialny za nadzór nad prawidłowym działaniem platformy, moderowanie treści oraz zarządzanie uprawnieniami użytkowników.
+
+Przyjęta segmentacja pozwala wyróżnić dwie grupy o~największym znaczeniu dla funkcjonowania platformy: kierowców, którzy poszukują wydarzeń i~zgłaszają udział, oraz organizatorów, którzy dostarczają informacje o~wydarzeniach. Pozostali odbiorcy zwiększają potencjalny zasięg i~rozpoznawalność systemu.
 
 Wczesny, koncepcyjny podział funkcjonalności według poziomów dostępu (materiał projektowy zespołu) przedstawia rys.~\ref{fig:podzial-rol}. Należy go interpretować jako mapę intencji produktowej; szczegółowe mapowanie na wymagania i~projekt systemu opisano w~rozdziałach~\ref{ch:wymagania}--\ref{ch:projekt}.
 
@@ -308,7 +316,23 @@ Wczesny, koncepcyjny podział funkcjonalności według poziomów dostępu (mater
 
 \section{Interesariusze systemu}
 \label{sec:interesariusze}
-Analiza udziałowców obejmuje zarówno klientów platformy, jak i~otoczenie opisane w~dokumentacji SAI (m.in.\ zespół wytwórczy, media, właściciele obiektów, służby zabezpieczające imprezy). Poniżej przedstawiono karty kluczowych udziałowców w~formacie środowiska \texttt{stakeholder} szablonu PJATK. W~stosunku do wcześniejszej wersji dodano kartę gościa/kibica oraz właściciela toru / partnera obiektu, ponieważ obie grupy mają potrzeby odrębne od kierowcy i~organizatora. Odwołania do wymagań wskazują rozdziały~\ref{ch:wymagania}--\ref{ch:projekt}.
+Interesariuszami systemu RacePortal są osoby, organizacje i~podmioty, na które funkcjonowanie platformy może wywierać bezpośredni lub pośredni wpływ. Ich identyfikacja pozwala określić oczekiwania wobec systemu, zakres odpowiedzialności oraz potencjalne konflikty interesów.
+
+Do najważniejszych interesariuszy należą kierowcy, organizatorzy wydarzeń, administrator platformy, jej właściciel lub operator oraz podmioty współpracujące z~organizatorami, w~szczególności właściciele obiektów motorsportowych.
+
+Z~punktu widzenia \textbf{kierowcy} najistotniejszym wymaganiem jest zapewnienie aktualnych i~wiarygodnych informacji o~wydarzeniach. Szczególne znaczenie mają czytelne warunki uczestnictwa, możliwość sprawdzenia statusu zgłoszenia oraz dostęp do informacji o~ewentualnych zmianach.
+
+\textbf{Organizator} oczekuje przede wszystkim narzędzia ograniczającego liczbę czynności administracyjnych. Istotne jest dla niego zarządzanie wydarzeniami z~jednego miejsca, możliwość weryfikowania zgłoszeń oraz komunikowanie decyzji uczestnikom.
+
+\textbf{Administrator} odpowiada za utrzymanie odpowiedniej jakości publikowanych treści i~kontrolę przyznawanych uprawnień. Jego zadaniem jest również ograniczanie ryzyka publikacji nieprawdziwych, nieaktualnych lub niezgodnych z~przeznaczeniem platformy informacji.
+
+\textbf{Operator platformy} odpowiada za długoterminowe utrzymanie i~rozwój systemu. Z~jego perspektywy najważniejsze są koszty funkcjonowania usługi, możliwość pozyskiwania użytkowników, bezpieczeństwo informacji oraz skalowalność przyjętego rozwiązania.
+
+\textbf{Właściciele obiektów motorsportowych} mogą być zarówno organizatorami wydarzeń, jak i~podmiotami współpracującymi z~zewnętrznymi organizatorami. Platforma może stanowić dla nich dodatkowy kanał promocji obiektów i~organizowanych na ich terenie imprez.
+
+Wskazane grupy różnią się zakresem oczekiwań, jednak ich interesy są wzajemnie powiązane. Wzrost liczby organizatorów i~publikowanych wydarzeń zwiększa użyteczność platformy dla kierowców, natomiast większa liczba aktywnych uczestników może zachęcać kolejnych organizatorów do korzystania z~systemu.
+
+Poniżej przedstawiono karty kluczowych udziałowców w~formacie środowiska \texttt{stakeholder} szablonu PJATK. Karty uszczegóławiają oczekiwania, ograniczenia oraz powiązania z~wymaganiami i~projektem systemu.
 
 \begin{stakeholder}[caption={Karta udziałowca: Gość / kibic},label={tab:ud-gosc}]
 \id{U-00}
@@ -362,13 +386,23 @@ Analiza udziałowców obejmuje zarówno klientów platformy, jak i~otoczenie opi
 \end{stakeholder}
 
 \section{Propozycja wartości systemu}
-Propozycja wartości RacePortal wynika z~diagnozy rozproszenia informacji o~wydarzeniach motorsportowych w~Polsce. Dotychczasowe praktyki --- grupy w~mediach społecznościowych, witryny poszczególnych torów oraz statyczne kalendarze --- nie zapewniają jednolitego procesu wyszukiwania imprez, porównania wymagań ani obsługi statusu zapisu. RacePortal odpowiada na ten brak jako \textbf{centralny katalog} oraz \textbf{narzędzie do obsługi zapisów}, z~funkcjami dopasowanymi do potrzeb kibiców, kierowców i~organizatorów.
+Propozycja wartości RacePortal opiera się na centralizacji informacji o~wydarzeniach motorsportowych oraz uproszczeniu procesu wyszukiwania i~rejestracji uczestników.
 
-Dla kierowców wartość koncentruje się na: przejrzystym katalogu z~widokami lista, mapa i~kalendarz oraz wspólnymi filtrami; wirtualnym garażu pojazdów; wsparciu dopasowania pojazdu do wymagań wydarzenia; złożeniu zgłoszenia i~otrzymywaniu informacji o~statusie. Dla organizatorów wartość obejmuje publikację wydarzenia, zarządzanie listą zgłoszeń oraz komunikację statusów bez konieczności prowadzenia całego procesu wyłącznie w~arkuszach i~wiadomościach prywatnych. Dla odbiorców informacji wartość sprowadza się do bezpłatnego dostępu do terminów i~lokalizacji, w~tym do widoku mapy oraz wskazówek dojazdu.
+W~tradycyjnym modelu informacje o~imprezach mogą być publikowane w~wielu niezależnych miejscach, między innymi na stronach internetowych organizatorów, w~mediach społecznościowych, na stronach obiektów sportowych oraz w~komunikatorach. Powoduje to konieczność samodzielnego wyszukiwania i~porównywania informacji pochodzących z~różnych źródeł.
 
-Wyróżnikiem względem prostych kalendarzy branżowych jest integracja łańcucha \emph{znalezienie wydarzenia $\rightarrow$ dopasowanie pojazdu $\rightarrow$ zgłoszenie $\rightarrow$ status}, a~nie wyłącznie publikacja dat. Najistotniejszym ryzykiem biznesowym pozostaje odmowa migracji społeczności z~grup społecznościowych do scentralizowanego narzędzia; bez aktualnej podaży wydarzeń katalog traci wartość dla kierowców (klasyczny problem platformy dwustronnej).
+RacePortal proponuje ujednolicony sposób prezentacji wydarzeń poprzez wspólny katalog, który umożliwia ich przeglądanie w~formie listy, kalendarza oraz mapy. Zastosowanie mechanizmów wyszukiwania i~filtrowania pozwala użytkownikom zawęzić wyniki zgodnie z~wybranymi kryteriami.
 
-Tabela~\ref{tab:porownanie-modeli} przedstawia porównanie \emph{modeli działania}, a~nie empiryczne badanie konkurencji. Ilustruje, na czym polega zakładana przewaga RacePortal względem typowego sposobu organizacji informacji i~zapisów w~grupach społecznościowych.
+Dla kierowców szczególną wartością jest połączenie procesu wyszukiwania wydarzenia z~możliwością zgłoszenia udziału. Użytkownik może przejść od zapoznania się z~ofertą wydarzenia do przesłania zgłoszenia i~późniejszego monitorowania jego statusu w~ramach jednego systemu.
+
+Dodatkowym elementem jest funkcjonalność wirtualnego garażu. Przechowywanie danych pojazdów umożliwia ich ponowne wykorzystywanie podczas zgłaszania się na kolejne wydarzenia, bez konieczności każdorazowego wprowadzania tych samych informacji. Mechanizm dopasowania pojazdu stanowi wsparcie informacyjne, nie zastępując ostatecznej weryfikacji wymagań technicznych przez organizatora.
+
+Z~punktu widzenia organizatorów główną wartością jest uporządkowanie procesu obsługi wydarzeń. Możliwość zarządzania zgłoszeniami oraz komunikacji statusów może zmniejszyć liczbę czynności wykonywanych ręcznie i~ograniczyć ryzyko pomyłek wynikających z~prowadzenia zapisów w~wielu niezależnych narzędziach.
+
+Dla kibiców i~pasjonatów wartością jest natomiast bezpłatny dostęp do uporządkowanych informacji o~wydarzeniach, bez konieczności zakładania konta.
+
+Najważniejszym wyróżnikiem RacePortal jest zatem połączenie funkcji informacyjnych i~organizacyjnych. Platforma nie ogranicza się wyłącznie do prezentowania kalendarza imprez, lecz obejmuje również podstawowy proces zarządzania udziałem w~wydarzeniu.
+
+Tabela~\ref{tab:porownanie-modeli} przedstawia porównanie modelu działania grup społecznościowych z~modelem RacePortal w~ujęciu koncepcyjnym.
 
 \begin{table}[ht]
   \centering
@@ -392,45 +426,101 @@ Tabela~\ref{tab:porownanie-modeli} przedstawia porównanie \emph{modeli działan
 \end{table}
 
 \section{Kanały komunikacji i~dystrybucji}
-Głównym kanałem dostępu do produktu jest aplikacja webowa (\url{https://raceportal.pl}), umożliwiająca zarówno przeglądanie katalogu, jak i~obsługę konta, garażu, zgłoszeń oraz paneli organizatora i~administratora. Uzupełnieniem jest mobilna aplikacja-wizytówka, służąca do odkrywania wydarzeń i~przekierowania zapisu do wersji webowej. Takie rozdzielenie ułatwia pierwsze wejście do katalogu, a~jednocześnie zbiera procesy wymagające konta w~jednym miejscu.
+Kanały komunikacji i~dystrybucji określają sposób udostępniania platformy odbiorcom, pozyskiwania nowych użytkowników oraz utrzymywania relacji pomiędzy uczestnikami ekosystemu RacePortal.
 
-Z~perspektywy pozyskiwania użytkowników kluczowe są kanały organiczne i~partnerskie, przewidziane także w~materiałach BMC: obecność w~mediach społecznościowych społeczności motorsportowej, bezpośrednie kontakty z~klubami i~organizatorami, promocja podczas imprez torowych oraz współpraca z~właścicielami obiektów. W~fazie MVP działania te mają charakter organizacyjny --- ich celem jest zbudowanie podaży aktualnych wydarzeń i~pierwszej grupy aktywnych kierowców, bez których katalog nie generuje efektu sieciowego.
+Podstawowym kanałem dystrybucji jest aplikacja internetowa dostępna pod adresem \url{https://raceportal.pl}. Za~jej pośrednictwem użytkownicy mogą przeglądać wydarzenia, rejestrować konta, zarządzać pojazdami, zgłaszać udział oraz korzystać z~funkcji przeznaczonych dla organizatorów i~administratorów.
 
-Kanałem utrzymania relacji z~użytkownikiem po rejestracji lub zgłoszeniu są powiadomienia e-mail (aktywacja konta, statusy zgłoszeń, istotne zmiany wydarzenia). Pełnią one funkcję komunikacyjną i~operacyjną, a~nie marketingową: informują o~stanach procesu, zamiast prowadzić kampanie sprzedażowe. Szczegóły techniczne dostarczania poczty opisano w~rozdziałach implementacyjnych.
+Aplikacja internetowa została również dostosowana do korzystania na urządzeniach mobilnych. Zastosowanie rozwiązania typu Progressive Web App umożliwia dodanie skrótu do platformy na ekranie głównym urządzenia.
+
+Kanałem uzupełniającym jest aplikacja mobilna umożliwiająca przeglądanie katalogu wydarzeń oraz ich szczegółów. W~obecnym zakresie pełna obsługa konta i~zgłoszeń realizowana jest przez aplikację internetową, do której użytkownik może zostać przekierowany.
+
+Istotną rolę w~komunikacji z~zarejestrowanymi użytkownikami odgrywa poczta elektroniczna. Jest ona wykorzystywana do przekazywania wiadomości związanych z~obsługą konta, potwierdzeniami zgłoszeń oraz zmianami ich statusów. Taki sposób komunikacji umożliwia informowanie użytkowników bez konieczności ciągłego monitorowania platformy.
+
+W~kontekście pozyskiwania nowych odbiorców można wyróżnić również potencjalne kanały marketingowe. Należą do nich media społecznościowe związane z~motorsportem, współpraca z~klubami i~organizatorami, promocja podczas wydarzeń oraz działania zwiększające widoczność witryny w~wyszukiwarkach internetowych.
+
+Wymienione działania marketingowe należy traktować jako proponowany kierunek rozwoju, wymagający osobnej strategii i~oceny skuteczności.
+
+Z~perspektywy biznesowej szczególne znaczenie ma współpraca z~organizatorami. Udostępnianie przez nich odnośników do własnych wydarzeń publikowanych w~RacePortal mogłoby jednocześnie promować platformę i~zwiększać jej rozpoznawalność wśród kierowców.
 
 \section{Kluczowe zasoby i~działania}
-Do zasobów kluczowych należą zarówno zasoby technologiczne, jak i~biznesowo-operacyjne. Po stronie technologicznej są to: działająca aplikacja webowa i~mobilna wizytówka, backend z~trwałą bazą wydarzeń oraz konteneryzowane środowisko uruchomieniowe umożliwiające powtarzalne wdrożenie. Zasobem produktowym jest także katalog torów i~treści wydarzeń --- bez aktualnych danych platforma traci wartość niezależnie od jakości oprogramowania.
+Funkcjonowanie RacePortal wymaga odpowiednich zasobów technologicznych, ludzkich, informacyjnych i~organizacyjnych.
 
-Po stronie biznesowej i~operacyjnej kluczowi są: zespół projektowy utrzymujący rozwój i~moderację; relacje z~organizatorami i~obiektami (źródło podaży wydarzeń); domena oraz niskokosztowa infrastruktura hostingowa; a~także dokumentacja procesów i~scenariusze prezentacji ułatwiające weryfikację produktu. W~ujęciu BMC zasoby te są komplementarne: technologia bez relacji z~organizatorami nie zapełni katalogu, a~relacje bez sprawnego narzędzia nie utrzymają powtarzalnego procesu zapisów.
+Do~podstawowych zasobów technologicznych należy kod źródłowy aplikacji internetowej, serwera aplikacyjnego i~aplikacji mobilnej, baza danych oraz infrastruktura umożliwiająca udostępnianie systemu użytkownikom. W~projekcie wykorzystano rozwiązania oparte na Spring Boot, React, MySQL i~Docker, co pozwala rozwijać poszczególne części systemu oraz uruchamiać je w~powtarzalnym środowisku.
 
-Działania kluczowe obejmują: rozwój i~utrzymanie platformy; zapewnienie uruchamialności środowiska (Compose lokalnie i~na VM); moderację treści oraz weryfikację organizatorów; utrzymanie mechanizmów bezpieczeństwa (JWT~\cite{jwt:rfc}, RBAC, walidacja wejścia, kierunek zgodności z~OWASP ASVS Level~1~\cite{owasp:asvs}); utrzymanie dostarczalności powiadomień e-mail; a~także dokumentowanie zmian i~weryfikację testami automatycznymi. W~ujęciu BMC działania marketingowe i~budowa społeczności są uznane za konieczne dla przełamania ryzyka niskiego zainteresowania, lecz pozostają poza zautomatyzowanym zakresem oprogramowania MVP.
+Istotnym zasobem ludzkim jest pięcioosobowy zespół projektowy odpowiadający za analizę wymagań, projektowanie, implementację, testowanie i~dokumentację systemu. W~przypadku dalszego rozwoju komercyjnego konieczne byłoby również określenie odpowiedzialności za utrzymanie infrastruktury, kontakt z~organizatorami oraz obsługę zgłoszeń użytkowników.
 
+Ważnym zasobem informacyjnym jest baza wydarzeń motorsportowych, obejmująca ich terminy, lokalizacje, kategorie i~warunki uczestnictwa. Wartość tego zasobu zależy nie tylko od liczby zgromadzonych wydarzeń, ale również od ich aktualności, kompletności i~wiarygodności.
+
+Do kluczowych działań związanych z~funkcjonowaniem platformy należą utrzymanie systemu, rozwijanie funkcjonalności, weryfikacja organizatorów, moderowanie wydarzeń, zapewnianie bezpieczeństwa danych oraz obsługa zgłaszanych problemów.
+
+Z~biznesowego punktu widzenia szczególnie ważnym działaniem jest pozyskiwanie organizatorów i~budowanie relacji z~podmiotami działającymi na rynku motorsportowym. Bez wystarczającej liczby aktualnych wydarzeń nawet poprawnie działająca platforma może mieć ograniczoną wartość dla użytkowników.
+
+W~dłuższej perspektywie konieczne byłoby również monitorowanie sposobu korzystania z~systemu, identyfikowanie najczęściej wykorzystywanych funkcji oraz analizowanie potrzeb użytkowników. Pozwoliłoby to podejmować decyzje rozwojowe na podstawie rzeczywistych danych, a~nie wyłącznie początkowych założeń projektowych.
 
 \section{Model działania platformy}
-RacePortal funkcjonuje jako platforma dwustronna: organizatorzy dostarczają podaż wydarzeń, a~kierowcy generują popyt na starty. Odbiorcy informacji korzystają z~efektu sieciowego katalogu bez bariery rejestracji, co obniża koszt wejścia. Administrator --- jako rola operacyjna --- pełni funkcję gwaranta jakości poprzez akceptację wydarzeń i~uprawnień.
+RacePortal można zaklasyfikować jako platformę dwustronną, której funkcjonowanie opiera się na współpracy dwóch podstawowych grup: organizatorów wydarzeń oraz potencjalnych uczestników.
 
-W~fazie MVP platforma \textbf{nie} rozlicza płatności za udział. Dla wydarzeń płatnych system obsługuje statusy zgłoszenia oraz dołączenie dowodu wpłaty, natomiast przelew lub inna forma rozliczenia odbywa się poza platformą, według zasad organizatora. Model darmowego dostępu obejmuje przeglądanie katalogu oraz korzystanie z~narzędzi kierowcy i~panelu organizatora. Na tym etapie weryfikacja wartości produktu opiera się na użyteczności operacyjnej, a~nie na monetyzacji.
+Organizatorzy odpowiadają za dostarczanie informacji o~wydarzeniach i~obsługę zgłoszeń, natomiast kierowcy korzystają z~tych informacji oraz generują zainteresowanie uczestnictwem w~imprezach.
 
-Z~punktu widzenia utrzymania platformy materiały BMC wskazują potencjalne, \emph{przyszłe} strumienie przychodów: płatną promocję / wyróżnienie wydarzeń, reklamy powiązane z~motorsportem oraz --- w~dłuższym horyzoncie --- prowizje od zapisów lub biletów. Równolegle występują koszty stałe i~zmienne: hosting i~domena, obsługa poczty, rozwój oprogramowania, moderacja treści oraz ewentualne działania promocyjne. W~obecnym etapie projekt ma charakter dydaktyczno-inżynierski i~opiera się na infrastrukturze niskokosztowej oraz pracy zespołu; nie przedstawia się tu prognoz finansowych liczbowych, ponieważ nie zebrano danych rynkowych wystarczających do wiarygodnej estymacji.
+W~przyjętym modelu organizator uzyskuje odpowiednie uprawnienia, a~następnie przygotowuje i~publikuje informacje o~wydarzeniu zgodnie z~procedurą obowiązującą w~systemie. Kierowca wyszukuje interesującą go imprezę, zapoznaje się z~wymaganiami i~przesyła zgłoszenie. Organizator może następnie przeprowadzić jego weryfikację oraz przekazać informację o~podjętej decyzji.
 
-Praktycznym sposobem sprawdzenia zainteresowania odpłatnymi funkcjami byłoby --- po okresie bezpłatnego użytkowania --- przeprowadzenie rozmów lub prostych testów oferty z~aktywnymi organizatorami (np.\ wyróżnienie wydarzenia, ekspozycja w~katalogu), zgodnie z~kierunkiem walidacji założonym w~dokumencie \emph{Interview Validation}. Dopiero potwierdzenie gotowości do zapłaty za konkretną korzyść uzasadniałoby przejście od modelu darmowego MVP do wariantu monetyzacji.
+Taki model umożliwia uporządkowanie relacji pomiędzy organizatorem a~uczestnikiem i~ograniczenie zależności od indywidualnych sposobów prowadzenia zapisów.
+
+W~aktualnym zakresie funkcjonalnym RacePortal nie realizuje automatycznego pobierania opłat za uczestnictwo. W~przypadku wydarzeń płatnych rozliczenia odbywają się poza platformą, a~system może służyć do przekazania informacji związanych z~opłatą i~jej potwierdzeniem.
+
+Na etapie opracowanego rozwiązania przyjęto model bezpłatnego dostępu do podstawowych funkcjonalności zarówno dla kierowców, jak i~organizatorów. Głównym celem jest weryfikacja użyteczności platformy oraz stworzenie podstaw do rozwoju społeczności użytkowników.
+
+W~przyszłości możliwe byłoby wprowadzenie modelu mieszanego, obejmującego bezpłatne korzystanie z~podstawowych funkcji oraz dodatkowe usługi komercyjne.
+
+Potencjalne źródła przychodów mogłyby obejmować odpłatne promowanie wydarzeń, oznaczone treści sponsorowane, abonament dla organizatorów korzystających z~rozszerzonych narzędzi oraz prowizję od obsługi zapisów po wdrożeniu odpowiedniego mechanizmu płatności.
+
+O~wyborze konkretnego modelu powinny decydować wyniki analizy zainteresowania organizatorów, częstotliwość korzystania z~platformy oraz gotowość użytkowników biznesowych do ponoszenia opłat.
+
+Działalność platformy wiązałaby się jednocześnie z~kosztami utrzymania infrastruktury serwerowej, domeny, usług poczty elektronicznej, przechowywania danych, aktualizacji oprogramowania i~obsługi użytkowników. W~przypadku zwiększania skali działalności istotnymi kategoriami kosztów mogłyby stać się również promocja oraz praca osób odpowiedzialnych za moderację.
+
+Na obecnym etapie nie ma wystarczających podstaw do określenia rentowności komercyjnego przedsięwzięcia. Wymagałoby to oszacowania liczby aktywnych użytkowników, potencjalnych przychodów i~rzeczywistych kosztów operacyjnych.
 
 \section{Realistyczność wdrożenia i~dalsze perspektywy}
-Realistyczność techniczna wdrożenia została potwierdzona uruchomieniem środowiska lokalnego oraz publikacją działającej instancji produkcyjnej w~modelu niskokosztowym (maszyna wirtualna w~chmurze z~udostępnieniem poprzez tunel HTTPS). Szczegóły architektury fizycznej zawarto w~rozdz.~\ref{sec:arch-fizyczna}; w~niniejszym podrozdziale istotniejsza jest ocena realności \emph{biznesowej} utrzymania produktu.
+Ocena możliwości wdrożenia RacePortal powinna uwzględniać zarówno aspekty technologiczne, jak i~organizacyjne oraz ekonomiczne.
 
-Kluczowym warunkiem sukcesu nie jest sama dostępność serwisu, lecz pozyskanie organizatorów publikujących aktualne wydarzenia oraz utrzymanie kompletności katalogu. Bez regularnej podaży treści platforma nie różni się istotnie od statycznego kalendarza i~nie motywuje kierowców do rejestracji. Dlatego realistyczny scenariusz rozwoju zakłada: bezpośrednie kontakty z~organizatorami i~obiektami, prosty proces publikacji, moderację zapewniającą wiarygodność oraz mechanizmy powiadomień ograniczające ryzyko dezaktualizacji informacji u~uczestników.
+Pod względem technologicznym opracowano działający system obejmujący katalog wydarzeń, obsługę kont użytkowników, zarządzanie pojazdami i~zgłoszeniami oraz funkcje administracyjne. Aplikacja została również udostępniona w~środowisku internetowym, co potwierdza techniczną możliwość uruchomienia rozwiązania poza lokalnym środowiskiem programistycznym.
 
-Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążenia przy ok.\ 10\,000 rekordach / 50~RPS nie został domknięty jako osobne wymaganie odbiorcze KP/DZW; wykonano natomiast krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026), opisane w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps} i~omówione w~rozdziałach testowania oraz podsumowania.
+Nie oznacza to jednak automatycznego potwierdzenia gotowości platformy do działalności komercyjnej na dużą skalę. W~takim przypadku niezbędne byłyby dalsze działania dotyczące monitorowania systemu, utrzymania niezawodności, bezpieczeństwa, obsługi użytkowników i~zarządzania kosztami infrastruktury.
 
-Dalsze perspektywy obejmują m.in.\ integrację płatności online, rozbudowę powiadomień, publikację aplikacji mobilnej w~sklepach, eksport list startowych oraz ewentualną monetyzację oznaczonych treści promocyjnych. Elementy te stanowią roadmapę produktową, a~nie stan bieżącej realizacji.
+Istotnym wyzwaniem biznesowym jest pozyskanie odpowiedniej liczby organizatorów wydarzeń. Wartość RacePortal dla kierowców zależy przede wszystkim od dostępności atrakcyjnej i~aktualnej oferty imprez. Jednocześnie zainteresowanie organizatorów może być uzależnione od liczby użytkowników aktywnie korzystających z~platformy.
+
+Z~tego względu uzasadnionym kierunkiem byłoby rozpoczęcie od ograniczonego wdrożenia pilotażowego, obejmującego wybraną grupę organizatorów oraz wydarzenia z~określonych kategorii motorsportu. Pozwoliłoby to zweryfikować sposób korzystania z~systemu, zidentyfikować problemy organizacyjne oraz zebrać informacje o~potrzebach odbiorców.
+
+Skuteczność takiego pilotażu można byłoby mierzyć za~pomocą liczby aktywnych organizatorów, liczby opublikowanych rzeczywistych wydarzeń, liczby zakończonych zgłoszeń, odsetka użytkowników powracających do platformy oraz opinii uczestników i~organizatorów.
+
+Kolejnym etapem mogłoby być rozszerzenie zakresu funkcjonalnego systemu. Do~potencjalnych kierunków rozwoju należą integracja z~systemami płatności elektronicznych, dodatkowe mechanizmy powiadomień, możliwość obserwowania wydarzeń, eksport informacji do zewnętrznych kalendarzy oraz dalszy rozwój aplikacji mobilnej.
+
+Dalsze inwestycje powinny być jednak uzależnione od wyników pilotażu i~potwierdzonych potrzeb użytkowników. Pozwoliłoby to ograniczyć ryzyko przeznaczania zasobów na funkcje, które nie przynoszą istotnej wartości biznesowej.
+
+Realistyczność rozwoju RacePortal zależy zatem nie tylko od możliwości technologicznych zespołu, ale również od pozyskania partnerów, zbudowania aktualnej bazy wydarzeń i~zapewnienia długoterminowego utrzymania usługi.
 
 \section{Kontekst prawny i~etyczny}
-System przetwarza dane niezbędne do obsługi konta i~procesów biznesowych: identyfikator/nazwę użytkownika, adres e-mail, role, dane pojazdów w~garażu, zgłoszenia oraz dane wydarzeń wprowadzane przez organizatorów. Sesja webowa opiera się o~tokeny JWT w~ciasteczkach httpOnly (\texttt{rp\_at}, \texttt{rp\_rt}) wysyłanych z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie aplikacji. W~interfejsie udostępniono politykę prywatności (\texttt{/privacy}) oraz regulamin (\texttt{/terms}); rejestracja wymaga akceptacji obu dokumentów. Przy tworzeniu wydarzenia organizator potwierdza przetwarzanie danych zgodnie z~polityką prywatności (RODO) wyłącznie w~celu publikacji i~obsługi zgłoszeń. Kanałem kontaktowym w~sprawach ochrony danych jest adres \texttt{rodo@raceportal.pl}. Użytkownik może zamknąć własne konto w~ustawieniach (fraza potwierdzająca po stronie API).
+Funkcjonowanie internetowej platformy obsługującej konta użytkowników i~zgłoszenia udziału w~wydarzeniach motorsportowych wymaga uwzględnienia zagadnień związanych z~ochroną danych osobowych, odpowiedzialnością za publikowane treści oraz bezpieczeństwem korzystania z~usługi.
 
+Jednym z~podstawowych obszarów jest ochrona danych osobowych. RacePortal przetwarza informacje związane z~kontami użytkowników, danymi kontaktowymi, pojazdami oraz zgłoszeniami na wydarzenia. W~związku z~tym podmiot odpowiedzialny za działanie platformy powinien zapewnić zgodność przetwarzania danych z~rozporządzeniem RODO.
 
-Należy rozróżnić \emph{obowiązki już wynikające z~przetwarzania danych} od \emph{uszprawnień organizacyjnych} przewidzianych na późniejszy etap skalowania (np.\ bardziej rozbudowane procedury wewnętrzne, sformalizowana polityka retencji, ewentualna ocena skutków dla ochrony danych). Ocena skutków dla ochrony danych (DPIA) nie jest automatycznie wymagana dla każdego systemu --- jej konieczność zależy od charakteru i~ryzyka przetwarzania. W~pracy nie rozstrzyga się, czy dla RacePortal DPIA jest obligatoryjna; wskazuje się jedynie, że przy wzroście skali i~zakresu danych decyzja ta powinna zostać ponownie oceniona.
+Szczególne znaczenie mają zasady minimalizacji danych, przejrzystości przetwarzania, ograniczenia celu oraz zapewnienia odpowiednich środków bezpieczeństwa. Użytkownicy powinni otrzymywać informacje o~celach i~podstawach prawnych przetwarzania danych, okresie ich przechowywania oraz przysługujących im prawach.
 
-W~warstwie odpowiedzialności za treści: organizator odpowiada za merytoryczną treść publikowanych wydarzeń w~ramach regulaminu, jednak nie wyłącza to obowiązków operatora platformy w~zakresie udostępniania narzędzia, moderacji oraz reagowania na zgłoszenia nadużyć. Model przyjęty w~projekcie łączy weryfikację organizatorów i~moderację wydarzeń przez administratora z~zasadami etycznymi opisanymi w~dokumentacji SAI (transparentność prezentacji, unikanie mechanizmów uzależniających, przeciwdziałanie publikacji niebezpiecznych lub nielegalnych aktywności). Ostateczne decyzje moderacyjne pozostają po stronie człowieka.
+W~systemie przewidziano udostępnienie polityki prywatności i~regulaminu korzystania z~platformy. Istotnym elementem dalszego rozwoju organizacyjnego jest również określenie procedur realizacji praw użytkowników, zarządzania okresem przechowywania danych oraz reagowania na ewentualne naruszenia ochrony danych osobowych.
+
+Należy podkreślić, że obowiązki wynikające z~RODO nie są uzależnione wyłącznie od komercyjnego charakteru przedsięwzięcia lub liczby użytkowników. Ich zakres powinien odpowiadać rzeczywistemu sposobowi i~skali przetwarzania informacji.
+
+Kolejnym zagadnieniem jest odpowiedzialność za treści publikowane przez organizatorów. Informacje dotyczące wydarzeń powinny być rzetelne, aktualne oraz zgodne z~obowiązującymi przepisami. Organizatorzy odpowiadają za prawidłowe przygotowanie i~przeprowadzenie swoich imprez, natomiast operator platformy powinien określić zasady publikowania treści oraz reagowania na zgłoszenia dotyczące informacji niezgodnych z~prawem lub regulaminem.
+
+Zależnie od kwalifikacji prawnej świadczonej usługi zastosowanie mogą mieć również przepisy regulujące usługi pośrednie w~internecie, w~szczególności akt o~usługach cyfrowych (\emph{Digital Services Act}).
+
+W~kontekście wydarzeń motorsportowych szczególną uwagę należy zwrócić na bezpieczeństwo uczestników i~osób postronnych. Platforma nie powinna służyć do promowania nielegalnych wyścigów ulicznych ani innych działań stwarzających zagrożenie dla bezpieczeństwa publicznego. Ograniczaniu tego ryzyka mają służyć mechanizmy weryfikacji organizatorów oraz moderacji publikowanych wydarzeń.
+
+Istotna jest również ochrona praw autorskich i~własności intelektualnej. Organizatorzy powinni publikować wyłącznie materiały, do których posiadają odpowiednie prawa, w~tym fotografie, plakaty, regulaminy i~elementy identyfikacji wizualnej.
+
+W~wymiarze etycznym ważne jest zapewnienie przejrzystych zasad działania systemu, równego traktowania użytkowników oraz oddzielenia informacji redakcyjnych od potencjalnych treści reklamowych. W~przypadku wprowadzenia płatnej promocji wydarzeń takie materiały powinny być odpowiednio oznaczone.
+
+Uwzględnienie opisanych uwarunkowań ma znaczenie nie tylko dla zgodności prawnej systemu, ale również dla budowania zaufania użytkowników i~organizatorów, które stanowi jeden z~podstawowych warunków długoterminowego rozwoju platformy RacePortal.
 
 \chapter{Analiza SWOT}
 \label{ch:swot}

@@ -2,39 +2,39 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Karta udziałowca: Gość / kibic}}{38}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Karta udziałowca: Kierowca}}{38}{table.4.2}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Karta udziałowca: Organizator}}{39}{table.4.3}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Karta udziałowca: Administrator}}{39}{table.4.4}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Karta udziałowca: Właściciel toru / partner obiektu}}{40}{table.4.5}%
-\contentsline {table}{\numberline {4.6}{\ignorespaces Porównanie modelu grup społecznościowych z~modelem RacePortal (ujęcie koncepcyjne).}}{40}{table.4.6}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Karta udziałowca: Gość / kibic}}{39}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Karta udziałowca: Kierowca}}{39}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Karta udziałowca: Organizator}}{40}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Karta udziałowca: Administrator}}{40}{table.4.4}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Karta udziałowca: Właściciel toru / partner obiektu}}{41}{table.4.5}%
+\contentsline {table}{\numberline {4.6}{\ignorespaces Porównanie modelu grup społecznościowych z~modelem RacePortal (ujęcie koncepcyjne).}}{42}{table.4.6}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {6.1}{\ignorespaces Zakres MVP --- funkcje z~KP/DZW oraz stan według \texttt {docs/\allowbreak MVP.md} (28.10.2026).}}{51}{table.6.1}%
-\contentsline {table}{\numberline {6.2}{\ignorespaces Podział ról według DZW (formalny dla tego rozdziału) oraz opis w~\texttt {README.md}.}}{52}{table.6.2}%
-\contentsline {table}{\numberline {6.3}{\ignorespaces Etapy prac --- plan z~Harmonogramu PRO wobec charakteru przebiegu w~repozytorium.}}{53}{table.6.3}%
-\contentsline {table}{\numberline {6.4}{\ignorespaces Analiza ryzyka RacePortal --- wybrane zagrożenia i~sposoby ich ograniczenia.}}{55}{table.6.4}%
+\contentsline {table}{\numberline {6.1}{\ignorespaces Zakres MVP --- funkcje z~KP/DZW oraz stan według \texttt {docs/\allowbreak MVP.md} (28.10.2026).}}{53}{table.6.1}%
+\contentsline {table}{\numberline {6.2}{\ignorespaces Podział ról według DZW (formalny dla tego rozdziału) oraz opis w~\texttt {README.md}.}}{54}{table.6.2}%
+\contentsline {table}{\numberline {6.3}{\ignorespaces Etapy prac --- plan z~Harmonogramu PRO wobec charakteru przebiegu w~repozytorium.}}{55}{table.6.3}%
+\contentsline {table}{\numberline {6.4}{\ignorespaces Analiza ryzyka RacePortal --- wybrane zagrożenia i~sposoby ich ograniczenia.}}{57}{table.6.4}%
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {7.1}{\ignorespaces Zintegrowany ekosystem wydarzeń motorsportowych}}{57}{table.7.1}%
-\contentsline {table}{\numberline {7.2}{\ignorespaces Automatyzacja obiegu zgłoszeń i weryfikacja pojazdów}}{57}{table.7.2}%
-\contentsline {table}{\numberline {7.3}{\ignorespaces Przejrzysty podział ról w~systemie}}{57}{table.7.3}%
-\contentsline {table}{\numberline {7.4}{\ignorespaces Publiczny katalog i inteligentne filtrowanie}}{58}{table.7.4}%
-\contentsline {table}{\numberline {7.5}{\ignorespaces Szczegóły wydarzenia i wyznaczanie trasy}}{58}{table.7.5}%
-\contentsline {table}{\numberline {7.6}{\ignorespaces Zarządzanie profilem i kontem}}{58}{table.7.6}%
-\contentsline {table}{\numberline {7.7}{\ignorespaces Wirtualny Garaż Kierowcy}}{59}{table.7.7}%
-\contentsline {table}{\numberline {7.8}{\ignorespaces Szybkie aplikowanie na wydarzenia}}{59}{table.7.8}%
-\contentsline {table}{\numberline {7.9}{\ignorespaces Skuteczny system powiadomień}}{59}{table.7.9}%
-\contentsline {table}{\numberline {7.10}{\ignorespaces Panel Zarządzania dla Organizatora}}{59}{table.7.10}%
-\contentsline {table}{\numberline {7.11}{\ignorespaces Panel Administratora i wsparcie użytkowników}}{60}{table.7.11}%
-\contentsline {table}{\numberline {7.12}{\ignorespaces Mobilna aplikacja wizytówkowa}}{60}{table.7.12}%
-\contentsline {table}{\numberline {7.13}{\ignorespaces Wydajność i responsywność platformy}}{60}{table.7.13}%
-\contentsline {table}{\numberline {7.14}{\ignorespaces Dostępność wieloplatformowa (RWD)}}{61}{table.7.14}%
-\contentsline {table}{\numberline {7.15}{\ignorespaces Niezawodność i łatwość wdrażania}}{61}{table.7.15}%
-\contentsline {table}{\numberline {7.16}{\ignorespaces Bezpieczeństwo danych osobowych i kont}}{61}{table.7.16}%
-\contentsline {table}{\numberline {7.17}{\ignorespaces Ścisła kontrola dostępu do zasobów}}{62}{table.7.17}%
-\contentsline {table}{\numberline {7.18}{\ignorespaces Odporność na nadużycia platformy}}{62}{table.7.18}%
-\contentsline {table}{\numberline {7.19}{\ignorespaces Nowoczesny design branżowy}}{62}{table.7.19}%
-\contentsline {table}{\numberline {7.20}{\ignorespaces Intuicyjność i~czytelność procesów}}{63}{table.7.20}%
+\contentsline {table}{\numberline {7.1}{\ignorespaces Zintegrowany ekosystem wydarzeń motorsportowych}}{59}{table.7.1}%
+\contentsline {table}{\numberline {7.2}{\ignorespaces Automatyzacja obiegu zgłoszeń i weryfikacja pojazdów}}{59}{table.7.2}%
+\contentsline {table}{\numberline {7.3}{\ignorespaces Przejrzysty podział ról w~systemie}}{59}{table.7.3}%
+\contentsline {table}{\numberline {7.4}{\ignorespaces Publiczny katalog i inteligentne filtrowanie}}{60}{table.7.4}%
+\contentsline {table}{\numberline {7.5}{\ignorespaces Szczegóły wydarzenia i wyznaczanie trasy}}{60}{table.7.5}%
+\contentsline {table}{\numberline {7.6}{\ignorespaces Zarządzanie profilem i kontem}}{60}{table.7.6}%
+\contentsline {table}{\numberline {7.7}{\ignorespaces Wirtualny Garaż Kierowcy}}{61}{table.7.7}%
+\contentsline {table}{\numberline {7.8}{\ignorespaces Szybkie aplikowanie na wydarzenia}}{61}{table.7.8}%
+\contentsline {table}{\numberline {7.9}{\ignorespaces Skuteczny system powiadomień}}{61}{table.7.9}%
+\contentsline {table}{\numberline {7.10}{\ignorespaces Panel Zarządzania dla Organizatora}}{61}{table.7.10}%
+\contentsline {table}{\numberline {7.11}{\ignorespaces Panel Administratora i wsparcie użytkowników}}{62}{table.7.11}%
+\contentsline {table}{\numberline {7.12}{\ignorespaces Mobilna aplikacja wizytówkowa}}{62}{table.7.12}%
+\contentsline {table}{\numberline {7.13}{\ignorespaces Wydajność i responsywność platformy}}{62}{table.7.13}%
+\contentsline {table}{\numberline {7.14}{\ignorespaces Dostępność wieloplatformowa (RWD)}}{63}{table.7.14}%
+\contentsline {table}{\numberline {7.15}{\ignorespaces Niezawodność i łatwość wdrażania}}{63}{table.7.15}%
+\contentsline {table}{\numberline {7.16}{\ignorespaces Bezpieczeństwo danych osobowych i kont}}{63}{table.7.16}%
+\contentsline {table}{\numberline {7.17}{\ignorespaces Ścisła kontrola dostępu do zasobów}}{64}{table.7.17}%
+\contentsline {table}{\numberline {7.18}{\ignorespaces Odporność na nadużycia platformy}}{64}{table.7.18}%
+\contentsline {table}{\numberline {7.19}{\ignorespaces Nowoczesny design branżowy}}{64}{table.7.19}%
+\contentsline {table}{\numberline {7.20}{\ignorespaces Intuicyjność i~czytelność procesów}}{65}{table.7.20}%
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
