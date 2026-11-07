@@ -47,7 +47,7 @@
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
 \successmeasure{Działający stos Docker Compose (web, API, MySQL, backup) z~SMTP Mailbux; realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
-\projlimitations{Brak natywnej bramki płatności (PSP); aplikacja mobilna bez pełnej równoważności funkcji z~webem (świadoma wizytówka --- bez logowania, garażu i~uploadu); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS (są natomiast krótkie pomiary k6 na VM); produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
+\projlimitations{Brak natywnej bramki płatności (PSP); aplikacja mobilna bez pełnej równoważności funkcji z~webem (świadoma wizytówka --- bez logowania, garażu i~uploadu); brak publikacji w~sklepach App Store/Google Play; ograniczony budżet operacyjny (Oracle Always Free, Cloudflare Tunnel) oraz ramy czasowe projektu akademickiego; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
 
 \date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
@@ -123,7 +123,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 15 (Prezentacja systemu)} --- ilustruje scenariusze użycia platformy z~perspektywy kierowcy, organizatora oraz administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
   \item \textbf{Rozdział 17 (Wkład własny)} --- szczegółowo opisuje indywidualny wkład poszczególnych członków zespołu w~realizację projektu.
-  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym wydajnościowe RPS) oraz perspektywy dalszego rozwoju platformy.
+  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe) oraz perspektywy dalszego rozwoju platformy.
 \end{itemize}
 
 \chapter{Słownik pojęć}
@@ -1495,13 +1495,41 @@ Ochrona kont i~danych zgłoszeń na poziomie ASVS L1 adekwatnym do MVP demonstra
 \section{Klasyfikacja danych}
 Dane konta i~profilu; dane pojazdów; dane zgłoszeń; treści wydarzeń (częściowo publiczne).
 \section{Uwierzytelnianie użytkowników}
-Hasło + JWT (access/refresh); opcjonalnie Google; brak klasycznej sesji serwerowej w~pamięci --- stan odświeżany cookie refresh (\texttt{rp\_rt}).
+Uwierzytelnianie RacePortal zrealizowano w~module \texttt{AuthController} / \texttt{AuthService} bez klasycznej sesji serwerowej w~pamięci. Tożsamość użytkownika opiera się na dwóch warstwach poświadczeń: krótkotrwałym tokenie dostępu JWT oraz rotowanym tokenie odświeżającym przechowywanym w~bazie w~postaci skrótu. Po~stronie klienta webowego sesja jest utrzymywana w~ciasteczkach HTTP-only (\texttt{rp\_at}, \texttt{rp\_rt}), ustawianych przez \texttt{AuthCookies} z~parametrami \texttt{Secure} / \texttt{SameSite} zależnymi od środowiska.
+
+Rejestracja lokalna tworzy konto z~rolą \texttt{USER} w~stanie niezweryfikowanym i~wysyła link aktywacyjny e-mail. Do~momentu weryfikacji system nie wydaje sesji --- logowanie hasłem kończy się odmową z~komunikatem o~konieczności aktywacji. Hasła lokalne są hashowane algorytmem BCrypt (\texttt{PasswordEncoder} w~\texttt{SecurityConfig}). Polityka siły hasła wymaga co najmniej 8~znaków, wielkiej litery, cyfry i~znaku specjalnego (wzorzec w~\texttt{AuthDtos}). Ścieżka rejestracji organizatora równolegle zakłada wniosek o~rolę, lecz sama nie nadaje uprawnień \texttt{ORGANIZER} --- awans następuje dopiero po~akceptacji administratora.
+
+Logowanie hasłem stosuje ochronę czasową przed enumeracją kont: zarówno przy braku użytkownika, jak i~przy złym haśle wykonywane jest porównanie BCrypt (w~tym wobec hashu zastępczego), a~komunikat błędu pozostaje jednolity. Dodatkowo \texttt{AttemptRateLimiter} ogranicza liczbę prób w~oknie 15~minut --- osobno per e-mail (5~prób) i~per adres IP (20~prób); przekroczenie limitu zwraca HTTP~429 z~nagłówkiem \texttt{Retry-After}. Opcjonalnie wspierane jest logowanie Google: weryfikacja \texttt{idToken} przy skonfigurowanym identyfikatorze klienta, po~której system wydaje własną sesję RacePortal. Wylogowanie unieważnia refresh tokeny użytkownika, podnosi \texttt{tokenVersion} konta i~czyści ciasteczka, co natychmiast unieważnia wcześniejsze access JWT.
+
 \section{Autoryzacja i kontrola dostępu RBAC}
-Role USER / ORGANIZER / ADMIN egzekwowane w~API i~bramkach UI.
+Kontrola dostępu opiera się o~role domenowe \texttt{USER}, \texttt{ORGANIZER} i~\texttt{ADMIN}, mapowane na authorities Spring Security w~formie \texttt{ROLE\_*} w~\texttt{UserPrincipal}. Konfiguracja \texttt{@EnableMethodSecurity} umożliwia egzekwowanie reguł deklaratywnie przez \texttt{@PreAuthorize} na kontrolerach. Publicznie (bez logowania) dostępne są m.in.\ health-check, odczyt katalogu wydarzeń i~torów, wyznaczanie trasy oraz wybrane endpointy auth (rejestracja, logowanie, weryfikacja, odświeżenie). Pozostałe żądania wymagają uwierzytelnienia.
+
+Podział uprawnień odzwierciedla model biznesowy MVP. Zasób garażu (\texttt{/api/garage}) jest dostępny wyłącznie dla zalogowanego użytkownika i~operuje wyłącznie na pojazdach należących do bieżącego konta. Zgłoszenia (\texttt{/api/registrations}) wymagają uwierzytelnienia; listowanie i~zmiana statusów po~stronie wydarzenia --- roli organizatora lub administratora, z~dodatkową weryfikacją własności wydarzenia w~warstwie serwisów. Tworzenie i~edycja wydarzeń wymaga \texttt{ORGANIZER} lub \texttt{ADMIN}. Panel \texttt{/api/admin} jest chroniony na poziomie całej klasy adnotacją \texttt{hasRole('ADMIN')} i~obejmuje m.in.\ moderację wydarzeń, zarządzanie rolami oraz wnioskami o~organizatora. W~UI webowym bramki routingu i~warunkowe renderowanie paneli stanowią drugą, uzupełniającą warstwę --- ostatecznym źródłem prawdy pozostaje API.
+
 \section{Wykorzystanie tokenów JWT}
-W~warstwie webowej access token jest w~ciasteczku httpOnly \texttt{rp\_at} (JavaScript go nie odczytuje); \texttt{localStorage} nie przechowuje JWT. Filtr API odczytuje cookie albo nagłówek \texttt{Authorization: Bearer} (m.in.\ testy).
+Access token jest wystawiany przez \texttt{JwtService} (biblioteka JJWT) z~podpisem HMAC-SHA opartym o~sekret aplikacji (klucz wyprowadzany przez SHA-256 z~\texttt{app.jwt.secret}). Domyślny czas życia access tokenu wynosi rzędu 15~minut i~jest konfigurowalny. Token niesie m.in.\ identyfikator użytkownika, e-mail, nazwę użytkownika, rolę oraz claim \texttt{tv} (\texttt{tokenVersion}). Filtr \texttt{JwtAuthFilter} odczytuje token z~nagłówka \texttt{Authorization: Bearer} albo z~ciasteczka \texttt{rp\_at}, weryfikuje podpis i~termin ważności, a~następnie ładuje użytkownika z~bazy i~porównuje \texttt{tv} z~bieżącą wersją konta. Niezgodność wersji (np.\ po~wylogowaniu lub zmianie hasła) czyści kontekst bezpieczeństwa --- token staje się bezużyteczny mimo ważnego podpisu.
+
+Refresh token jest osobnym artefaktem: surowa wartość trafia do ciasteczka \texttt{rp\_rt} (ścieżka ograniczona do \texttt{/api/auth}), a~w~bazie przechowywany jest wyłącznie skrót. Przy odświeżeniu sesji następuje rotacja --- stary refresh jest unieważniany, a~wydawany jest nowy access i~nowy refresh. Ponowne użycie już zrotowanego refresh tokenu skutkuje unieważnieniem wszystkich sesji użytkownika (ochrona przed kradzieżą tokenu). W~warstwie webowej access JWT nie jest zapisywany w~\texttt{localStorage}; starsze wartości w~pamięci przeglądarki są usuwane przy starcie aplikacji. Dzięki temu typowy wektor XSS ma istotnie utrudniony dostęp do poświadczeń sesyjnych względem modelu opartego o~\texttt{localStorage}.
+
+\begin{lstlisting}[caption={Claimy access JWT wystawiane przez \texttt{JwtService}},label={lst:jwt-claims}]
+return Jwts.builder()
+    .subject(user.getId())
+    .claim("id", user.getId())
+    .claim("email", user.getEmail())
+    .claim("username", user.getUsername())
+    .claim("role", user.getRole().name())
+    .claim("tv", user.getTokenVersion())
+    .issuedAt(Date.from(now))
+    .expiration(Date.from(now.plus(accessTtl)))
+    .signWith(key)
+    .compact();
+\end{lstlisting}
+
 \section{Walidacja danych wejściowych}
-Walidacja DTO po stronie API; walidacja formularzy UI; komunikaty pól \texttt{details}.
+Wejście API jest walidowane dwustopniowo: deklaratywnie na rekordach DTO (Jakarta Bean Validation) oraz regułami biznesowymi w~serwisach. Kontrolery stosują \texttt{@Valid} na ciele żądania; naruszenia ograniczeń są mapowane przez \texttt{GlobalExceptionHandler} na odpowiedź HTTP~400 z~mapą pole~$\rightarrow$~komunikat w~polu \texttt{details}, co pozwala frontowi wyróżnić konkretne błędy formularza.
+
+W~module auth wymagane są m.in.\ niepusty, unikalny e-mail (\texttt{@Email}), ograniczenia długości nazwy użytkownika oraz wzorzec silnego hasła. Pola profilu (imię, nazwisko, telefon, Instagram) mają osobne wzorce formatu. Analogiczne adnotacje stosują DTO garażu, wydarzeń, zgłoszeń i~panelu administratora (statusy, role). Poza Bean Validation serwisy egzekwują reguły dziedzinowe --- np.\ dozwolone przejścia statusów zgłoszenia, blokadę edycji pojazdu przy otwartym zgłoszeniu, unikalność telefonu czy bezpieczną normalizację URL mediów (\texttt{SafeHttpUrls} / \texttt{ImageReferences}). Upload plików dodatkowo weryfikuje rozmiar oraz typ po~sygnaturze bajtowej (JPG/PNG/WebP, PDF), a~nie wyłącznie po~nagłówku przeglądarki. Dzięki temu walidacja obejmuje zarówno kontrakt składniowy żądania, jak i~spójność stanu domenowego.
+
 \section{Ochrona zasobów użytkowników}
 Dostęp do garażu i~zgłoszeń wyłącznie właściciela (oraz uprawnionych ról w~panelach).
 \section{Bezpieczeństwo komunikacji}
@@ -1581,9 +1609,11 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 
 \section{Michał Gutowski}
 \begin{itemize}
-  \item diagramy i~materiały projektowe (m.in.\ rich picture, przepływy);
-  \item wsparcie dokumentacji i~testów scenariuszy prezentacji;
-  \item udział w~integracji i~weryfikacji ścieżek użytkownika.
+  \item odpowiedzialność za projektowanie architektury procesów, tworzenie zaawansowanych materiałów projektowych oraz diagramów modelujących system (m.in.\ rich picture, szczegółowe diagramy przepływów);
+  \item zbieranie i~analiza wymagań funkcjonalnych poprzez bezpośredni kontakt z~docelowymi użytkownikami platformy (kierowcami oraz organizatorami wydarzeń motorsportowych) w~celu pozyskania kluczowej wiedzy dziedzinowej;
+  \item aktywny udział w~pracach programistycznych nad warstwą backendową systemu (implementacja logiki biznesowej API);
+  \item wsparcie w~tworzeniu dokumentacji projektowej oraz opracowywanie i~testowanie scenariuszy demonstracyjnych przed wdrożeniem;
+  \item udział w~integracji komponentów oraz weryfikacji poprawności głównych ścieżek użytkownika.
 \end{itemize}
 
 \section{Miłosz Parkitny}
@@ -1635,15 +1665,13 @@ Zależności zewnętrzne dotyczą przede wszystkim map i~tras. Domyślne wyznacz
 
 W~warstwie bezpieczeństwa przyjęto standard adekwatny do MVP demonstracyjnego: uwierzytelnianie JWT w~ciasteczkach HTTP-only, kontrola dostępu RBAC, ograniczanie liczby prób, walidacja wejścia oraz terminacja TLS/HSTS na Cloudflare Tunnel przed aplikacją. Poza zakresem pozostają m.in.\ pełny program testów penetracyjnych, zaawansowany WAF, dedykowany menedżer sekretów oraz własny certyfikat TLS utrzymywany bezpośrednio na hoście aplikacji. Są to ograniczenia dojrzałości operacyjnej, a~nie brak podstawowych mechanizmów ochrony kont i~zasobów opisanych w~rozdziale poświęconym bezpieczeństwu.
 
-\subsection{Ograniczenia wydajnościowe (RPS)}
-\label{sec:ograniczenia-rps}
-W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji należy rozróżnić dwie warstwy:
-\begin{itemize}
-  \item zastosowano lokalne ograniczenia skutków (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
-  \item \textbf{nie wykonano} dokładnego scenariusza 10k rekordów~/~50~RPS jako formalnego artefaktu odbiorczego KP/DZW --- w~raporcie k6 nie ma zapełnienia katalogu do 10k;
-  \item wykonano natomiast \textbf{pomiary Grafana~k6}~\cite{k6:docs} na Oracle~VM (25.10.2026, ruch lokalny na originie; k6 współdzielił CPU ze stackiem). Dla \texttt{GET /api/events} komfort to ok.\ 150--200~RPS (przy 50~RPS: 0\% błędów, p95 ok.\ 4{,}5~ms); health i~nginx --- rzędu 2k~RPS. Wąskie gardło to endpointy z~bazą. Szczegóły: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}.
-\end{itemize}
-Ograniczenie formalne (brak scenariusza z~10k rekordami) jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
+Wydajność stacku produkcyjnego została zweryfikowana pomiarami Grafana~k6~\cite{k6:docs} na Oracle~VM (25.10.2026); raport i~tabele wyników znajdują się w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}. Z~tego względu ograniczeń wydajnościowych (RPS) nie ujmuje się w~niniejszym podrozdziale jako otwartej luki odbiorczej --- należą one do udokumentowanych rezultatów testowania, a~nie do katalogu niedomkniętych ograniczeń MVP.
+
+\subsection{Ograniczenia budżetowe}
+Projekt realizowano w~reżimie budżetu bliskiego zeru, typowym dla akademickiego MVP. Hosting produkcyjny oparto o~Oracle Always Free (maszyna ARM z~limitami OCPU i~pamięci), publiczny dostęp --- o~Cloudflare Tunnel z~terminacją TLS po~stronie Cloudflare, a~pocztę --- o~usługę SMTP Mailbux w~konfiguracji niskokosztowej. Świadomie unikano płatnych bramek PSP, komercyjnego object storage, dedykowanego WAF oraz płatnych planów mapowych jako warunków działania systemu. Konsekwencją budżetową jest m.in.\ lokalny upload na dysk VM zamiast S3/MinIO, zależność od publicznych lub opcjonalnie konfigurowanych usług map oraz brak środków na ciągły monitoring klasy APM. Ograniczenie budżetowe nie unieważnia działania MVP, lecz wyznacza pułap skalowania operacyjnego i~poziom twardnienia infrastruktury możliwy do utrzymania bez stałych kosztów licencyjnych.
+
+\subsection{Ograniczenia czasowe}
+Ramy czasowe projektu wynikały z~kalendarza pracy inżynierskiej i~organizacji zespołu pięcioosobowego: konieczność domknięcia zakresu MVP przed terminem odbiorczym karty projektu, równoległa praca nad dokumentacją, testami i~wdrożeniem oraz historyczne okno przedmiotu PRO (ok.\ 15 tygodni) jako kontekst planistyczny, a~nie formalny Gantt dyplomu. Ograniczenie czasu wymusiło priorytetyzację --- pełna ścieżka zapisu na webie i~PWA kosztem parity aplikacji mobilnej, odłożenie PSP i~sklepów mobilnych, a~także świadome zawężenie hardeningu produkcyjnego. Termin karty projektu (31.01.2026) traktowano jako ograniczenie planistyczne odbioru akademickiego, natomiast faktyczne domknięcie funkcji i~pomiarów dokumentowano w~\texttt{docs/\allowbreak changes.md}. W~efekcie końcowa wersja jest kompletna względem zadeklarowanego MVP, lecz nie obejmuje roadmapy produktowej wykraczającej poza ten horyzont czasowy.
 
 \section{Możliwości dalszego rozwoju}
 Mimo że wersja MVP systemu RacePortal w pełni realizuje założone cele funkcjonalne i procesowe, otwiera ona szerokie perspektywy na dalszą rozbudowę oraz komercjalizację platformy. W oparciu o zebrane doświadczenia, opinie użytkowników oraz analizę braków obecnej wersji, zidentyfikowano następujące kierunki rozwoju:
