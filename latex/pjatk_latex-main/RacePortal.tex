@@ -1797,27 +1797,108 @@ Weryfikacja remedacji łączyła testy automatyczne API (MockMvc) z~krótką kon
 \chapter{Testowanie i weryfikacja systemu}
 \label{ch:testy}
 \section{Strategia testowania}
-Piramida: unit (api-types, mobile client) $\rightarrow$ integracyjne API (MockMvc) $\rightarrow$ E2E Playwright (web + preview mobile).
-\section{Środowisko testowe}
-Docker Compose + opcjonalnie Expo web \texttt{:8082}; dokumentacja \texttt{docs/testy/TESTY.md}.
-\section{Testy jednostkowe}
-Vitest: \texttt{packages/api-types}, \texttt{mobile/tests}.
-\section{Testy integracyjne backendu}
-JUnit / MockMvc --- scenariusze auth, eventy, garaż, zgłoszenia, RBAC, trasa.
-\section{Testy End-to-End aplikacji webowej}
-Playwright: ścieżki katalogu, auth, garaż, role (viewport desktop/mobile).
-\section{Testy aplikacji mobilnej}
-Unit URL API/WEB; E2E gość (lista, widoki, detal, CTA) na Expo web.
-\section{Testy mechanizmów bezpieczeństwa}
-Scenariusze braku dostępu do paneli obcych ról; walidacja wejścia.
-\section{Automatyzacja uruchamiania testów}
-Skrypty npm / \texttt{scripts/}; raporty w~\texttt{docs/testy/wyniki/}.
-\section{Analiza wyników testów}
-Werdykty przebiegów unit/API/E2E odnotowywane są w~dokumentacji wyników (\texttt{docs/\allowbreak testy/\allowbreak wyniki/}); regresie łapane przed prezentacją.
+Strategia testowania RacePortal opiera się na piramidzie testów i~obejmuje kolejne warstwy architektury:
+\begin{itemize}
+  \item \textbf{Testy jednostkowe (unit)} --- wspólne typy (\texttt{packages/api-types}) oraz logika kliencka aplikacji mobilnej (adresy API/WEB).
+  \item \textbf{Testy integracyjne backendu} --- serwer Spring~Boot, logika biznesowa oraz baza MySQL przy użyciu JUnit i~MockMvc.
+  \item \textbf{Testy End-to-End (E2E)} --- zautomatyzowane scenariusze interfejsu webowego oraz podglądu mobilnego w~Playwright~\cite{playwright:docs}.
+  \item \textbf{Testy wydajnościowe (load)} --- pomiary RPS narzędziem Grafana~k6~\cite{k6:docs} w~środowisku chmurowym.
+\end{itemize}
+Szczegółowa metodyka i~katalog przypadków testowych są opisane w~\texttt{docs/\allowbreak testy/\allowbreak TESTY.md}.
 
-Osobno, 25.10.2026, wykonano pomiary obciążenia Grafana~k6~\cite{k6:docs} na Oracle~VM (ruch na originie \texttt{localhost}, za Cloudflare Tunnel). Scenariusze: ramp/constant arrival-rate na \texttt{GET /api/health}, \texttt{GET /} (nginx) oraz \texttt{GET /api/events?page=0\&size=10}. Skrótowo: dla \texttt{health} i~statycznego frontu uzyskano ok.\ 2000 żądań na sekundę; dla listy wydarzeń z~MySQL --- około 150--200 żądań na sekundę (przy 50~RPS: 0\% błędów, p95 ok.\ 4{,}5~ms). Pełne tabele i~interpretacja: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}.
+\section{Środowisko testowe}
+Środowisko testowe i~demonstracyjne opiera się na konteneryzacji Docker~Compose, grupującej serwer WWW (nginx), backend API (Spring~Boot) oraz bazę MySQL~8.4. Opcjonalnie uruchamiany jest podgląd Expo na porcie \texttt{:8082}. Do pomiarów obciążenia wykorzystano maszynę produkcyjną Oracle Always Free (\texttt{VM.Standard.A1.Flex}, Frankfurt: 2~OCPU, 11~GiB~RAM + 2~GiB swap), uruchamiając k6 lokalnie na węźle --- tak, by oszacować wydajność \emph{originu} przed tunelem Cloudflare~\cite{k6:vm-rps}.
+
+\section{Testy jednostkowe}
+Testy jednostkowe weryfikują kontrakty danych i~niezmienniki. Biblioteką Vitest przetestowano pakiet \texttt{packages/\allowbreak api-\allowbreak types} (udokumentowany przebieg: 599~PASS~/~0~FAIL w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak unit-500-wyniki.md}) oraz unit aplikacji mobilnej (3~przypadki: adresy API/WEB / host Expo). Dzięki temu niespójności typów wychwytywane są jeszcze przed integracją warstw.
+
+\section{Testy integracyjne backendu}
+Weryfikację warstwy biznesowej Spring~Boot przeprowadzono przy użyciu JUnit oraz MockMvc. Scenariusze obejmują m.in.:
+\begin{itemize}
+  \item procedury uwierzytelniania, mechanizmy tokenów JWT oraz ochronę przed nadmierną liczbą prób (\emph{rate limiter});
+  \item operacje CRUD na zasobach wydarzeń motorsportowych;
+  \item integralność relacji w~wirtualnym garażu oraz mechanizm \texttt{carMatch};
+  \item obieg zgłoszeń i~generowanie powiadomień e-mail;
+  \item egzekwowanie RBAC dla ról USER, ORGANIZER oraz ADMIN.
+\end{itemize}
+W~historii wyników odnotowano m.in.\ przebieg API 24/24~PASS. Liczba przypadków w~\texttt{Api\-Integration\-Test} mogła później wzrosnąć --- aktualny werdykt należy odczytywać z~\texttt{docs/\allowbreak testy/\allowbreak wyniki/} po lokalnym uruchomieniu.
+
+\section{Testy End-to-End aplikacji webowej}
+Automatyzacja testów interfejsu webowego realizowana jest frameworkiem Playwright~\cite{playwright:docs}. Skrypty symulują ścieżki użytkownika (viewporty desktop i~mobile), weryfikując m.in.\ ładowanie strony głównej, filtry katalogu, autoryzację, garaż oraz restrykcje dostępu do paneli ról.
+
+Poniższy fragment przedstawia funkcję pomocniczą logowania oraz test \texttt{TC-WEB-07} (wejście kierowcy na dashboard po autoryzacji). Placeholder hasła w~kodzie to maska ośmiu kropek (w~listingu: \texttt{********}).
+
+\begin{lstlisting}[language=Java,caption={Funkcja \texttt{loginAs} oraz test \texttt{TC-WEB-07} (Playwright).},label={lst:ch14-web-auth}]
+async function loginAs(page: Page, email: string, password: string) {
+  await page.goto("/login");
+  await page.getByPlaceholder("twoj@email.com").fill(email);
+  await page.getByPlaceholder("********").fill(password);
+  await Promise.all([
+    page.waitForURL((url) => !url.pathname.endsWith("/login"),
+      { timeout: 20000 }),
+    page.locator('main button[type="submit"]').click(),
+  ]);
+}
+
+test.describe("Web --- auth i panel kierowcy", () => {
+  test("TC-WEB-07: logowanie kierowcy i wejście na dashboard",
+    async ({ page }) => {
+    await loginAs(page, "test@wp.pl", "test123");
+    await expect(page).toHaveURL(/\/dashboard/);
+    await expect(page.locator("main")
+      .getByText(/test|KIEROWCA|dashboard|profil|garaż/i)
+      .first()).toBeVisible();
+  });
+});
+\end{lstlisting}
+
+\section{Testy aplikacji mobilnej}
+Testy aplikacji mobilnej (Expo) obejmują unit weryfikujący adresy URL API oraz WEB, a~także scenariusze E2E w~trybie podglądu webowego. Sprawdzane są m.in.\ pobieranie listy wydarzeń z~API, przełączanie widoków (Lista~/~Kalendarz~/~Mapa) oraz przekierowanie do pełnej wersji webowej (CTA).
+
+\section{Testy mechanizmów bezpieczeństwa}
+W~ramach weryfikacji odporności systemu przetestowano m.in.:
+\begin{itemize}
+  \item odporność endpointów administracyjnych na nieautoryzowany dostęp przez użytkownika z~rolą kierowcy (USER);
+  \item walidację DTO po stronie backendu (odrzucanie niepoprawnego formatu danych wejściowych).
+\end{itemize}
+
+\section{Automatyzacja uruchamiania testów}
+Testy automatyczne są uruchamiane skryptami npm oraz bash w~katalogu \texttt{scripts/} (m.in.\ \texttt{test:unit}, \texttt{test:api}, \texttt{test:e2e}, \texttt{test:mobile-unit}). Raporty zapisuje się w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/}; sposób odbioru opisuje \texttt{docs/\allowbreak testy/\allowbreak TESTY.md}.
+
+\section{Analiza wyników testów i testy wydajnościowe k6}
+Werdykty przebiegów funkcjonalnych i~jednostkowych są odnotowywane w~dokumentacji wyników (\texttt{docs/\allowbreak testy/\allowbreak wyniki/}); regresie wychwytywane są przed prezentacją. Ostatni zapisany skrót sesji z~14.09.2026 obejmuje m.in.\ PASS dla web~build, mobile unit (3/3) oraz api-types (599/599); API i~E2E były wtedy zablokowane brakiem Dockera --- nie cytuje się tu niepotwierdzonych liczników E2E.
+
+Uzupełnieniem weryfikacji jakościowej były pomiary przepustowości z~25.10.2026 narzędziem Grafana~k6~\cite{k6:docs} bezpośrednio na produkcyjnej VM Oracle Cloud. Cel: oszacować maksymalną przepustowość (RPS) stacku przy ruchu na \texttt{localhost} (origin za Cloudflare Tunnel, bez narzutu publicznej bramki na czas pomiaru). Metodyka: \emph{ramping arrival-rate} oraz \emph{constant arrival-rate} (ok.\ 30~s) dla kluczowych zasobów. Pełne tabele i~interpretacja: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}.
+
+\begin{table}[ht]
+  \centering
+  \caption{Skrót wyników k6 na Oracle~VM (25.10.2026) --- komfort vs sufit.}
+  \label{tab:k6-rps}
+  {\footnotesize
+  \renewcommand{\arraystretch}{1.05}
+  \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}c|>{\raggedright\arraybackslash}c|}
+    \hline
+    \textbf{Warstwa} & \textbf{Endpoint} & \textbf{Komfort RPS} & \textbf{Sufit} \\
+    \hline
+    API lekkie & \texttt{GET /api/health} & $\sim$2000 (p95~$\sim$116~ms) & $\sim$2200--2260 \\
+    \hline
+    Front static & \texttt{GET /} (nginx~:8081) & $\sim$2000 (p95~$\sim$23~ms) & $\sim$3250 \\
+    \hline
+    API + MySQL & \texttt{GET /api/events} & $\sim$150--200 (p95~$\sim$4--22~ms) & $\sim$250--300 \\
+    \hline
+  \end{tabularx}
+  }
+\end{table}
+
+W~porównaniu warstw: dla \texttt{health} i~statycznego frontu uzyskano ok.\ 2000 żądań na sekundę; dla paginowanej listy wydarzeń (\texttt{GET /api/events?page=0\&size=10}) --- około 150--200 żądań na sekundę (przy 50~RPS: 0\% błędów, p95 ok.\ 4{,}5~ms). Przy forsowaniu listy powyżej ok.\ 300~RPS pojawia się saturacja i~degradacja. Raport porównuje te wyniki i~wskazuje, że w~warunkach pomiaru ograniczenie dotyczy endpointu listy wydarzeń (API z~MySQL), a~nie nginx ani samego health --- bez wyłączania innych czynników (w~tym współdzielonych 2~OCPU maszyny, na której k6 konkurował ze stackiem). Dla typowego ruchu akademickiego i~demonstracyjnego (dziesiątki współbieżnych użytkowników) zapas pozostaje duży.
+
 \section{Ograniczenia procesu testowania}
-Brak pełnych testów natywnych (Detox/Maestro). Nie wykonano formalnego scenariusza odbiorczego KP/DZW ,,ok.\ 10\,000 rekordów w~katalogu / 50~RPS'' --- w~raporcie k6 nie ma zapełnienia bazy do 10k; są pomiary RPS na istniejących danych. Dodatkowo k6 działał na tej samej VM co stack (konkurencja o~2~OCPU), więc wynik to dolna granica pojemności originu; szczegóły także w~podsumowaniu~\cite{k6:vm-rps}.
+W~obecnej wersji MVP proces testowania ma świadome ograniczenia:
+\begin{itemize}
+  \item brak pełnych testów natywnych mobilnych (np.\ Detox lub Maestro) --- E2E mobilki przez Expo web;
+  \item pomiary k6 skupiły się na zasobach odczytowych i~istniejących danych; nie wykonano formalnego scenariusza odbiorczego KP/DZW ,,ok.\ 10\,000 rekordów w~katalogu / 50~RPS'' jako zautomatyzowanego wymogu odbiorczego;
+  \item k6 działał na tej samej VM co stack (konkurencja o~2~OCPU), więc wynik to dolna granica pojemności originu --- szczegóły w~raporcie~\cite{k6:vm-rps}.
+\end{itemize}
 
 \chapter{Prezentacja systemu}
 \label{ch:prezentacja}
