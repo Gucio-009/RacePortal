@@ -248,6 +248,14 @@
       \field{note}{dostęp: 2026-11-07}
       \field{title}{LaTeX --- A document preparation system}
     \endentry
+    \entry{raceportal:spec}{misc}{}{}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak spec-conformity.md})}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{RacePortal --- rejestr zgodności ze Specyfikacją}
+    \endentry
   \enddatalist
 \endrefsection
 \endinput
