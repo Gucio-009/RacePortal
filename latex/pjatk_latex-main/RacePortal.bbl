@@ -224,17 +224,25 @@
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Grafana k6 documentation}
     \endentry
-    \entry{playwright:docs}{misc}{}{}
+    \entry{raceportal:demo}{misc}{}{}
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak scenariusz-prezentacji.md})}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{RacePortal --- scenariusz prezentacji obrony}
+    \endentry
+    \entry{playwright:docs}{misc}{}{}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://playwright.dev/docs/intro}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Playwright Documentation}
     \endentry
     \entry{latex:project}{misc}{}{}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://www.latex-project.org/}}
       \field{note}{dostęp: 2026-11-07}
