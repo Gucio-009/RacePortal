@@ -1,0 +1,16 @@
+\section{Największe wyzwania i sposób ich rozwiązania}
+Podczas realizacji i wdrożenia produkcyjnego systemu RacePortal zespół napotkał szereg istotnych wyzwań inżynierskich, zwłaszcza w obszarze infrastruktury, konfiguracji bezpiecznego tunelowania oraz zabezpieczeń sieciowych. Do najważniejszych z nich należały:
+
+\begin{itemize}
+    \item \textbf{Wyzwania związane z wdrożeniem (deployment) i architekturą chmurową:} 
+    Początkowe próby rozproszenia aplikacji (np. frontend hostowany na zewnętrznych platformach typu Pages, a backend na maszynie wirtualnej) generowały problemy z konfiguracją polityk CORS, routingu oraz spójności środowiskowej. Wyzwaniem było również zapewnienie prostoty uruchomienia produkcyjnego na darmowej maszynie wirtualnej (Oracle Cloud Always Free ARM). 
+    \textit{Sposób rozwiązania:} Zdecydowano się na pełną konteneryzację całego ekosystemu za pomocą narzędzia Docker Compose (\texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{backup}) oraz sprowadzenie infrastruktury produkcyjnej do jednej, spójnej instancji obliczeniowej zarządzanej kodem konfiguracyjnym.
+
+    \item \textbf{Konfiguracja bezpiecznego tunelowania w Cloudflare:} 
+    Wystawienie lokalnie skonteneryzowanej aplikacji na publiczny internet przy jednoczesnym zachowaniu wysokich standardów bezpieczeństwa i szyfrowania bez konieczności skomplikowanego zarządzania certyfikatami SSL bezpośrednio na serwerze stanowiło duże wyzwanie sieciowe.
+    \textit{Sposób rozwiązania:} Zastosowano technologię \textbf{Cloudflare Tunnel} (\texttt{cloudflared}). Tunel bezpiecznie spina maszynę wirtualną z brzegiem sieci Cloudflare, przejmując całkowitą obsługę rekordów DNS, terminację protokołu TLS (HTTPS) oraz ochronę przed atakami DDoS (WAF). Dzięki temu ruch do lokalnego serwera Nginx (działającego na porcie \texttt{:8081}) jest w pełni szyfrowany i odizolowany od bezpośrednich skanów portów z zewnątrz.
+
+    \item \textbf{Zabezpieczenia strony pod kątem cybersecurity i ochrony zasobów:} 
+    Projektując platformę obsługującą dane użytkowników, konta ról oraz pojazdy, należało zabezpieczyć system przed typowymi zagrożeniami webowymi (takimi jak próby przejęcia sesji, ataki typu brute-force na panele logowania czy nieuprawniony dostęp do zasobów innych użytkowników --- IDOR).
+    \textit{Sposób rozwiązania:} Wdrożono bezstanowe uwierzytelnianie oparte o tokeny JSON Web Token (JWT) przesyłane w bezpiecznych nagłówkach oraz rygorystyczną kontrolę dostępu opartą o role (RBAC) na poziomie kontrolerów API. Dodatkowo kluczowe ścieżki uwierzytelniania zabezpieczono mechanizmami limitowania częstotliwości zapytań (Rate Limiting), a na warstwie serwera proxy (Nginx) skonfigurowano restrykcyjne nagłówki bezpieczeństwa, w tym politykę ochrony treści (CSP) oraz nagłówki zapobiegające osadzaniu strony w ramkach (X-Frame-Options).
+\end{itemize}

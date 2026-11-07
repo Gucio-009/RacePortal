@@ -1253,25 +1253,102 @@ public class GlobalExceptionHandler {
 \chapter{Szczegóły implementacji frontendu webowego}
 \label{ch:frontend}
 \section{Struktura aplikacji webowej}
-Katalog \texttt{web/src/app}: \texttt{pages/}, \texttt{components/}, \texttt{context/}, \texttt{lib/}.
+Warstwa klientowska systemu RacePortal została zaimplementowana jako zaawansowana aplikacja jednostronicowa (SPA) oparta o~bibliotekę \textbf{React~18} oraz język \textbf{TypeScript}, wykorzystująca bundler \textbf{Vite} oraz stylowanie za pomocą \textbf{Tailwind CSS} i~komponentów Radix~UI. Architektura katalogów w~module \texttt{web/src/app} została zorganizowana modularnie, co zapewnia czytelność i~łatwość utrzymania kodu:
+\begin{itemize}
+  \item \texttt{pages/} --- komponenty widoków ekranowych reprezentujące poszczególne podstrony aplikacji.
+  \item \texttt{components/} --- reużywalne elementy interfejsu (formularze, karty, modale, elementy nawigacyjne).
+  \item \texttt{context/} --- zarządzanie stanem globalnym, w~tym główny kontekst autoryzacji (\texttt{AuthContext}) kontrolujący sesję użytkownika.
+  \item \texttt{lib/} --- warstwa logiki sieciowej (\texttt{api.ts}), typowania oraz konwersji danych zgodna ze wspólnym pakietem typów API.
+\end{itemize}
+
+Poniższy kod realizuje dynamiczne routowanie aplikacji przy użyciu \texttt{createBrowserRouter} z~React Router~v7, definiując układ bazowy (\texttt{RootLayout}) oraz chronione trasy dostępu dla poszczególnych ról systemowych.
+
+\begin{lstlisting}[language=Java,caption={Fragment drzewa tras React Router (katalog, auth, panele) --- warstwa webowa.},label={lst:ch11-routes}]
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: RootLayout,
+    children: [
+      { index: true, Component: HomePage },
+      { path: "login", Component: LoginPage },
+      { path: "wydarzenia", Component: EventsPage },
+      { path: "wydarzenia/:id", Component: EventDetailPage },
+      { path: "dashboard", Component: ProtectedDashboard },
+      { path: "garaz", Component: ProtectedGarage },
+      { path: "organizer", Component: ProtectedOrganizer },
+      { path: "admin", Component: ProtectedAdmin },
+    ],
+  },
+]);
+\end{lstlisting}
+
 \section{Strona główna i katalog wydarzeń}
-Widoki Lista / Mapa / Kalendarz; debounce filtrów; „Wyczyść filtry”; paginacja listy vs markery overview.
+Strona główna integruje główny katalog wydarzeń motorsportowych, oferując użytkownikom trzy spójne widoki z~zachowaniem tych samych filtrów: \textbf{listę chronologiczną}, \textbf{interaktywną mapę} oraz \textbf{kalendarz}.
+\begin{itemize}
+  \item W~widoku listy zaimplementowano optymalizację w~postaci mechanizmu \emph{debounce} dla filtrów, co zapobiega wysyłaniu nadmiarowych zapytań HTTP do~backendu podczas wpisywania fraz wyszukiwania.
+  \item Użytkownik ma do dyspozycji funkcję „Wyczyść filtry” oraz paginację listy zsynchronizowaną z~markerami przeglądowymi na mapie.
+\end{itemize}
+
 \section{Widok szczegółów wydarzenia}
-Opis, wymagania, zapis z~wyborem auta, \texttt{carMatch}, mapa i~trasa.
+Podstrona szczegółów dostarcza użytkownikowi pełnych informacji o~wybranej imprezie motorsportowej:
+\begin{itemize}
+  \item Wyświetla dokładny opis, dane organizatora oraz rygorystyczne wymagania techniczne stawiane pojazdom i~uczestnikom.
+  \item Integruje moduł szybkiego zapisu na wydarzenie, który weryfikuje posiadane przez kierowcę auta w~garażu pod kątem reguł dopasowania kategorii (\texttt{carMatch}).
+  \item Zawiera mapę z~wyznaczaniem trasy dojazdu do lokalizacji obiektu z~wykorzystaniem routingu OSRM~\cite{osrm:project}.
+\end{itemize}
+
 \section{Logowanie i rejestracja}
-Formularze auth; weryfikacja kodu; reset hasła; opcjonalny Google Sign-In.
+Moduł autoryzacji opiera się na kontrolowanych formularzach frontendowych, wspierających procesy logowania, rejestracji oraz odzyskiwania zapomnianego hasła. Bezpieczeństwo sesji gwarantują ciasteczka typu httpOnly (\texttt{rp\_at}, \texttt{rp\_rt}) przesyłane z~flagą \texttt{credentials: "include"}, co całkowicie eliminuje podatności związane z~przechowywaniem tokenów JWT w~lokalnej pamięci przeglądarki (\texttt{localStorage}).
+
+Poniższy kod implementuje asynchroniczne pobieranie danych o~zalogowanym użytkowniku przy użyciu mechanizmu optymalizacyjnego \texttt{deferUntilIdle}, dbając o~to, by zapytanie nie blokowało renderowania głównego wątku aplikacji.
+
+\begin{lstlisting}[language=Java,caption={Wczytywanie sesji w~\texttt{AuthContext} (httpOnly cookies).},label={lst:ch11-auth}]
+useEffect(() => {
+  clearLegacyToken();
+  return deferUntilIdle(() => {
+    void (async () => {
+      try {
+        const me = await api.get<User>("/api/auth/me");
+        persistAuth(me);
+      } catch {
+        persistAuth(null);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, 2000);
+}, []);
+\end{lstlisting}
+
 \section{Dashboard użytkownika}
-Zgłoszenia użytkownika i~szybkie informacje o~nadchodzących startach.
+Panel użytkownika (Dashboard) stanowi centralne miejsce zarządzania aktywnością zalogowanego kierowcy w~systemie. Prezentuje on przejrzyste podsumowanie aktualnych zgłoszeń użytkownika na nadchodzące wydarzenia motorsportowe, umożliwiając błyskawiczny podgląd ich statusów (oczekujące, zatwierdzone, anulowane) oraz dostęp do szczegółów rezerwacji.
+
 \section{Widok garażu}
-Formularz pojazdu, walidacja pól wymaganych, edycja i~usuwanie (z~ograniczeniami przy otwartym zgłoszeniu).
+Moduł wirtualnego garażu pozwala kierowcom na pełne zarządzanie flotą własnych pojazdów startowych.
+\begin{itemize}
+  \item Interfejs dostarcza formularz dodawania nowego pojazdu z~rygorystyczną walidacją pól wymaganych (takich jak marka, model, specyfikacja techniczna, masa czy dopasowanie opon).
+  \item Użytkownik ma możliwość edycji danych oraz usuwania aut ze swojego profilu, przy czym system uwzględnia zabezpieczenia biznesowe (np.\ blokadę usunięcia pojazdu, który został powiązany z~aktywnym, zatwierdzonym zgłoszeniem na zawody).
+\end{itemize}
+
 \section{Panel organizatora}
-Tworzenie/edycja wydarzeń, lista zgłoszeń, zmiana statusów.
+Panel organizatora udostępnia dedykowane narzędzia dla podmiotów publikujących imprezy motorsportowe. Umożliwia on:
+\begin{itemize}
+  \item Tworzenie oraz edycję wydarzeń w~jednym spójnym formularzu z~wykorzystaniem wbudowanych presetów torów.
+  \item Podgląd napływających zgłoszeń od kierowców oraz zarządzanie ich statusami (np.\ akceptacja uczestnictwa, odrzucenie lub zmiana statusu płatności).
+\end{itemize}
+
 \section{Panel administratora}
-Moderacja wydarzeń, wnioski organizatora (zaakceptuj / odrzuć $\rightarrow$ rola \texttt{ORGANIZER}), zarządzanie rolami, zgłoszenia błędów. Formularz wniosku użytkownika: \texttt{/zostan-organizatorem}.
+Panel administratora zapewnia operatorom platformy narzędzia najwyższego poziomu do nadzoru nad treścią oraz strukturą uprawnień w~systemie. Obejmuje on:
+\begin{itemize}
+  \item Moderację nadesłanych wydarzeń oraz rozpatrywanie wniosków użytkowników ubiegających się o~uzyskanie uprawnień organizatora (dedykowana ścieżka formularza pod adresem \texttt{/zostan-organizatorem}).
+  \item Zarządzanie globalnymi rolami kont oraz podgląd systemowych zgłoszeń błędów.
+\end{itemize}
+
 \section{Mapa i elementy lokalizacyjne}
-Leaflet~\cite{leaflet:docs} + kafelki CARTO; pickery lokalizacji; proxy trasy \texttt{/api/maps/route} (domyślnie OSRM~\cite{osrm:project}).
+Warstwa mapowa opiera się na integracji biblioteki Leaflet~\cite{leaflet:docs} z~kafelkami CARTO~/~OpenStreetMap. Umożliwia ona interaktywną prezentację punktów zainteresowania, selekcję współrzędnych geograficznych w~formularzach wydarzeń oraz płatną lub opartą o~OSRM~\cite{osrm:project} integrację routingu trasy dojazdu dla kierowców (proxy \texttt{/api/maps/route}).
+
 \section{Responsywność i doświadczenie użytkownika}
-Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent}.
+Interfejs aplikacji zaprojektowano w~koncepcji \emph{mobile-first}. Układy siatek (grid, flexbox) w~Tailwind CSS dynamicznie dostosowują się do ekranów smartfonów, tabletów oraz monitorów stacjonarnych. Spójność wizualną oparto o~ciemny motyw motorsportowy z~wyrazistym akcentem \texttt{--race-accent}, optymalizując czytelność danych i~zapewniając wysoką użyteczność (UX).
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
 \label{ch:mobile}
@@ -1526,7 +1603,21 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 \chapter{Podsumowanie}
 \label{ch:podsumowanie}
 \section{Największe wyzwania i sposób ich rozwiązania}
-Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo (web, API, mobile). Po stronie infrastruktury --- uproszczenie hostingu do jednej VM z~tunelowaniem Cloudflare zamiast rozdzielonego stacku Pages/Worker.
+Podczas realizacji i wdrożenia produkcyjnego systemu RacePortal zespół napotkał szereg istotnych wyzwań inżynierskich, zwłaszcza w obszarze infrastruktury, konfiguracji bezpiecznego tunelowania oraz zabezpieczeń sieciowych. Do najważniejszych z nich należały:
+
+\begin{itemize}
+    \item \textbf{Wyzwania związane z wdrożeniem (deployment) i architekturą chmurową:} 
+    Początkowe próby rozproszenia aplikacji (np. frontend hostowany na zewnętrznych platformach typu Pages, a backend na maszynie wirtualnej) generowały problemy z konfiguracją polityk CORS, routingu oraz spójności środowiskowej. Wyzwaniem było również zapewnienie prostoty uruchomienia produkcyjnego na darmowej maszynie wirtualnej (Oracle Cloud Always Free ARM). 
+    \textit{Sposób rozwiązania:} Zdecydowano się na pełną konteneryzację całego ekosystemu za pomocą narzędzia Docker Compose (\texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{backup}) oraz sprowadzenie infrastruktury produkcyjnej do jednej, spójnej instancji obliczeniowej zarządzanej kodem konfiguracyjnym.
+
+    \item \textbf{Konfiguracja bezpiecznego tunelowania w Cloudflare:} 
+    Wystawienie lokalnie skonteneryzowanej aplikacji na publiczny internet przy jednoczesnym zachowaniu wysokich standardów bezpieczeństwa i szyfrowania bez konieczności skomplikowanego zarządzania certyfikatami SSL bezpośrednio na serwerze stanowiło duże wyzwanie sieciowe.
+    \textit{Sposób rozwiązania:} Zastosowano technologię \textbf{Cloudflare Tunnel} (\texttt{cloudflared}). Tunel bezpiecznie spina maszynę wirtualną z brzegiem sieci Cloudflare, przejmując całkowitą obsługę rekordów DNS, terminację protokołu TLS (HTTPS) oraz ochronę przed atakami DDoS (WAF). Dzięki temu ruch do lokalnego serwera Nginx (działającego na porcie \texttt{:8081}) jest w pełni szyfrowany i odizolowany od bezpośrednich skanów portów z zewnątrz.
+
+    \item \textbf{Zabezpieczenia strony pod kątem cybersecurity i ochrony zasobów:} 
+    Projektując platformę obsługującą dane użytkowników, konta ról oraz pojazdy, należało zabezpieczyć system przed typowymi zagrożeniami webowymi (takimi jak próby przejęcia sesji, ataki typu brute-force na panele logowania czy nieuprawniony dostęp do zasobów innych użytkowników --- IDOR).
+    \textit{Sposób rozwiązania:} Wdrożono bezstanowe uwierzytelnianie oparte o tokeny JSON Web Token (JWT) przesyłane w bezpiecznych nagłówkach oraz rygorystyczną kontrolę dostępu opartą o role (RBAC) na poziomie kontrolerów API. Dodatkowo kluczowe ścieżki uwierzytelniania zabezpieczono mechanizmami limitowania częstotliwości zapytań (Rate Limiting), a na warstwie serwera proxy (Nginx) skonfigurowano restrykcyjne nagłówki bezpieczeństwa, w tym politykę ochrony treści (CSP) oraz nagłówki zapobiegające osadzaniu strony w ramkach (X-Frame-Options).
+\end{itemize}
 
 \section{Zmiany i adaptacje w trakcie realizacji}
 Przejście mobile z~pełnej równoważności funkcji na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
@@ -1555,7 +1646,33 @@ W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \t
 Ograniczenie formalne (brak scenariusza z~10k rekordami) jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
 
 \section{Możliwości dalszego rozwoju}
-Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS (zapełnienie katalogu + obciążenie wg kryterium KP/DZW); dalsza rozbudowa uploadu (m.in.\ mobilka).
+Mimo że wersja MVP systemu RacePortal w pełni realizuje założone cele funkcjonalne i procesowe, otwiera ona szerokie perspektywy na dalszą rozbudowę oraz komercjalizację platformy. W oparciu o zebrane doświadczenia, opinie użytkowników oraz analizę braków obecnej wersji, zidentyfikowano następujące kierunki rozwoju:
+
+\begin{itemize}
+    \item \textbf{Integracja z profesjonalnymi bramkami płatności (PSP):} 
+    Wprowadzenie automatycznych płatności online (np. przelewy natychmiastowe, BLIK, karty płatnicze) zamiast obecnego mechanizmu weryfikacji na podstawie przesyłanego adresu URL dowodu wpłaty. Umożliwi to pełną automatyzację rozliczeń finansowych między kierowcami a organizatorami oraz natychmiastowe potwierdzanie opłacenia wpisowego.
+
+    \item \textbf{Autorski pomiar czasowy i wyniki na żywo:} 
+    Wdrożenie dedykowanego modułu pomiaru czasu dla organizatorów z możliwością synchronizacji urządzeń pomiarowych bezpośrednio z aplikacją, co umożliwi uczestnikom oraz kibicom podgląd oficjalnych wyników zawodów na żywo.
+
+    \item \textbf{Zaawansowane zarządzanie listami rezerwowymi i waitlistą:} 
+    Rozbudowa logiki biznesowej zgłoszeń o automatyczne zarządzanie kolejką rezerwową (\emph{waitlist}). W przypadku rezygnacji jednego z uczestników, system mógłby automatycznie powiadamiać i przesuwać na listę główną kolejnego kierowcę z listy rezerwowej według zdefiniowanych kryteriów.
+
+    \item \textbf{Pełnoprawna aplikacja mobilna i publikacja w sklepach:} 
+    Rozszerzenie obecnej wizytówkowej aplikacji mobilnej (Expo) o pełną funkcjonalność konta użytkownika, w tym mobilny wirtualny garaż, składanie zgłoszeń oraz bezpośredni wgląd do statusów, a także przygotowanie aplikacji do oficjalnej dystrybucji w sklepach Google Play oraz App Store.
+
+    \item \textbf{Podstrona Auta:} 
+    Stworzenie dedykowanej, publicznej strony każdego samochodu w systemie, prezentującej jego szczegółowe dane techniczne, galerię zdjęć oraz pełną historię startów w ubiegłych i nadchodzących wydarzeniach motorsportowych.
+
+    \item \textbf{Podstrona Kierowcy:} 
+    Implementacja publicznego profilu zawodnika, który w jednym miejscu agreguje jego osiągnięcia sportowe, zestawienie posiadanych aut z wirtualnego garażu oraz odnośniki do mediów społecznościowych.
+
+    \item \textbf{Podstrona Obiektów Motorsportowych:} 
+    Rozbudowa systemu o kompletny katalog wszystkich torów i obiektów w Polsce, zawierający ich opisy, parametry techniczne oraz precyzyjną lokalizację na zintegrowanej mapie.
+
+    \item \textbf{Podstrona Organizatora:} 
+    Wprowadzenie dedykowanego profilu publicznego dla klubów oraz organizatorów wydarzeń, prezentującego ich historię, opis działalności oraz zestawienie organizowanych przez nich imprez motorsportowych.
+\end{itemize}
 
 \section{Wnioski końcowe}
 \label{sec:wnioski-koncowe}

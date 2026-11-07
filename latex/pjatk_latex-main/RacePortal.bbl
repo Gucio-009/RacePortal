@@ -99,14 +99,6 @@
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Docker Compose overview}
     \endentry
-    \entry{leaflet:docs}{misc}{}{}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{\url{https://leafletjs.com/}}
-      \field{note}{dostęp: 2026-11-07}
-      \field{title}{Leaflet --- an open-source {JavaScript} library for mobile-friendly interactive maps}
-    \endentry
     \entry{osrm:project}{misc}{}{}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
@@ -114,6 +106,14 @@
       \field{howpublished}{\url{http://project-osrm.org/}}
       \field{note}{dostęp: 2026-11-07}
       \field{title}{Open Source Routing Machine}
+    \endentry
+    \entry{leaflet:docs}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://leafletjs.com/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Leaflet --- an open-source {JavaScript} library for mobile-friendly interactive maps}
     \endentry
     \entry{k6:docs}{misc}{}{}
       \field{sortinit}{1}

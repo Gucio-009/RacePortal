@@ -1,0 +1,28 @@
+\section{Możliwości dalszego rozwoju}
+Mimo że wersja MVP systemu RacePortal w pełni realizuje założone cele funkcjonalne i procesowe, otwiera ona szerokie perspektywy na dalszą rozbudowę oraz komercjalizację platformy. W oparciu o zebrane doświadczenia, opinie użytkowników oraz analizę braków obecnej wersji, zidentyfikowano następujące kierunki rozwoju:
+
+\begin{itemize}
+    \item \textbf{Integracja z profesjonalnymi bramkami płatności (PSP):} 
+    Wprowadzenie automatycznych płatności online (np. przelewy natychmiastowe, BLIK, karty płatnicze) zamiast obecnego mechanizmu weryfikacji na podstawie przesyłanego adresu URL dowodu wpłaty. Umożliwi to pełną automatyzację rozliczeń finansowych między kierowcami a organizatorami oraz natychmiastowe potwierdzanie opłacenia wpisowego.
+
+    \item \textbf{Autorski pomiar czasowy i wyniki na żywo:} 
+    Wdrożenie dedykowanego modułu pomiaru czasu dla organizatorów z możliwością synchronizacji urządzeń pomiarowych bezpośrednio z aplikacją, co umożliwi uczestnikom oraz kibicom podgląd oficjalnych wyników zawodów na żywo.
+
+    \item \textbf{Zaawansowane zarządzanie listami rezerwowymi i waitlistą:} 
+    Rozbudowa logiki biznesowej zgłoszeń o automatyczne zarządzanie kolejką rezerwową (\emph{waitlist}). W przypadku rezygnacji jednego z uczestników, system mógłby automatycznie powiadamiać i przesuwać na listę główną kolejnego kierowcę z listy rezerwowej według zdefiniowanych kryteriów.
+
+    \item \textbf{Pełnoprawna aplikacja mobilna i publikacja w sklepach:} 
+    Rozszerzenie obecnej wizytówkowej aplikacji mobilnej (Expo) o pełną funkcjonalność konta użytkownika, w tym mobilny wirtualny garaż, składanie zgłoszeń oraz bezpośredni wgląd do statusów, a także przygotowanie aplikacji do oficjalnej dystrybucji w sklepach Google Play oraz App Store.
+
+    \item \textbf{Podstrona Auta:} 
+    Stworzenie dedykowanej, publicznej strony każdego samochodu w systemie, prezentującej jego szczegółowe dane techniczne, galerię zdjęć oraz pełną historię startów w ubiegłych i nadchodzących wydarzeniach motorsportowych.
+
+    \item \textbf{Podstrona Kierowcy:} 
+    Implementacja publicznego profilu zawodnika, który w jednym miejscu agreguje jego osiągnięcia sportowe, zestawienie posiadanych aut z wirtualnego garażu oraz odnośniki do mediów społecznościowych.
+
+    \item \textbf{Podstrona Obiektów Motorsportowych:} 
+    Rozbudowa systemu o kompletny katalog wszystkich torów i obiektów w Polsce, zawierający ich opisy, parametry techniczne oraz precyzyjną lokalizację na zintegrowanej mapie.
+
+    \item \textbf{Podstrona Organizatora:} 
+    Wprowadzenie dedykowanego profilu publicznego dla klubów oraz organizatorów wydarzeń, prezentującego ich historię, opis działalności oraz zestawienie organizowanych przez nich imprez motorsportowych.
+\end{itemize}
