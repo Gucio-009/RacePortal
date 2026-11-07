@@ -102,21 +102,42 @@ Kolejne rozdziały obejmują: słownik pojęć, opis problemu dziedzinowego, kon
 \end{description}
 
 \chapter{Opis problemu}
+
 \section{Charakterystyka rynku wydarzeń motorsportowych}
-% TODO: rozwinąć na podstawie pitch / research
-Amatorski i~półprofesjonalny motorsport w~Polsce obejmuje liczne formy aktywności (track day, drift, rally, wyścigi górskie itp.). Informacje o~terminach i~zapisach są często rozproszone pomiędzy strony organizatorów, media społecznościowe oraz komunikatory.
+Amatorski i~półprofesjonalny motorsport w~Polsce przeżywa w~ostatnich latach dynamiczny rozwój. Obejmuje on liczne, zróżnicowane formy aktywności, takie jak wydarzenia typu \emph{track day}, zawody w~drifcie, rajdy amatorskie (KJS, Super OES), wyścigi górskie czy zmagania \emph{time attack}. Infrastruktura, od~dużych obiektów pokroju Toru Poznań czy Silesia Ring, po~mniejsze tory szkoleniowe i~lokalne obiekty, pozwala na~organizację imprez o~różnym stopniu zaawansowania.
+
+Mimo rosnącej popularności tej formy spędzania czasu, rynek ten charakteryzuje się dużym rozproszeniem organizacyjnym. Informacje o~terminach, regulaminach oraz procedurach rejestracji są często rozrzucone pomiędzy indywidualnymi stronami internetowymi organizatorów, fanpage'ami w~mediach społecznościowych (głównie na~platformie Facebook) oraz tematycznymi forami dyskusyjnymi. Brakuje spójnego, scentralizowanego ekosystemu, który agregowałby tego typu aktywności w~sposób ustandaryzowany, ułatwiając tym samym obieg informacji.
 
 \section{Problemy związane z~organizacją wydarzeń i~zapisami uczestników}
-Organizatorzy potrzebują narzędzia do publikacji wydarzenia, zbierania zgłoszeń, weryfikacji wymagań wobec pojazdu/kierowcy oraz komunikacji statusu zgłoszenia. Ręczne procesy (arkusze, wiadomości prywatne) są podatne na błędy i~trudne do skalowania.
+Z~perspektywy organizatorów, zarządzanie mniejszymi i~średnimi wydarzeniami motorsportowymi wiąże się z~szeregiem wyzwań logistycznych. Większość podmiotów wykorzystuje do~zbierania zgłoszeń podstawowe i~niepołączone ze sobą narzędzia, takie jak formularze Google, arkusze kalkulacyjne czy wiadomości e-mail.
+
+Ręczne przetwarzanie zgłoszeń jest nie tylko czasochłonne, ale i~wysoce podatne na~błędy ludzkie (np.\ zgubienie zgłoszenia, błędne przypisanie do~klasy startowej). Poważnym problemem jest również weryfikacja techniczna uczestników --- organizator musi ręcznie oceniać, czy dany pojazd spełnia wymagania techniczne dla danej kategorii wydarzenia (np.\ pojemność silnika, napęd, klatka bezpieczeństwa). Dodatkowo, komunikacja z~uczestnikami odnośnie statusu ich zgłoszenia (oczekujące, zatwierdzone, odrzucone) wymaga indywidualnej wysyłki wiadomości, co staje się trudne do~skalowania przy rosnącej liczbie uczestników na~listach startowych i~rezerwowych.
 
 \section{Problemy informacyjne po stronie kierowców i~organizatorów}
-Kierowcy mają trudność ze znalezieniem aktualnych startów w~jednym miejscu, porównaniem wymagań wydarzenia z~posiadanym pojazdem oraz śledzeniem statusu zapisu. Organizatorzy --- z~utrzymaniem spójnej listy uczestników i~powiadomień.
+Rozproszenie danych o~imprezach dotkliwie uderza również w~samych uczestników. Kierowcy mają ogromną trudność ze znalezieniem aktualnych wydarzeń startowych w~jednym miejscu. Aby zaplanować sezon lub chociażby weekendowy wyjazd na~tor, muszą oni na~bieżąco monitorować wiele niezależnych źródeł.
+
+Często proces poszukiwania informacji sprowadza się do~przedzierania się przez nieczytelne posty w~mediach społecznościowych, gdzie kluczowe dane, takie jak koszty wpisowego, harmonogram czy limit miejsc, są trudne do~odnalezienia. Następnie, uczestnik staje przed problemem oceny, czy jego samochód w~ogóle kwalifikuje się do~wybranej imprezy. Brak centralnego kalendarza oraz ujednoliconego, przejrzystego interfejsu sprawia, że cały proces --- od~znalezienia wydarzenia, po~udany start --- jest niepotrzebnie skomplikowany, a~komunikacja na~linii organizator--kierowca jest chaotyczna i~opóźniona.
 
 \section{Uzasadnienie potrzeby stworzenia systemu RacePortal}
-RacePortal odpowiada na potrzebę \textbf{centralnego katalogu} oraz \textbf{ujednoliconego procesu zapisu} z~rolami użytkowników, przy zachowaniu prostego uruchomienia demonstracyjnego (Docker) i~ścieżki mobilnej (odkrywanie wydarzeń).
+Projekt platformy RacePortal jest bezpośrednią odpowiedzią na~wyżej zidentyfikowane problemy. Jego głównym założeniem jest dostarczenie \textbf{centralnego katalogu wydarzeń} oraz zautomatyzowanego, \textbf{ujednoliconego procesu zapisów}, w~którym obie strony (kierowca i~organizator) operują na~tym samym zbiorze i~formacie danych.
+
+Stworzenie dedykowanego rozwiązania pozwoli na:
+\begin{itemize}
+  \item zebranie wszystkich typów wydarzeń motorsportowych w~łatwej do~przeszukiwania bazie z~widokiem mapy, listy i~kalendarza;
+  \item wprowadzenie mechanizmu ,,wirtualnego garażu'' dla uczestników, z~poziomu którego ich pojazdy mogą być automatycznie zestawiane z~wymogami wydarzeń (mechanizm \emph{carMatch});
+  \item uporządkowanie ról w~systemie (Gość, Użytkownik/Kierowca, Organizator, Administrator), co usprawni przepływ informacji, walidację zgłoszeń oraz moderację treści;
+  \item zapewnienie użytkownikom dostępu poprzez ścieżkę webową (pełna funkcjonalność) oraz mobilną wizytówkę (ułatwione odkrywanie wydarzeń z~poziomu smartfona).
+\end{itemize}
 
 \section{Aspekty techniczne i~organizacyjne problemu}
-Wyzwania obejmują: spójny model danych wydarzeń i~zgłoszeń, bezpieczeństwo kont (JWT, RBAC), walidację wymagań wydarzenia względem garażu, integrację mapy/trasy, dostarczalność maili w~środowisku deweloperskim oraz świadomy podział odpowiedzialności web vs mobile.
+Rozwiązanie zdefiniowanych problemów biznesowych pociąga za sobą konieczność sprostania konkretnym wyzwaniom technicznym. Głównym zadaniem jest zaprojektowanie wydajnego i~spójnego modelu relacyjnej bazy danych, który sprawnie powiąże wydarzenia, użytkowników, pojazdy z~ich parametrami oraz listę zgłoszeń i~ich statusy.
+
+Kluczowe zagadnienia techniczne podjęte w~ramach projektu obejmują:
+\begin{itemize}
+  \item \textbf{Bezpieczeństwo i~autoryzację:} implementację bezstanowego uwierzytelniania opartego o~tokeny JWT oraz ścisłej, opartej na~rolach kontroli dostępu (RBAC) do~poszczególnych zasobów API;
+  \item \textbf{Walidację logiczną:} realizację mechanizmów sprawdzających wymagania wydarzenia względem pojazdu (moduł \emph{carMatch});
+  \item \textbf{Niezawodną komunikację asynchroniczną:} wdrożenie systemu powiadomień e-mail dostarczającego uczestnikom zmiany statusów, również w~środowiskach izolowanych.
+\end{itemize}
 
 \chapter{Kontekst biznesowy}
 \label{ch:biznes}
