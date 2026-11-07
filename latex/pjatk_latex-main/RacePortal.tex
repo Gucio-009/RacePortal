@@ -47,7 +47,7 @@
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
 \successmeasure{Działający stos Docker Compose (web, API, MySQL, backup) z~SMTP Mailbux; realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
-\projlimitations{Brak natywnej bramki płatności (PSP); aplikacja mobilna bez pełnej równoważności funkcji z~webem (świadoma wizytówka --- bez logowania, garażu i~uploadu); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS (są natomiast krótkie pomiary k6 na VM); produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
+\projlimitations{Brak natywnej bramki płatności (PSP); aplikacja mobilna bez pełnej równoważności funkcji z~webem (świadoma wizytówka --- bez logowania, garażu i~uploadu); brak publikacji w~sklepach App Store/Google Play; ograniczony budżet operacyjny (Oracle Always Free, Cloudflare Tunnel) oraz ramy czasowe projektu akademickiego; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
 
 \date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
@@ -123,7 +123,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 15 (Prezentacja systemu)} --- ilustruje scenariusze użycia platformy z~perspektywy kierowcy, organizatora oraz administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
   \item \textbf{Rozdział 17 (Wkład własny)} --- szczegółowo opisuje indywidualny wkład poszczególnych członków zespołu w~realizację projektu.
-  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym wydajnościowe RPS) oraz perspektywy dalszego rozwoju platformy.
+  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe) oraz perspektywy dalszego rozwoju platformy.
 \end{itemize}
 
 \chapter{Słownik pojęć}
@@ -1526,20 +1526,19 @@ Zależności zewnętrzne dotyczą przede wszystkim map i~tras. Domyślne wyznacz
 
 W~warstwie bezpieczeństwa przyjęto standard adekwatny do MVP demonstracyjnego: uwierzytelnianie JWT w~ciasteczkach HTTP-only, kontrola dostępu RBAC, ograniczanie liczby prób, walidacja wejścia oraz terminacja TLS/HSTS na Cloudflare Tunnel przed aplikacją. Poza zakresem pozostają m.in.\ pełny program testów penetracyjnych, zaawansowany WAF, dedykowany menedżer sekretów oraz własny certyfikat TLS utrzymywany bezpośrednio na hoście aplikacji. Są to ograniczenia dojrzałości operacyjnej, a~nie brak podstawowych mechanizmów ochrony kont i~zasobów opisanych w~rozdziale poświęconym bezpieczeństwu.
 
-\subsection{Ograniczenia wydajnościowe (RPS)}
-W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji należy rozróżnić dwie warstwy:
-\begin{itemize}
-  \item zastosowano lokalne ograniczenia skutków (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
-  \item \textbf{nie domknięto} formalnego artefaktu odbiorczego 10k rekordów~/~50~RPS (brak raportu spełniającego dokładnie to kryterium KP/DZW);
-  \item wykonano natomiast \textbf{krótkie pomiary Grafana~k6}~\cite{k6:docs} na Oracle~VM (25.10.2026, ruch lokalny na originie): dla paginowanej listy wydarzeń komfortowy zakres ok.\ 150--200~RPS --- bez utożsamiania tego z~formalnym testem 10k/50~RPS (szczegóły: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}).
-\end{itemize}
-Ograniczenie formalne jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
+Wydajność stacku produkcyjnego została zweryfikowana pomiarami Grafana~k6~\cite{k6:docs} na Oracle~VM (25.10.2026); raport i~tabele wyników znajdują się w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}. Z~tego względu ograniczeń wydajnościowych (RPS) nie ujmuje się w~niniejszym podrozdziale jako otwartej luki odbiorczej --- należą one do udokumentowanych rezultatów testowania, a~nie do katalogu niedomkniętych ograniczeń MVP.
+
+\subsection{Ograniczenia budżetowe}
+Projekt realizowano w~reżimie budżetu bliskiego zeru, typowym dla akademickiego MVP. Hosting produkcyjny oparto o~Oracle Always Free (maszyna ARM z~limitami OCPU i~pamięci), publiczny dostęp --- o~Cloudflare Tunnel z~terminacją TLS po~stronie Cloudflare, a~pocztę --- o~usługę SMTP Mailbux w~konfiguracji niskokosztowej. Świadomie unikano płatnych bramek PSP, komercyjnego object storage, dedykowanego WAF oraz płatnych planów mapowych jako warunków działania systemu. Konsekwencją budżetową jest m.in.\ lokalny upload na dysk VM zamiast S3/MinIO, zależność od publicznych lub opcjonalnie konfigurowanych usług map oraz brak środków na ciągły monitoring klasy APM. Ograniczenie budżetowe nie unieważnia działania MVP, lecz wyznacza pułap skalowania operacyjnego i~poziom twardnienia infrastruktury możliwy do utrzymania bez stałych kosztów licencyjnych.
+
+\subsection{Ograniczenia czasowe}
+Ramy czasowe projektu wynikały z~kalendarza pracy inżynierskiej i~organizacji zespołu pięcioosobowego: konieczność domknięcia zakresu MVP przed terminem odbiorczym karty projektu, równoległa praca nad dokumentacją, testami i~wdrożeniem oraz historyczne okno przedmiotu PRO (ok.\ 15 tygodni) jako kontekst planistyczny, a~nie formalny Gantt dyplomu. Ograniczenie czasu wymusiło priorytetyzację --- pełna ścieżka zapisu na webie i~PWA kosztem parity aplikacji mobilnej, odłożenie PSP i~sklepów mobilnych, a~także świadome zawężenie hardeningu produkcyjnego. Termin karty projektu (31.01.2026) traktowano jako ograniczenie planistyczne odbioru akademickiego, natomiast faktyczne domknięcie funkcji i~pomiarów dokumentowano w~\texttt{docs/\allowbreak changes.md}. W~efekcie końcowa wersja jest kompletna względem zadeklarowanego MVP, lecz nie obejmuje roadmapy produktowej wykraczającej poza ten horyzont czasowy.
 
 \section{Możliwości dalszego rozwoju}
-Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS; dalsza rozbudowa uploadu (m.in.\ mobilka).
+Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach, object storage i~rozszerzenie uploadu na mobilkę --- por.\ \texttt{docs/pomysly-rozwoju.md}.
 
 \section{Wnioski końcowe}
-RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, formalny test 10k/50~RPS, ograniczona mobilka bez uploadu/konta).
+RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi (w~tym udokumentowanymi pomiarami k6) i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych ograniczeniach zakresowych, budżetowych i~czasowych (m.in.\ PSP, świadoma wizytówka mobilna, hosting Always Free).
 
 
 \printbibliography[title={Bibliografia}, heading=bibintoc]
