@@ -137,7 +137,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 14 (Testowanie i~weryfikacja systemu)} --- opisuje strategię testowania, środowisko testowe, testy jednostkowe, integracyjne, E2E (Playwright) oraz weryfikację mechanizmów bezpieczeństwa.
   \item \textbf{Rozdział 15 (Prezentacja systemu)} --- opisuje prezentację głównych funkcjonalności MVP oraz scenariusze użycia z~perspektywy kierowcy, organizatora i~administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
-  \item \textbf{Rozdział 17 (Wkład własny)} --- szczegółowo opisuje indywidualny wkład poszczególnych członków zespołu w~realizację projektu.
+  \item \textbf{Rozdział 17 (Wkład własny)} --- opisuje indywidualny wkład członków zespołu (UI/UX, analiza, backend, modelowanie, fullstack/testy/bezpieczeństwo i~wdrożenie).
   \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe) oraz perspektywy dalszego rozwoju platformy.
 \end{itemize}
 
@@ -232,6 +232,9 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item[Konto seed] Konto demonstracyjne ładowane przy starcie API (kierowca / organizator / admin) do powtarzalnych pokazów i~testów.
   \item[Oracle Always Free] Warstwa darmowych zasobów Oracle Cloud; w~projekcie VM Ampere hostująca Compose za Cloudflare Tunnel.
   \item[Filtr ,,pod moje auto''] Widok katalogu ograniczony do wydarzeń, do których pasuje wybrany pojazd z~garażu (wykorzystuje \texttt{carMatch}).
+  \item[Monorepo] Jedno repozytorium Git zawierające wiele pakietów/aplikacji (tu: \texttt{web/}, \texttt{backend/}, \texttt{mobile/}, \texttt{packages/}).
+  \item[Fullstack] Zakres prac obejmujący więcej niż jedną warstwę systemu (API, web, integracja, wdrożenie) --- w~praktyce RacePortal przypisany m.in.\ do roli testów i~bezpieczeństwa.
+  \item[DataInitializer] Komponent startowy API ładujący dane seed (konta demo, przykładowe wydarzenia) przy uruchomieniu aplikacji.
 \end{description}
 
 \chapter{Opis problemu}
@@ -1813,9 +1816,14 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 
 \section{Wojciech Wronisz}
 \begin{itemize}
-  \item backend Spring Boot (API, JWT/RBAC, encje, seed, maile);
-  \item Docker Compose, wdrożenie produkcyjne Oracle + \textbf{Cloudflare Tunnel}, Mailbux, PWA;
-  \item dokumentacja uruchomienia i~odbioru (\texttt{docs/}), testy API / E2E, integracja web~$\leftrightarrow$~API.
+  \item pełnienie roli kierownika projektu w~Dokumentacji Założeń Wstępnych (DZW) oraz --- w~praktyce repozytorium --- odpowiedzialność za obszar fullstack, testów automatycznych i~bezpieczeństwa aplikacji;
+  \item prace nad warstwą API Spring Boot~\cite{spring:boot}: kontrakt REST współdzielony z~webem i~mobile, integracja z~MySQL, inicjalizacja danych demonstracyjnych (\texttt{DataInitializer} / seed), wysyłka maili transakcyjnych (SMTP Mailbux);
+  \item projekt i~utwardzenie uwierzytelniania oraz autoryzacji: JWT~\cite{jwt:rfc} (access/refresh, \texttt{tokenVersion}), ciasteczka httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}), RBAC ról \texttt{USER}/\texttt{ORGANIZER}/\texttt{ADMIN}, Spring Security~\cite{spring:security};
+  \item remedacje po testach penetracyjnych powierzchni HTTP(S) produkcji~\cite{raceportal:pentest}: m.in.\ limity prób logowania (\texttt{AttemptRateLimiter}), walidacja URL (\texttt{SafeHttpUrls}), spójność HSTS/HTTPS za Cloudflare Tunnel, wyrównanie kosztu odpowiedzi przy logowaniu/resecie hasła, zaostrzenie CSP i~ograniczenie wycieków informacyjnych;
+  \item konteneryzacja i~wdrożenie: Docker Compose~\cite{docker:compose} (web, API, MySQL, backup), produkcja na Oracle Always Free z~Cloudflare Tunnel~\cite{cloudflare:tunnel} i~nginx, konfiguracja domeny \url{https://raceportal.pl} oraz backoffice;
+  \item ścieżka mobilna i~PWA: wizytówka Expo (katalog + CTA do weba), instalowalność weba jako PWA, utrzymanie spójności kontraktu typów (\texttt{packages/api-types});
+  \item weryfikacja jakości: testy integracyjne API (JUnit/MockMvc), E2E Playwright~\cite{playwright:docs}, pomiary obciążenia Grafana~k6~\cite{k6:docs,k6:vm-rps} na VM oraz dokumentacja uruchomienia, wdrożenia i~odbioru w~\texttt{docs/} (m.in.\ scenariusz prezentacji~\cite{raceportal:demo});
+  \item udział w~redakcji pracy dyplomowej (LaTeX~\cite{latex:project}): rozdziały dotyczące SWOT, projektu/realizacji, mobile, bezpieczeństwa (w~tym pentest), prezentacji MVP, a~także uzupełnianie słownika pojęć i~bibliografii.
 \end{itemize}
 
 \chapter{Podsumowanie}
