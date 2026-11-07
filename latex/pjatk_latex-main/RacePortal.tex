@@ -128,19 +128,32 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
 
 \chapter{Słownik pojęć}
 \begin{description}
-  \item[Wydarzenie (event)] Zorganizowany start / impreza motorsportowa (np.\ track day, drift, rally), opisana datą, lokalizacją, kategorią i~wymaganiami.
+  \item[Wydarzenie (event)] Zorganizowana impreza motorsportowa (np.\ track day, drift, rally), opisana datą, lokalizacją, kategorią i~wymaganiami udziału.
   \item[Katalog] Publiczny wykaz wydarzeń z~widokami lista, mapa i~kalendarz oraz filtrami.
   \item[Garaż] Zbiór pojazdów przypisanych do konta kierowcy, wykorzystywanych przy zapisie na wydarzenie.
-  \item[Zgłoszenie (registration)] Wniosek o~udział w~wydarzeniu, posiadający status (np.\ PENDING, APPROVED, CANCELED).
-  \item[carMatch] Mechanizm dopasowania kategorii/klasy pojazdu do kategorii wydarzenia (aliasy nazw).
-  \item[Organizator] Użytkownik z~rolą ORGANIZER, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
-  \item[Administrator] Użytkownik z~rolą ADMIN, moderujący wydarzenia, wnioski o~rolę organizatora i~role kont.
-  \item[Wizytówka mobilna] Wersja aplikacji Expo ograniczona do przeglądania katalogu; zapis odbywa się na webie (CTA).
-  \item[JWT] JSON Web Token --- token dostępu używany przez API; w~warstwie webowej przechowywany w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), a~nie w~\texttt{localStorage}.
-  \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role.
-  \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy wykorzystany jako domyślny provider.
+  \item[Zgłoszenie (registration)] Wniosek o~udział w~wydarzeniu. Statusy dyplomowe: \texttt{PENDING} (oczekuje), \texttt{ACCEPTED} (wstępnie przyjęte), \texttt{CONFIRMED} (potwierdzone), \texttt{CANCELED} (anulowane).
+  \item[Model „zapłać później”] Ścieżka płatnego wydarzenia bez bramki online: po \texttt{ACCEPTED} kierowca dokłada dowód przelewu, a~organizator potwierdza miejsce (\texttt{CONFIRMED}).
+  \item[carMatch] Mechanizm dopasowania kategorii / klasy pojazdu do wymagań wydarzenia (m.in.\ aliasy nazw).
+  \item[Workspace organizatora] Panel zarządzania pojedynczym wydarzeniem (zgłoszenia, klasy, wyniki, komunikacja, wskaźniki).
+  \item[Lista startowa] Publiczny wykaz potwierdzonych uczestników wydarzenia (po stronie weba).
+  \item[Organizator] Użytkownik z~rolą \texttt{ORGANIZER}, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
+  \item[Administrator] Użytkownik z~rolą \texttt{ADMIN}, moderujący wydarzenia, wnioski o~rolę organizatora oraz role kont.
+  \item[Backoffice] Osobny host administracyjny (\texttt{bo.raceportal.pl}) przeznaczony wyłącznie dla roli \texttt{ADMIN}.
+  \item[Wizytówka mobilna] Aplikacja Expo ograniczona do przeglądania katalogu; zapis i~konto realizowane są w~wersji webowej.
+  \item[CTA] Call to Action --- wezwanie do działania; w~mobilce przycisk otwierający zapis na stronie webowej.
+  \item[PWA] Progressive Web App --- aplikacja webowa instalowalna na urządzeniu (manifest, service worker), uzupełniająca ścieżkę mobilną obok Expo.
+  \item[API REST] Interfejs HTTP backendu RacePortal (JSON) współdzielony przez web i~mobile.
+  \item[JWT] JSON Web Token --- token dostępu API; w~warstwie webowej w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), nie w~\texttt{localStorage}.
+  \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role (\texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN}).
+  \item[OAuth Google] Opcjonalne logowanie kontem Google (obok logowania hasłem).
+  \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy dojazdu (domyślny provider).
+  \item[Docker Compose] Narzędzie uruchamiania zestawu kontenerów (web, API, MySQL, backup) jako wspólnego środowiska lokalnego i~produkcyjnego.
+  \item[Cloudflare Tunnel] Tunel zapewniający publiczny dostęp HTTPS do usług na maszynie wirtualnej (bez otwierania portów na firewallu VM).
+  \item[Mailbux] Zewnętrzny SMTP używany do wysyłki maili transakcyjnych RacePortal.
+  \item[PSP] Payment Service Provider --- natywna bramka płatności online; świadomie poza zakresem MVP.
   \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
-  \item[RPS] Requests Per Second --- metryka obciążenia (np.\ docelowy test 50~RPS przy 10k rekordach).
+  \item[RPS] Requests Per Second --- metryka obciążenia (liczba żądań na sekundę); w~projekcie mierzona m.in.\ narzędziem k6.
+  \item[Expo] Framework do budowy aplikacji React Native; wykorzystany w~kliencie mobilnym RacePortal.
 \end{description}
 
 \chapter{Opis problemu}
@@ -1246,20 +1259,141 @@ Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
 \label{ch:mobile}
+Rozdział opisuje implementację klienta mobilnego RacePortal. Aplikacja powstała w~technologii Expo (React Native) i~pełni rolę publicznej wizytówki katalogu: umożliwia przeglądanie wydarzeń na telefonie, natomiast zapis udziału oraz funkcje konta realizowane są w~wersji webowej.
+
 \section{Założenia aplikacji mobilnej}
-Mobilka ma wspierać odkrywanie wydarzeń, a~nie dublować pełnego klienta webowego.
+Przyjęto świadome ograniczenie zakresu względem klienta webowego. Aplikacja mobilna ma przede wszystkim umożliwić przeglądanie nadchodzących wydarzeń motorsportowych --- w~postaci listy, mapy, kalendarza oraz ekranu szczegółów --- a~nie stanowić drugiej, pełnej aplikacji z~logowaniem i~garażem.
+
+Założenia wynikające z~tego podziału:
+\begin{itemize}
+  \item brak uwierzytelniania i~przechowywania tokenów JWT w~aplikacji mobilnej;
+  \item wyłącznie publiczne operacje odczytu katalogu;
+  \item konwersja zapisu przez otwarcie odpowiedniej strony wydarzenia w~przeglądarce / PWA;
+  \item wspólny kontrakt danych z~API (te same wydarzenia i~filtry co na webie);
+  \item brak publikacji w~sklepach App Store / Google Play w~ramach MVP (uruchomienie przez Expo / emulator).
+\end{itemize}
+We wcześniejszej fazie projektu rozważano szerszą parity z~webem; ostatecznie zakres zawężono do wizytówki, aby uniknąć dublowania logiki zapisów i~utrzymać jeden główny kanał transakcyjny.
+
 \section{Architektura rozwiązania mobilnego}
-Expo SDK, React Navigation (stack Eventy), ThemeProvider, prosty klient API bez sesji JWT.
+Rozwiązanie oparto o~Expo SDK oraz React Native. Warstwa prezentacji korzysta z~React Navigation (native stack) ograniczonego do przepływu wydarzeń. Motyw wizualny (ciemne tło, akcent marki) oraz lokalizacja interfejsu (PL/EN) są dostarczane przez konteksty aplikacji.
+
+Klient HTTP ograniczono do minimum potrzebnego wizytówce: wykonuje wyłącznie publiczne żądania \texttt{GET} do API RacePortal, bez nagłówka autoryzacji. Adres API i~adres wersji webowej (używany przy CTA zapisu) konfigurowane są zmiennymi środowiskowymi Expo, z~domyślnymi wartościami dopasowanymi do środowiska deweloperskiego (m.in.\ inny host dla emulatora Androida niż dla symulatora iOS).
+
+Aplikacja mobilna \textbf{nie} wchodzi w~skład Docker Compose --- uruchamiana jest osobno obok kontenerów web/API/MySQL.
+
 \section{Lista wydarzeń i widok szczegółów}
-Filtry publiczne; przełączanie Lista / Kalendarz / Mapa; detal z~metadanymi wydarzenia.
+Ekran listy pobiera wydarzenia z~publicznego endpointu katalogu i~udostępnia trzy tryby prezentacji: lista, kalendarz oraz mapa (markery). Filtry publiczne obejmują m.in.\ wyszukiwanie tekstowe, kategorię, województwo, miasto, tor, zakres dat oraz oznaczenie wydarzeń płatnych / bezpłatnych. Zestawy lokalizacji (województwa, tory) są spójne z~listami używanymi po stronie weba, aby obie aplikacje operowały na tych samych słownikach.
+
+Dobór zakresu dat korzysta z~natywnego komponentu wyboru daty. Wygląd i~zachowanie różnią się między platformami: na iOS stosowany jest tryb \texttt{inline}, na Androidzie --- systemowy dialog (\texttt{default}). Po wyborze daty na Androidzie selektor jest zamykany od razu (listing~\ref{lst:mobile-datepicker}).
+
+\begin{lstlisting}[language=Java,caption={Wybór daty filtra z~rozróżnieniem iOS / Android},label={lst:mobile-datepicker}]
+const onDatePicked = (event, selectedDate) => {
+  if (Platform.OS === "android") setDatePickerTarget(null);
+  if (event.type !== "set" || !selectedDate || !datePickerTarget) return;
+  const value = formatDate(selectedDate);
+  if (datePickerTarget === "from") setDateFrom(value);
+  if (datePickerTarget === "to") setDateTo(value);
+};
+
+{datePickerTarget && (Platform.OS === "android" || Platform.OS === "ios") ? (
+  <DateTimePicker
+    value={currentPickerDate}
+    mode="date"
+    display={Platform.OS === "ios" ? "inline" : "default"}
+    onChange={onDatePicked}
+  />
+) : null}
+\end{lstlisting}
+
+Widok szczegółów pobiera pojedyncze wydarzenie po identyfikatorze i~prezentuje podstawowe metadane (nazwa, kategoria, data, lokalizacja, opis, multimedia). Z~poziomu detalu użytkownik może otworzyć lokalizację w~zewnętrznej aplikacji map oraz przejść do zapisu na stronie webowej. Otwarcie map realizuje systemowe \texttt{Linking} z~zapytaniem zawierającym tor, miasto i~współrzędne (listing~\ref{lst:mobile-maps}).
+
+\begin{lstlisting}[language=Java,caption={Otwarcie lokalizacji wydarzenia w~zewnętrznej aplikacji map},label={lst:mobile-maps}]
+const openMaps = () => {
+  if (!event?.lat || !event?.lng) return;
+  const q = encodeURIComponent(
+    `${event.track}, ${event.city} ${event.lat},${event.lng}`
+  );
+  void Linking.openURL(
+    `https://www.google.com/maps/search/?api=1&query=${q}`
+  );
+};
+\end{lstlisting}
+
 \section{Nawigacja i interfejs użytkownika}
-Pojedynczy stack: \texttt{EventsList} $\rightarrow$ \texttt{EventDetail}; dark UI spójny z~marką.
+Nawigacja ogranicza się do jednego stosu ekranów: lista wydarzeń oraz detal wybranego wydarzenia. Nie zastosowano dolnych kart (tabów) typowych dla pełnego klienta, ponieważ poza katalogiem nie ma w~mobilce osobnych obszarów konta, garażu ani paneli ról. Ilustruje to listing~\ref{lst:mobile-stack}: zarejestrowane są wyłącznie ekrany katalogu.
+
+\begin{lstlisting}[language=Java,caption={Stos nawigacji ograniczony do listy i~detalu wydarzenia},label={lst:mobile-stack}]
+function EventsNavigator() {
+  const { accentColor } = useTheme();
+  const { t } = useLocale();
+  return (
+    <EventsStack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.card },
+        headerTintColor: accentColor,
+        headerTitleStyle: { color: colors.text, fontWeight: "800" },
+      }}
+    >
+      <EventsStack.Screen
+        name="EventsList"
+        component={EventsScreen}
+        options={{ headerShown: false }}
+      />
+      <EventsStack.Screen
+        name="EventDetail"
+        component={EventDetailScreen}
+        options={{ title: t("events.details") }}
+      />
+    </EventsStack.Navigator>
+  );
+}
+\end{lstlisting}
+
+Interfejs utrzymuje ciemny motyw motorsportowy spójny z~identyfikacją RacePortal. Elementy wspólne (nagłówki, przyciski, stany ładowania i~braku danych) wydzielono do prostych komponentów UI, aby zachować jednolity wygląd obu ekranów.
+
 \section{Integracja z API}
-Publiczne GET (events, markers, health); konfiguracja hosta API (localhost / LAN / Android emulator).
+Integracja obejmuje wyłącznie publiczne odczyty potrzebne katalogowi, w~szczególności:
+\begin{itemize}
+  \item listę wydarzeń (z~filtrami i~podziałem na strony),
+  \item markery mapy,
+  \item detal wydarzenia,
+  \item opcjonalnie sprawdzenie dostępności API (health) w~scenariuszach diagnostycznych.
+\end{itemize}
+Ścieżki względne multimediów (np.\ uploady) są uzupełniane o~adres bazowy API, ponieważ klient natywny --- w~odróżnieniu od aplikacji webowej serwowanej z~tego samego hosta co API --- nie rozwiązuje automatycznie ścieżek względnych zasobów.
+
+Konfiguracja hosta uwzględnia typowe różnice środowisk: lokalny host na symulatorze iOS, specjalny adres bramy emulatora Androida (\texttt{10.0.2.2}) oraz możliwość wskazania adresu LAN / produkcji przez zmienne Expo. Fragment z~listingu~\ref{lst:mobile-api-url} pokazuje domyślne wyznaczanie adresu API (analogiczna logika dotyczy adresu wersji webowej używanego przy CTA).
+
+\begin{lstlisting}[language=Java,caption={Wyznaczanie bazowego adresu API dla klienta mobilnego},label={lst:mobile-api-url}]
+export const API_URL = (() => {
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL.replace(/\/$/, "");
+  }
+  const expoGoHost = resolveExpoGoHost();
+  if (expoGoHost && expoGoHost !== "localhost"
+      && expoGoHost !== "127.0.0.1") {
+    return `http://${expoGoHost}:4000`;
+  }
+  return Platform.OS === "android"
+    ? "http://10.0.2.2:4000"
+    : "http://127.0.0.1:4000";
+})();
+\end{lstlisting}
+
 \section{Przekierowanie do wersji webowej}
-Przycisk „Zapisz się na stronie” --- \texttt{Linking.openURL(webEventUrl(id))}.
+Zapis na wydarzenie nie jest realizowany w~aplikacji mobilnej. Na ekranie detalu umieszczono przycisk CTA, który buduje adres wersji webowej wydarzenia i~otwiera go systemowym mechanizmem łączy zewnętrznych (\texttt{Linking}). Użytkownik trafia tym samym do pełnego flow zapisu na webie (konto, garaż, statusy zgłoszenia, ewentualny dowód płatności).
+
+Takie rozwiązanie utrzymuje jedną implementację reguł biznesowych zapisów i~zmniejsza ryzyko rozjazdu mobile~$\leftrightarrow$~web.
+
 \section{Ograniczenia wersji mobilnej}
-Brak auth, garażu, paneli ról i~archiwum w~aplikacji; zależność od dostępności weba przy konwersji zapisu.
+Wersja mobilna MVP nie obejmuje:
+\begin{itemize}
+  \item logowania, rejestracji ani zarządzania profilem;
+  \item garażu pojazdów i~składania zgłoszeń bezpośrednio z~aplikacji;
+  \item paneli organizatora i~administratora;
+  \item archiwum, wyników zawodów ani funkcji społecznościowych;
+  \item powiadomień push oraz publikacji w~sklepach aplikacji.
+\end{itemize}
+Ograniczeniem wynikającym z~przyjętego modelu CTA jest zależność od dostępności wersji webowej w~momencie zapisu. Jednocześnie ograniczenie to jest zamierzone: mobilka pozostaje lekkim kanałem przeglądania katalogu, a~kompletny produkt transakcyjny skupia się na webie (w~tym PWA).
 
 \chapter{Bezpieczeństwo systemu}
 \label{ch:bezpieczenstwo}
