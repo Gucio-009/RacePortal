@@ -138,7 +138,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 15 (Prezentacja systemu)} --- opisuje prezentację głównych funkcjonalności MVP oraz scenariusze użycia z~perspektywy kierowcy, organizatora i~administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
   \item \textbf{Rozdział 17 (Wkład własny)} --- opisuje indywidualny wkład członków zespołu (UI/UX, analiza, backend, modelowanie, fullstack/testy/bezpieczeństwo i~wdrożenie).
-  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe) oraz perspektywy dalszego rozwoju platformy.
+  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, zmiany i~adaptacje w~trakcie realizacji, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe), kierunki rozwoju oraz wnioski.
 \end{itemize}
 
 \chapter{Słownik pojęć}
@@ -235,6 +235,10 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item[Monorepo] Jedno repozytorium Git zawierające wiele pakietów/aplikacji (tu: \texttt{web/}, \texttt{backend/}, \texttt{mobile/}, \texttt{packages/}).
   \item[Fullstack] Zakres prac obejmujący więcej niż jedną warstwę systemu (API, web, integracja, wdrożenie) --- w~praktyce RacePortal przypisany m.in.\ do roli testów i~bezpieczeństwa.
   \item[DataInitializer] Komponent startowy API ładujący dane seed (konta demo, przykładowe wydarzenia) przy uruchomieniu aplikacji.
+  \item[Object storage] Zewnętrzna usługa przechowywania plików (np.\ S3); w~MVP zamiast niej lokalny upload na dysk serwera.
+  \item[Cloudflare Pages] Usługa hostingu frontendu statycznego Cloudflare; rozważana we wczesnych eksperymentach, ostatecznie porzucona na rzecz Compose + Tunnel.
+  \item[Waitlista] Kolejka rezerwowa przy braku miejsc; w~MVP poza zakresem (kierunek rozwoju).
+  \item[CTA webowe] Przekierowanie z~wizytówki mobilnej do pełnej ścieżki zapisu w~aplikacji webowej / PWA.
 \end{description}
 
 \chapter{Opis problemu}
@@ -1846,7 +1850,38 @@ Podczas realizacji i wdrożenia produkcyjnego systemu RacePortal zespół napotk
 \end{itemize}
 
 \section{Zmiany i adaptacje w trakcie realizacji}
-Przejście mobile z~pełnej równoważności funkcji na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
+Realizacja RacePortal nie przebiegała jako sztywne wykonanie pierwotnego planu ,,punkt po punkcie''. Zakres MVP~\cite{raceportal:mvp}, ograniczenia budżetowe oraz wnioski z~integracji i~testów wymusiły kilka świadomych adaptacji. Poniżej zestawiono najważniejsze zmiany względem wczesnych założeń (KP/DZW, pierwsze prototypy UI i~eksperymenty infrastrukturalne) wraz z~uzasadnieniem.
+
+\begin{itemize}
+  \item \textbf{Aplikacja mobilna: od równoważności funkcji do wizytówki.}
+  Wczesne dokumenty i~szkice zakładały klienta mobilnego zbliżonego funkcjonalnie do weba (konto, garaż, zapis). W~toku prac okazało się, że utrzymanie pełnej równoważności funkcji na Expo i~na React jednocześnie przekracza ramy czasowe zespołu oraz grozi rozjazdem kontraktu API. Przyjęto model wizytówki: katalog (lista / mapa / kalendarz) + CTA do zapisu na webie, a~pełną ścieżkę transakcyjną domknięto w~PWA weba. Efektem jest działająca demonstracja mobilna bez obietnicy publikacji w~sklepach aplikacji.
+
+  \item \textbf{Hosting: od rozproszonego stacku do jednej VM z~Tunelem.}
+  Pierwsze eksperymenty (m.in.\ frontend na Cloudflare Pages / podobnych platformach, backend osobno) generowały problemy CORS, rozjazdu originów i~złożoności wdrożenia. Zespół przeszedł na jeden Compose~\cite{docker:compose} na Oracle Always Free oraz publiczny dostęp przez Cloudflare Tunnel~\cite{cloudflare:tunnel} (apex \url{https://raceportal.pl}, backoffice na osobnym hoście). Deploy sprowadza się do aktualizacji kodu i~przebudowy kontenerów; TLS/HSTS terminowane są na brzegu Cloudflare.
+
+  \item \textbf{Sesje: od JWT w~\texttt{localStorage} do ciasteczek httpOnly.}
+  Wczesny klient webowy przechowywał token w~\texttt{localStorage}. Po analizie zagrożeń i~testach penetracyjnych~\cite{raceportal:pentest} sesję przeniesiono do ciasteczek \texttt{rp\_at}/\texttt{rp\_rt} (httpOnly, rotacja refresh, \texttt{tokenVersion}), co ogranicza skutki XSS względem modelu opartego o~JavaScriptowy odczyt tokenu.
+
+  \item \textbf{Wspólny kontrakt typów (\texttt{packages/api-types}).}
+  Rozrost monorepo (web + mobile + API) ujawnił ryzyko rozjazdu pól JSON. Wprowadzono współdzielony pakiet TypeScript~\cite{typescript:docs} generujący/utrzymujący typy kontraktu REST, co zmniejszyło liczbę błędów integracyjnych i~uprościło testy jednostkowe po stronie klientów.
+
+  \item \textbf{Mapy i~trasa: Leaflet + OSRM jako domyślny wariant.}
+  KP/DZW wskazywały Google Maps API jako integrację mapową. W~MVP domyślnie przyjęto Leaflet~\cite{leaflet:docs} (markery katalogu) oraz publiczny OSRM~\cite{osrm:project} do trasy dojazdu, z~opcją Google przy skonfigurowanym kluczu. Zmiana ograniczyła koszty i~zależność od płatnego klucza przy zachowaniu demonstracyjnej wartości mapy.
+
+  \item \textbf{Płatności: model ,,zapłać później'' zamiast natychmiastowego PSP.}
+  Zamiast wdrażać bramkę płatności online w~ramach akademickiego MVP pozostawiono statusy zgłoszeń i~opcjonalny dowód przelewu po stronie organizatora. Decyzja wynika z~kosztów onboardingu PSP, wymogów prawnych i~priorytetu domknięcia katalogu oraz zapisów.
+
+  \item \textbf{Media: od samych URL-i do lokalnego uploadu z~limitami.}
+  Wczesne założenie ,,same odnośniki zewnętrzne'' rozszerzono o~upload JPG/PNG/WebP/PDF na dysk serwera (garaż, grafika wydarzenia, regulamin, dowód płatności), z~weryfikacją typu po~sygnaturze i~limitem rozmiaru. Jednocześnie pozostawiono możliwość wskazania bezpiecznego URL http(s) --- kompromis między wygodą demonstracji a~brakiem zewnętrznego object storage.
+
+  \item \textbf{Doprecyzowanie formularzy i~zgodności ze Spec.}
+  W~trakcie implementacji ujawniono różnice między dokumentami wymagań a~faktycznym kontraktem pól (wymagane vs opcjonalne). Zespół prowadzi rejestr zgodności~\cite{raceportal:spec} i~iteracyjnie dopinał walidację DTO oraz UI, zamiast ,,na siłę'' odtwarzać każdy historyczny zapis Spec bez odniesienia do MVP.
+
+  \item \textbf{Bezpieczeństwo jako pętla remedacji, nie jednorazowa checklista.}
+  Po wystawieniu produkcji przeprowadzono testy penetracyjne i~wdrożono remedacje (HSTS, rate limit, SafeHttpUrls, timing-safe login, CSP itd.) w~cyklu odkrycie~$\rightarrow$~naprawa~$\rightarrow$~weryfikacja~\cite{raceportal:pentest}. To zmiana procesu: konfiguracja operatorska (sekret JWT, seed na ekspozycji publicznej) stała się częścią odbioru, a~nie wyłącznie tematem kodu.
+\end{itemize}
+
+Adaptacje te nie zmieniają celu produktu (centralny katalog i~ujednolicone zapisy), lecz porządkują sposób dojścia do działającego MVP w~ograniczeniach czasu, budżetu i~bezpieczeństwa opisanych w~sąsiednich podrozdziałach.
 
 \section{Ograniczenia końcowej wersji systemu}
 Oddawana wersja RacePortal domyka założony zakres MVP: publiczny katalog wydarzeń, konta i~role, wirtualny garaż, proces zgłoszeń ze statusami, panele organizatora i~administratora, powiadomienia e-mail, lokalny upload mediów oraz mobilną wizytówkę katalogu. Jednocześnie praca inżynierska wymaga jasnego wskazania granic rozwiązania --- zarówno tych wynikających ze świadomego zawężenia zakresu, jak i~tych wynikających z~przyjętego modelu wdrożenia demonstracyjnego. Opis poniżej jest spójny z~kartą projektu oraz z~podrozdziałem~\ref{sec:cel-zakres}; nie stanowi katalogu usterek, lecz zestaw ograniczeń, których zespół nie deklarował jako zrealizowanych.
