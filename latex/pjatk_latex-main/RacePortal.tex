@@ -73,15 +73,35 @@ Wizja produktowa zakłada:
 \begin{itemize}
   \item publiczny katalog z~trzema widokami (lista, mapa, kalendarz) na wspólnych filtrach;
   \item ujednolicony proces zapisu ze statusami i~powiadomieniami e-mail;
-  \item wyraźny podział ról \texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN} (gość przegląda bez konta);
-  \item mobilną ścieżkę discovery (Expo) z~konwersją zapisu na web;
-  \item uruchamialne środowisko demonstracyjne (Docker) oraz wdrożenie produkcyjne za Cloudflare Tunnel.
+  \item wyraźny podział ról \texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN} (gość przegląda katalog bez konieczności zakładania konta);
+  \item mobilną ścieżkę discovery (Expo) z~konwersją zapisu na wersję webową;
+  \item uruchamialne środowisko demonstracyjne (Docker Compose) oraz wdrożenie produkcyjne realizowane za~pośrednictwem Cloudflare Tunnel.
 \end{itemize}
 
-Szczegóły warstw technicznych (web React/Vite, API Spring Boot, MySQL, mobile Expo, \texttt{packages/api-types}) opisano w~rozdziale~\ref{ch:projekt} oraz w~rozdziałach implementacyjnych. Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
+Szczegóły warstw technicznych (aplikacja webowa React/Vite, API REST oparte o~Spring Boot, baza danych MySQL, aplikacja mobilna Expo oraz współdzielone typy API w~pakiecie \texttt{packages/api-types}) opisano w~dalszej części pracy oraz w~rozdziałach implementacyjnych. Kod źródłowy projektu utrzymywany jest w~dedykowanym repozytorium~\cite{raceportal:repo}.
 
 \section{Struktura pracy}
-Kolejne rozdziały obejmują: słownik pojęć, opis problemu dziedzinowego, kontekst biznesowy (w~tym karty udziałowców), analizę SWOT, planowanie projektu, analizę wymagań (w~tym karty wymagań i~diagramy UML), projekt systemu (m.in.\ Figma, diagram klas), opis realizacji oraz szczegóły implementacji backendu, frontendu i~mobile, bezpieczeństwo, testowanie, prezentację systemu, nakład pracy, \textbf{wkład własny} oraz podsumowanie (z~uwzględnieniem ograniczeń wydajnościowych RPS).
+Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdziały, które w~sposób wyczerpujący przeprowadzają czytelnika przez proces koncepcyjny, analityczny, projektowy oraz implementacyjny systemu RacePortal:
+\begin{itemize}
+  \item \textbf{Rozdział 1 (Informacje wstępne)} --- przedstawia cel i~zakres pracy, wizję rozwiązania opartą na architekturze MVP, a~także strukturę całego dokumentu.
+  \item \textbf{Rozdział 2 (Słownik pojęć)} --- definiuje kluczowe terminy dziedzinowe i~technologiczne wykorzystane w~pracy, takie jak wydarzenie, katalog, garaż, zgłoszenie, mechanizm dopasowania pojazdu (\texttt{carMatch}), a~także pojęcia związane z~bezpieczeństwem i~architekturą (JWT, RBAC, OSRM, MVP).
+  \item \textbf{Rozdział 3 (Opis problemu)} --- charakteryzuje specyfikę rynku amatorskiego i~półprofesjonalnego motorsportu w~Polsce, wskazuje na problemy organizacyjne i~informacyjne po~stronie kierowców oraz organizatorów, a~także uzasadnia potrzebę stworzenia zintegrowanej platformy.
+  \item \textbf{Rozdział 4 (Kontekst biznesowy)} --- omawia segmentację użytkowników, mapę interesariuszy, propozycję wartości systemu, kanały komunikacji, model działania platformy oraz uwarunkowania prawne i~etyczne.
+  \item \textbf{Rozdział 5 (Analiza SWOT)} --- analizuje mocne i~słabe strony projektu oraz identyfikuje rynkowe szanse i~zagrożenia związane z~wdrożeniem systemu.
+  \item \textbf{Rozdział 6 (Planowanie projektu)} --- przedstawia cele, zakres, metodykę pracy, organizację zespołu, harmonogram, zastosowaną infrastrukturę oraz szczegółową analizę ryzyka projektowego.
+  \item \textbf{Rozdział 7 (Analiza wymagań)} --- zawiera źródła pozyskania wymagań, wymagania ogólne, dziedzinowe, funkcjonalne, niefunkcjonalne, bezpieczeństwa oraz interfejsu użytkownika, a~także diagramy UML (w~tym przypadki użycia).
+  \item \textbf{Rozdział 8 (Projekt systemu)} --- omawia założenia architektoniczne, architekturę logiczną i~fizyczną, projekt relacyjnej bazy danych (model ERD), projekt interfejsu REST API, warstwy webowej (Figma Make), aplikacji mobilnej oraz mechanizmów bezpieczeństwa.
+  \item \textbf{Rozdział 9 (Realizacja)} --- przedstawia organizację prac implementacyjnych, podział systemu na komponenty (backend Spring Boot, frontend React/Vite, aplikacja mobilna Expo), integrację oraz konteneryzację środowiska za~pomocą Docker Compose.
+  \item \textbf{Rozdział 10 (Szczegóły implementacji backendu)} --- szczegółowo opisuje strukturę projektu backendowego, model domenowy, mechanizmy uwierzytelniania i~rejestracji (JWT, rate limiting), obsługę wydarzeń, zgłoszeń, garażu oraz integrację z~bazą danych.
+  \item \textbf{Rozdział 11 (Szczegóły implementacji frontendu webowego)} --- omawia strukturę aplikacji webowej, kluczowe widoki (katalog, szczegóły, dashboard użytkownika, garaż, panele administratora i~organizatora) oraz responsywność i~doświadczenie użytkownika.
+  \item \textbf{Rozdział 12 (Szczegóły implementacji aplikacji mobilnej)} --- przedstawia założenia, architekturę oraz implementację mobilnej wizytówki systemu opartej na ekosystemie Expo.
+  \item \textbf{Rozdział 13 (Bezpieczeństwo systemu)} --- prezentuje założenia ochrony danych, klasyfikację informacji, uwierzytelnianie, kontrolę dostępu (RBAC), walidację wejścia oraz analizę zagrożeń i~ryzyka.
+  \item \textbf{Rozdział 14 (Testowanie i~weryfikacja systemu)} --- opisuje strategię testowania, środowisko testowe, testy jednostkowe, integracyjne, E2E (Playwright) oraz weryfikację mechanizmów bezpieczeństwa.
+  \item \textbf{Rozdział 15 (Prezentacja systemu)} --- ilustruje scenariusze użycia platformy z~perspektywy kierowcy, organizatora oraz administratora.
+  \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
+  \item \textbf{Rozdział 17 (Wkład własny)} --- szczegółowo opisuje indywidualny wkład poszczególnych członków zespołu w~realizację projektu.
+  \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym wydajnościowe RPS) oraz perspektywy dalszego rozwoju platformy.
+\end{itemize}
 
 \chapter{Słownik pojęć}
 \begin{description}
