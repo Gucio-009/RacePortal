@@ -135,7 +135,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 12 (Szczegóły implementacji aplikacji mobilnej)} --- przedstawia założenia, architekturę oraz implementację mobilnej wizytówki systemu opartej na ekosystemie Expo.
   \item \textbf{Rozdział 13 (Bezpieczeństwo systemu)} --- prezentuje założenia ochrony danych, klasyfikację informacji, uwierzytelnianie, kontrolę dostępu (RBAC), walidację wejścia, analizę zagrożeń i~ryzyka oraz wnioski z~testów penetracyjnych z~remedacjami.
   \item \textbf{Rozdział 14 (Testowanie i~weryfikacja systemu)} --- opisuje strategię testowania, środowisko testowe, testy jednostkowe, integracyjne, E2E (Playwright) oraz weryfikację mechanizmów bezpieczeństwa.
-  \item \textbf{Rozdział 15 (Prezentacja systemu)} --- ilustruje scenariusze użycia platformy z~perspektywy kierowcy, organizatora oraz administratora.
+  \item \textbf{Rozdział 15 (Prezentacja systemu)} --- opisuje prezentację głównych funkcjonalności MVP oraz scenariusze użycia z~perspektywy kierowcy, organizatora i~administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
   \item \textbf{Rozdział 17 (Wkład własny)} --- szczegółowo opisuje indywidualny wkład poszczególnych członków zespołu w~realizację projektu.
   \item \textbf{Rozdział 18 (Podsumowanie)} --- przedstawia największe wyzwania, adaptacje w~trakcie prac, końcowe ograniczenia systemu (w~tym budżetowe i~czasowe) oraz perspektywy dalszego rozwoju platformy.
@@ -227,6 +227,11 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item[k6] Narzędzie Grafana do testów obciążeniowych HTTP (pomiary RPS na VM).
   \item[Expo] Framework do budowy aplikacji React Native; wykorzystany w~kliencie mobilnym RacePortal.
   \item[Track day] Impreza torowa bez klasycznej rywalizacji wyścigowej --- jazda treningowa na torze.
+  \item[USP] Unique Selling Proposition --- wyróżnik oferty; w~RacePortal m.in.\ garaż + \texttt{carMatch} oraz panel organizatora na jednym katalogu.
+  \item[Live demo] Demonstracja systemu na żywo (produkcja lub Compose) według ustalonego scenariusza obrony.
+  \item[Konto seed] Konto demonstracyjne ładowane przy starcie API (kierowca / organizator / admin) do powtarzalnych pokazów i~testów.
+  \item[Oracle Always Free] Warstwa darmowych zasobów Oracle Cloud; w~projekcie VM Ampere hostująca Compose za Cloudflare Tunnel.
+  \item[Filtr ,,pod moje auto''] Widok katalogu ograniczony do wydarzeń, do których pasuje wybrany pojazd z~garażu (wykorzystuje \texttt{carMatch}).
 \end{description}
 
 \chapter{Opis problemu}
@@ -1718,8 +1723,40 @@ Osobno, 25.10.2026, wykonano pomiary obciążenia Grafana~k6~\cite{k6:docs} na O
 Brak pełnych testów natywnych (Detox/Maestro). Nie wykonano formalnego scenariusza odbiorczego KP/DZW ,,ok.\ 10\,000 rekordów w~katalogu / 50~RPS'' --- w~raporcie k6 nie ma zapełnienia bazy do 10k; są pomiary RPS na istniejących danych. Dodatkowo k6 działał na tej samej VM co stack (konkurencja o~2~OCPU), więc wynik to dolna granica pojemności originu; szczegóły także w~podsumowaniu~\cite{k6:vm-rps}.
 
 \chapter{Prezentacja systemu}
+\label{ch:prezentacja}
+Rozdział porządkuje sposób pokazania RacePortal na obronie i~w~odbiorze MVP: najpierw mapę funkcjonalności oraz warunki demonstracji, a~następnie typowe ścieżki ról (kierowca, organizator, administrator). Szczegółowy scenariusz czasowy utrzymywany jest w~dokumentacji projektowej~\cite{raceportal:demo}.
+
 \section{Prezentacja głównych funkcjonalności}
-Demonstracja katalogu (3 widoki), zapisu kierowcy z~\texttt{carMatch}, paneli org/admin oraz mobile CTA --- zgodnie z~\texttt{docs/scenariusz-prezentacji.md}.
+Celem prezentacji jest wykazanie, że RacePortal działa jako spójny system --- a~nie zestaw osobnych mocków --- na wspólnej powierzchni produkcyjnej lub lokalnej. Demonstracja opiera się na środowisku \url{https://raceportal.pl} (Oracle Always Free + Cloudflare Tunnel~\cite{cloudflare:tunnel}) albo na stacku \texttt{docker compose}~\cite{docker:compose} (web, API, MySQL, backup) uruchomionym lokalnie. Przed pokazem weryfikowany jest health API (\texttt{/api/health}) oraz dostępność kont demonstracyjnych (seed).
+
+\subsection*{Mapa funkcjonalności pokazywanych w~MVP}
+W~toku prezentacji eksponowane są następujące bloki produktu (zgodnie z~zakresem MVP~\cite{raceportal:mvp}):
+\begin{itemize}
+  \item \textbf{katalog publiczny} --- trzy widoki wydarzeń (lista, mapa Leaflet~\cite{leaflet:docs}, kalendarz) na wspólnych filtrach (kategoria, województwo, data, nazwa); wejście bez logowania;
+  \item \textbf{szczegóły wydarzenia} --- opis, wymagania udziału, opcjonalne załączniki regulaminu, wyznaczanie trasy dojazdu (OSRM~\cite{osrm:project});
+  \item \textbf{konto i~role} --- rejestracja/logowanie, JWT + RBAC (\texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN}); wniosek o~rolę organizatora;
+  \item \textbf{garaż i~\texttt{carMatch}} --- pojazdy kierowcy z~parametrami; dopasowanie i~filtr katalogu ,,pod moje auto'';
+  \item \textbf{zgłoszenia} --- składanie zapisu, statusy (\texttt{PENDING} / \texttt{ACCEPTED} / \texttt{CONFIRMED} / \texttt{CANCELED}), model ,,zapłać później'' z~dowodem przelewu; maile transakcyjne (Mailbux);
+  \item \textbf{panel organizatora} --- tworzenie/edycja wydarzenia (w~tym wymagania techniczne), obsługa zgłoszeń, lista startowa / wyniki w~zakresie MVP;
+  \item \textbf{panel administratora / backoffice} --- moderacja wydarzeń i~wniosków o~rolę, zarządzanie rolami kont;
+  \item \textbf{ścieżka mobilna} --- PWA weba oraz wizytówka Expo z~CTA do zapisu na webie (bez obiecywania parytetu funkcji ze sklepami aplikacji).
+\end{itemize}
+
+\subsection*{Kolejność narracji prezentacji}
+Przyjęto układ dwuczęściowy: krótki kontekst problemowy i~architektoniczny, a~następnie demonstracja na żywo. W~części merytorycznej podkreślane są: rozproszenie informacji o~imprezach motorsportowych w~Polsce, przewaga zintegrowanego garażu z~\texttt{carMatch} oraz trójwarstwowy stack (React/Vite~\cite{react:docs,vite:docs} $\rightarrow$ Spring Boot~\cite{spring:boot} $\rightarrow$ MySQL~\cite{mysql:docs}) z~konteneryzacją i~wystawieniem HTTPS na brzegu Cloudflare. W~części demonstracyjnej na żywo unika się długiej rejestracji ,,od zera'' (zależność od SMTP) na rzecz kont demonstracyjnych (seed) oraz pomija się wykład o~szczegółach JWT --- te mechanizmy opisano w~rozdz.~\ref{ch:bezpieczenstwo}.
+
+Typowy przebieg pokazów funkcjonalnych (szczegóły ról --- kolejne podrozdziały):
+\begin{enumerate}
+  \item \textbf{gość} --- strona główna i~katalog w~trzech widokach z~filtrami; wejście w~detal wydarzenia;
+  \item \textbf{kierowca} --- garaż, filtr pod pojazd, trasa, zgłoszenie, podgląd statusu na dashboardzie;
+  \item \textbf{organizator} --- utworzenie lub wybór wydarzenia, panel zgłoszeń, zmiana statusu z~potwierdzeniem mailowym;
+  \item \textbf{administrator} (gdy pozwala czas) --- moderacja publikacji / wniosku organizatora;
+  \item \textbf{domknięcie} --- PWA lub skrót mobilny CTA oraz uczciwe wskazanie świadomych ograniczeń MVP (brak PSP, brak sklepów aplikacji, Expo jako wizytówka).
+\end{enumerate}
+
+\subsection*{Kryteria udanej demonstracji}
+Prezentację uznaje się za udaną, gdy widzowie mogą potwierdzić: (1)~publiczny katalog działa bez konta; (2)~kierowca przechodzi spójną ścieżkę garaż~$\rightarrow$~dopasowanie~$\rightarrow$~zapis; (3)~organizator steruje statusami zgłoszeń w~swoim wydarzeniu; (4)~system jest uruchomiony jako złożony stack (Compose / produkcja), a~nie pojedyncza strona statyczna. Plan awaryjny obejmuje krótkie nagranie ścieżki krytycznej oraz pominięcie opcjonalnych scen (admin, rejestracja z~mailem), jeśli infrastruktura lub SMTP są niestabilne~\cite{raceportal:demo}.
+
 \section{Scenariusz użycia z perspektywy kierowcy}
 Login seed $\rightarrow$ garaż $\rightarrow$ filtr/katalog $\rightarrow$ zapis $\rightarrow$ dashboard statusów.
 \section{Scenariusz użycia z perspektywy organizatora}
