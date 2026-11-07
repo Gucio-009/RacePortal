@@ -120,23 +120,23 @@ Wyzwania obejmują: spójny model danych wydarzeń i~zgłoszeń, bezpieczeństwo
 
 \chapter{Kontekst biznesowy}
 \label{ch:biznes}
-Niniejszy rozdział sytuuje RacePortal w~kontekście produktowym i~organizacyjnym: identyfikuje segmenty odbiorców, udziałowców oraz propozycję wartości, a~następnie opisuje kanały dystrybucji, zasoby i~działania kluczowe, model funkcjonowania platformy, realność wdrożenia oraz uwarunkowania prawno-etyczne. Punktem wyjścia są założenia Dokumentu Założeń Wstępnych (DZW), karty projektu, Business Model Canvas (BMC / materiały KMR) oraz scenariusze walidacji wywiadami, konfrontowane z~faktyczną implementacją systemu (role RBAC, katalog wydarzeń, garaż, zgłoszenia, maile, wdrożenie produkcyjne).
+Niniejszy rozdział sytuuje RacePortal w~kontekście produktowym i~organizacyjnym: identyfikuje segmenty odbiorców, udziałowców oraz propozycję wartości, a~następnie opisuje kanały dystrybucji, zasoby i~działania kluczowe, model funkcjonowania platformy, realność wdrożenia oraz uwarunkowania prawno-etyczne. Punktem wyjścia są założenia Dokumentu Założeń Wstępnych (DZW), karty projektu, Business Model Canvas (BMC / materiały KMR) oraz scenariusze walidacji wywiadami, konfrontowane z~faktycznym zakresem rozwiązania.
 
-Należy zaznaczyć, że segmentacja w~materiałach KMR została sformułowana jako \emph{założenie koncepcyjne}, a~nie jako wynik reprezentatywnych badań rynkowych. Dokument \emph{Interview Validation} definiuje hipotezy, skrypt wywiadu oraz metryki sukcesu; nie zawiera wyników przeprowadzonych wywiadów, dlatego w~dalszej części nie są one przytaczane jako dane empiryczne.
+Należy zaznaczyć, że segmentacja w~materiałach KMR została sformułowana jako \emph{założenie koncepcyjne}, a~nie jako wynik reprezentatywnych badań rynkowych. Dokument \emph{Interview Validation} definiuje hipotezy, skrypt wywiadu oraz metryki sukcesu; nie zawiera wyników przeprowadzonych wywiadów, dlatego w~dalszej części nie są one przytaczane jako dane empiryczne. Analogicznie, wskazany w~materiałach koncepcyjnych przedział wiekowy 16--40~lat traktuje się wyłącznie jako hipotezę dotyczącą grupy docelowej, a~nie jako potwierdzoną charakterystykę demograficzną rynku.
 
 \section{Segmentacja użytkowników}
 \label{sec:segmentacja}
-Z~punktu widzenia produktu wyróżnia się cztery podstawowe segmenty korzystające z~systemu, odpowiadające poziomom dostępu zaimplementowanym w~warstwie aplikacji. Segmentacja ta jest spójna z~DZW (kategorie użytkowników MVP), z~BMC (kierowcy, pasjonaci/kibice, organizatorzy) oraz z~modelem bezpieczeństwa opartym o~role.
+Z~perspektywy biznesowej wyróżnia się trzy główne segmenty rynku, których potrzeby determinują wartość RacePortal. Segmentację rynkową należy odróżnić od ról dostępowych w~systemie (kontrola dostępu oparta o~role): role techniczne opisują uprawnienia w~aplikacji, natomiast segmenty opisują grupy odbiorców i~ich problemy.
 
-\textbf{Gość (użytkownik anonimowy)} korzysta z~publicznego katalogu bez uwierzytelnienia. W~implementacji nie istnieje osobna rola \texttt{GUEST} --- dostęp gościa wynika z~konfiguracji publicznych ścieżek API (\texttt{permitAll} dla m.in.\ \texttt{/api/events/**}, \texttt{/api/tracks/**}, \texttt{/api/health}) oraz publicznych tras aplikacji webowej (strona główna, katalog, detal wydarzenia, archiwum, strony prawne). Segment ten obejmuje kibiców i~pasjonatów poszukujących informacji o~terminach i~lokalizacjach, a~także osoby rozważające rejestrację.
+\textbf{Odbiorcy informacji (kibice i~pasjonaci)} poszukują aktualnych terminów, lokalizacji oraz podstawowych informacji o~wydarzeniach motorsportowych. Dla tej grupy kluczowy jest niski próg wejścia --- możliwość przeglądania katalogu bez rejestracji --- oraz czytelne filtry i~widoki (lista, mapa, kalendarz). Segment ten odpowiada w~dużej mierze użytkownikowi anonimowemu (gościowi) w~warstwie aplikacji.
 
-\textbf{Kierowca} odpowiada roli systemowej \texttt{USER}. Po utworzeniu konta użytkownik utrzymuje profil, zarządza garażem pojazdów oraz składa zgłoszenia udziału w~wydarzeniach. Kluczową wartością dla tego segmentu jest możliwość dopasowania pojazdu do wymagań wydarzenia (mechanizm \texttt{carMatch} / \texttt{CategoryMatcher}) oraz śledzenie statusu zgłoszenia wraz z~powiadomieniami e-mail. W~materiałach KMR segment ten jest charakteryzowany demograficznie jako osoby w~przybliżonym przedziale 16--40~lat, geograficznie zorientowane na rynek polski. W~zaimplementowanym MVP aplikacja nie egzekwuje ograniczeń wiekowych po stronie rejestracji; kryterium pełnoletności pojawia się natomiast w~skryningu respondentów dokumentu walidacyjnego wywiadów.
+\textbf{Uczestnicy wydarzeń (kierowcy)} stanowią segment transakcyjny: potrzebują nie tylko znaleźć start, lecz także ocenić zgodność wymagań wydarzenia z~posiadanym pojazdem, złożyć zgłoszenie i~śledzić jego status. W~systemie segment ten jest obsługiwany przez konta użytkowników z~dostępem do garażu i~zgłoszeń. Hipoteza koncepcyjna KMR wiąże ten segment z~rynkiem polskim i~orientacyjnym przedziałem 16--40~lat; brakuje jednak wyników badań potwierdzających ten rozkład, dlatego nie jest on traktowany jako ustalenie empiryczne.
 
-\textbf{Organizator} odpowiada roli \texttt{ORGANIZER}. Segment obejmuje mniejszych i~większych organizatorów imprez (track day, drift, time attack, KJS, rajdy itd.), którzy potrzebują kanału publikacji wydarzeń oraz narzędzia do obsługi listy zgłoszeń. W~systemie uprawnienie organizatora nie jest przyznawane automatycznie przy rejestracji: użytkownik składa wniosek o~rolę, a~administrator go akceptuje lub odrzuca. Po weryfikacji organizator tworzy i~edytuje własne wydarzenia, zarządza statusami zgłoszeń oraz komunikuje się z~uczestnikami poprzez mechanizmy platformy (w~tym powiadomienia systemowe).
+\textbf{Organizatorzy wydarzeń} dostarczają podaż treści i~procesów zapisów. Ich potrzebą jest skuteczny kanał dotarcia do uczestników oraz narzędzie do publikacji imprezy i~obsługi listy zgłoszeń (w~tym komunikacji statusów). W~praktyce produktowej dostęp organizatora wymaga weryfikacji wniosku przez operatora platformy, co stanowi mechanizm jakościowy, a~nie osobny segment rynku.
 
-\textbf{Administrator} odpowiada roli \texttt{ADMIN}. Segment ten reprezentuje operatora platformy odpowiedzialnego za jakość katalogu: moderację wydarzeń oczekujących na publikację, zarządzanie rolami kont oraz rozstrzyganie wniosków o~uprawnienia organizatora. W~warstwie produktowej administrator realizuje model \emph{human-in-the-loop} przyjęty w~analizie etycznej projektu --- ostateczne decyzje moderacyjne pozostają po stronie człowieka, a~nie algorytmu.
+\textbf{Administrator} nie jest segmentem rynkowym, lecz \emph{rolą operacyjną} odpowiedzialną za funkcjonowanie platformy: moderację wydarzeń, rozstrzyganie wniosków o~uprawnienia organizatora oraz nadzór nad jakością katalogu. W~analizie biznesowej administrator należy do strony operatorskiej, a~nie do grup klientów, do których kierowana jest propozycja wartości.
 
-Wczesny, koncepcyjny podział funkcjonalności według ról (materiał projektowy zespołu) przedstawia rys.~\ref{fig:podzial-rol}. Należy go interpretować jako mapę intencji produktowej; szczegółowe mapowanie na wymagania i~endpointy API opisano w~rozdziałach~\ref{ch:wymagania}--\ref{ch:projekt}.
+Wczesny, koncepcyjny podział funkcjonalności według poziomów dostępu (materiał projektowy zespołu) przedstawia rys.~\ref{fig:podzial-rol}. Należy go interpretować jako mapę intencji produktowej; szczegółowe mapowanie na wymagania i~projekt systemu opisano w~rozdziałach~\ref{ch:wymagania}--\ref{ch:projekt}.
 
 \begin{figure}[ht]
   \centering
@@ -147,81 +147,126 @@ Wczesny, koncepcyjny podział funkcjonalności według ról (materiał projektow
 
 \section{Interesariusze systemu}
 \label{sec:interesariusze}
-Analiza udziałowców wyróżnia zarówno \emph{aktorów systemowych} (role RBAC oraz gość), jak i~szersze otoczenie opisane w~dokumentacji SAI (m.in.\ zespół wytwórczy, media, właściciele obiektów, służby zabezpieczające imprezy, a~także udziałowcy nieożywieni: baza danych oraz serwisy mapowe). W~niniejszej pracy karty udziałowców ograniczono do trzech kluczowych odbiorców końcowych platformy, ponieważ to ich potrzeby determinują zakres MVP oraz podział uprawnień. Pozostali udziałowcy (np.\ właściciele torów, media) korzystają pośrednio z~publicznego katalogu lub pozostają poza zaimplementowanym przepływem transakcyjnym.
+Analiza udziałowców obejmuje zarówno klientów platformy, jak i~otoczenie opisane w~dokumentacji SAI (m.in.\ zespół wytwórczy, media, właściciele obiektów, służby zabezpieczające imprezy). Poniżej przedstawiono karty kluczowych udziałowców w~formacie środowiska \texttt{stakeholder} szablonu PJATK. W~stosunku do wcześniejszej wersji dodano kartę gościa/kibica oraz właściciela toru / partnera obiektu, ponieważ obie grupy mają potrzeby odrębne od kierowcy i~organizatora. Odwołania do wymagań wskazują rozdziały~\ref{ch:wymagania}--\ref{ch:projekt}.
 
-Poniżej przedstawiono karty udziałowców w~formacie środowiska \texttt{stakeholder} szablonu PJATK. Odwołania do wymagań i~projektu wskazują rozdziały~\ref{ch:wymagania}--\ref{ch:projekt}.
+\begin{stakeholder}[caption={Karta udziałowca: Gość / kibic},label={tab:ud-gosc}]
+\id{U-00}
+\name{Gość / kibic (użytkownik anonimowy)}
+\descr{Odbiorca informacji przeglądający publiczny katalog wydarzeń bez zakładania konta.}
+\type{Użytkownik końcowy / odbiorca treści}
+\viewpoint{Chce szybko znaleźć aktualne wydarzenia, lokalizacje i~terminy bez bariery rejestracji.}
+\limitations{Bez konta nie może złożyć zgłoszenia ani prowadzić garażu; zależny od kompletności i~aktualności katalogu publikowanego przez organizatorów.}
+\requ{Publiczny katalog i~filtry --- rozdz.~\ref{ch:wymagania}; widoki lista/mapa/kalendarz --- rozdz.~\ref{ch:frontend}.}
+\end{stakeholder}
 
 \begin{stakeholder}[caption={Karta udziałowca: Kierowca},label={tab:ud-kierowca}]
 \id{U-01}
-\name{Kierowca (USER)}
+\name{Kierowca}
 \descr{Użytkownik z~kontem, który utrzymuje garaż pojazdów i~składa zgłoszenia na wydarzenia motorsportowe.}
 \type{Użytkownik końcowy / klient platformy}
-\viewpoint{Chce szybko znaleźć starty, dopasować auto do wymagań i~śledzić status zgłoszenia.}
-\limitations{Zapis i~garaż wymagają konta web; mobilka w~MVP jest wizytówką bez pełnej parity.}
+\viewpoint{Chce szybko znaleźć starty, dopasować pojazd do wymagań wydarzenia i~śledzić status zgłoszenia w~jednym miejscu.}
+\limitations{Korzystanie z~garażu i~zapisów wymaga rejestracji oraz podania danych niezbędnych do obsługi zgłoszenia; skuteczność zapisu zależy od odpowiedzi organizatora i~kompletności wymagań wydarzenia.}
 \requ{Wymagania funkcjonalne katalogu, garażu i~zgłoszeń --- rozdz.~\ref{ch:wymagania}; panel użytkownika --- rozdz.~\ref{ch:frontend}.}
 \end{stakeholder}
 
 \begin{stakeholder}[caption={Karta udziałowca: Organizator},label={tab:ud-organizator}]
 \id{U-02}
-\name{Organizator (ORGANIZER)}
+\name{Organizator}
 \descr{Podmiot publikujący wydarzenia i~zarządzający listą zgłoszeń uczestników.}
 \type{Dostawca treści / partner biznesowy}
-\viewpoint{Potrzebuje prostego CRUD wydarzeń, weryfikacji zgłoszeń i~komunikacji statusów (e-mail).}
-\limitations{MVP bez natywnej bramki płatności (PSP); rozliczenie wpisowego poza platformą, z~dowodem płatności (URL lub plik w~magazynie uploadów).}
-\requ{Panel organizatora i~RBAC --- rozdz.~\ref{ch:wymagania}, \ref{ch:projekt}; implementacja --- rozdz.~\ref{ch:backend}.}
+\viewpoint{Potrzebuje skutecznego kanału dotarcia do uczestników oraz narzędzia do zarządzania wydarzeniami, weryfikacji zgłoszeń i~komunikacji statusów.}
+\limitations{Publikacja wymaga pozytywnej weryfikacji uprawnień; rozliczanie wpisowego odbywa się poza platformą, więc organizator nadal prowadzi proces płatności we własnym zakresie; wartość panelu zależy od liczby aktywnych kierowców.}
+\requ{Panel organizatora i~kontrola dostępu --- rozdz.~\ref{ch:wymagania}, \ref{ch:projekt}; realizacja --- rozdz.~\ref{ch:backend}.}
 \end{stakeholder}
 
 \begin{stakeholder}[caption={Karta udziałowca: Administrator},label={tab:ud-admin}]
 \id{U-03}
-\name{Administrator (ADMIN)}
+\name{Administrator (rola operacyjna)}
 \descr{Operator platformy moderujący wydarzenia, role kont oraz wnioski o~uprawnienia organizatora.}
 \type{Właściciel / operator systemu}
-\viewpoint{Zapewnia jakość katalogu i~bezpieczeństwo ról bez ręcznej ingerencji w~bazę.}
-\limitations{Skala produkcyjna (pełne procesy RODO, WAF, 2FA) poza zakresem MVP demonstracyjnego.}
-\requ{Panel admina, bezpieczeństwo JWT/RBAC --- rozdz.~\ref{ch:bezpieczenstwo}; testy RBAC --- rozdz.~\ref{ch:testy}.}
+\viewpoint{Zapewnia jakość katalogu, spójność uprawnień i~bezpieczeństwo działania platformy.}
+\limitations{Skuteczność moderacji zależy od dostępności operatora i~jakości zgłoszeń od użytkowników; przy wzroście skali rośnie nakład pracy na weryfikację treści i~ról.}
+\requ{Panel administracyjny oraz bezpieczeństwo dostępu --- rozdz.~\ref{ch:bezpieczenstwo}; testy kontroli dostępu --- rozdz.~\ref{ch:testy}.}
+\end{stakeholder}
+
+\begin{stakeholder}[caption={Karta udziałowca: Właściciel toru / partner obiektu},label={tab:ud-tor}]
+\id{U-04}
+\name{Właściciel toru / partner obiektu}
+\descr{Podmiot dysponujący infrastrukturą (tor, obiekt) wykorzystywaną przy organizacji wydarzeń publikowanych na platformie.}
+\type{Partner pośredni / interesariusz otoczenia}
+\viewpoint{Jest zainteresowany widocznością obiektu oraz poprawnością informacji o~lokalizacji wydarzeń odbywających się na jego terenie.}
+\limitations{Nie zarządza bezpośrednio zapisami uczestników w~MVP; wpływ na treść katalogu jest pośredni (poprzez organizatorów lub kontakt z~operatorem); nie posiada dedykowanego panelu partnerskiego.}
+\requ{Katalog lokalizacji i~dane wydarzeń --- rozdz.~\ref{ch:wymagania}, \ref{ch:projekt}.}
 \end{stakeholder}
 
 \section{Propozycja wartości systemu}
-Propozycja wartości RacePortal wynika wprost z~diagnozy problemu rozproszenia informacji o~wydarzeniach motorsportowych w~Polsce. Dotychczasowe praktyki użytkowników --- grupy w~mediach społecznościowych, witryny poszczególnych torów oraz statyczne kalendarze --- nie zapewniają jednolitego procesu odkrywania imprez, weryfikacji wymagań wobec pojazdu ani obsługi statusu zapisu. RacePortal odpowiada na ten deficyt jako \textbf{centralny katalog} oraz \textbf{warstwa operacyjna zapisów}, z~rozdzielonymi narzędziami dla poszczególnych ról.
+Propozycja wartości RacePortal wynika z~diagnozy rozproszenia informacji o~wydarzeniach motorsportowych w~Polsce. Dotychczasowe praktyki --- grupy w~mediach społecznościowych, witryny poszczególnych torów oraz statyczne kalendarze --- nie zapewniają jednolitego procesu wyszukiwania imprez, porównania wymagań ani obsługi statusu zapisu. RacePortal odpowiada na ten deficyt jako \textbf{centralny katalog} oraz \textbf{warstwa operacyjna zapisów}, z~narzędziami dopasowanymi do potrzeb kibiców, kierowców i~organizatorów.
 
-Dla kierowców wartość koncentruje się na: (1)~przejrzystym katalogu z~widokami lista, mapa i~kalendarz oraz wspólnymi filtrami; (2)~wirtualnym garażu pojazdów; (3)~dopasowaniu pojazdu do kategorii/wymagań wydarzenia; (4)~złożeniu zgłoszenia i~otrzymywaniu powiadomień o~statusie. Dla organizatorów wartość obejmuje publikację wydarzenia, zarządzanie listą zgłoszeń, weryfikację uczestników oraz komunikację statusów bez konieczności prowadzenia procesu wyłącznie w~arkuszach i~wiadomościach prywatnych. Dla gości (kibiców i~pasjonatów) wartość sprowadza się do bezpłatnego, natychmiastowego dostępu do informacji o~terminach i~lokalizacjach, w~tym do widoku mapy oraz trasy dojazdu (domyślnie OSRM; opcjonalnie Google Maps przy skonfigurowanym kluczu API).
+Dla kierowców wartość koncentruje się na: przejrzystym katalogu z~widokami lista, mapa i~kalendarz oraz wspólnymi filtrami; wirtualnym garażu pojazdów; wsparciu dopasowania pojazdu do wymagań wydarzenia; złożeniu zgłoszenia i~otrzymywaniu informacji o~statusie. Dla organizatorów wartość obejmuje publikację wydarzenia, zarządzanie listą zgłoszeń oraz komunikację statusów bez konieczności prowadzenia całego procesu wyłącznie w~arkuszach i~wiadomościach prywatnych. Dla odbiorców informacji wartość sprowadza się do bezpłatnego dostępu do terminów i~lokalizacji, w~tym do widoku mapy oraz wskazówek dojazdu.
 
-Wyróżnikiem produktowym względem prostych kalendarzy branżowych jest integracja łańcucha \emph{odkrycie $\rightarrow$ dopasowanie pojazdu $\rightarrow$ zgłoszenie $\rightarrow$ status}, a~nie wyłącznie publikacja dat. Założenie to potwierdza dokumentacja walidacyjna: najistotniejszym ryzykiem biznesowym jest odmowa migracji społeczności z~grup społecznościowych do scentralizowanego narzędzia; bez aktualnej podaży wydarzeń katalog traci wartość dla kierowców (problem klasycznej dwustronnej platformy).
+Wyróżnikiem względem prostych kalendarzy branżowych jest integracja łańcucha \emph{znalezienie wydarzenia $\rightarrow$ dopasowanie pojazdu $\rightarrow$ zgłoszenie $\rightarrow$ status}, a~nie wyłącznie publikacja dat. Najistotniejszym ryzykiem biznesowym pozostaje odmowa migracji społeczności z~grup społecznościowych do scentralizowanego narzędzia; bez aktualnej podaży wydarzeń katalog traci wartość dla kierowców (klasyczny problem platformy dwustronnej).
+
+Tabela~\ref{tab:porownanie-modeli} przedstawia porównanie \emph{modeli działania}, a~nie empiryczne badanie konkurencji. Ilustruje, na czym polega zakładana przewaga RacePortal względem typowego sposobu organizacji informacji i~zapisów w~grupach społecznościowych.
+
+\begin{table}[ht]
+  \centering
+  \caption{Porównanie modelu grup społecznościowych z~modelem RacePortal (ujęcie koncepcyjne).}
+  \label{tab:porownanie-modeli}
+  \begin{tabularx}{\textwidth}{|p{0.22\textwidth}|X|X|}
+    \hline
+    \textbf{Kryterium} & \textbf{Grupy społecznościowe} & \textbf{RacePortal (model docelowy)} \\
+    \hline
+    Wyszukiwanie wydarzeń & Zależne od postów i~wyszukiwarki grupy & Ustrukturyzowane filtry i~wspólny katalog \\
+    \hline
+    Porównanie wydarzeń & Ręczne, między rozproszonymi źródłami & Wspólny katalog z~ujednoliconym opisem \\
+    \hline
+    Dopasowanie pojazdu & Weryfikacja po stronie uczestnika & Wsparcie dopasowania względem wymagań wydarzenia \\
+    \hline
+    Zgłoszenie udziału & Zależne od praktyki danego organizatora & Ujednolicony proces zgłoszenia \\
+    \hline
+    Status zgłoszenia & Różne kanały komunikacji & Centralny podgląd statusu i~powiadomienia \\
+    \hline
+  \end{tabularx}
+\end{table}
 
 \section{Kanały komunikacji i~dystrybucji}
-Głównym kanałem dostępu do produktu jest aplikacja webowa dostępna pod adresem \url{https://raceportal.pl} (oraz wariant \texttt{www}). Interfejs webowy pełni rolę pełnego klienta transakcyjnego: rejestracja i~logowanie, garaż, zgłoszenia, panele organizatora i~administratora. Dodatkowo warstwa web została przygotowana jako PWA (manifest, service worker, nawigacja mobilna), co umożliwia instalację skrótu na ekranie początkowym urządzenia bez publikacji w~sklepach aplikacyjnych.
+Głównym kanałem dostępu do produktu jest aplikacja webowa (\url{https://raceportal.pl}), umożliwiająca zarówno przeglądanie katalogu, jak i~obsługę konta, garażu, zgłoszeń oraz paneli organizatora i~administratora. Uzupełnieniem jest mobilna aplikacja-wizytówka, służąca do odkrywania wydarzeń i~przekierowania zapisu do wersji webowej. Takie rozdzielenie obniża koszt wejścia informacyjnego, a~jednocześnie koncentruje procesy wymagające konta w~jednym miejscu.
 
-Kanałem uzupełniającym discovery jest aplikacja mobilna Expo, zaprojektowana świadomie jako \emph{wizytówka}: umożliwia przeglądanie katalogu i~szczegółów wydarzenia, natomiast zapis udziału realizowany jest poprzez CTA otwierające odpowiednią stronę webową. Takie rozdzielenie ogranicza zakres MVP mobilnego i~koncentruje złożoną logikę konta po stronie weba.
+Z~perspektywy pozyskiwania użytkowników kluczowe są kanały organiczne i~partnerskie, przewidziane także w~materiałach BMC: obecność w~mediach społecznościowych społeczności motorsportowej, bezpośrednie kontakty z~klubami i~organizatorami, promocja podczas imprez torowych oraz współpraca z~właścicielami obiektów. W~fazie MVP działania te mają charakter organizacyjny --- ich celem jest zbudowanie podaży aktualnych wydarzeń i~pierwszej grupy aktywnych kierowców, bez których katalog nie generuje efektu sieciowego.
 
-Kanałem komunikacji transakcyjnej jest poczta elektroniczna dostarczana przez SMTP dostawcy \textbf{Mailbux} (nadawca \texttt{noreply@raceportal.pl}). System wysyła m.in.\ wiadomości aktywacyjne i~resetu hasła, potwierdzenia zgłoszeń, zmiany statusów, powiadomienia o~anulowaniu lub zmianie wydarzenia oraz decyzje dotyczące ról i~wniosków organizatora. Wczesny wariant deweloperski oparty o~Mailpit został porzucony na rzecz realnej skrzynki domenowej, aby demonstracja rejestracji odpowiadała doświadczeniu użytkownika końcowego.
-
-Kanałem dystrybucji kodu i~współpracy zespołu pozostaje repozytorium GitHub~\cite{raceportal:repo}. W~materiałach BMC przewidziano również promocję organiczną w~mediach społecznościowych oraz współpracę partnerską z~klubami; w~fazie MVP działania te mają charakter organizacyjny i~nie są zautomatyzowane w~kodzie aplikacji.
+Kanałem utrzymania relacji z~użytkownikiem po rejestracji lub zgłoszeniu są powiadomienia e-mail (aktywacja konta, statusy zgłoszeń, istotne zmiany wydarzenia). Pełnią one funkcję komunikacyjną i~operacyjną, a~nie marketingową: informują o~stanach procesu, zamiast prowadzić kampanie sprzedażowe. Szczegóły techniczne dostarczania poczty opisano w~rozdziałach implementacyjnych.
 
 \section{Kluczowe zasoby i~działania}
-Do zasobów kluczowych należą: pięcioosobowy zespół projektowy (specjalizacja cyberbezpieczeństwo), kod źródłowy monorepozytorium (warstwy web, API, mobile oraz pakiet wspólnych typów \texttt{packages/api-types}), relacyjna baza MySQL z~seedem danych demonstracyjnych, infrastruktura kontenerowa Docker Compose oraz środowisko produkcyjne oparte o~maszynę wirtualną i~tunel Cloudflare. Zasobem produktowym jest również katalog torów polskich wykorzystywany przy tworzeniu i~filtrowaniu wydarzeń.
+Do zasobów kluczowych należą zarówno zasoby technologiczne, jak i~biznesowo-operacyjne. Po stronie technologicznej są to: działająca aplikacja webowa i~mobilna wizytówka, backend z~trwałą bazą wydarzeń oraz konteneryzowane środowisko uruchomieniowe umożliwiające powtarzalne wdrożenie. Zasobem produktowym jest także katalog torów i~treści wydarzeń --- bez aktualnych danych platforma traci wartość niezależnie od jakości oprogramowania.
 
-Działania kluczowe obejmują: rozwój i~utrzymanie platformy; zapewnienie uruchamialności środowiska (Compose lokalnie i~na VM); moderację treści oraz weryfikację organizatorów; utrzymanie mechanizmów bezpieczeństwa (JWT, RBAC, walidacja wejścia, kierunek zgodności z~OWASP ASVS Level~1); utrzymanie dostarczalności powiadomień e-mail; a~także dokumentowanie zmian i~weryfikację testami automatycznymi. W~ujęciu BMC działania marketingowe i~budowa społeczności są uznane za konieczne dla przełamania ryzyka niskiego zainteresowania, lecz pozostają poza zautomatyzowanym zakresem oprogramowania MVP.
+Po stronie biznesowej i~operacyjnej kluczowi są: zespół projektowy utrzymujący rozwój i~moderację; relacje z~organizatorami i~obiektami (źródło podaży wydarzeń); domena oraz niskokosztowa infrastruktura hostingowa; a~także dokumentacja procesów i~scenariusze prezentacji ułatwiające weryfikację produktu. W~ujęciu BMC zasoby te są komplementarne: technologia bez relacji z~organizatorami nie zapełni katalogu, a~relacje bez sprawnego narzędzia nie utrzymają powtarzalnego procesu zapisów.
+
+Działania kluczowe obejmują: rozwój funkcji zgodnych z~MVP; pozyskiwanie i~weryfikację organizatorów; moderację treści; utrzymanie dostępności serwisu; komunikację z~użytkownikami (w~tym powiadomienia procesowe); a~także działania na rzecz budowy społeczności i~zaufania do katalogu. Działania marketingowe pozostają konieczne dla przełamania ryzyka niskiego zainteresowania, lecz w~MVP nie są zautomatyzowane w~oprogramowaniu.
 
 \section{Model działania platformy}
-RacePortal funkcjonuje jako platforma dwustronna: organizatorzy dostarczają podaż wydarzeń, a~kierowcy generują popyt na starty. Administrator pełni rolę gwaranta jakości katalogu poprzez akceptację wydarzeń i~ról. Gość korzysta z~efektu sieciowego katalogu bez bariery rejestracji, co obniża koszt wejścia informacyjnego.
+RacePortal funkcjonuje jako platforma dwustronna: organizatorzy dostarczają podaż wydarzeń, a~kierowcy generują popyt na starty. Odbiorcy informacji korzystają z~efektu sieciowego katalogu bez bariery rejestracji, co obniża koszt wejścia. Administrator --- jako rola operacyjna --- pełni funkcję gwaranta jakości poprzez akceptację wydarzeń i~uprawnień.
 
-W~fazie MVP platforma \textbf{nie} pełni roli pośrednika płatniczego. Brak integracji z~bramką PSP (np.\ Przelewy24, Stripe) jest decyzją świadomą, potwierdzoną w~dokumentacji zakresowej i~w~kodzie. Dla wydarzeń płatnych system obsługuje statusy zgłoszenia (m.in.\ \texttt{PENDING}, \texttt{ACCEPTED}, \texttt{CONFIRMED}, \texttt{CANCELED}) oraz dołączenie dowodu wpłaty --- jako adres URL albo ścieżka pliku w~magazynie uploadów --- natomiast rozliczenie finansowe odbywa się poza platformą (np.\ przelew na dane wskazane przez organizatora). Strumienie przychodów opisane w~BMC (reklamy, płatna promocja wydarzeń, prowizje od zapisów) pozostają perspektywą rozwojową i~nie są zaimplementowane.
+W~fazie MVP platforma \textbf{nie} rozlicza płatności za udział. Dla wydarzeń płatnych system obsługuje statusy zgłoszenia oraz dołączenie dowodu wpłaty, natomiast przelew lub inna forma rozliczenia odbywa się poza platformą, według zasad organizatora. Model darmowego dostępu obejmuje przeglądanie katalogu oraz korzystanie z~narzędzi kierowcy i~panelu organizatora. Na tym etapie weryfikacja wartości produktu opiera się na użyteczności operacyjnej, a~nie na monetyzacji.
 
-Model darmowego dostępu w~MVP dotyczy zarówno przeglądania katalogu, jak i~korzystania z~narzędzi kierowcy oraz panelu organizatora. Oznacza to, że weryfikacja wartości produktu na obecnym etapie opiera się na użyteczności operacyjnej, a~nie na monetyzacji.
+Z~punktu widzenia utrzymania platformy materiały BMC wskazują potencjalne, \emph{przyszłe} strumienie przychodów: płatną promocję / wyróżnienie wydarzeń, reklamy powiązane z~motorsportem oraz --- w~dłuższym horyzoncie --- prowizje od zapisów lub biletów. Równolegle występują koszty stałe i~zmienne: hosting i~domena, obsługa poczty, rozwój oprogramowania, moderacja treści oraz ewentualne działania promocyjne. W~obecnym etapie projekt ma charakter dydaktyczno-inżynierski i~opiera się na infrastrukturze niskokosztowej oraz pracy zespołu; nie przedstawia się tu prognoz finansowych liczbowych, ponieważ nie zebrano danych rynkowych wystarczających do wiarygodnej estymacji.
+
+Praktycznym sposobem sprawdzenia zainteresowania odpłatnymi funkcjami byłoby --- po okresie bezpłatnego użytkowania --- przeprowadzenie rozmów lub prostych testów oferty z~aktywnymi organizatorami (np.\ wyróżnienie wydarzenia, ekspozycja w~katalogu), zgodnie z~kierunkiem walidacji założonym w~dokumencie \emph{Interview Validation}. Dopiero potwierdzenie gotowości do zapłaty za konkretną korzyść uzasadniałoby przejście od modelu darmowego MVP do wariantu monetyzacji.
 
 \section{Realistyczność wdrożenia i~dalsze perspektywy}
-Realistyczność wdrożenia została potwierdzona na dwóch poziomach. Poziom deweloperski obejmuje uruchomienie pełnego stosu przez Docker Compose (web, API, MySQL, kopia zapasowa) wraz z~kontami seed służącymi do demonstracji ról. Poziom produkcyjny obejmuje wdrożenie na Oracle Cloud Always Free (\texttt{VM.Standard.A1.Flex}, 2~OCPU, 12~GB RAM, region Frankfurt) z~udostępnieniem HTTPS poprzez Cloudflare Tunnel do nginx na porcie lokalnym maszyny. TLS i~DNS są po stronie Cloudflare; aplikacja pracuje w~układzie jednego originu (\texttt{/api} proxy do Spring Boot), co upraszcza konfigurację względem wcześniejszego wariantu GCP + Cloudflare Pages.
+Realistyczność techniczna wdrożenia została potwierdzona uruchomieniem środowiska lokalnego oraz publikacją działającej instancji produkcyjnej w~modelu niskokosztowym (maszyna wirtualna w~chmurze z~udostępnieniem poprzez tunel HTTPS). Szczegóły architektury fizycznej zawarto w~rozdz.~\ref{sec:arch-fizyczna}; w~niniejszym podrozdziale istotniejsza jest ocena realności \emph{biznesowej} utrzymania produktu.
 
-Założona w~DZW skala pilotażowa (rzędu 1--5~tys.\ użytkowników miesięcznie, profil odczytowy do ok.\ 50~RPS) jest spójna z~charakterem niskokosztowej infrastruktury dydaktycznej. Formalny test obciążenia przy 10k rekordach / 50~RPS nie został domknięty w~MVP i~pozostaje ograniczeniem odbiorczym, jawnie wskazanym w~karcie projektu.
+Kluczowym warunkiem sukcesu nie jest sama dostępność serwisu, lecz pozyskanie organizatorów publikujących aktualne wydarzenia oraz utrzymanie kompletności katalogu. Bez regularnej podaży treści platforma nie różni się istotnie od statycznego kalendarza i~nie motywuje kierowców do rejestracji. Dlatego realistyczny scenariusz rozwoju zakłada: bezpośrednie kontakty z~organizatorami i~obiektami, prosty proces publikacji, moderację zapewniającą wiarygodność oraz mechanizmy powiadomień ograniczające ryzyko dezaktualizacji informacji u~uczestników.
 
-Dalsze perspektywy --- zgodnie z~dokumentacją produktową i~materiałami BMC --- obejmują m.in.\ integrację PSP, rozbudowę powiadomień push, publikację aplikacji mobilnej w~sklepach, eksport list startowych, waitlistę/watchlistę, kalendarz iCal oraz ewentualną monetyzację poprzez oznaczone treści sponsorowane. Elementy te należy traktować jako roadmapę, a~nie jako stan bieżącej implementacji. Szczegóły architektury fizycznej przedstawiono w~rozdz.~\ref{sec:arch-fizyczna}.
+Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążeniowy o~parametrach docelowych nie został domknięty w~MVP i~pozostaje ograniczeniem odbiorczym wskazanym w~karcie projektu.
+
+Dalsze perspektywy obejmują m.in.\ integrację płatności online, rozbudowę powiadomień, publikację aplikacji mobilnej w~sklepach, eksport list startowych oraz ewentualną monetyzację oznaczonych treści promocyjnych. Elementy te stanowią roadmapę produktową, a~nie stan bieżącej realizacji.
 
 \section{Kontekst prawny i~etyczny}
-System przetwarza dane niezbędne do obsługi konta i~procesów biznesowych: identyfikator/nazwę użytkownika, adres e-mail, role, dane pojazdów w~garażu, zgłoszenia oraz dane wydarzeń wprowadzane przez organizatorów. Token sesji (JWT) jest przechowywany po stronie klienta. W~interfejsie udostępniono politykę prywatności (\texttt{/privacy}) oraz regulamin (\texttt{/terms}); rejestracja wymaga akceptacji obu dokumentów. Przy tworzeniu wydarzenia organizator potwierdza przetwarzanie danych zgodnie z~polityką prywatności (RODO) wyłącznie w~celu publikacji i~obsługi zgłoszeń. Kanałem kontaktowym w~sprawach ochrony danych jest adres \texttt{rodo@raceportal.pl}. Użytkownik może zamknąć własne konto w~ustawieniach (fraza potwierdzająca po stronie API).
+System przetwarza dane osobowe niezbędne do obsługi konta i~procesów biznesowych, w~tym adres e-mail, dane profilu, informacje o~pojazdach w~garażu, zgłoszenia oraz dane wydarzeń wprowadzane przez organizatorów. Już na etapie rzeczywistego przetwarzania tych danych --- także w~MVP --- obowiązują podstawowe wymogi ochrony danych osobowych (m.in.\ zasada minimalizacji, poinformowanie użytkownika, możliwość realizacji wybranych praw). W~interfejsie udostępniono politykę prywatności oraz regulamin; rejestracja wymaga ich akceptacji. Przy tworzeniu wydarzenia organizator potwierdza przetwarzanie danych zgodnie z~polityką prywatności wyłącznie w~celu publikacji i~obsługi zgłoszeń. Kanałem kontaktowym w~sprawach ochrony danych jest adres \texttt{rodo@raceportal.pl}; użytkownik może zamknąć własne konto.
 
-Pełna zgodność procesowa (m.in.\ DPIA, sformalizowana polityka retencji, procedury realizacji żądań RODO w~organizacji operatorskiej) wykracza poza zakres demonstracyjnego MVP i~pozostaje obowiązkiem ewentualnego wdrożenia produkcyjnego o~większej skali.
+Należy rozróżnić \emph{obowiązki już wynikające z~przetwarzania danych} od \emph{uszprawnień organizacyjnych} przewidzianych na późniejszy etap skalowania (np.\ bardziej rozbudowane procedury wewnętrzne, sformalizowana polityka retencji, ewentualna ocena skutków dla ochrony danych). Ocena skutków dla ochrony danych (DPIA) nie jest automatycznie wymagana dla każdego systemu --- jej konieczność zależy od charakteru i~ryzyka przetwarzania. W~pracy nie rozstrzyga się, czy dla RacePortal DPIA jest obligatoryjna; wskazuje się jedynie, że przy wzroście skali i~zakresu danych decyzja ta powinna zostać ponownie oceniona.
 
-W~warstwie etycznej dokumentacja SAI przyjmuje zasady: transparentności prezentacji wyników (brak ukrytego rankingu reklamowego w~MVP), rezygnacji z~mechanizmów uzależniających, dążenia do inkluzywności informacyjnej (wydarzenia o~różnym progu wejścia) oraz przeciwdziałania dual-use (ryzyko publikacji nielegalnych wyścigów ulicznych). Mitigacją jest weryfikacja organizatorów i~moderacja wydarzeń przez administratora. Odpowiedzialność za treść merytoryczną wydarzeń spoczywa na zweryfikowanych organizatorach w~ramach regulaminu, natomiast odpowiedzialność za poprawność mechanizmów platformy --- na zespole utrzymującym system.
+W~warstwie odpowiedzialności za treści: organizator odpowiada za merytoryczną treść publikowanych wydarzeń w~ramach regulaminu, jednak nie wyłącza to obowiązków operatora platformy w~zakresie udostępniania narzędzia, moderacji oraz reagowania na zgłoszenia nadużyć. Model przyjęty w~projekcie łączy weryfikację organizatorów i~moderację wydarzeń przez administratora z~zasadami etycznymi opisanymi w~dokumentacji SAI (transparentność prezentacji, unikanie mechanizmów uzależniających, przeciwdziałanie publikacji niebezpiecznych lub nielegalnych aktywności). Ostateczne decyzje moderacyjne pozostają po stronie człowieka.
 
 \chapter{Analiza SWOT}
 \section{Mocne strony (Strengths)}
