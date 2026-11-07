@@ -1,5 +1,5 @@
 % $ biblatex auxiliary file $
-% $ biblatex bbl format version 3.2 $
+% $ biblatex bbl format version 3.3 $
 % Do not modify the above lines!
 %
 % This is an auxiliary file used by the 'biblatex' package.
@@ -18,14 +18,118 @@
 
 
 \refsection{0}
-  \datalist[entry]{none/global//global/global}
-    \entry{raceportal:repo}{misc}{}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{react:docs}{misc}{}{}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://react.dev/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{React Documentation}
+    \endentry
+    \entry{spring:boot}{misc}{}{}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.spring.io/spring-boot/docs/current/reference/html/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Spring Boot Reference Documentation}
+    \endentry
+    \entry{mysql:docs}{misc}{}{}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://dev.mysql.com/doc/refman/8.4/en/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{{MySQL} 8.4 Reference Manual}
+    \endentry
+    \entry{expo:docs}{misc}{}{}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.expo.dev/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Expo Documentation}
+    \endentry
+    \entry{raceportal:repo}{misc}{}{}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal}}
-      \field{note}{Branch \texttt{wojtek}; dostęp: 2026-10-15}
+      \field{note}{Branch \texttt{main}; dostęp: 2026-11-07}
       \field{title}{RacePortal --- repozytorium projektu}
+    \endentry
+    \entry{jwt:rfc}{misc}{}{}
+      \field{sortinit}{7}
+      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://datatracker.ietf.org/doc/html/rfc7519}}
+      \field{note}{RFC~7519; dostęp: 2026-11-07}
+      \field{title}{JSON Web Token ({JWT})}
+    \endentry
+    \entry{owasp:asvs}{misc}{}{}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://owasp.org/www-project-application-security-verification-standard/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{{OWASP} Application Security Verification Standard}
+    \endentry
+    \entry{vite:docs}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://vite.dev/guide/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Vite Documentation}
+    \endentry
+    \entry{docker:compose}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.docker.com/compose/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Docker Compose overview}
+    \endentry
+    \entry{spring:security}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://docs.spring.io/spring-security/reference/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Spring Security Reference}
+    \endentry
+    \entry{leaflet:docs}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://leafletjs.com/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Leaflet --- an open-source {JavaScript} library for mobile-friendly interactive maps}
+    \endentry
+    \entry{osrm:project}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{http://project-osrm.org/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Open Source Routing Machine}
+    \endentry
+    \entry{latex:project}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://www.latex-project.org/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{LaTeX --- A document preparation system}
+    \endentry
+    \entry{k6:docs}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{\url{https://grafana.com/docs/k6/latest/}}
+      \field{note}{dostęp: 2026-11-07}
+      \field{title}{Grafana k6 documentation}
     \endentry
   \enddatalist
 \endrefsection
