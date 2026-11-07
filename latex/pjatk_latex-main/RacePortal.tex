@@ -35,7 +35,7 @@
 \engtitle{RacePortal --- a platform for motorsports events}
 \acronym{RP}
 \titledate{2025-10-01}
-\supervisor{dr hab.\ Marek Bendarczyk}
+\supervisor{dr hab.\ Marek Bednarczyk}
 \reviewer{mgr Alex Polin}
 \author{Otrombke Natalia}{s26828}{Cyberbezpieczeństwo}{Stacjonarny}
 \author{Kasprowicz Oliwier}{s30290}{Cyberbezpieczeństwo}{Stacjonarny}
@@ -887,10 +887,23 @@ Bezpieczeństwo zaprojektowano warstwowo, z~naciskiem na kontrolę dostępu API:
 Szczegółową analizę zagrożeń, klasyfikację danych i~ograniczenia przyjętych zabezpieczeń rozwinięto w~rozdziale~\ref{ch:bezpieczenstwo}.
 
 \chapter{Realizacja}
+\label{ch:realizacja}
+Rozdział opisuje, jak projekt z~rozdziału~\ref{ch:projekt} przełożono na działający system: organizację prac implementacyjnych, podział na komponenty, sposób ich integracji oraz uruchamianie środowiska (lokalnie i~produkcyjnie). Szczegóły kodu backendu, frontendu i~mobile rozwijają kolejne rozdziały implementacyjne.
+
 \section{Organizacja implementacji}
-Implementacja iteracyjna w~monorepo, z~dokumentowaniem zmian i~utrzymywaniem środowiska Compose jako źródła prawdy uruchomieniowej.
+Prace prowadzono iteracyjnie we wspólnym monorepo (web, API, mobile, pakiet typów, dokumentacja). Każda istotniejsza zmiana była weryfikowana uruchomieniem Compose oraz --- w~miarę możliwości --- testami automatycznymi. Środowisko Docker Compose traktowano jako źródło prawdy uruchomieniowej: to, co działa w~kontenerach lokalnie, jest tym samym stackiem co na VM produkcyjnej.
+
+Organizacja pracy zakładała:
+\begin{itemize}
+  \item dostarczanie kolejnych ścieżek użytkownika (katalog $\rightarrow$ konto $\rightarrow$ garaż/zapisy $\rightarrow$ panele ról), a~nie budowę wszystkich warstw „na zapas”;
+  \item bieżące dokumentowanie decyzji i~luk (m.in.\ rejestr zgodności ze Specyfikacją Formularzy);
+  \item świadome odkładanie elementów poza MVP (m.in.\ natywne PSP, pełna parity mobile, sklepy aplikacji);
+  \item utrzymanie seedu danych demo, aby prezentacja i~testy E2E miały powtarzalny punkt startu.
+\end{itemize}
 
 \section{Podział systemu na komponenty}
+System zrealizowano jako trzy główne komponenty kliencko-serwerowe plus warstwę danych. Backend i~frontend webowy omówiono skrótowo poniżej (szczegóły --- rozdz.~\ref{ch:backend} i~\ref{ch:frontend}); aplikację mobilną --- skrótowo poniżej, a~szczegółowo w~rozdz.~\ref{ch:mobile}.
+
 \subsection{Backend}
 \label{sec:realizacja-backend}
 Komponent backendowy stanowi warstwę serwerową RacePortal i~odpowiada za udostępnienie API REST, trwałe przechowywanie danych oraz egzekwowanie reguł biznesowych i~uprawnień. Został zrealizowany w~technologii Spring Boot (wersja~3.3.5) na platformie Java~21, z~relacyjną bazą MySQL oraz mapowaniem obiektowo-relacyjnym Spring Data JPA. Budowa i~uruchamianie odbywają się w~kontenerze (obraz Maven do kompilacji, obraz JRE do runtime), co zapewnia powtarzalność środowiska lokalnego i~produkcyjnego.
@@ -904,11 +917,28 @@ W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu d
 \subsection{Frontend webowy}
 Vite + React; integracja z~API; stany ról i~formularze dziedzinowe.
 \subsection{Aplikacja mobilna}
-Expo --- katalog publiczny bez auth.
+Komponent mobilny zrealizowano w~Expo jako publiczną wizytówkę katalogu:
+\begin{itemize}
+  \item lista i~detal wydarzeń na tych samych danych API co web;
+  \item brak logowania, garażu i~paneli organizatora/admina;
+  \item CTA „Zapisz się na stronie” przekierowujące do detalu wydarzenia w~wersji webowej.
+\end{itemize}
+Aplikacja mobilna służy więc głównie do przeglądania katalogu; sam zapis na wydarzenie użytkownik dokańcza w~wersji webowej.
+
 \section{Integracja komponentów}
-Wspólny kontrakt JSON; typy w~\texttt{api-types}; nginx reverse proxy \texttt{/api} w~środowisku Compose.
+Integracja opiera się na wspólnym kontrakcie REST/JSON. Pakiet typów TypeScript (\texttt{packages/api-types}) ogranicza rozjazdy pól między webem a~mobile. W~środowisku Compose nginx w~kontenerze \texttt{web} serwuje SPA i~przekazuje żądania \texttt{/api} do kontenera \texttt{api}, dzięki czemu przeglądarka korzysta z~jednego originu (bez osobnego URL API w~buildzie produkcyjnym).
+
+Przepływ typowy: klient (web lub mobile) woła endpoint API $\rightarrow$ Spring realizuje reguły domenowe i~RBAC $\rightarrow$ MySQL utrwala stan $\rightarrow$ opcjonalnie wychodzi mail transakcyjny (SMTP Mailbux). Pliki (obrazy, PDF) trafiają do volume uploadów i~są odczytywane przez API.
+
 \section{Konteneryzacja i uruchamianie środowiska}
-\texttt{docker compose up --build -d}~\cite{docker:compose}; weryfikacja \texttt{/api/health}; Expo: \texttt{cd mobile \&\& npm start}. Publiczny dostęp produkcyjny: Cloudflare Tunnel $\rightarrow$ nginx \texttt{:8081}.
+Uruchomienie lokalne sprowadza się do zbudowania i~startu stacku Compose, a~następnie sprawdzenia zdrowia API. Mobilkę uruchamia się osobno w~katalogu Expo. W~skrócie:
+\begin{itemize}
+  \item start stacku: \texttt{docker compose up --build -d}~\cite{docker:compose};
+  \item weryfikacja: endpoint health API zwraca stan OK;
+  \item mobile: start Expo w~katalogu aplikacji mobilnej;
+  \item produkcja: ten sam Compose na Oracle VM, a~ruch publiczny przez Cloudflare Tunnel do nginx na porcie \texttt{:8081}.
+\end{itemize}
+Dzięki zastosowaniu tego samego stacku kontenerów w~środowisku deweloperskim i~produkcyjnym wdrożenie nowej wersji polega na aktualizacji kodu na maszynie wirtualnej oraz przebudowie usług Docker Compose. Aplikacja webowa i~API są publikowane łącznie, bez niezależnego procesu wdrożenia frontendu.
 
 \chapter{Szczegóły implementacji backendu}
 \label{ch:backend}
@@ -1215,6 +1245,7 @@ Leaflet~\cite{leaflet:docs} + kafelki CARTO; pickery lokalizacji; proxy trasy \t
 Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent}.
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
+\label{ch:mobile}
 \section{Założenia aplikacji mobilnej}
 Mobilka ma wspierać odkrywanie wydarzeń, a~nie dublować pełnego klienta webowego.
 \section{Architektura rozwiązania mobilnego}
