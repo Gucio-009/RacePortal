@@ -258,86 +258,98 @@ W~warstwie etycznej dokumentacja SAI przyjmuje zasady: transparentności prezent
 
 \chapter{Planowanie projektu}
 
-Niniejszy rozdział porządkuje planowanie RacePortal na osi: cele, zakres MVP, metodyka, organizacja zespołu, harmonogram (plan wobec przebiegu), infrastruktura oraz ryzyka. Świadomie rozróżniono zamiary dokumentacyjne --- Kartę projektu (KP), Dokument Założeń Wstępnych (DZW), Specyfikację Wymagań Systemowych (SWS) oraz historyczny Harmonogram przedmiotu PRO --- od stanu zrealizowanego, opisanego kodem, Docker Compose, dokumentacją \texttt{docs/MVP.md}, chronologią \texttt{docs/changes.md}, decyzjami wdrożeniowymi oraz pomiarami k6. Daty publikacji dokumentów i~daty wpisów w~chronologii traktuje się jako osobne warstwy: przebieg prac nie zastępuje oficjalnych kamieni milowych karty projektu, a~karty formalne nie zastępują empirycznego stanu systemu.
+Ten rozdział opisuje planowanie RacePortal: cele, zakres MVP, sposób pracy, zespół, harmonogram, infrastrukturę oraz ryzyka. Oddzielam tu dokumenty formalne --- Kartę projektu (KP), Dokument Założeń Wstępnych (DZW), Specyfikację Wymagań Systemowych (SWS) oraz historyczny Harmonogram przedmiotu PRO --- od tego, co faktycznie powstało w kodzie, Docker Compose, plikach \texttt{docs/\allowbreak MVP.md}, chronologii \texttt{docs/\allowbreak changes.md}, decyzjach wdrożeniowych i pomiarach k6. Daty publikacji dokumentów i daty wpisów w chronologii to dwie różne warstwy: przebieg prac nie zastępuje oficjalnych kamieni milowych karty projektu, a karty formalne nie zastępują rzeczywistego stanu systemu.
 
 \section{Cele projektu}
 
-Głównym celem RacePortal, zgodnie z~KP (data ustalenia tematu 01.10.2025), jest zbudowanie centralnego źródła informacji o~wydarzeniach motorsportowych w~Polsce --- zarówno oficjalnych, jak i~amatorskich (m.in.\ drift, time attack, track day, KJS) --- oraz dostarczenie organizatorom narzędzi do publikacji imprez i~obsługi rejestracji uczestników. Opiekunem (promotorem) projektu w~KP oraz w~pracy dyplomowej jest Marek Bednarczyk. KP konkretyzuje cel główny w~czterech skutkach: centralizacji danych (odejście od chaosu grup społecznościowych i~nieaktualnych stron), wsparciu mniejszych organizatorów, udogodnieniach dla kierowców (profil, wirtualny garaż, szybkie zgłoszenia) oraz popularyzacji motorsportu poprzez kalendarz i~mapę.
+Głównym celem RacePortal, zgodnie z~KP
+(data ustalenia tematu 01.10.2025),
+jest zbudowanie jednego miejsca z~informacjami
+o~wydarzeniach motorsportowych w~Polsce --- oficjalnych i~amatorskich
+(m.in.\ drift, time attack, track day, KJS) ---
+oraz narzędzi dla organizatorów do publikacji imprez i~obsługi zapisów. Opiekunem (promotorem) projektu w~KP i~w~pracy dyplomowej jest Marek Bednarczyk. KP rozwija cel główny w~czterech skutkach: zebranie danych w~jednym miejscu (odejście od chaosu grup społecznościowych i~nieaktualnych stron), wsparcie mniejszych organizatorów, udogodnienia dla kierowców (profil, wirtualny garaż, szybkie zgłoszenia) oraz popularyzacja motorsportu przez kalendarz i~mapę.
 
-DZW --- którego historia wersji w~nagłówku dokumentu sięga m.in.\ v1.4 z~26.05.2026 --- doprecyzowuje cele systemowe: katalog z~listą i~kalendarzem, filtrowanie (kategoria, tor, województwo, data, nazwa), szczegółowy podgląd wydarzeń, panel organizatora, konto kierowcy z~garażem i~zgłoszeniami oraz fundament pod dalszy rozwój. SWS formalizuje te cele jako podstawę implementacji, testów i~ewaluacji produktu akademickiego. W~warstwie problemowej DZW diagnozuje rozproszenie informacji o~zawodach oraz brak jednego kanału dla organizatorów do publikacji i~zarządzania wydarzeniem --- diagnoza ta pozostaje punktem wyjścia planowania zakresu.
+DZW --- którego historia wersji w~nagłówku sięga m.in.\ v1.4 z~26.05.2026 --- doprecyzowuje cele systemu: katalog z~listą i~kalendarzem, filtrowanie (kategoria, tor, województwo, data, nazwa), szczegółowy podgląd wydarzeń, panel organizatora, konto kierowcy z~garażem i~zgłoszeniami oraz fundament pod dalszy rozwój. SWS formalizuje te cele jako podstawę implementacji, testów i~oceny produktu akademickiego. W~warstwie problemowej DZW wskazuje rozproszenie informacji o~zawodach oraz brak jednego kanału dla organizatorów do publikacji i~zarządzania wydarzeniem --- to nadal punkt wyjścia przy planowaniu zakresu.
 
-W~warstwie odbiorczej pracy inżynierskiej celem praktycznym jest działające MVP demonstracyjne: katalog i~zapisy z~rolami użytkowników, mapa i~trasa, powiadomienia e-mail, ścieżka mobilna, konteneryzacja oraz dokumentacja i~testy umożliwiające odbiór lub prezentację. Miary sukcesu z~KP obejmują m.in.\ stabilne uruchomienie w~Dockerze, cele wydajnościowe API dla żądań listujących, zgodność z~OWASP ASVS Level~1 i~RODO, pozytywne testy manualne kluczowych punktów zakresu oraz przygotowanie systemu na obsługę rzędu 1--5~tys.\ użytkowników miesięcznie (skala pilotowa z~DZW/KP). Miary te wyznaczają kierunek planowania jakości; ich weryfikacja empiryczna jest przedmiotem rozdziałów realizacji i~testowania, a~nie zastępnikiem planu.
+W~pracy inżynierskiej celem praktycznym jest działające MVP demonstracyjne: katalog i~zapisy z~rolami użytkowników, mapa i~trasa, powiadomienia e-mail, ścieżka mobilna, konteneryzacja oraz dokumentacja i~testy umożliwiające odbiór lub prezentację. Miary sukcesu z~KP obejmują m.in.\ stabilne uruchomienie w~Dockerze, cele wydajnościowe API dla żądań listujących, zgodność z~OWASP ASVS Level~1 i~RODO, pozytywne testy manualne kluczowych punktów zakresu oraz przygotowanie systemu na obsługę rzędu 1--5~tys.\ użytkowników miesięcznie (skala pilotowa z~DZW/KP). Te miary wyznaczają kierunek planowania jakości; ich sprawdzenie w~praktyce należy do rozdziałów realizacji i~testowania, a~nie zastępuje planu.
 
 \section{Zakres projektu}
 
-Zakres MVP jest spójny między KP, DZW i~\texttt{docs/MVP.md} jako lista piętnastu funkcji: kalendarz i~lista wydarzeń; filtry oraz wyszukiwarka; szczegóły wydarzenia; panel administratora; konto kierowcy; garaż; system zgłoszeń; konto organizatora; narzędzia organizatora; baza danych wydarzeń; powiadomienia mailowe; mapa wydarzeń; integracja mapowa trasy (w~KP i~DZW: Google Maps API); archiwum; aplikacja mobilna (w~KP: PWA / mobile-first).
+Zakres MVP jest spójny między KP, DZW i~\texttt{docs/\allowbreak MVP.md} jako lista piętnastu funkcji: kalendarz i~lista wydarzeń; filtry oraz wyszukiwarka; szczegóły wydarzenia; panel administratora; konto kierowcy; garaż; system zgłoszeń; konto organizatora; narzędzia organizatora; baza danych wydarzeń; powiadomienia mailowe; mapa wydarzeń; integracja mapowa trasy (w~KP i~DZW: Google Maps API); archiwum; aplikacja mobilna (w~KP: PWA / mobile-first).
 
-Poza zakresem MVP --- świadomie --- pozostają m.in.\ integracje z~kalendarzami zewnętrznymi, powiadomienia push poza mailami, automatyczna integracja z~mediami społecznościowymi oraz live timing / pomiary czasów. KP wymienia te elementy jako możliwości dalszej rozbudowy; w~planowaniu nie traktuje się ich jako zobowiązań odbiorczych.
+Poza zakresem MVP --- świadomie --- pozostają m.in.\ integracje z~kalendarzami zewnętrznymi, powiadomienia push poza mailami, automatyczna integracja z~mediami społecznościowymi oraz live timing / pomiary czasów. KP wymienia je jako możliwości dalszej rozbudowy; w~planowaniu nie traktuje się ich jako zobowiązań odbiorczych.
 
-Warunki odbioru przyjęte w~DZW i~powtórzone w~\texttt{docs/MVP.md} wymagają, by funkcje~1--11 były dostępne i~przetestowane (manualnie oraz podstawowymi testami e2e), by UX zachowywał podejście mobile-first oraz by zakres był spójny z~pitchiem i~prezentacją. Jakość planowana obejmuje codzienne backupy i~health checks, Docker, paginację, indeksy i~cache, czas odpowiedzi P95 nie większy niż 500--700~ms dla list do~50 rekordów, test obciążenia przy ok.\ 10\,000 rekordów i~50~RPS, OWASP ASVS Level~1, RBAC, HTTPS z~nagłówkami bezpieczeństwa, minimalizację danych (RODO) oraz przenośność środowiska Docker.
+Warunki odbioru przyjęte w~DZW i~powtórzone w~\texttt{docs/\allowbreak MVP.md} wymagają, by funkcje~1--11 były dostępne i~przetestowane (manualnie oraz podstawowymi testami e2e), by UX zachowywał podejście mobile-first oraz by zakres był spójny z~pitchiem i~prezentacją. Jakość planowana obejmuje codzienne kopie zapasowe i~kontrole stanu (health checks), Docker, paginację, indeksy i~cache, czas odpowiedzi P95 nie większy niż 500--700~ms dla list do~50 rekordów, test obciążenia przy ok.\ 10\,000 rekordów i~50~RPS, OWASP ASVS Level~1, RBAC, HTTPS z~nagłówkami bezpieczeństwa, minimalizację danych (RODO) oraz przenośność środowiska Docker.
 
-Według synchronizacji \texttt{docs/MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy), a~funkcja~13 --- częściowo: trasa działa przez publiczne OSRM, podczas gdy Google Maps pozostaje jedynie opcją konfiguracyjną. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną parity natywną ani publikację w~sklepach --- jest to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~narracji od pierwotnego MPC, aby nie zacierać granicy zakresu.
+Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy), a~funkcja~13 --- częściowo: trasa działa przez publiczne OSRM, a~Google Maps pozostaje jedynie opcją konfiguracyjną. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną wersję natywną ani publikację w~sklepach --- to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/\allowbreak uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~opisie od pierwotnego MPC, żeby nie zacierać granicy zakresu.
 
 \begin{table}[ht]
   \centering
-  \caption{Zakres MVP (MPC) --- zestawienie funkcji planowanych w~KP/DZW oraz stanu według \texttt{docs/MVP.md} (synchronizacja 28.10.2026).}
+  \caption{Zakres MVP --- funkcje z~KP/DZW oraz stan według \texttt{docs/\allowbreak MVP.md} (28.10.2026).}
   \label{tab:mvp-zakres}
-  \begin{tabular}{|c|p{0.32\linewidth}|p{0.38\linewidth}|c|}
+  {\small
+  \renewcommand{\arraystretch}{1.05}
+  \begin{tabularx}{\linewidth}{|c|>{\raggedright\arraybackslash}p{0.28\linewidth}|>{\raggedright\arraybackslash}X|}
     \hline
-    \textbf{\#} & \textbf{Funkcja (plan)} & \textbf{Stan (skrót)} & \textbf{Werdykt} \\
+    \textbf{Nr} & \textbf{Funkcja} & \textbf{Stan realizacji} \\
     \hline
-    1 & Kalendarz / lista wydarzeń & Lista z~API, paginacja, UI \texttt{/wydarzenia} & OK \\
+    1 & Kalendarz / lista wydarzeń & Zrealizowane: lista z~API, paginacja, UI \texttt{/wydarzenia} \\
     \hline
-    2 & Filtry i~wyszukiwarka & m.in.\ \texttt{q}, kategoria, miasto, filtr płatności & OK \\
+    2 & Filtry i~wyszukiwarka & Zrealizowane: m.in.\ \texttt{q}, kategoria, miasto, filtr płatności \\
     \hline
-    3 & Szczegóły wydarzenia & Detal, zapis, trasa, regulaminy PDF & OK \\
+    3 & Szczegóły wydarzenia & Zrealizowane: detal, zapis, trasa, regulaminy PDF \\
     \hline
-    4 & Panel administratora & Użytkownicy, eventy, wnioski org., błędy & OK \\
+    4 & Panel administratora & Zrealizowane: użytkownicy, eventy, wnioski org., błędy \\
     \hline
-    5 & Konto kierowcy & JWT, dashboard, weryfikacja e-mail; luki vs Spec & Częściowo \\
+    5 & Konto kierowcy & Częściowo: JWT, dashboard, weryfikacja e-mail; luki vs Spec \\
     \hline
-    6 & Garaż & CRUD pojazdów; zdjęcie przy dodaniu; tagi opon & OK \\
+    6 & Garaż & Zrealizowane: CRUD pojazdów; zdjęcie przy dodaniu; tagi opon \\
     \hline
-    7 & System zgłoszeń & Statusy, maile; soft termin dowodu wpłaty & OK \\
+    7 & System zgłoszeń & Zrealizowane: statusy, maile; soft termin dowodu wpłaty \\
     \hline
-    8 & Konto organizatora & Wniosek o~rolę + akceptacja admina & OK \\
+    8 & Konto organizatora & Zrealizowane: wniosek o~rolę + akceptacja admina \\
     \hline
-    9 & Narzędzia organizatora & Tworzenie/edycja eventów, plakat, PDF & OK \\
+    9 & Narzędzia organizatora & Zrealizowane: tworzenie/edycja eventów, plakat, PDF \\
     \hline
-    10 & Baza danych wydarzeń & MySQL + JPA; seed torów PL & OK \\
+    10 & Baza danych wydarzeń & Zrealizowane: MySQL + JPA; seed torów PL \\
     \hline
-    11 & Powiadomienia mailowe & SMTP Mailbux & OK \\
+    11 & Powiadomienia mailowe & Zrealizowane: SMTP Mailbux \\
     \hline
-    12 & Mapa wydarzeń & Leaflet + OpenStreetMap & OK \\
+    12 & Mapa wydarzeń & Zrealizowane: Leaflet + OpenStreetMap \\
     \hline
-    13 & Trasa (plan: Google Maps) & OSRM domyślnie; Google opcjonalnie & Częściowo \\
+    13 & Trasa (plan: Google Maps) & Częściowo: OSRM domyślnie; Google Maps tylko opcjonalnie \\
     \hline
-    14 & Archiwum & Archiwum + auto-archiwizacja & OK \\
+    14 & Archiwum & Zrealizowane: archiwum + auto-archiwizacja \\
     \hline
-    15 & Aplikacja mobilna & Expo jako wizytówka + web PWA & OK \\
+    15 & Aplikacja mobilna & Zrealizowane: Expo jako wizytówka + web PWA \\
     \hline
-  \end{tabular}
+  \end{tabularx}
+  }
 \end{table}
 
 \section{Metodyka pracy}
 
-W~historycznej dokumentacji planistycznej przedmiotu PRO (\emph{Harmonogram} v02, folder ,,stare wersje''; sporządzenie 04--06.11.2025) przyjęto cykl przyrostowo-prototypowy: każdy etap obejmuje planowanie, implementację i~test wybranego modułu (np.\ kalendarz, panel administratora, mapy). Etapy nazwane w~Harmonogramie to: analiza i~planowanie, projektowanie, implementacja backendu, implementacja frontendu i~integracje, testy oraz dokumentacja, a~następnie prezentacja i~ewaluacja MVP. Jako narzędzia planowania wymieniono m.in.\ GitHub Projects oraz --- w~części zasobowej --- JIRA lub Monday.com; nie wynika z~tego, by sprinty Scrum lub Kanban z~datami były formalnie egzekwowane, toteż nie wprowadza się tu wymyślonych tablic ani velocity. Harmonogram PRO traktuje się wyłącznie jako materiał historyczny przedmiotowy, nie jako obowiązującą kartę dyplomu; opiekun przedmiotu PRO w~tym dokumencie (Marta Łabuda) nie zastępuje promotora pracy dyplomowej (Marek Bednarczyk).
+W~historycznej dokumentacji planistycznej przedmiotu PRO
+(\emph{Harmonogram} v02, folder ,,stare wersje'';
+sporządzenie 04--06.11.2025) przyjęto cykl przyrostowy
+z~prototypami: każdy etap obejmuje planowanie, implementację
+i~test wybranego modułu (np.\ kalendarz, panel administratora, mapy). Etapy nazwane w~Harmonogramie to: analiza i~planowanie, projektowanie, implementacja backendu, implementacja frontendu i~integracje, testy oraz dokumentacja, a~następnie prezentacja i~ewaluacja MVP. Jako narzędzia planowania wymieniono m.in.\ GitHub Projects oraz --- w~części zasobowej --- JIRA lub Monday.com; nie wynika z~tego, by sprinty Scrum lub Kanban z~datami były formalnie egzekwowane, więc nie wprowadza się tu wymyślonych tablic ani velocity. Harmonogram PRO traktuje się wyłącznie jako materiał historyczny przedmiotowy, nie jako obowiązującą kartę dyplomu; opiekun przedmiotu PRO w~tym dokumencie (Marta Łabuda) nie zastępuje promotora pracy dyplomowej (Marek Bednarczyk).
 
-W~praktyce repozytorium widać metodykę iteracyjnego dostarczania w~monorepo: wspólny kontrakt API, bieżąca dokumentacja zmian (układ ,,było $\rightarrow$ jest $\rightarrow$ dlaczego'' w~\texttt{docs/changes.md}), synchronizacja stanu względem MVP, decyzje infrastrukturalne w~\texttt{docs/decyzje-wdrozeniowe.md}, przegląd przed merge do \texttt{main} oraz testy JUnit/MockMvc, Vitest i~Playwright. Prototyp UI w~Figma Make (,,Advanced UI/UX for RACEPORTAL'') stanowił punkt startu frontendu; kolejne fale weryfikacji UI i~poprawek dokumentowano jako aktywności jakościowe, a~nie jako formalny wykres Gantta. Zarządzanie jakością planowane w~Harmonogramie PRO (code review przed \texttt{main}, testy manualne i~automatyczne, inspekcja dokumentacji) pozostaje spójne z~praktyką repozytorium, choć szczegółowe narzędzia ewoluowały (m.in.\ Postman z~planu historycznego ustąpił miejsca testom JUnit/MockMvc i~Playwright).
+W~praktyce w~repozytorium widać iteracyjne dostarczanie w~monorepo: wspólny kontrakt API, bieżąca dokumentacja zmian (układ ,,było $\rightarrow$ jest $\rightarrow$ dlaczego'' w~\texttt{docs/\allowbreak changes.md}), synchronizacja stanu względem MVP oraz decyzje infrastrukturalne (\texttt{docs/\allowbreak decyzje-\allowbreak wdro\-zeniowe.md}). Przegląd przed merge do \texttt{main} uzupełniają testy JUnit/MockMvc, Vitest i~Playwright. Prototyp UI w~Figma Make (,,Advanced UI/UX for RACEPORTAL'') był punktem startu frontendu; kolejne fale sprawdzeń UI i~poprawek dokumentowano jako prace jakościowe, a~nie jako formalny wykres Gantta. Zarządzanie jakością planowane w~Harmonogramie PRO (code review przed \texttt{main}, testy manualne i~automatyczne, inspekcja dokumentacji) pozostaje spójne z~praktyką repozytorium, choć konkretne narzędzia się zmieniały (m.in.\ Postman z~planu historycznego ustąpił miejsca testom JUnit/MockMvc i~Playwright).
 
 \section{Organizacja zespołu}
 
 Zespół jest pięcioosobowy (specjalizacja cyberbezpieczeństwo, tryb stacjonarny --- KP): Natalia Otrombke, Oliwier Kasprowicz, Michał Gutowski, Miłosz Parkitny i~Wojciech Wronisz. Opiekunem projektu w~KP oraz w~pracy dyplomowej jest Marek Bednarczyk.
 
-Współpraca opiera się o~wspólne repozytorium GitHub, gałąź \texttt{main} oraz dokumentację w~\texttt{docs/} i~\texttt{Dokumentacja/}. Jakość planowana obejmuje przegląd przed merge, testy manualne i~automatyczne oraz bieżącą aktualizację dokumentów porównawczych (MVP, zgodność ze Specyfikacją Formularzy). Historyczny Harmonogram PRO przewidywał m.in.\ cotygodniowe statusy na Discordzie oraz prezentacje postępów zgodne z~planem zajęć --- zapisy te pozostają kontekstem organizacyjnym przedmiotu, a~nie formalnym regulaminem dyplomu.
+Współpraca opiera się o~wspólne repozytorium GitHub, gałąź \texttt{main} oraz dokumentację w~\texttt{docs/} i~\texttt{Dokumentacja/}. Jakość planowana obejmuje przegląd przed merge, testy manualne i~automatyczne oraz bieżącą aktualizację dokumentów porównawczych (MVP, zgodność ze Specyfikacją Formularzy). Historyczny Harmonogram PRO przewidywał m.in.\ cotygodniowe statusy na Discordzie oraz prezentacje postępów zgodne z~planem zajęć --- te zapisy to kontekst organizacyjny przedmiotu, a~nie formalny regulamin dyplomu.
 
-Za formalny podział ról w~tym rozdziale przyjmuje się zapis z~DZW: kierownik projektu --- Wojciech Wronisz; frontend --- Natalia Otrombke i~Oliwier Kasprowicz; backend --- Miłosz Parkitny; fullstack / marketing --- Michał Gutowski. Późniejsza praktyka opisana w~\texttt{README.md} repozytorium różni się w~szczegółach (kierownik: Michał Gutowski; backend: Michał Gutowski i~Miłosz Parkitny; fullstack, testy i~bezpieczeństwo: Wojciech Wronisz) --- odnotowuje się ją jako ewolucję organizacyjną, bez przypisywania tu autorstwa poszczególnych funkcji. Opis wkładu merytorycznego pozostaje w~osobnym rozdziale pracy.
+Za formalny podział ról w~tym rozdziale przyjmuje się zapis z~DZW: kierownik projektu --- Wojciech Wronisz; frontend --- Natalia Otrombke i~Oliwier Kasprowicz; backend --- Miłosz Parkitny; fullstack / marketing --- Michał Gutowski. Późniejsza praktyka opisana w~\texttt{README.md} repozytorium różni się w~szczegółach (kierownik: Michał Gutowski; backend: Michał Gutowski i~Miłosz Parkitny; fullstack, testy i~bezpieczeństwo: Wojciech Wronisz) --- odnotowuje się ją jako zmianę organizacyjną w~czasie, bez przypisywania tu autorstwa poszczególnych funkcji. Opis wkładu merytorycznego pozostaje w~osobnym rozdziale pracy.
 
 \begin{table}[ht]
   \centering
-  \caption{Podział ról według DZW (formalny dla niniejszego rozdziału) oraz ewolucja opisana w~\texttt{README.md} (bez przypisywania autorstwa funkcji).}
+  \caption{Podział ról według DZW (formalny dla tego rozdziału) oraz opis w~\texttt{README.md}.}
   \label{tab:role-zespolu}
-  \begin{tabular}{|p{0.28\linewidth}|p{0.32\linewidth}|p{0.28\linewidth}|}
+  \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
     \hline
     \textbf{Osoba} & \textbf{Rola w~DZW} & \textbf{Opis w~\texttt{README.md}} \\
     \hline
@@ -353,22 +365,22 @@ Za formalny podział ról w~tym rozdziale przyjmuje się zapis z~DZW: kierownik 
     \hline
     Marek Bednarczyk & Opiekun (promotor) & Opiekun projektu \\
     \hline
-  \end{tabular}
+  \end{tabularx}
 \end{table}
 
 \section{Harmonogram pracy}
 
-W~KP data 31.01.2026 figuruje jako ograniczenie czasowe karty projektu. W~niniejszej pracy datę tę traktuje się jako termin dokumentacyjny karty (ograniczenie planistyczne KP), a~\textbf{nie} jako kalendarzowy termin domknięcia gotowego i~przetestowanego systemu. Przebieg implementacji --- udokumentowany w~\texttt{docs/changes.md} --- wykracza poza tę datę karty i~obejmuje m.in.\ wdrożenie produkcyjne oraz domknięcia funkcji w~październiku 2026; nie wprowadza się tu konkurencyjnej ,,daty ukończenia'' spoza potwierdzonej interpretacji karty.
+W~KP data 31.01.2026 figuruje jako ograniczenie czasowe karty projektu. W~tej pracy datę tę traktuje się jako termin dokumentacyjny karty (ograniczenie planistyczne KP), a~\textbf{nie} jako kalendarzowy termin domknięcia gotowego i~przetestowanego systemu. Przebieg implementacji --- udokumentowany w~\texttt{docs/\allowbreak changes.md} --- wykracza poza tę datę karty i~obejmuje m.in.\ wdrożenie produkcyjne oraz domknięcia funkcji w~październiku 2026; nie wprowadza się tu konkurencyjnej ,,daty ukończenia'' spoza potwierdzonej interpretacji karty.
 
-Planowanie etapowe z~Harmonogramu PRO (analiza, projekt, backend, frontend z~integracjami, testy, prezentacja MVP) stanowiło ramę metodyczną przedmiotu, a~nie zamknięty formalny Gantt dyplomu. W~Harmonogramie PRO podano również okno zajęć (ok.\ 15 tygodni od 6.10.2025 do 19.01.2026) oraz szacunek nakładu --- zapisy te pozostają historią przedmiotową i~nie są tu przepisywane jako obowiązujący harmonogram dyplomu z~wymyślonymi datami kamieni milowych.
+Planowanie etapowe z~Harmonogramu PRO (analiza, projekt, backend, frontend z~integracjami, testy, prezentacja MVP) stanowiło plan prac na zajęciach przedmiotu, a~nie zamknięty formalny Gantt dyplomu. W~Harmonogramie PRO podano również okno zajęć (ok.\ 15 tygodni od 6.10.2025 do 19.01.2026) oraz szacunek nakładu --- te zapisy pozostają historią przedmiotową i~nie są tu przepisywane jako obowiązujący harmonogram dyplomu z~wymyślonymi datami kamieni milowych.
 
-Przebieg prac --- w~odróżnieniu od kamieni milowych karty --- dokumentuje \texttt{docs/changes.md}. Chronologia ta obejmuje m.in.\ przeniesienie prototypu z~Figma Make do lokalnego monorepo, scaffold Vite i~Dockera, migrację API na Spring Boot z~MySQL, budowę aplikacji mobilnej Expo jako wizytówki, iteracje testów i~formularzy, a~w~październiku 2026 przenosiny produkcyjne na Oracle Always Free z~Cloudflare Tunnel, SMTP Mailbux i~webową PWA, następnie domknięcie uploadu plików oraz pomiary k6 na VM. Daty wpisów w~\texttt{changes.md} są kotwicami przebiegu; nie zastępują oficjalnego terminu karty KP i~nie tworzą formalnego wykresu Gantta.
+Przebieg prac --- w~odróżnieniu od kamieni milowych karty --- dokumentuje plik \texttt{docs/\allowbreak changes.md}. Chronologia obejmuje m.in.\ przeniesienie prototypu z~Figma Make do lokalnego monorepo, scaffold Vite i~Dockera, migrację API na Spring Boot z~MySQL, budowę aplikacji mobilnej Expo jako wizytówki, iteracje testów i~formularzy, a~w~październiku 2026 przenosiny produkcyjne na Oracle Always Free z~Cloudflare Tunnel, SMTP Mailbux i~webową PWA, następnie domknięcie uploadu plików oraz pomiary k6 na VM. Daty wpisów w~\texttt{changes.md} są kotwicami przebiegu; nie zastępują oficjalnego terminu karty KP i~nie tworzą formalnego wykresu Gantta.
 
 \begin{table}[ht]
   \centering
-  \caption{Przegląd etapów prac --- rama metodyczna z~Harmonogramu PRO (materiały historyczne) wobec charakteru przebiegu w~repozytorium. Bez przypisywania wymyślonych dat kalendarzowych etapom dyplomu.}
+  \caption{Etapy prac --- plan z~Harmonogramu PRO wobec charakteru przebiegu w~repozytorium.}
   \label{tab:etapy-harmonogram}
-  \begin{tabular}{|c|p{0.22\linewidth}|p{0.28\linewidth}|p{0.30\linewidth}|}
+  \begin{tabularx}{\linewidth}{|c|>{\raggedright\arraybackslash}p{0.20\linewidth}|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
     \hline
     \textbf{lp.} & \textbf{Etap (plan PRO)} & \textbf{Produkty planowane} & \textbf{Charakter w~przebiegu} \\
     \hline
@@ -384,43 +396,53 @@ Przebieg prac --- w~odróżnieniu od kamieni milowych karty --- dokumentuje \tex
     \hline
     6 & Prezentacja MVP & Demo odbiorcze & Compose lokalnie + prod Oracle/Tunnel; scenariusz prezentacji \\
     \hline
-  \end{tabular}
+  \end{tabularx}
 \end{table}
 
 \section{Infrastruktura i~środowisko pracy}
 
-Wizja konstrukcyjna DZW zakładała frontend React, backend Java Spring Boot (REST), bazę MySQL, integracje mapowe, GitHub, Docker, Maven oraz GitHub Projects. W~realizacji lokalnej i~produkcyjnej źródłem prawdy uruchomieniowej jest Docker Compose: kontenery \texttt{web} (nginx z~buildem Vite/React), \texttt{api} (Spring Boot), \texttt{mysql} (MySQL~8.4) oraz \texttt{backup} (cykliczny \texttt{mysqldump}). Aplikacja mobilna Expo działa poza Compose. Maile systemowe idą SMTP przez Mailbux (hasło wyłącznie w~\texttt{.env}).
+Wizja konstrukcyjna DZW zakładała frontend React, backend Java Spring Boot (REST), bazę MySQL, integracje mapowe, GitHub, Docker, Maven oraz GitHub Projects. W~realizacji lokalnej i~produkcyjnej źródłem prawdy uruchomieniowej jest Docker Compose: kontenery \texttt{web} (nginx z~buildem Vite/\allowbreak React), \texttt{api} (Spring Boot), \texttt{mysql} (MySQL~8.4) oraz \texttt{backup} (cykliczny \texttt{mysqldump}). Aplikacja mobilna Expo działa poza Compose. Maile systemowe idą SMTP przez Mailbux (hasło wyłącznie w~\texttt{.env}).
 
-Wdrożenie produkcyjne zrealizowano na maszynie Oracle Always Free (ARM Ampere) z~pełnym Compose. Publiczny dostęp zapewnia Cloudflare Tunnel do nginx na porcie \texttt{:8081}; domena \texttt{raceportal.pl} korzysta z~TLS, HSTS i~DNS po stronie Cloudflare. Role warstw są rozdzielone: frontend (statyczny SPA za nginx z~proxy \texttt{/api}), API (Spring Boot) oraz baza (MySQL). Cloudflare pełni rolę tunelu i~bramy TLS/DNS, a~nie hostingu frontu na Pages --- wcześniejsze warianty GCP/Pages pozostają wyłącznie historią decyzji, opisaną w~\texttt{docs/decyzje-wdrozeniowe.md}.
+Wdrożenie produkcyjne zrealizowano na maszynie Oracle Always Free (ARM Ampere) z~pełnym Compose. Publiczny dostęp zapewnia Cloudflare Tunnel do nginx na porcie \texttt{:8081}; domena \texttt{raceportal.pl} korzysta z~TLS, HSTS i~DNS po stronie Cloudflare. Role warstw są rozdzielone: frontend (statyczny SPA za nginx z~proxy \texttt{/api}), API (Spring Boot) oraz baza (MySQL). Cloudflare pełni rolę tunelu i~bramy TLS/DNS, a~nie hostingu frontu na Pages --- wcześniejsze warianty GCP/Pages pozostają wyłącznie historią decyzji, opisaną w~\texttt{docs/\allowbreak decyzje-\allowbreak wdrozeniowe.md}.
 
-Stack mapowy w~kodzie to Leaflet z~kafelkami OpenStreetMap po stronie weba oraz wyznaczanie trasy przez publiczne OSRM (proxy \texttt{/api/maps/route}). Jest to świadoma realizacja względem planu KP/DZW opartego o~Google Maps API; klucz Google Maps może figurować w~konfiguracji, lecz aktywna ścieżka routingu w~serwisie map korzysta z~OSRM.
+Stack mapowy w~kodzie to Leaflet z~kafelkami OpenStreetMap po stronie weba oraz wyznaczanie trasy przez publiczne OSRM (proxy \texttt{/api/\allowbreak maps/\allowbreak route}). Jest to świadoma realizacja względem planu KP/DZW opartego o~Google Maps API; klucz Google Maps może figurować w~konfiguracji, lecz aktywna ścieżka routingu w~serwisie map korzysta z~OSRM.
 
-Środowisko pracy obejmuje Docker Desktop, Node.js (web i~mobile), JDK/Maven (API w~kontenerze), Expo z~symulatorem lub emulatorem, Playwright, GitHub oraz \texttt{cloudflared} na VM Oracle. Upload plików jest częścią API (katalog wolumenowy \texttt{UPLOAD\_DIR} w~Compose), z~ograniczeniami odnotowanymi w~MVP i~Specyfikacji Formularzy --- nie zastępuje pełnej zgodności ze wszystkimi polami formularzy ani parity mobilnej.
+Środowisko pracy obejmuje Docker Desktop, Node.js
+(web i~mobile), JDK/\allowbreak Maven (API w~kontenerze),
+Expo z~symulatorem lub emulatorem, Playwright, GitHub
+oraz \texttt{cloudflared} na VM Oracle.
+Upload plików jest częścią API
+(katalog wolumenowy \texttt{UPLOAD\_DIR} w~Compose),
+z~ograniczeniami odnotowanymi w~MVP i~Specyfikacji Formularzy ---
+nie zastępuje pełnej zgodności ze wszystkimi polami formularzy
+ani równoważności funkcji w~aplikacji mobilnej.
 
 \section{Analiza ryzyka projektowego}
 \subsection{Analiza zagrożeń}
 
-Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, z~mitigacjami wynikającymi z~dokumentacji i~stanu systemu. Część zagrożeń planowano już w~historycznym Harmonogramie PRO (opóźnienia, spójność kodu, integracja map); poniżej ujęto je łącznie z~ryzykami ujawnionymi w~przebiegu implementacji i~porównaniu plan--stan.
+Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami ograniczenia ryzyka wynikającymi z~dokumentacji i~stanu systemu. Część zagrożeń planowano już w~historycznym Harmonogramie PRO (opóźnienia, spójność kodu, integracja map); poniżej ujęto je łącznie z~ryzykami ujawnionymi w~przebiegu implementacji i~porównaniu plan--stan.
 
 \begin{table}[ht]
   \centering
-  \caption{Analiza ryzyka projektowego RacePortal --- wybrane zagrożenia i~działania mitygujące.}
+  \caption{Analiza ryzyka RacePortal --- wybrane zagrożenia i~sposoby ich ograniczenia.}
   \label{tab:ryzyka}
-  \begin{tabular}{|p{0.30\linewidth}|p{0.28\linewidth}|p{0.30\linewidth}|}
+  {\footnotesize
+  \renewcommand{\arraystretch}{1.05}
+  \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|>{\raggedright\arraybackslash}X|}
     \hline
-    \textbf{Ryzyko} & \textbf{Skutek / objaw} & \textbf{Mitigacja} \\
+    \textbf{Ryzyko} & \textbf{Skutek / objaw} & \textbf{Sposób ograniczenia ryzyka} \\
     \hline
-    Niespójność Specyfikacji Formularzy względem implementacji & Luki odbiorcze (m.in.\ wymagalność danych osobowych) & Rejestr luk w~\texttt{docs/spec-conformity.md}; rozróżnienie ,,działa funkcjonalnie'' / ,,pełna zgodność ze Spec'' \\
+    Niespójność Specyfikacji Formularzy względem implementacji & Luki odbiorcze (m.in.\ wymagalność danych osobowych) & Rejestr luk w~\texttt{docs/\allowbreak spec-\allowbreak conformity.md}; rozróżnienie ,,działa funkcjonalnie'' / ,,pełna zgodność ze Spec'' \\
     \hline
-    Awaria lub limity zewnętrznych serwisów map i~routingu & Brak mapy lub trasy & Leaflet/OSM bez klucza; OSRM z~komunikatami błędu; możliwa wymiana providera \\
+    Awaria lub limity zewnętrznych serwisów map i~routingu & Brak mapy lub trasy & Leaflet/OSM bez klucza; OSRM z~komunikatami błędu; możliwa wymiana dostawcy \\
     \hline
-    Dryf kontraktu web~$\leftrightarrow$~mobile & Rozjazdy typów i~endpointów & Wspólny pakiet \texttt{packages/api-types} \\
+    Dryf kontraktu web~$\leftrightarrow$~mobile & Rozjazdy typów i~adresów API & Wspólny pakiet \texttt{packages/\allowbreak api-\allowbreak types} \\
     \hline
     Rozrost zakresu ponad MPC & Opóźnienie odbioru MVP & Świadome odłożenie PSP, push i~store; elementy ponad MVP nazywane osobno \\
     \hline
     Ograniczenia zasobowe i~czasowe zespołu & Niewykonanie planu przy budżecie zerowym & Oracle Always Free; jeden origin przez Tunnel; termin karty KP 31.01.2026 jako ograniczenie planistyczne (nie termin domknięcia systemu) \\
     \hline
-    Niekompletność bazy wydarzeń na starcie & Słaba wartość katalogu bez społeczności & Seed demo, katalog torów PL, happy-path ról; kompletność rynkowa poza czystym zakresem kodu \\
+    Niekompletność bazy wydarzeń na starcie & Słaba wartość katalogu bez społeczności & Dane demo na start, katalog torów PL, podstawowe ścieżki ról; kompletność rynkowa poza czystym zakresem kodu \\
     \hline
     Brak formalnego artefaktu 10k/50~RPS & Niespełnienie pierwotnego kryterium wydajnościowego jako dowodu odbioru & Paginacja, indeksy, cache; krótkie pomiary k6 na VM (szczegóły --- rozdział testów) \\
     \hline
@@ -428,12 +450,14 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, z~mitigacjami wyni
     \hline
     Utrata spójności kodu / regresje integracji & Błędy na styku warstw & Code review przed \texttt{main}; testy automatyczne API/web/mobile \\
     \hline
-  \end{tabular}
+  \end{tabularx}
+  }
 \end{table}
 
 W~zakresie wydajności empiryczne pomiary k6 na Oracle VM (25.10.2026) wskazują m.in.\ komfortowy zakres ok.\ 150--200~RPS dla paginowanej listy wydarzeń --- bez utożsamiania tych pomiarów z~formalnym testem 10\,000 rekordów / 50~RPS; szczegółowa analiza należy do rozdziału testowania.
 
-Planowanie RacePortal łączy zatem formalne ramy KP/DZW z~iteracyjnym przebiegiem implementacji. Zakres MVP pozostaje czytelny dzięki porównaniu ,,miało być / jest'' w~\texttt{docs/MVP.md}, a~infrastruktura produkcyjna --- dzięki rozdzieleniu ról web, API i~bazy oraz świadomym decyzjom o~Oracle i~Cloudflare Tunnel. Ryzyka utrzymuje się w~rejestrze jakościowym (Spec, wydajność, zależności zewnętrzne), z~mitigacjami osadzonymi w~architekturze i~dokumentacji porównawczej.
+Planowanie RacePortal łączy zatem formalne ramy KP/DZW z~iteracyjnym przebiegiem implementacji. Zakres MVP pozostaje czytelny dzięki porównaniu ,,miało być~/~jest'' w~dokumencie \texttt{MVP.md}, a~infrastruktura produkcyjna --- dzięki rozdzieleniu ról web, API i~bazy oraz świadomym decyzjom o~Oracle i~Cloudflare Tunnel. Ryzyka utrzymuje się w~rejestrze jakościowym (Spec, wydajność, zależności zewnętrzne), ze sposobami ograniczenia ryzyka osadzonymi w~architekturze i~dokumentacji porównawczej.
+
 \chapter{Analiza wymagań}
 \label{ch:wymagania}
 \section{Źródła i sposób pozyskania wymagań}
@@ -527,14 +551,104 @@ Zasoby \texttt{/api/auth/*}, \texttt{/api/events}, \texttt{/api/events/markers},
 
 \section{Projekt warstwy webowej}
 \label{sec:figma}
-Routing React Router; AuthContext; strony katalogu, detalu, dashboardu, garażu, paneli; komponent mapy Leaflet.
+
+Warstwa webowa RacePortal to pełny klient transakcyjny systemu: obsługuje katalog wydarzeń, konta użytkowników, wirtualny garaż, zgłoszenia udziału oraz panele organizatora i~administratora. Stack aplikacji to \textbf{Vite~6} z~\textbf{React~18} i~\textbf{TypeScript}, stylowanie \textbf{Tailwind CSS~v4} oraz zestaw komponentów zbliżonych do \textbf{shadcn/ui} (Radix UI). Routing realizuje \textbf{React Router~v7} (\texttt{createBrowserRouter}); komunikacja z~backendem --- moduł komunikacji z~API w~\texttt{web/\allowbreak src/\allowbreak app/\allowbreak lib/\allowbreak api.ts}, z~bazą URL z~\texttt{VITE\_API\_URL} albo ścieżkami względnymi \texttt{/api/\ldots} (proxy Vite w~dev, proxy nginx w~Dockerze). Sesja opiera się o~\textbf{httpOnly cookies} (\texttt{rp\_at} / \texttt{rp\_rt}) z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie. Szczegóły implementacji frontendu są rozwinięte w~rozdziale~11; poniżej opisano projekt warstwy i~kluczowe decyzje.
+
+\subsection*{Architektura frontendu}
+
+Korzeń aplikacji (\texttt{App.tsx}) owija drzewo tras w~\texttt{AuthProvider},
+wczytuje ustawienia UI (akcent / język) oraz renderuje \texttt{Router\-Provider}.
+Strona główna ładuje się od razu (LCP); pozostałe strony --- przez \texttt{React.lazy},
+z~obsługą błędu po aktualizacji (jednorazowe odświeżenie strony).
+Wspólny układ zapewnia \texttt{RootLayout} z~\texttt{<Outlet~/>}.
+Trasy chronione opakowano w~\texttt{AuthGate}: podczas wczytywania sesji
+(\texttt{GET /api/\allowbreak auth/\allowbreak me}) wyświetlany jest spinner;
+brak sesji przekierowuje na \texttt{/login};
+opcjonalna biała lista ról (\texttt{ADMIN}, \texttt{ORGANIZER}) chroni panele.
+W~Dockerze nginx stosuje \texttt{try\_files \$uri /index.html},
+aby bezpośrednie odnośniki SPA nie kończyły się kodem~404.
+
+Szkic kluczowych tras (fragment \texttt{routes.tsx}):
+
+\begin{lstlisting}[caption={Fragment drzewa tras React Router (katalog, auth, panele).}, label={lst:web-routes}]
+export const router = createBrowserRouter([
+  {
+    path: "/",
+    Component: RootLayout,
+    children: [
+      { index: true, Component: HomePage },
+      { path: "login", Component: LoginPage },
+      { path: "wydarzenia", Component: EventsPage },
+      { path: "wydarzenia/:id", Component: EventDetailPage },
+      { path: "dashboard", Component: ProtectedDashboard },
+      { path: "garaz", Component: ProtectedGarage },
+      { path: "organizer", Component: ProtectedOrganizer },
+      { path: "admin", Component: ProtectedAdmin },
+      // ...
+    ],
+  },
+]);
+\end{lstlisting}
+
+\subsection*{Komunikacja z~API i~stan sesji}
+
+Moduł \texttt{api} zbiera metody \texttt{get}/\texttt{post}/\texttt{patch}/\texttt{delete},
+mapuje błędy na \texttt{ApiError} oraz przy kodzie~401 wykonuje jedną próbę
+odświeżenia sesji (\texttt{POST /api/\allowbreak auth/\allowbreak refresh})
+przed wylogowaniem.
+Kontekst \texttt{AuthContext} utrzymuje \texttt{user}, flagę \texttt{isLoading}
+oraz funkcje konta (logowanie, rejestracja z~weryfikacją e-mail,
+OAuth Google, profil, zmiana hasła, zamknięcie konta).
+Wczytywanie sesji jest odroczone do idle (\texttt{defer\-Until\-Idle}),
+a~przy powrocie karty przeglądarki odświeżany jest token ---
+bez przechowywania JWT w~JavaScript.
+
+\begin{lstlisting}[caption={Wczytywanie sesji w~\texttt{AuthContext} (httpOnly cookies).}, label={lst:auth-bootstrap}]
+useEffect(() => {
+  clearLegacyToken();
+  return deferUntilIdle(() => {
+    void (async () => {
+      try {
+        const me = await api.get<User>("/api/auth/me");
+        persistAuth(me);
+      } catch {
+        persistAuth(null);
+      } finally {
+        setIsLoading(false);
+      }
+    })();
+  }, 2000);
+}, []);
+\end{lstlisting}
+
+Wspólny kontrakt typów z~backendem wspiera pakiet
+\texttt{packages/\allowbreak api-\allowbreak types}
+(m.in.\ presety torów \texttt{TRACK\_PRESETS}).
+Mapa wydarzeń korzysta z~\textbf{Leaflet} + OpenStreetMap;
+wyznaczanie trasy --- z~publicznego OSRM
+(Google Maps pozostaje opcją konfiguracyjną poza domyślną ścieżką MVP).
+
+\subsection*{Komponenty i~użyteczność}
+
+Struktura katalogów oddziela strony (\texttt{pages/}), kontekst auth, moduł komunikacji z~API oraz bibliotekę UI (\texttt{components/\allowbreak ui/} --- przyciski, dialogi, formularze, karty itd.). Tokeny marki (\texttt{{-{-}race-accent}}, \texttt{{-{-}race-fg}}, \texttt{{-{-}race-muted}}) spójnie sterują motywem. Typografia display to \textbf{Oxanium} (zastąpiono Orbitron ze względu na brak \emph{latin-ext} dla polskich znaków), treść --- Montserrat. Interfejs jest \textbf{mobile-first}: na telefonie działa dolna nawigacja oraz PWA (manifest + service worker, instalacja skrótu na ekranie początkowym). Stany puste, błędy tras i~toasty (\texttt{sonner}) domykają feedback użytkownika. Panele ról nie dublują katalogu publicznego --- organizator zarządza własnymi wydarzeniami, administrator moderuje publikacje i~wnioski o~rolę.
+
+Użyteczność projektowano wokół krótkiej ścieżki: gość przegląda katalog $\rightarrow$ rejestracja / logowanie $\rightarrow$ garaż $\rightarrow$ zapis na wydarzenie; organizator publikuje imprezę po akceptacji administratora. CTA na stronie głównej i~w~kartach wydarzeń prowadzą do konkretnych tras SPA, a~nie do martwych placehoderów prototypu.
 
 \subsection{Prototyp UI w~Figma Make}
-Wyjściowym projektem interfejsu był plik Figma Make \textbf{Advanced UI/UX for RACEPORTAL} (ciemny motyw motorsportowy, akcent marki, Orbitron / typografia display, komponenty zbliżone do shadcn/ui). Prototyp obejmował m.in.\ stronę główną, katalog, logowanie/rejestrację, dashboard oraz szkice paneli organizatora i~administratora.
+\label{sec:figma-make}
 
-Kod frontendu został przeniesiony z~Figma Make do lokalnego monorepo (Vite/React), a~następnie podpięty pod realne API (zamiast mocków / localStorage). Wczesna wizja produktu i~ról --- jeszcze przed pełną implementacją --- jest też widoczna na diagramach koncepcyjnych (rys.~\ref{fig:use-case}, \ref{fig:podzial-rol}).
+Wyjściowym projektem interfejsu był plik Figma Make \textbf{Advanced UI/UX for RACEPORTAL} (ciemny motyw motorsportowy, akcent marki w~kolorze złotym / żółtym, typografia display, komponenty zbliżone do shadcn/ui). Prototyp obejmował m.in.\ stronę główną z~hero i~sekcją nadchodzących wydarzeń, katalog, logowanie/rejestrację, dashboard oraz szkice paneli organizatora i~administratora. Warstwy w~Figmie nosiły nazwy zbliżone do klas narzędziowych CSS (\texttt{header.border-b}, \texttt{button.inline-flex}), co ułatwiło przeniesienie układu do React/Tailwind.
 
-W~toku realizacji UI dopracowano pod kątem responsywności, stanów pustych/błędów, PWA (manifest, service worker, dolna nawigacja mobilna) oraz spójności z~tokenami marki (\texttt{--race-accent}).
+Rysunek~\ref{fig:figma-web} przedstawia zrzut ekranu prototypu strony głównej (stan roboczy z~Figmy, dokumentacja zespołu z~23.10.2026): hero z~hasłem ,,Dołącz do wyścigu'', karty wydarzeń oraz blok informacyjny z~wezwaniem do kalendarza.
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=0.9\textwidth]{figma-raceportal-web.png}
+  \caption{Prototyp UI RacePortal w~Figma Make --- strona główna (ciemny motyw motorsportowy, akcent marki).}
+  \label{fig:figma-web}
+\end{figure}
+
+Kod frontendu został przeniesiony z~Figma Make do lokalnego monorepo (\texttt{web/}), a~następnie podpięty pod realne API Spring Boot zamiast mocków i~\texttt{localStorage}. Wczesna wizja produktu i~ról --- jeszcze przed pełną implementacją --- jest też widoczna na diagramach koncepcyjnych (rys.~\ref{fig:use-case}, \ref{fig:podzial-rol}). W~toku realizacji UI dopracowano pod kątem responsywności, stanów pustych/błędów, PWA oraz spójności z~tokenami marki (\texttt{--race-accent}); font Orbitron zastąpiono Oxaniumem ze względu na polskie znaki diakrytyczne. Atrybucje komponentów shadcn/ui oraz zdjęć Unsplash udokumentowano w~\texttt{docs/\allowbreak ATTRIBUTIONS.md}.
 
 \section{Projekt aplikacji mobilnej}
 Stack Expo; nawigacja stack Eventy; publiczny klient HTTP; \texttt{EXPO\_PUBLIC\_API\_URL} / \texttt{EXPO\_PUBLIC\_WEB\_URL}; CTA \texttt{Linking} do \texttt{/wydarzenia/:id}.
