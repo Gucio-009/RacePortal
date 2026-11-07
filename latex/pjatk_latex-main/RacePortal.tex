@@ -982,44 +982,22 @@ Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo
 Przejście mobile z~parity na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
 
 \section{Ograniczenia końcowej wersji systemu}
-Końcowa wersja RacePortal stanowi domknięte MVP demonstracyjne: realizuje centralny katalog wydarzeń, proces zapisów, wirtualny garaż, panele organizatora i~administratora oraz mobilną wizytówkę katalogu. Jednocześnie celowo pozostawia poza zakresem funkcje, które wymagałyby osobnego nakładu produktowego, prawnego lub infrastrukturalnego. Ograniczenia te są spójne z~kartą projektu oraz z~opisem zakresu w~podrozdziale~\ref{sec:cel-zakres}; poniżej zestawiono je według obszarów.
+Oddawana wersja RacePortal domyka założony zakres MVP: publiczny katalog wydarzeń, konta i~role, wirtualny garaż, proces zgłoszeń ze statusami, panele organizatora i~administratora, powiadomienia e-mail, lokalny upload mediów oraz mobilną wizytówkę katalogu. Jednocześnie praca inżynierska wymaga jasnego wskazania granic rozwiązania --- zarówno tych wynikających ze świadomego zawężenia zakresu, jak i~tych wynikających z~przyjętego modelu wdrożenia demonstracyjnego. Opis poniżej jest spójny z~kartą projektu oraz z~podrozdziałem~\ref{sec:cel-zakres}; nie stanowi katalogu usterek, lecz zestaw ograniczeń, których zespół nie deklarował jako zrealizowanych.
 
-\paragraph{Płatności i~rozliczenia.}
-System nie integruje natywnej bramki płatności online (PSP). Statusy opłat po~stronie organizatora mają charakter operacyjny (oznaczenie w~panelu), a~nie księgowy --- nie ma automatycznego pobierania składek startowych ani zwrotów. Decyzja wynika z~kosztów onboardingu PSP, wymogów KYC/AML oraz ryzyka prawnego nieproporcjonalnego do celów akademickiego MVP.
+Najistotniejszym ograniczeniem biznesowym pozostaje brak natywnej bramki płatności online (PSP). System umożliwia oznaczanie statusów opłat i~dołączanie potwierdzenia przelewu, lecz nie pobiera składek startowych, nie rozlicza zwrotów i~nie prowadzi księgowości wydarzenia. Integracja PSP została odłożona ze względu na koszty onboardingu, wymogi identyfikacji płatnika oraz odpowiedzialność prawną nieproporcjonalną do celów akademickiego prototypu.
 
-\paragraph{Upload plików --- stan obecny i~pozostałe ograniczenia.}
-W~odróżnieniu od wczesnych założeń MVP (wyłącznie referencje URL) aplikacja webowa i~API obsługują już lokalny upload plików. Endpointy \texttt{POST /api/uploads/image} oraz \texttt{POST /api/uploads/pdf} (wymagają uwierzytelnienia) przyjmują multipart z~limitem ok.\ 5~MB; typ pliku weryfikowany jest po~sygnaturze bajtowej (JPG/PNG/WebP oraz PDF), a~nie wyłącznie po~nagłówku przeglądarki. Zapis trafia do katalogu na serwerze aplikacji i~jest serwowany pod \texttt{GET /api/uploads/\{uuid\}.\{ext\}}. Funkcja jest wykorzystana m.in.\ przy:
-\begin{itemize}
-  \item zdjęciach pojazdów w~garażu,
-  \item plakacie / grafice wydarzenia,
-  \item załącznikach regulaminów PDF wydarzenia (\texttt{regulationsUrls}),
-  \item opcjonalnym potwierdzeniu przelewu przy zgłoszeniu (\texttt{paymentProofUrl}).
-\end{itemize}
-Nadal dopuszczalne jest wklejenie zewnętrznego adresu http(s) jako alternatywy dla pliku. Poza zakresem pozostają: zewnętrzny object storage (S3/MinIO), skanowanie antywirusowe, polityki retencji i~podpisane URL-e z~ograniczonym dostępem, pełna galeria albumów po~imprezie oraz upload zdjęć z~klienta mobilnego (wizytówka Expo nie udostępnia formularzy create/edit z~plikami).
+W~obszarze treści i~plików końcowa wersja wykracza poza wczesne założenie „same referencje URL”. Aplikacja webowa oraz API umożliwiają lokalny upload obrazów (JPG, PNG, WebP) i~dokumentów PDF z~limitem rozmiaru oraz weryfikacją typu po~sygnaturze pliku. Mechanizm ten obsługuje m.in.\ zdjęcia pojazdów w~garażu, grafikę wydarzenia, regulaminy PDF oraz opcjonalny dowód płatności przy zgłoszeniu; równolegle nadal dopuszczalne jest wskazanie zewnętrznego adresu http(s). Ograniczeniem pozostaje natomiast warstwa infrastrukturalna przechowywania: pliki trafiają na dysk serwera aplikacji, bez zewnętrznego object storage, bez skanowania antywirusowego, bez polityk retencji i~bez podpisanych odnośników o~czasowo ograniczonym dostępie. Nie zaimplementowano także galerii albumów po~imprezie ani uploadu mediów z~klienta mobilnego, który w~MVP pełni wyłącznie rolę wizytówki.
 
-\paragraph{Powiadomienia.}
-Kanał e-mail (SMTP Mailbux) pokrywa potwierdzenia rejestracji, weryfikację konta oraz zmiany statusów zgłoszeń. Brakuje natywnych powiadomień push na urządzenia mobilne oraz rozbudowanych kampanii marketingowych. Powiadomienia in-app w~aplikacji webowej stanowią uzupełnienie, a~nie pełny system komunikacji wielokanałowej.
+Komunikacja z~użytkownikiem opiera się na poczcie elektronicznej (potwierdzenia rejestracji, weryfikacja konta, zmiany statusów zgłoszeń) oraz uzupełniających powiadomieniach w~aplikacji webowej. Brakuje natywnych powiadomień push oraz narzędzi do kampanii marketingowych. Świadomie zawężono również zakres aplikacji mobilnej: klient Expo udostępnia przegląd katalogu (lista, mapa, kalendarz) z~przekierowaniem do serwisu webowego w~celu zapisu, lecz nie obejmuje logowania, garażu, zgłoszeń ani paneli ról i~nie został opublikowany w~sklepach App Store / Google Play. Decyzja ta pozwoliła domknąć pełną ścieżkę zapisu po~stronie weba i~PWA zamiast dublować ten sam zakres na dwóch klientach.
 
-\paragraph{Aplikacja mobilna.}
-Klient Expo pełni rolę świadomej wizytówki: publiczny przegląd katalogu (lista / mapa / kalendarz) z~CTA do serwisu webowego. Nie obejmuje logowania, garażu, zgłoszeń ani paneli ról; aplikacja nie została opublikowana w~App Store ani Google Play. Pełna parity z~webem została świadomie odłożona, aby nie rozpraszać nakładu pracy przy domykaniu ścieżki zapisu na desktopie i~PWA.
+Zależności zewnętrzne dotyczą przede wszystkim map i~tras. Domyślne wyznaczanie trasy korzysta z~publicznego OSRM (z~możliwością Google Maps API przy kluczu), co oznacza brak gwarancji dostępności i~SLA poza kontrolą zespołu. Katalog torów jest seedowany i~rozszerzalny, lecz nie pretenduje do roli oficjalnego, kompletnego rejestru obiektów motorsportowych w~Polsce. Podobnie kompletność oferty wydarzeń zależy od aktywności organizatorów i~moderacji administratora --- platforma nie scrapuje automatycznie zewnętrznych źródeł informacji.
 
-\paragraph{Integracje zewnętrzne i~dane mapowe.}
-Wyznaczanie trasy opiera się domyślnie na publicznym OSRM (z~opcją Google Maps API przy kluczu). Zależność od zewnętrznych serwisów map oznacza możliwe limity dostępności i~brak gwarancji SLA poza kontrolą zespołu. Katalog torów jest seedowany i~rozszerzalny, lecz nie stanowi kompletnej, oficjalnej bazy wszystkich obiektów w~Polsce.
-
-\paragraph{Bezpieczeństwo i~hardening produkcyjny.}
-Przyjęto poziom zabezpieczeń adekwatny do MVP (JWT w~ciasteczkach HTTP-only, RBAC, rate limiting, walidacja wejścia, TLS/HSTS terminowane na Cloudflare Tunnel). Poza zakresem pozostają m.in.\ pełny program pentestów, zaawansowany WAF, dedykowany secret manager oraz własny certyfikat TLS na hoście aplikacji (w~produkcji terminacja TLS leży po~stronie Cloudflare).
-
-\paragraph{Jakość danych i~procesy organizacyjne.}
-Skuteczność katalogu zależy od aktualności wydarzeń wprowadzanych przez organizatorów oraz od moderacji administratora. MVP nie automatyzuje scrapingu zewnętrznych źródeł ani nie gwarantuje kompletności oferty rynkowej --- to ograniczenie produktowe wynikające z~modelu „organizator jako źródło prawdy”, a~nie usterka techniczna.
+W~warstwie bezpieczeństwa przyjęto standard adekwatny do MVP demonstracyjnego: uwierzytelnianie JWT w~ciasteczkach HTTP-only, kontrola dostępu RBAC, ograniczanie liczby prób, walidacja wejścia oraz terminacja TLS/HSTS na Cloudflare Tunnel przed aplikacją. Poza zakresem pozostają m.in.\ pełny program testów penetracyjnych, zaawansowany WAF, dedykowany menedżer sekretów oraz własny certyfikat TLS utrzymywany bezpośrednio na hoście aplikacji. Są to ograniczenia dojrzałości operacyjnej, a~nie brak podstawowych mechanizmów ochrony kont i~zasobów opisanych w~rozdziale poświęconym bezpieczeństwu.
 
 \subsection{Ograniczenia wydajnościowe (RPS)}
-W~wymaganiach jakościowych MVP zapisano docelowy test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji:
-\begin{itemize}
-  \item zastosowano mitigacje lokalne (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
-  \item \textbf{nie wykonano} formalnego load testu 10k/50~RPS (brak raportu RPS/P95 jako artefaktu odbioru);
-  \item środowisko produkcyjne (Oracle Always Free + Cloudflare Tunnel) jest wystarczające do demonstracji i~ruchu prezentacyjnego, ale nie zostało zweryfikowane pod kątem założonego progu 50~RPS.
-\end{itemize}
-Ograniczenie to jest świadome: priorytetem było domknięcie happy-path funkcjonalnego, bezpieczeństwa podstawowego (JWT/RBAC) i~uruchamialności. Pomiar 10k/50~RPS pozostaje w~backlogu jakościowym.
+W~wymaganiach jakościowych projektu zapisano docelowy scenariusz obciążenia rzędu ok.\ 10\,000 rekordów w~katalogu oraz ok.\ 50~żądań na sekundę (RPS) przy akceptowalnym czasie odpowiedzi percentyla~P95 dla listy i~szczegółów wydarzenia. W~wersji oddawanej zastosowano środki ograniczające koszt typowych zapytań --- paginację katalogu, osobny endpoint markerów mapy oraz krótkotrwały cache list --- jednak nie wykonano formalnego testu obciążeniowego z~raportem RPS/P95 jako artefaktem odbioru. Środowisko produkcyjne (Oracle Always Free z~Cloudflare Tunnel) jest wystarczające do demonstracji i~ruchu prezentacyjnego, lecz nie zostało zweryfikowane względem założonego progu 50~RPS.
+
+Ograniczenie to przyjęto świadomie: priorytetem prac było domknięcie ścieżek funkcjonalnych, podstawowego modelu bezpieczeństwa oraz uruchamialności całego stosu. Pomiar wydajności 10k/50~RPS pozostaje elementem backlogu jakościowego, a~nie ukrytą luką względem zadeklarowanego zakresu MVP.
 
 \section{Możliwości dalszego rozwoju}
 Płatności (PSP), object storage / galeria albumów, watchlista, iCal, waitlista, eksport list startowych, store --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie testów obciążeniowych RPS.
