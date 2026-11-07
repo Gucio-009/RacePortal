@@ -7,6 +7,10 @@
 \usepackage{bookmark}
 \graphicspath{{img/}}
 
+% Polskie podpisy listingów (Fragment kodu zamiast Listing)
+\renewcommand{\lstlistingname}{Fragment kodu}
+\renewcommand{\lstlistlistingname}{Spis fragmentów kodu}
+
 % =============================================================================
 % Dane osobowe / formalne
 % =============================================================================
@@ -28,7 +32,7 @@
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
 \successmeasure{Działający stos Docker Compose (web, API, MySQL, backup) z~SMTP Mailbux; realizacja funkcji MVP katalogu, zapisów i~ról; pozytywne wyniki testów automatycznych API/web/mobile unit; możliwość demonstracji pełnego scenariusza: gość $\rightarrow$ kierowca $\rightarrow$ organizator $\rightarrow$ administrator oraz mobilka $\rightarrow$ CTA web.}
-\projlimitations{Brak natywnej bramki płatności (PSP); upload plików zastąpiony adresami URL; aplikacja mobilna bez pełnej parity z~webem (świadoma wizytówka); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS; produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
+\projlimitations{Brak natywnej bramki płatności (PSP); aplikacja mobilna bez pełnej równoważności funkcji z~webem (świadoma wizytówka --- bez logowania, garażu i~uploadu); brak publikacji w~sklepach App Store/Google Play; brak formalnego testu obciążenia 10k rekordów / 50~RPS (są natomiast krótkie pomiary k6 na VM); produkcyjny TLS poza domkniętym zakresem lokalnego MVP (w~prod: Cloudflare Tunnel).}
 \date{miesiąc, rok obrony} % TODO
 \finishdate{\today}
 \nabstract{Praca przedstawia projekt i~implementację systemu RacePortal --- platformy wspierającej katalogowanie wydarzeń motorsportowych oraz proces zapisów uczestników. System obejmuje aplikację webową, backend REST oparty o~Spring Boot i~MySQL oraz aplikację mobilną Expo pełniącą rolę publicznej wizytówki katalogu. W~pracy opisano problem dziedzinowy, wymagania, architekturę, realizację kluczowych modułów (wydarzenia, garaż, zgłoszenia, role), mechanizmy bezpieczeństwa (JWT, RBAC) oraz weryfikację testami automatycznymi. Wynikiem jest działające, konteneryzowane środowisko demonstracyjne zgodne z~zakresem MVP projektu.}
@@ -64,7 +68,7 @@ Zakres obejmuje:
   \item konteneryzację (Docker Compose) oraz podstawowy zestaw testów automatycznych.
 \end{itemize}
 
-Poza zakresem MVP pozostają m.in.\ natywne płatności online, pełny upload plików binarnych, push notifications oraz publikacja aplikacji mobilnej w~sklepach.
+Poza zakresem MVP pozostają m.in.\ natywne płatności online, push notifications oraz publikacja aplikacji mobilnej w~sklepach. Upload plików (obrazy JPG/PNG/WebP oraz PDF) jest dostępny po stronie \textbf{weba} i~API (\texttt{/api/\allowbreak uploads/\ldots}); aplikacja mobilna Expo nie udostępnia własnego formularza wgrywania --- jedynie wyświetla obrazy już opublikowane w~katalogu.
 
 \section{Wizja rozwiązania}
 \label{sec:wizja}
@@ -79,7 +83,7 @@ Wizja produktowa zakłada:
   \item uruchamialne środowisko demonstracyjne (Docker) oraz wdrożenie produkcyjne za Cloudflare Tunnel.
 \end{itemize}
 
-Szczegóły warstw technicznych (web React/Vite, API Spring Boot, MySQL, mobile Expo, \texttt{packages/api-types}) opisano w~rozdziale~\ref{ch:projekt} oraz w~rozdziałach implementacyjnych. Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
+Szczegóły warstw technicznych (web React~\cite{react:docs}/Vite, API Spring Boot~\cite{spring:boot}, MySQL~\cite{mysql:docs}, mobile Expo~\cite{expo:docs}, \texttt{packages/api-types}) opisano w~rozdziale~\ref{ch:projekt} oraz w~rozdziałach implementacyjnych. Kod źródłowy utrzymywany jest w~repozytorium projektu~\cite{raceportal:repo}.
 
 \section{Struktura pracy}
 Kolejne rozdziały obejmują: słownik pojęć, opis problemu dziedzinowego, kontekst biznesowy (w~tym karty udziałowców), analizę SWOT, planowanie projektu, analizę wymagań (w~tym karty wymagań i~diagramy UML), projekt systemu (m.in.\ Figma, diagram klas), opis realizacji oraz szczegóły implementacji backendu, frontendu i~mobile, bezpieczeństwo, testowanie, prezentację systemu, nakład pracy, \textbf{wkład własny} oraz podsumowanie (z~uwzględnieniem ograniczeń wydajnościowych RPS).
@@ -94,7 +98,7 @@ Kolejne rozdziały obejmują: słownik pojęć, opis problemu dziedzinowego, kon
   \item[Organizator] Użytkownik z~rolą ORGANIZER, uprawniony do tworzenia i~zarządzania własnymi wydarzeniami oraz zgłoszeniami.
   \item[Administrator] Użytkownik z~rolą ADMIN, moderujący wydarzenia, wnioski o~rolę organizatora i~role kont.
   \item[Wizytówka mobilna] Wersja aplikacji Expo ograniczona do przeglądania katalogu; zapis odbywa się na webie (CTA).
-  \item[JWT] JSON Web Token --- token sesji używany do uwierzytelniania żądań API.
+  \item[JWT] JSON Web Token --- token dostępu używany przez API; w~warstwie webowej przechowywany w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), a~nie w~\texttt{localStorage}.
   \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role.
   \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy wykorzystany jako domyślny provider.
   \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
@@ -157,7 +161,7 @@ Poniżej przedstawiono karty udziałowców w~formacie środowiska \texttt{stakeh
 \descr{Użytkownik z~kontem, który utrzymuje garaż pojazdów i~składa zgłoszenia na wydarzenia motorsportowe.}
 \type{Użytkownik końcowy / klient platformy}
 \viewpoint{Chce szybko znaleźć starty, dopasować auto do wymagań i~śledzić status zgłoszenia.}
-\limitations{Zapis i~garaż wymagają konta web; mobilka w~MVP jest wizytówką bez pełnej parity.}
+\limitations{Zapis i~garaż wymagają konta web; mobilka w~MVP jest wizytówką bez pełnej równoważności funkcji.}
 \requ{Wymagania funkcjonalne katalogu, garażu i~zgłoszeń --- rozdz.~\ref{ch:wymagania}; panel użytkownika --- rozdz.~\ref{ch:frontend}.}
 \end{stakeholder}
 
@@ -200,7 +204,7 @@ Kanałem dystrybucji kodu i~współpracy zespołu pozostaje repozytorium GitHub~
 \section{Kluczowe zasoby i~działania}
 Do zasobów kluczowych należą: pięcioosobowy zespół projektowy (specjalizacja cyberbezpieczeństwo), kod źródłowy monorepozytorium (warstwy web, API, mobile oraz pakiet wspólnych typów \texttt{packages/api-types}), relacyjna baza MySQL z~seedem danych demonstracyjnych, infrastruktura kontenerowa Docker Compose oraz środowisko produkcyjne oparte o~maszynę wirtualną i~tunel Cloudflare. Zasobem produktowym jest również katalog torów polskich wykorzystywany przy tworzeniu i~filtrowaniu wydarzeń.
 
-Działania kluczowe obejmują: rozwój i~utrzymanie platformy; zapewnienie uruchamialności środowiska (Compose lokalnie i~na VM); moderację treści oraz weryfikację organizatorów; utrzymanie mechanizmów bezpieczeństwa (JWT, RBAC, walidacja wejścia, kierunek zgodności z~OWASP ASVS Level~1); utrzymanie dostarczalności powiadomień e-mail; a~także dokumentowanie zmian i~weryfikację testami automatycznymi. W~ujęciu BMC działania marketingowe i~budowa społeczności są uznane za konieczne dla przełamania ryzyka niskiego zainteresowania, lecz pozostają poza zautomatyzowanym zakresem oprogramowania MVP.
+Działania kluczowe obejmują: rozwój i~utrzymanie platformy; zapewnienie uruchamialności środowiska (Compose lokalnie i~na VM); moderację treści oraz weryfikację organizatorów; utrzymanie mechanizmów bezpieczeństwa (JWT~\cite{jwt:rfc}, RBAC, walidacja wejścia, kierunek zgodności z~OWASP ASVS Level~1~\cite{owasp:asvs}); utrzymanie dostarczalności powiadomień e-mail; a~także dokumentowanie zmian i~weryfikację testami automatycznymi. W~ujęciu BMC działania marketingowe i~budowa społeczności są uznane za konieczne dla przełamania ryzyka niskiego zainteresowania, lecz pozostają poza zautomatyzowanym zakresem oprogramowania MVP.
 
 \section{Model działania platformy}
 RacePortal funkcjonuje jako platforma dwustronna: organizatorzy dostarczają podaż wydarzeń, a~kierowcy generują popyt na starty. Administrator pełni rolę gwaranta jakości katalogu poprzez akceptację wydarzeń i~ról. Gość korzysta z~efektu sieciowego katalogu bez bariery rejestracji, co obniża koszt wejścia informacyjnego.
@@ -217,7 +221,7 @@ Założona w~DZW skala pilotażowa (rzędu 1--5~tys.\ użytkowników miesięczni
 Dalsze perspektywy --- zgodnie z~dokumentacją produktową i~materiałami BMC --- obejmują m.in.\ integrację PSP, rozbudowę powiadomień push, publikację aplikacji mobilnej w~sklepach, eksport list startowych, waitlistę/watchlistę, kalendarz iCal oraz ewentualną monetyzację poprzez oznaczone treści sponsorowane. Elementy te należy traktować jako roadmapę, a~nie jako stan bieżącej implementacji. Szczegóły architektury fizycznej przedstawiono w~rozdz.~\ref{sec:arch-fizyczna}.
 
 \section{Kontekst prawny i~etyczny}
-System przetwarza dane niezbędne do obsługi konta i~procesów biznesowych: identyfikator/nazwę użytkownika, adres e-mail, role, dane pojazdów w~garażu, zgłoszenia oraz dane wydarzeń wprowadzane przez organizatorów. Token sesji (JWT) jest przechowywany po stronie klienta. W~interfejsie udostępniono politykę prywatności (\texttt{/privacy}) oraz regulamin (\texttt{/terms}); rejestracja wymaga akceptacji obu dokumentów. Przy tworzeniu wydarzenia organizator potwierdza przetwarzanie danych zgodnie z~polityką prywatności (RODO) wyłącznie w~celu publikacji i~obsługi zgłoszeń. Kanałem kontaktowym w~sprawach ochrony danych jest adres \texttt{rodo@raceportal.pl}. Użytkownik może zamknąć własne konto w~ustawieniach (fraza potwierdzająca po stronie API).
+System przetwarza dane niezbędne do obsługi konta i~procesów biznesowych: identyfikator/nazwę użytkownika, adres e-mail, role, dane pojazdów w~garażu, zgłoszenia oraz dane wydarzeń wprowadzane przez organizatorów. Sesja webowa opiera się o~tokeny JWT w~ciasteczkach httpOnly (\texttt{rp\_at}, \texttt{rp\_rt}) wysyłanych z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie aplikacji. W~interfejsie udostępniono politykę prywatności (\texttt{/privacy}) oraz regulamin (\texttt{/terms}); rejestracja wymaga akceptacji obu dokumentów. Przy tworzeniu wydarzenia organizator potwierdza przetwarzanie danych zgodnie z~polityką prywatności (RODO) wyłącznie w~celu publikacji i~obsługi zgłoszeń. Kanałem kontaktowym w~sprawach ochrony danych jest adres \texttt{rodo@raceportal.pl}. Użytkownik może zamknąć własne konto w~ustawieniach (fraza potwierdzająca po stronie API).
 
 Pełna zgodność procesowa (m.in.\ DPIA, sformalizowana polityka retencji, procedury realizacji żądań RODO w~organizacji operatorskiej) wykracza poza zakres demonstracyjnego MVP i~pozostaje obowiązkiem ewentualnego wdrożenia produkcyjnego o~większej skali.
 
@@ -235,7 +239,7 @@ W~warstwie etycznej dokumentacja SAI przyjmuje zasady: transparentności prezent
 
 \section{Słabe strony (Weaknesses)}
 \begin{itemize}
-  \item Brak prawdziwego uploadu plików i~bramki płatności.
+  \item Brak natywnej bramki płatności (PSP); upload plików jest w~webie/API, ale nie w~mobilce.
   \item Mobilka bez logowania i~garażu (wizytówka).
   \item Zależność od publicznych serwisów map/trasy (CARTO/OSRM).
   \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy.
@@ -281,7 +285,7 @@ Poza zakresem MVP --- świadomie --- pozostają m.in.\ integracje z~kalendarzami
 
 Warunki odbioru przyjęte w~DZW i~powtórzone w~\texttt{docs/\allowbreak MVP.md} wymagają, by funkcje~1--11 były dostępne i~przetestowane (manualnie oraz podstawowymi testami e2e), by UX zachowywał podejście mobile-first oraz by zakres był spójny z~pitchiem i~prezentacją. Jakość planowana obejmuje codzienne kopie zapasowe i~kontrole stanu (health checks), Docker, paginację, indeksy i~cache, czas odpowiedzi P95 nie większy niż 500--700~ms dla list do~50 rekordów, test obciążenia przy ok.\ 10\,000 rekordów i~50~RPS, OWASP ASVS Level~1, RBAC, HTTPS z~nagłówkami bezpieczeństwa, minimalizację danych (RODO) oraz przenośność środowiska Docker.
 
-Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy), a~funkcja~13 --- częściowo: trasa działa przez publiczne OSRM, a~Google Maps pozostaje jedynie opcją konfiguracyjną. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną wersję natywną ani publikację w~sklepach --- to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/\allowbreak uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~opisie od pierwotnego MPC, żeby nie zacierać granicy zakresu.
+Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy), a~funkcja~13 --- częściowo: trasa działa przez publiczne OSRM, a~Google Maps pozostaje jedynie opcją konfiguracyjną. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną wersję natywną ani publikację w~sklepach --- to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/\allowbreak uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~opisie od pierwotnego MVP, żeby nie zacierać granicy zakresu.
 
 \begin{table}[ht]
   \centering
@@ -374,7 +378,7 @@ W~KP data 31.01.2026 figuruje jako ograniczenie czasowe karty projektu. W~tej pr
 
 Planowanie etapowe z~Harmonogramu PRO (analiza, projekt, backend, frontend z~integracjami, testy, prezentacja MVP) stanowiło plan prac na zajęciach przedmiotu, a~nie zamknięty formalny Gantt dyplomu. W~Harmonogramie PRO podano również okno zajęć (ok.\ 15 tygodni od 6.10.2025 do 19.01.2026) oraz szacunek nakładu --- te zapisy pozostają historią przedmiotową i~nie są tu przepisywane jako obowiązujący harmonogram dyplomu z~wymyślonymi datami kamieni milowych.
 
-Przebieg prac --- w~odróżnieniu od kamieni milowych karty --- dokumentuje plik \texttt{docs/\allowbreak changes.md}. Chronologia obejmuje m.in.\ przeniesienie prototypu z~Figma Make do lokalnego monorepo, scaffold Vite i~Dockera, migrację API na Spring Boot z~MySQL, budowę aplikacji mobilnej Expo jako wizytówki, iteracje testów i~formularzy, a~w~październiku 2026 przenosiny produkcyjne na Oracle Always Free z~Cloudflare Tunnel, SMTP Mailbux i~webową PWA, następnie domknięcie uploadu plików oraz pomiary k6 na VM. Daty wpisów w~\texttt{changes.md} są kotwicami przebiegu; nie zastępują oficjalnego terminu karty KP i~nie tworzą formalnego wykresu Gantta.
+Przebieg prac --- w~odróżnieniu od kamieni milowych karty --- dokumentuje plik \texttt{docs/\allowbreak changes.md}. Chronologia obejmuje m.in.\ przeniesienie prototypu z~Figma Make do lokalnego monorepo, szkielet projektu Vite i~Dockera, migrację API na Spring Boot z~MySQL, budowę aplikacji mobilnej Expo jako wizytówki, iteracje testów i~formularzy, a~w~październiku 2026 przenosiny produkcyjne na Oracle Always Free z~Cloudflare Tunnel, SMTP Mailbux i~webową PWA, następnie domknięcie uploadu plików oraz pomiary k6 na VM. Daty wpisów w~\texttt{changes.md} są kotwicami przebiegu; nie zastępują oficjalnego terminu karty KP i~nie tworzą formalnego wykresu Gantta.
 
 \begin{table}[ht]
   \centering
@@ -438,7 +442,7 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami 
     \hline
     Dryf kontraktu web~$\leftrightarrow$~mobile & Rozjazdy typów i~adresów API & Wspólny pakiet \texttt{packages/\allowbreak api-\allowbreak types} \\
     \hline
-    Rozrost zakresu ponad MPC & Opóźnienie odbioru MVP & Świadome odłożenie PSP, push i~store; elementy ponad MVP nazywane osobno \\
+    Rozrost zakresu ponad MVP & Opóźnienie odbioru MVP & Świadome odłożenie PSP, push i~store; elementy ponad MVP nazywane osobno \\
     \hline
     Ograniczenia zasobowe i~czasowe zespołu & Niewykonanie planu przy budżecie zerowym & Oracle Always Free; jeden origin przez Tunnel; termin karty KP 31.01.2026 jako ograniczenie planistyczne (nie termin domknięcia systemu) \\
     \hline
@@ -461,7 +465,7 @@ Planowanie RacePortal łączy zatem formalne ramy KP/DZW z~iteracyjnym przebiegi
 \chapter{Analiza wymagań}
 \label{ch:wymagania}
 \section{Źródła i sposób pozyskania wymagań}
-Pitch / zakres MPC, Specyfikacja Formularzy, prototyp Figma Make, iteracje implementacyjne, scenariusze prezentacji oraz przeglądy kodu.
+Pitch / zakres MVP, Specyfikacja Formularzy, prototyp Figma Make, iteracje implementacyjne, scenariusze prezentacji oraz przeglądy kodu.
 
 \section{Wymagania ogólne i dziedzinowe}
 System ma obsługiwać polski kontekst motorsportu (kategorie, lokalizacje, role) i~umożliwiać kompletny happy-path zapisu na wydarzenie.
@@ -552,7 +556,7 @@ Zasoby \texttt{/api/auth/*}, \texttt{/api/events}, \texttt{/api/events/markers},
 \section{Projekt warstwy webowej}
 \label{sec:figma}
 
-Warstwa webowa RacePortal to pełny klient transakcyjny systemu: obsługuje katalog wydarzeń, konta użytkowników, wirtualny garaż, zgłoszenia udziału oraz panele organizatora i~administratora. Stack aplikacji to \textbf{Vite~6} z~\textbf{React~18} i~\textbf{TypeScript}, stylowanie \textbf{Tailwind CSS~v4} oraz zestaw komponentów zbliżonych do \textbf{shadcn/ui} (Radix UI). Routing realizuje \textbf{React Router~v7} (\texttt{createBrowserRouter}); komunikacja z~backendem --- moduł komunikacji z~API w~\texttt{web/\allowbreak src/\allowbreak app/\allowbreak lib/\allowbreak api.ts}, z~bazą URL z~\texttt{VITE\_API\_URL} albo ścieżkami względnymi \texttt{/api/\ldots} (proxy Vite w~dev, proxy nginx w~Dockerze). Sesja opiera się o~\textbf{httpOnly cookies} (\texttt{rp\_at} / \texttt{rp\_rt}) z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie. Szczegóły implementacji frontendu są rozwinięte w~rozdziale~11; poniżej opisano projekt warstwy i~kluczowe decyzje.
+Warstwa webowa RacePortal~\cite{react:docs} to pełny klient transakcyjny systemu: obsługuje katalog wydarzeń, konta użytkowników, wirtualny garaż, zgłoszenia udziału oraz panele organizatora i~administratora. Stack aplikacji to \textbf{Vite~6}~\cite{vite:docs} z~\textbf{React~18} i~\textbf{TypeScript}, stylowanie \textbf{Tailwind CSS~v4} oraz zestaw komponentów zbliżonych do \textbf{shadcn/ui} (Radix UI). Routing realizuje \textbf{React Router~v7} (\texttt{createBrowserRouter}); komunikacja z~backendem --- moduł komunikacji z~API w~\texttt{web/\allowbreak src/\allowbreak app/\allowbreak lib/\allowbreak api.ts}, z~bazą URL z~\texttt{VITE\_API\_URL} albo ścieżkami względnymi \texttt{/api/\ldots} (proxy Vite w~dev, proxy nginx w~Dockerze). Sesja opiera się o~\textbf{httpOnly cookies} (\texttt{rp\_at} / \texttt{rp\_rt}) z~\texttt{credentials: "include"}; starszy JWT w~\texttt{localStorage} jest usuwany przy starcie. Szczegóły implementacji frontendu są rozwinięte w~rozdziale~11; poniżej opisano projekt warstwy i~kluczowe decyzje.
 
 \subsection*{Architektura frontendu}
 
@@ -632,7 +636,7 @@ wyznaczanie trasy --- z~publicznego OSRM
 
 Struktura katalogów oddziela strony (\texttt{pages/}), kontekst auth, moduł komunikacji z~API oraz bibliotekę UI (\texttt{components/\allowbreak ui/} --- przyciski, dialogi, formularze, karty itd.). Tokeny marki (\texttt{{-{-}race-accent}}, \texttt{{-{-}race-fg}}, \texttt{{-{-}race-muted}}) spójnie sterują motywem. Typografia display to \textbf{Oxanium} (zastąpiono Orbitron ze względu na brak \emph{latin-ext} dla polskich znaków), treść --- Montserrat. Interfejs jest \textbf{mobile-first}: na telefonie działa dolna nawigacja oraz PWA (manifest + service worker, instalacja skrótu na ekranie początkowym). Stany puste, błędy tras i~toasty (\texttt{sonner}) domykają feedback użytkownika. Panele ról nie dublują katalogu publicznego --- organizator zarządza własnymi wydarzeniami, administrator moderuje publikacje i~wnioski o~rolę.
 
-Użyteczność projektowano wokół krótkiej ścieżki: gość przegląda katalog $\rightarrow$ rejestracja / logowanie $\rightarrow$ garaż $\rightarrow$ zapis na wydarzenie; organizator publikuje imprezę po akceptacji administratora. CTA na stronie głównej i~w~kartach wydarzeń prowadzą do konkretnych tras SPA, a~nie do martwych placehoderów prototypu.
+Użyteczność projektowano wokół krótkiej ścieżki: gość przegląda katalog $\rightarrow$ rejestracja / logowanie $\rightarrow$ garaż $\rightarrow$ zapis na wydarzenie; organizator publikuje imprezę po akceptacji administratora. CTA na stronie głównej i~w~kartach wydarzeń prowadzą do konkretnych tras SPA, a~nie do martwych placeholderów prototypu.
 
 \subsection{Prototyp UI w~Figma Make}
 \label{sec:figma-make}
@@ -651,10 +655,10 @@ Rysunek~\ref{fig:figma-web} przedstawia zrzut ekranu prototypu strony głównej 
 Kod frontendu został przeniesiony z~Figma Make do lokalnego monorepo (\texttt{web/}), a~następnie podpięty pod realne API Spring Boot zamiast mocków i~\texttt{localStorage}. Wczesna wizja produktu i~ról --- jeszcze przed pełną implementacją --- jest też widoczna na diagramach koncepcyjnych (rys.~\ref{fig:use-case}, \ref{fig:podzial-rol}). W~toku realizacji UI dopracowano pod kątem responsywności, stanów pustych/błędów, PWA oraz spójności z~tokenami marki (\texttt{--race-accent}); font Orbitron zastąpiono Oxaniumem ze względu na polskie znaki diakrytyczne. Atrybucje komponentów shadcn/ui oraz zdjęć Unsplash udokumentowano w~\texttt{docs/\allowbreak ATTRIBUTIONS.md}.
 
 \section{Projekt aplikacji mobilnej}
-Stack Expo; nawigacja stack Eventy; publiczny klient HTTP; \texttt{EXPO\_PUBLIC\_API\_URL} / \texttt{EXPO\_PUBLIC\_WEB\_URL}; CTA \texttt{Linking} do \texttt{/wydarzenia/:id}.
+Stack Expo; nawigacja stack Eventy; publiczny klient HTTP; zmienne \texttt{EXPO\_PUBLIC\_\allowbreak API\_URL} i~\texttt{EXPO\_PUBLIC\_\allowbreak WEB\_URL}; CTA \texttt{Linking} do \texttt{/wydarzenia/:id}.
 
 \section{Projekt mechanizmów bezpieczeństwa}
-JWT w~nagłówku Authorization (web); role na endpointach; walidacja DTO; CORS; CSP nginx.
+Sesja webowa: JWT w~ciasteczkach httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}); API akceptuje też nagłówek Bearer (np.\ testy); role na endpointach; walidacja DTO; CORS; CSP nginx.
 
 \chapter{Realizacja}
 \section{Organizacja implementacji}
@@ -670,12 +674,12 @@ Expo --- katalog publiczny bez auth.
 \section{Integracja komponentów}
 Wspólny kontrakt JSON; typy w~\texttt{api-types}; nginx reverse proxy \texttt{/api} w~środowisku Compose.
 \section{Konteneryzacja i uruchamianie środowiska}
-\texttt{docker compose up --build -d}; weryfikacja \texttt{/api/health}; Expo: \texttt{cd mobile \&\& npm start}. Publiczny dostęp produkcyjny: Cloudflare Tunnel $\rightarrow$ nginx \texttt{:8081}.
+\texttt{docker compose up --build -d}~\cite{docker:compose}; weryfikacja \texttt{/api/health}; Expo: \texttt{cd mobile \&\& npm start}. Publiczny dostęp produkcyjny: Cloudflare Tunnel $\rightarrow$ nginx \texttt{:8081}.
 
 \chapter{Szczegóły implementacji backendu}
 \label{ch:backend}
 \section{Struktura projektu backendowego}
-Pakiet \texttt{pl.raceportal} --- warstwy controller / service / repository / dto / security.
+Pakiet \texttt{pl.raceportal} --- warstwy controller / service / repository / dto / security (Spring Security~\cite{spring:security}).
 \section{Model domenowy i encje}
 Użytkownik (role), Car, Event, Registration oraz powiązane statusy i~flagi wymagań wydarzenia.
 \section{Rejestracja użytkowników i logowanie}
@@ -714,7 +718,7 @@ Tworzenie/edycja wydarzeń, lista zgłoszeń, zmiana statusów.
 \section{Panel administratora}
 Moderacja wydarzeń, wnioski organizatora (zaakceptuj / odrzuć $\rightarrow$ rola \texttt{ORGANIZER}), zarządzanie rolami, zgłoszenia błędów. Formularz wniosku użytkownika: \texttt{/zostan-organizatorem}.
 \section{Mapa i elementy lokalizacyjne}
-Leaflet + kafelki CARTO; pickery lokalizacji; proxy trasy \texttt{/api/maps/route}.
+Leaflet~\cite{leaflet:docs} + kafelki CARTO; pickery lokalizacji; proxy trasy \texttt{/api/maps/route} (domyślnie OSRM~\cite{osrm:project}).
 \section{Responsywność i doświadczenie użytkownika}
 Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent}.
 
@@ -722,7 +726,7 @@ Układ dostosowany do desktop/mobile web; motyw z~akcentem \texttt{--race-accent
 \section{Założenia aplikacji mobilnej}
 Mobilka ma wspierać odkrywanie wydarzeń, a~nie dublować pełnego klienta webowego.
 \section{Architektura rozwiązania mobilnego}
-Expo SDK, React Navigation (stack Eventy), ThemeProvider, cienki klient API bez JWT.
+Expo SDK, React Navigation (stack Eventy), ThemeProvider, prosty klient API bez sesji JWT.
 \section{Lista wydarzeń i widok szczegółów}
 Filtry publiczne; przełączanie Lista / Kalendarz / Mapa; detal z~metadanymi wydarzenia.
 \section{Nawigacja i interfejs użytkownika}
@@ -741,11 +745,11 @@ Ochrona kont i~danych zgłoszeń na poziomie ASVS L1 adekwatnym do MVP demonstra
 \section{Klasyfikacja danych}
 Dane konta i~profilu; dane pojazdów; dane zgłoszeń; treści wydarzeń (częściowo publiczne).
 \section{Uwierzytelnianie użytkowników}
-Hasło + JWT; opcjonalnie Google; brak sesji serwerowej klasycznej.
+Hasło + JWT (access/refresh); opcjonalnie Google; brak klasycznej sesji serwerowej w~pamięci --- stan odświeżany cookie refresh (\texttt{rp\_rt}).
 \section{Autoryzacja i kontrola dostępu RBAC}
 Role USER / ORGANIZER / ADMIN egzekwowane w~API i~bramkach UI.
 \section{Wykorzystanie tokenów JWT}
-Token przechowywany po stronie klienta web; dołączany do żądań chronionych.
+W~warstwie webowej access token jest w~ciasteczku httpOnly \texttt{rp\_at} (JavaScript go nie odczytuje); \texttt{localStorage} nie przechowuje JWT. Filtr API odczytuje cookie albo nagłówek \texttt{Authorization: Bearer} (m.in.\ testy).
 \section{Walidacja danych wejściowych}
 Walidacja DTO po stronie API; walidacja formularzy UI; komunikaty pól \texttt{details}.
 \section{Ochrona zasobów użytkowników}
@@ -780,7 +784,7 @@ Skrypty npm / \texttt{scripts/}; raporty w~\texttt{docs/testy/wyniki/}.
 \section{Analiza wyników testów}
 Werdykty przebiegów odnotowywane w~dokumentacji wyników; regresie łapane przed prezentacją.
 \section{Ograniczenia procesu testowania}
-Brak pełnych testów natywnych (Detox/Maestro); \textbf{brak formalnego load testu 10k rekordów / 50~RPS} w~MVP --- ograniczenie omówione w~podsumowaniu.
+Brak pełnych testów natywnych (Detox/Maestro); \textbf{brak formalnego artefaktu odbioru 10k rekordów / 50~RPS} w~MVP --- przy czym wykonano krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026); szczegóły w~podsumowaniu i~w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}.
 
 \chapter{Prezentacja systemu}
 \section{Prezentacja głównych funkcjonalności}
@@ -796,11 +800,12 @@ System realizuje spójny obieg informacji o~wydarzeniach i~zapisach w~środowisk
 
 \chapter{Nakład pracy}
 \section{Liczba godzin przeznaczona na realizację projektu}
-% TODO: wpisać sumaryczny nakład (osobogodziny)
+% TODO (zespół): wpisać sumaryczny nakład w~osobogodzinach --- w~docs/ i~Dokumentacja/ nie znaleziono uzgodnionej tabeli godzin.
+Nakład sumaryczny (osobogodziny): \textbf{[do uzupełnienia przez zespół]}.
 \section{Podział zadań w zespole}
-Skrót obszarów --- rozdz.~\ref{ch:wklad}. Szczegółowa tabela godzin: TODO.
+Skrót obszarów --- rozdz.~\ref{ch:wklad}. Szczegółowa tabela godzin per osoba: \textbf{[do uzupełnienia przez zespół]}.
 \section{Narzędzia wspierające zarządzanie pracą}
-Git/GitHub, dokumentacja Markdown w~\texttt{docs/}, Docker, Cursor/IDE, Playwright, Figma Make, Cloudflare Dashboard.
+Git/GitHub, dokumentacja Markdown w~\texttt{docs/}, Docker, Cursor/IDE, Playwright, Figma Make, Cloudflare Dashboard; skład pracy: \LaTeX{}~\cite{latex:project}.
 \section{Problemy organizacyjne i ich rozwiązanie}
 M.in.\ rozrost zakresu mobile --- decyzja o~wizytówce; luki Spec --- rejestr \texttt{spec-conformity.md}; stabilizacja testów względem seedu/archiwizacji; uproszczenie hostingu (Oracle + Tunnel zamiast GCP Pages).
 
@@ -846,28 +851,28 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 \chapter{Podsumowanie}
 \label{ch:podsumowanie}
 \section{Największe wyzwania i sposób ich rozwiązania}
-Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo web+API+mobile. Po stronie infrastruktury --- uproszczenie hostingu do jednej VM z~tunelowaniem Cloudflare zamiast rozdzielonego stacku Pages/Worker.
+Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo (web, API, mobile). Po stronie infrastruktury --- uproszczenie hostingu do jednej VM z~tunelowaniem Cloudflare zamiast rozdzielonego stacku Pages/Worker.
 
 \section{Zmiany i adaptacje w trakcie realizacji}
-Przejście mobile z~parity na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
+Przejście mobile z~pełnej równoważności funkcji na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
 
 \section{Ograniczenia końcowej wersji systemu}
-Brak PSP i~uploadu plików; mobilka bez konta; limity testów wydajnościowych i~produkcyjnego hardeningu.
+Brak PSP; upload plików dostępny w~webie/API (nie w~mobilce); mobilka bez konta; limity formalnego testu 10k/50~RPS i~produkcyjnego hardeningu.
 
 \subsection{Ograniczenia wydajnościowe (RPS)}
-W~wymaganiach jakościowych MVP zapisano docelowy test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji:
+W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji należy rozróżnić dwie warstwy:
 \begin{itemize}
-  \item zastosowano mitigacje lokalne (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
-  \item \textbf{nie wykonano} formalnego load testu 10k/50~RPS (brak raportu RPS/P95 jako artefaktu odbioru);
-  \item środowisko produkcyjne (Oracle Always Free + Cloudflare Tunnel) jest wystarczające do demonstracji i~ruchu prezentacyjnego, ale nie zostało zweryfikowane pod kątem założonego progu 50~RPS.
+  \item zastosowano lokalne ograniczenia skutków (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
+  \item \textbf{nie domknięto} formalnego artefaktu odbiorczego 10k rekordów~/~50~RPS (brak raportu spełniającego dokładnie to kryterium KP/DZW);
+  \item wykonano natomiast \textbf{krótkie pomiary Grafana~k6}~\cite{k6:docs} na Oracle~VM (25.10.2026, ruch lokalny na originie): dla paginowanej listy wydarzeń komfortowy zakres ok.\ 150--200~RPS --- bez utożsamiania tego z~formalnym testem 10k/50~RPS (szczegóły: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}).
 \end{itemize}
-Ograniczenie to jest świadome: priorytetem było domknięcie happy-path funkcjonalnego, bezpieczeństwa podstawowego (JWT/RBAC) i~uruchamialności. Pomiar 10k/50~RPS pozostaje w~backlogu jakościowym.
+Ograniczenie formalne jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
 
 \section{Możliwości dalszego rozwoju}
-Płatności, upload, watchlista, iCal, waitlista, eksport list startowych, store/PWA --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie testów obciążeniowych RPS.
+Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS; dalsza rozbudowa uploadu (m.in.\ mobilka).
 
 \section{Wnioski końcowe}
-RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, upload, load test RPS).
+RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, formalny test 10k/50~RPS, ograniczona mobilka bez uploadu/konta).
 
 \printbibliography[title={Bibliografia}, heading=bibintoc]
 
