@@ -52,6 +52,7 @@
 
 \chapter{Informacje wstępne}
 \section{Cel i zakres pracy}
+\label{sec:cel-zakres}
 Celem pracy jest zaprojektowanie oraz implementacja systemu \textbf{RacePortal} --- platformy internetowej (z~uzupełnieniem mobilnym) służącej jako centralny katalog wydarzeń motorsportowych w~Polsce oraz narzędzie do obsługi zapisów kierowców. Projekt stanowi odpowiedź na rosnące zapotrzebowanie społeczności motorsportowej na ujednolicone narzędzie eliminujące rozproszenie informacji na grupach społecznościowych i~niespójnych stronach organizatorów.
 
 Zakres projektu obejmuje:
@@ -755,7 +756,28 @@ Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo
 Przejście mobile z~parity na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
 
 \section{Ograniczenia końcowej wersji systemu}
-Brak PSP i~uploadu plików; mobilka bez konta; limity testów wydajnościowych i~produkcyjnego hardeningu.
+Końcowa wersja RacePortal stanowi domknięte MVP demonstracyjne: realizuje centralny katalog wydarzeń, proces zapisów, wirtualny garaż, panele organizatora i~administratora oraz mobilną wizytówkę katalogu. Jednocześnie celowo pozostawia poza zakresem funkcje, które wymagałyby osobnego nakładu produktowego, prawnego lub infrastrukturalnego. Ograniczenia te są spójne z~kartą projektu oraz z~opisem zakresu w~podrozdziale~\ref{sec:cel-zakres}; poniżej zestawiono je według obszarów.
+
+\paragraph{Płatności i~rozliczenia.}
+System nie integruje natywnej bramki płatności online (PSP). Statusy opłat po~stronie organizatora mają charakter operacyjny (oznaczenie w~panelu), a~nie księgowy --- nie ma automatycznego pobierania składek startowych ani zwrotów. Decyzja wynika z~kosztów onboardingu PSP, wymogów KYC/AML oraz ryzyka prawnego nieproporcjonalnego do celów akademickiego MVP.
+
+\paragraph{Przechowywanie plików binarnych.}
+Zamiast pełnego uploadu dokumentów i~zdjęć (regulaminy PDF, galeria imprezy, skany licencji) zastosowano model referencji URL: użytkownik lub organizator wskazuje adres zasobu zewnętrznego. Upraszcza to infrastrukturę (brak dedykowanego object storage, polityk retencji i~skanowania malware), ale ogranicza wygodę w~scenariuszach wymagających lokalnego załącznika.
+
+\paragraph{Powiadomienia.}
+Kanał e-mail (SMTP Mailbux) pokrywa potwierdzenia rejestracji, weryfikację konta oraz zmiany statusów zgłoszeń. Brakuje natywnych powiadomień push na urządzenia mobilne oraz rozbudowanych kampanii marketingowych. Powiadomienia in-app w~aplikacji webowej stanowią uzupełnienie, a~nie pełny system komunikacji wielokanałowej.
+
+\paragraph{Aplikacja mobilna.}
+Klient Expo pełni rolę świadomej wizytówki: publiczny przegląd katalogu (lista / mapa / kalendarz) z~CTA do serwisu webowego. Nie obejmuje logowania, garażu, zgłoszeń ani paneli ról; aplikacja nie została opublikowana w~App Store ani Google Play. Pełna parity z~webem została świadomie odłożona, aby nie rozpraszać nakładu pracy przy domykaniu ścieżki zapisu na desktopie i~PWA.
+
+\paragraph{Integracje zewnętrzne i~dane mapowe.}
+Wyznaczanie trasy opiera się domyślnie na publicznym OSRM (z~opcją Google Maps API przy kluczu). Zależność od zewnętrznych serwisów map oznacza możliwe limity dostępności i~brak gwarancji SLA poza kontrolą zespołu. Katalog torów jest seedowany i~rozszerzalny, lecz nie stanowi kompletnej, oficjalnej bazy wszystkich obiektów w~Polsce.
+
+\paragraph{Bezpieczeństwo i~hardening produkcyjny.}
+Przyjęto poziom zabezpieczeń adekwatny do MVP (JWT w~ciasteczkach HTTP-only, RBAC, rate limiting, walidacja wejścia, TLS/HSTS terminowane na Cloudflare Tunnel). Poza zakresem pozostają m.in.\ pełny program pentestów, zaawansowany WAF, dedykowany secret manager oraz własny certyfikat TLS na hoście aplikacji (w~produkcji terminacja TLS leży po~stronie Cloudflare).
+
+\paragraph{Jakość danych i~procesy organizacyjne.}
+Skuteczność katalogu zależy od aktualności wydarzeń wprowadzanych przez organizatorów oraz od moderacji administratora. MVP nie automatyzuje scrapingu zewnętrznych źródeł ani nie gwarantuje kompletności oferty rynkowej --- to ograniczenie produktowe wynikające z~modelu „organizator jako źródło prawdy”, a~nie usterka techniczna.
 
 \subsection{Ograniczenia wydajnościowe (RPS)}
 W~wymaganiach jakościowych MVP zapisano docelowy test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji:
