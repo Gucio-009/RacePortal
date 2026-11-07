@@ -354,42 +354,59 @@ Docker Desktop, Node.js (web/mobile), JDK/Maven (API w~kontenerze), Expo / iOS S
 \chapter{Analiza wymagań}
 \label{ch:wymagania}
 \section{Źródła i sposób pozyskania wymagań}
-Pitch / zakres MPC, Specyfikacja Formularzy, prototyp Figma Make, iteracje implementacyjne, scenariusze prezentacji oraz przeglądy kodu.
+Wymagania dla platformy RacePortal zostały zebrane i~sformułowane w~oparciu o~wielotorowy proces analityczny, ukierunkowany na~rozwiązanie realnych problemów rynku motorsportowego. Głównymi źródłami pozyskania wymagań były:
+\begin{itemize}
+  \item \textbf{Dokument Założeń Wstępnych (DZW) oraz Specyfikacja Wymagań Systemowych (SWS)}, które zdefiniowały biznesowy cel platformy i~zakres funkcjonalności dla wersji MVP.
+  \item \textbf{Obserwacja polskiego środowiska wydarzeń motorsportowych}, charakteryzującego się dotychczas znacznym rozproszeniem informacji, brakiem spójnych standardów zapisów oraz chaosem komunikacyjnym w~mediach społecznościowych.
+  \item \textbf{Bezpośrednie rozmowy z~kierowcami oraz organizatorami imprez}, które pozwoliły zidentyfikować kluczowe problemy operacyjne, takie jak uciążliwa i powtarzalna weryfikacja techniczna pojazdów czy trudności w efektywnym zarządzaniu listą startową.
+  \item \textbf{Osobiste doświadczenia od strony aktywnego kierowcy}, zdobyte przez członka zespołu, Michała Gutowskiego, które dostarczyły bezcennej, praktycznej wiedzy na temat bolączek uczestników i oczekiwań wobec nowoczesnych systemów rejestracji na zawody.
+\end{itemize}
 
 \section{Wymagania ogólne i dziedzinowe}
-System ma obsługiwać polski kontekst motorsportu (kategorie, lokalizacje, role) i~umożliwiać kompletny happy-path zapisu na wydarzenie.
+\generalrequirement{W01}{Wysoki}{Zintegrowany ekosystem wydarzeń motorsportowych}{System musi agregować dane o~imprezach w~jednym miejscu, udostępniając je użytkownikom w~sposób przejrzysty poprzez klasyczną listę, czytelny kalendarz oraz interaktywną mapę.}{Gość, Kierowca}{Brak}{tab:w01}
+
+\generalrequirement{W02}{Wysoki}{Automatyzacja obiegu zgłoszeń i weryfikacja pojazdów}{Platforma ma automatyzować proces zapisów, weryfikując systemowo czy pojazd zawodnika wybrany z~jego wirtualnego garażu spełnia regulaminowe wymogi danej kategorii wydarzenia. Odciąża to organizatorów i~niweluje błędy ludzkie.}{Kierowca, Organizator}{F04, F05}{tab:w02}
+
+\generalrequirement{W03}{Wysoki}{Przejrzysty podział ról w~systemie}{System opiera się na wyraźnym podziale uprawnień na:~użytkowników (szukających startów), organizatorów (zarządzających swoimi imprezami) oraz administratorów (dbających o jakość, wsparcie i~bezpieczeństwo platformy).}{Wszyscy}{SEC02}{tab:w03}
 
 \section{Wymagania funkcjonalne}
 \label{sec:wymagania-funkcjonalne}
-Poniżej przykładowe karty wymagań (środowisko / makro szablonu PJATK). Pełna lista MVP pozostaje w~\texttt{docs/MVP.md}.
+\generalrequirement{F01}{Wysoki}{Publiczny katalog i inteligentne filtrowanie}{Każdy użytkownik platformy ma dostęp do~bazy wydarzeń z intuicyjną możliwością filtrowania ofert po kategorii zawodów, dacie oraz interesującym go województwie.}{Gość, Kierowca}{W01}{tab:f01}
 
-\generalrequirement{FR-01}{Wysoki}{Przeglądanie katalogu wydarzeń}{System umożliwia przeglądanie wydarzeń w~widokach lista, mapa i~kalendarz ze wspólnymi filtrami.}{Gość, Kierowca (tab.~\ref{tab:ud-kierowca})}{UI katalogu --- rozdz.~\ref{ch:frontend}; API \texttt{/api/events} --- rozdz.~\ref{ch:projekt}}{tab:fr-01}
+\generalrequirement{F02}{Wysoki}{Szczegóły wydarzenia i wyznaczanie trasy}{Platforma udostępnia kompleksowe informacje o imprezie, w tym zintegrowaną funkcję mapy ułatwiającą zawodnikom wyznaczenie najszybszej trasy dojazdu na docelowy obiekt sportowy.}{Gość, Kierowca}{W01}{tab:f02}
 
-\generalrequirement{FR-02}{Wysoki}{Zgłoszenie udziału w~wydarzeniu}{Zalogowany kierowca wybiera pojazd z~garażu, system waliduje wymagania (\texttt{carMatch}) i~tworzy zgłoszenie ze statusem oraz powiadomieniem e-mail.}{Kierowca (tab.~\ref{tab:ud-kierowca})}{Garaż, mail, RBAC --- rozdz.~\ref{ch:backend}, \ref{ch:bezpieczenstwo}}{tab:fr-02}
+\generalrequirement{F03}{Wysoki}{Zarządzanie profilem i kontem}{Zapewnienie prostego procesu zakładania konta, logowania oraz edycji profilu, umożliwiającego kierowcom sprawne wprowadzanie niezbędnych danych kontaktowych i licencyjnych.}{Kierowca, Organizator}{Brak}{tab:f03}
 
-\generalrequirement{FR-03}{Wysoki}{Panel organizatora i~moderacja admina}{Organizator zarządza własnymi wydarzeniami i~zgłoszeniami; administrator akceptuje/odrzuca wydarzenia oraz wnioski o~rolę ORGANIZER.}{Organizator (tab.~\ref{tab:ud-organizator}), Administrator (tab.~\ref{tab:ud-admin})}{Projekt paneli --- rozdz.~\ref{ch:projekt}; realizacja --- rozdz.~\ref{ch:frontend}}{tab:fr-03}
+\generalrequirement{F04}{Wysoki}{Wirtualny Garaż Kierowcy}{Cyfrowa ewidencja pojazdów przypisana do profilu. Pozwala na jednorazowe wprowadzenie danych technicznych auta, co drastycznie przyspiesza wielokrotne zapisy na różne zawody w przyszłości.}{Kierowca}{W02}{tab:f04}
 
-\begin{enumerate}
-  \item Przeglądanie wydarzeń (lista, mapa, kalendarz) z~filtrami.
-  \item Podgląd szczegółów wydarzenia.
-  \item Rejestracja, logowanie, reset hasła; opcjonalnie Google Sign-In.
-  \item Zarządzanie profilem i~garażem.
-  \item Składanie i~anulowanie zgłoszeń; podgląd statusów.
-  \item Panel organizatora (CRUD wydarzeń, obsługa zgłoszeń).
-  \item Panel administratora (moderacja, role, wnioski org.).
-  \item Powiadomienia e-mail.
-  \item Archiwum wydarzeń.
-  \item Aplikacja mobilna --- katalog + CTA do weba.
-\end{enumerate}
+\generalrequirement{F05}{Wysoki}{Szybkie aplikowanie na wydarzenia}{Kierowca może zgłosić chęć udziału w wybranych zawodach poprzez wskazanie odpowiedniego pojazdu z garażu. Poprawne zgłoszenie natychmiast trafia do~organizatora ze statusem oczekującym na akceptację.}{Kierowca}{W02, F04}{tab:f05}
+
+\generalrequirement{F06}{Średni}{Skuteczny system powiadomień}{Wdrożenie powiadomień systemowych wewnątrz aplikacji oraz wiadomości e-mail, które na bieżąco informują użytkowników o istotnych zmianach, takich jak akceptacja lub odrzucenie wniosku o start.}{Zalogowany Użytkownik}{Brak}{tab:f06}
+
+\generalrequirement{F07}{Wysoki}{Panel Zarządzania dla Organizatora}{Dedykowane narzędzie biznesowe dla twórców imprez, pozwalające na łatwą publikację nowych wydarzeń oraz masowe zarządzanie listą zgłoszonych kierowców i ich opłatami.}{Organizator}{W03}{tab:f07}
+
+\generalrequirement{F08}{Wysoki}{Panel Administratora i wsparcie użytkowników}{Centralne miejsce dowodzenia pozwalające na weryfikację publikowanych treści, nadawanie uprawnień nowym organizatorom oraz sprawną obsługę zgłoszeń i problemów napotkanych przez użytkowników.}{Administrator}{W03}{tab:f08}
+
+\generalrequirement{F09}{Średni}{Mobilna aplikacja wizytówkowa}{Dodatkowy punkt styku dla użytkowników smartfonów, ułatwiający szybkie przeglądanie katalogu imprez w~podróży z opcją bezproblemowego przekierowania do~głównej platformy webowej w celu sfinalizowania zapisu.}{Gość, Kierowca}{Brak}{tab:f09}
 
 \section{Wymagania niefunkcjonalne}
-Dostępność lokalna przez Docker; responsywność weba; podstawowa wydajność list (paginacja, cache); obserwowalność (\texttt{/api/health}); dokumentacja uruchomienia. Docelowy test obciążenia 10k rekordów / 50~RPS pozostaje poza domkniętym MVP (por.\ rozdz.~\ref{ch:podsumowanie}).
+\generalrequirement{NF01}{Wysoki}{Wydajność i responsywność platformy}{System musi działać płynnie, gwarantując krótki czas ładowania katalogu i bezproblemową obsługę nawet przy dużym zainteresowaniu wydarzeniami i wzmożonym ruchem sieciowym.}{Wszyscy}{Brak}{tab:nf01}
+
+\generalrequirement{NF02}{Wysoki}{Dostępność wieloplatformowa (RWD)}{Interfejs aplikacji musi automatycznie dostosowywać się do~rozmiaru ekranu użytkownika, zapewniając pełen komfort korzystania na~smartfonach, tabletach oraz komputerach stacjonarnych.}{Wszyscy}{Brak}{tab:nf02}
+
+\generalrequirement{NF03}{Średni}{Niezawodność i łatwość wdrażania}{Platforma powinna zapewniać wysoką bezawaryjność oraz pozwalać na łatwe instalowanie nowych funkcjonalności bez długotrwałych przerw w dostępności usług dla kierowców.}{Administrator}{Brak}{tab:nf03}
 
 \section{Wymagania bezpieczeństwa}
-Uwierzytelnianie JWT; RBAC; walidacja wejścia; hasła hashowane; nagłówki bezpieczeństwa nginx (CSP, X-Frame-Options); rate limiting; minimalizacja danych w~UI.
+\generalrequirement{SEC01}{Wysoki}{Bezpieczeństwo danych osobowych i kont}{Zaawansowana ochrona kont użytkowników, bezpieczne uwierzytelnianie oraz rygorystyczne szyfrowanie haseł, gwarantujące pełną zgodność z wymogami ochrony prywatności (RODO).}{Wszyscy}{Brak}{tab:sec01}
+
+\generalrequirement{SEC02}{Wysoki}{Ścisła kontrola dostępu do zasobów}{Gwarancja systemowa, że kierowca widzi i zarządza wyłącznie własnymi pojazdami oraz zgłoszeniami, a organizator posiada uprawnienia do wglądu i edycji tylko swoich wydarzeń.}{Wszyscy}{W03}{tab:sec02}
+
+\generalrequirement{SEC03}{Średni}{Odporność na nadużycia platformy}{Implementacja mechanizmów chroniących platformę przed zautomatyzowanym spamem, atakami masowymi oraz próbami podszywania się pod oficjalną obsługę platformy w celu wyłudzenia informacji.}{Administrator}{Brak}{tab:sec03}
 
 \section{Wymagania interfejsu użytkownika}
-Ciemny motyw motorsportowy z~akcentem marki; czytelne stany puste/błędu; spójność paneli ról; mobilka z~prostą nawigacją katalogu. Punkt wyjścia UI: prototyp Figma Make (rozdz.~\ref{sec:figma}).
+\generalrequirement{UI01}{Wysoki}{Nowoczesny design branżowy}{Atrakcyjny wizualnie, spójny interfejs oparty na ciemnym motywie z mocnymi, kontrastującymi akcentami, który naturalnie wpisuje się w dynamikę i estetykę branży motorsportowej.}{Wszyscy}{Brak}{tab:ui01}
+
+\generalrequirement{UI02}{Wysoki}{Intuicyjność i~czytelność procesów}{Kluczowy nacisk na jasne komunikaty dla użytkownika, widoczne wskaźniki ładowania oraz w pełni zrozumiałe formularze zapobiegające frustracji i~pomyłkom podczas rejestracji na ważne zawody.}{Wszyscy}{Brak}{tab:ui02}
 
 \section{Diagramy UML}
 \subsection{Diagram przypadków użycia}
