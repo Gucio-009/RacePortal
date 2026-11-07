@@ -239,6 +239,7 @@ Praca została podzielona na rozdziały opisujące kolejno koncepcję, analizę,
   \item[Cloudflare Pages] Usługa hostingu frontendu statycznego Cloudflare; rozważana we wczesnych eksperymentach, ostatecznie porzucona na rzecz Compose + Tunnel.
   \item[Waitlista] Kolejka rezerwowa przy braku miejsc; w~MVP poza zakresem (kierunek rozwoju).
   \item[CTA webowe] Przekierowanie z~wizytówki mobilnej do pełnej ścieżki zapisu w~aplikacji webowej / PWA.
+  \item[ERD] Entity-Relationship Diagram --- diagram związków encji; w~pracy rys.~\ref{fig:diagram-klas} jest wersją koncepcyjną, a~nie schematem JPA MVP.
 \end{description}
 
 \chapter{Opis problemu}
@@ -305,12 +306,12 @@ Niezależnie od przedstawionej segmentacji biznesowej w~systemie funkcjonuje ró
 
 Przyjęta segmentacja pozwala wyróżnić dwie grupy o~największym znaczeniu dla funkcjonowania platformy: kierowców, którzy poszukują wydarzeń i~zgłaszają udział, oraz organizatorów, którzy dostarczają informacje o~wydarzeniach. Pozostali odbiorcy zwiększają potencjalny zasięg i~rozpoznawalność systemu.
 
-Wczesny, koncepcyjny podział funkcjonalności według poziomów dostępu (materiał projektowy zespołu) przedstawia rys.~\ref{fig:podzial-rol}. Należy go interpretować jako mapę intencji produktowej; szczegółowe mapowanie na wymagania i~projekt systemu opisano w~rozdziałach~\ref{ch:wymagania}--\ref{ch:projekt}.
+Wczesny, koncepcyjny podział funkcjonalności według poziomów dostępu (materiał projektowy zespołu) przedstawia rys.~\ref{fig:podzial-rol}. Należy go interpretować jako mapę intencji produktowej; szczegółowe mapowanie na wymagania i~projekt systemu opisano w~rozdziałach~\ref{ch:wymagania}--\ref{ch:projekt}. W~szczególności napis na rysunku sugerujący organizatorowi ,,dodanie wydarzenia bez weryfikacji'' \textbf{nie obowiązuje w~MVP}: wydarzenie utworzone przez organizatora otrzymuje status \texttt{PENDING} i~wymaga akceptacji administratora przed publikacją w~katalogu (rozdz.~\ref{ch:backend}).
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{podzial-funkcjonalnosci.png}
-  \caption{Podział interesariuszy projektu --- funkcjonalności dostępne dla ról użytkowników (materiał koncepcyjny).}
+  \caption{Podział interesariuszy projektu --- funkcjonalności dostępne dla ról użytkowników (materiał koncepcyjny; napisy na rysunku nie zastępują logiki MVP --- m.in.\ moderacja wydarzeń przez administratora).}
   \label{fig:podzial-rol}
 \end{figure}
 
@@ -603,7 +604,7 @@ Poza zakresem MVP --- świadomie --- pozostają m.in.\ integracje z~kalendarzami
 
 Warunki odbioru przyjęte w~DZW i~powtórzone w~\texttt{docs/\allowbreak MVP.md} wymagają, by funkcje~1--11 były dostępne i~przetestowane (manualnie oraz podstawowymi testami e2e), by UX zachowywał podejście mobile-first oraz by zakres był spójny z~pitchiem i~prezentacją. Jakość planowana obejmuje codzienne kopie zapasowe i~kontrole stanu (health checks), Docker, paginację, indeksy i~cache, czas odpowiedzi P95 nie większy niż 500--700~ms dla list do~50 rekordów, test obciążenia przy ok.\ 10\,000 rekordów i~50~RPS, OWASP ASVS Level~1, RBAC, HTTPS z~nagłówkami bezpieczeństwa, minimalizację danych (RODO) oraz przenośność środowiska Docker.
 
-Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy), a~funkcja~13 --- częściowo: trasa działa przez publiczne OSRM, a~Google Maps pozostaje jedynie opcją konfiguracyjną. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną wersję natywną ani publikację w~sklepach --- to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/\allowbreak uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~opisie od pierwotnego MVP, żeby nie zacierać granicy zakresu.
+Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--12 oraz~14--15 są domknięte funkcjonalnie (z~lukami względem Specyfikacji Formularzy przy koncie kierowcy). Funkcja~13 (trasa) jest \textbf{zrealizowana w~wariancie MVP}: działa publiczne OSRM jako domyślny provider; Google Maps API z~KP/DZW pozostaje opcją konfiguracyjną, a~nie niedokończonym modułem. Ścieżkę mobilną zrealizowano jako wizytówkę Expo oraz webową PWA, a~nie jako pełną wersję natywną ani publikację w~sklepach --- to świadoma adaptacja wobec sformułowania KP ,,PWA / Mobile-first''. Upload plików (obrazy JPG/PNG/WebP oraz PDF) istnieje w~API (\texttt{/api/\allowbreak uploads/\ldots}) i~jest odnotowany w~MVP jako domknięty 23.10.2026; nadal pozostają ograniczenia (m.in.\ brak pola zdjęcia w~mobilce oraz niekompletna zgodność formularzy ze Specyfikacją). Elementy zrealizowane ponad pierwotną listę piętnastu funkcji (m.in.\ motywy, i18n, regulaminy PDF, tagi opon) odróżnia się w~opisie od pierwotnego MVP, żeby nie zacierać granicy zakresu.
 
 \begin{table}[ht]
   \centering
@@ -639,7 +640,7 @@ Według synchronizacji \texttt{docs/\allowbreak MVP.md} z~28.10.2026 funkcje~1--
     \hline
     12 & Mapa wydarzeń & Zrealizowane: Leaflet + OpenStreetMap \\
     \hline
-    13 & Trasa (plan: Google Maps) & Częściowo: OSRM domyślnie; Google Maps tylko opcjonalnie \\
+    13 & Trasa (plan KP/DZW: Google Maps) & Zrealizowano świadomie wariant MVP: OSRM domyślnie; Google Maps opcjonalnie \\
     \hline
     14 & Archiwum & Zrealizowane: archiwum + auto-archiwizacja \\
     \hline
@@ -665,7 +666,12 @@ Zespół jest pięcioosobowy (specjalizacja cyberbezpieczeństwo, tryb stacjonar
 
 Współpraca opiera się o~wspólne repozytorium GitHub, gałąź \texttt{main} oraz dokumentację w~\texttt{docs/} i~\texttt{Dokumentacja/}. Jakość planowana obejmuje przegląd przed merge, testy manualne i~automatyczne oraz bieżącą aktualizację dokumentów porównawczych (MVP, zgodność ze Specyfikacją Formularzy). Historyczny Harmonogram PRO przewidywał m.in.\ cotygodniowe statusy na Discordzie oraz prezentacje postępów zgodne z~planem zajęć --- te zapisy to kontekst organizacyjny przedmiotu, a~nie formalny regulamin dyplomu.
 
-Za formalny podział ról w~tym rozdziale przyjmuje się zapis z~DZW: kierownik projektu --- Wojciech Wronisz; frontend --- Natalia Otrombke i~Oliwier Kasprowicz; backend --- Miłosz Parkitny; fullstack / marketing --- Michał Gutowski. Późniejsza praktyka opisana w~\texttt{README.md} repozytorium różni się w~szczegółach (kierownik: Michał Gutowski; backend: Michał Gutowski i~Miłosz Parkitny; fullstack, testy i~bezpieczeństwo: Wojciech Wronisz) --- odnotowuje się ją jako zmianę organizacyjną w~czasie, bez przypisywania tu autorstwa poszczególnych funkcji. Opis wkładu merytorycznego pozostaje w~osobnym rozdziale pracy.
+Podział ról w~zespole zmieniał się w~czasie; w~pracy stosuje się następujące rozróżnienie, żeby uniknąć wrażenia sprzeczności:
+\begin{itemize}
+  \item \textbf{DZW (formalny zapis startowy):} kierownik projektu --- Wojciech Wronisz; frontend --- Natalia Otrombke i~Oliwier Kasprowicz; backend --- Miłosz Parkitny; fullstack / marketing --- Michał Gutowski;
+  \item \textbf{praktyka repozytorium (\texttt{README.md}, faza realizacji):} koordynacja prac i~backend --- Michał Gutowski (współdzielony z~Miłoszem Parkitnym); frontend --- Natalia Otrombke i~Oliwier Kasprowicz; fullstack, testy automatyczne i~bezpieczeństwo --- Wojciech Wronisz.
+\end{itemize}
+Oba opisy są poprawne w~swoich kontekstach czasowych: DZW dokumentuje start projektu, a~\texttt{README.md} --- podział utrzymywany przy domykaniu MVP. Szczegółowy wkład merytoryczny (bez utożsamiania ,,kierownika'' z~jedynym autorem kodu) opisano w~rozdz.~\ref{ch:wklad}.
 
 \begin{table}[ht]
   \centering
@@ -841,12 +847,12 @@ Wymagania dla platformy RacePortal zostały zebrane i~sformułowane w~oparciu o~
 
 \section{Diagramy UML}
 \subsection{Diagram przypadków użycia}
-Wczesny diagram przypadków użycia (materiały projektowe) przedstawia rys.~\ref{fig:use-case}.
+Wczesny diagram przypadków użycia (materiały projektowe) przedstawia rys.~\ref{fig:use-case}. Diagram obejmuje także przypadki wykraczające poza zadeklarowane MVP (m.in.\ dodanie wydarzenia do ulubionych, wprowadzanie wyników czasowych / generalki, zarządzanie cyklem mistrzostw). W~niniejszej pracy traktuje się je wyłącznie jako wizję produktową --- w~zakresie MVP nie zaimplementowano ulubionych, live timing ani systemu mistrzostw; kierunki te wymieniono w~rozdz.~\ref{ch:podsumowanie} jako możliwości dalszego rozwoju.
 
 \begin{figure}[ht]
  \centering
  \includegraphics[width=\textwidth]{platforma-motorsportowa.png}
- \caption{Diagram przypadków użycia --- Platforma motorsportowa (wersja koncepcyjna).}
+ \caption{Diagram przypadków użycia --- Platforma motorsportowa (wersja koncepcyjna; część UC poza zakresem MVP).}
  \label{fig:use-case}
 \end{figure}
 
@@ -928,12 +934,19 @@ Listy torów w~formularzach web i~mobile korzystają ze wspólnego zestawu nazw,
 
 \subsection{Diagram klas}
 \label{sec:diagram-klas}
-Rysunek~\ref{fig:diagram-klas} przedstawia wczesny model bazy danych (ERD) stanowiący punkt wyjścia projektu klas / tabel domenowych. W~implementacji Spring Data JPA model został uproszczony i~dostosowany do MVP (m.in.\ role jako enum użytkownika, lokalizacja osadzona w~wydarzeniu). Kolejne encje operacyjne (klasy, wyniki, uploady jako URL-e w~polach domenowych) rozbudowano iteracyjnie bez zmiany ogólnego wzorca: jedna baza MySQL, relacje JPA, statusy jako enumy.
+Rysunek~\ref{fig:diagram-klas} przedstawia \textbf{wczesny, koncepcyjny} model bazy danych (ERD) --- punkt wyjścia dyskusji projektowej, a~\textbf{nie} wierną dokumentację schematu wdrożonego w~MVP. Topologia na rysunku (osobne tabele \texttt{categories}, \texttt{organizers}, \texttt{locations}, asocjacja \texttt{user\_roles}/\texttt{roles}, identyfikatory typu \texttt{bigint}) \textbf{nie pokrywa się} z~faktycznym modelem Spring Data JPA opisanym w~rozdz.~\ref{ch:backend}. W~implementacji przyjęto m.in.:
+\begin{itemize}
+  \item identyfikatory użytkowników i~zasobów jako UUID (łańcuch znaków), a~nie \texttt{bigint};
+  \item jedną rolę użytkownika w~kolumnie enum (\texttt{EnumType.STRING}: \texttt{USER}/\texttt{ORGANIZER}/\texttt{ADMIN}) zamiast tabel asocjacyjnych ról;
+  \item lokalizację wydarzenia osadzoną w~polach encji \texttt{Event} (nazwa toru, adres, współrzędne) --- bez osobnej tabeli \texttt{locations} powiązanej kluczem obcym;
+  \item kategorię / klasę jako atrybuty lub powiązane encje uproszczone pod MVP, a~nie pełną normalizację ze schematu koncepcyjnego.
+\end{itemize}
+Kolejne encje operacyjne (klasy startowe, wyniki, uploady, refresh tokeny) rozbudowano iteracyjnie przy zachowaniu wzorca: jedna baza MySQL, relacje JPA, statusy jako enumy. Czytelnik powinien traktować rys.~\ref{fig:diagram-klas} jako artefakt historyczny koncepcji, a~rozdz.~\ref{ch:backend} --- jako źródło prawdy o~schemacie faktycznym.
 
 \begin{figure}[ht]
   \centering
   \includegraphics[width=\textwidth]{model-bazy-danych.png}
-  \caption{Diagram klas / model danych (ERD) --- wersja koncepcyjna projektu.}
+  \caption{Diagram klas / model danych (ERD) --- wersja koncepcyjna; schemat JPA MVP opisano w~rozdz.~\ref{ch:backend}.}
   \label{fig:diagram-klas}
 \end{figure}
 
@@ -1957,7 +1970,7 @@ M.in.\ rozrost zakresu mobile --- decyzja o~wizytówce; luki Spec --- rejestr \t
 
 \chapter{Wkład własny}
 \label{ch:wklad}
-Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~implementacyjnych (imię i~nazwisko). Podział odzwierciedla faktyczny udział zespołu; największy wkład merytoryczny i~projektowy w~warstwie produktu/UI wniosła Natalia Otrombke.
+Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~implementacyjnych (imię i~nazwisko). Podział odzwierciedla faktyczny udział zespołu według obszarów odpowiedzialności (UI/UX, analiza, backend, modelowanie, fullstack/testy/bezpieczeństwo). Nie jest to ranking ,,kto zrobił najwięcej'': przy braku uzgodnionej tabeli godzin w~rozdz.~16 nie szacuje się tu procentowego udziału osób. Sukcesja ról kierowniczych (DZW vs praktyka repozytorium) wyjaśniono w~podrozdziale o~organizacji zespołu (rozdz.~6).
 
 \section{Natalia Otrombke}
 \begin{itemize}
@@ -1991,7 +2004,7 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 
 \section{Wojciech Wronisz}
 \begin{itemize}
-  \item pełnienie roli kierownika projektu w~Dokumentacji Założeń Wstępnych (DZW) oraz --- w~praktyce repozytorium --- odpowiedzialność za obszar fullstack, testów automatycznych i~bezpieczeństwa aplikacji;
+  \item pełnienie roli kierownika projektu w~zapisie startowym DZW; w~fazie realizacji (zgodnie z~\texttt{README.md}) --- odpowiedzialność za obszar fullstack, testów automatycznych i~bezpieczeństwa aplikacji (sukcesja ról --- rozdz.~6);
   \item prace nad warstwą API Spring Boot~\cite{spring:boot}: kontrakt REST współdzielony z~webem i~mobile, integracja z~MySQL, inicjalizacja danych demonstracyjnych (\texttt{DataInitializer} / seed), wysyłka maili transakcyjnych (SMTP Mailbux);
   \item projekt i~utwardzenie uwierzytelniania oraz autoryzacji: JWT~\cite{jwt:rfc} (access/refresh, \texttt{tokenVersion}), ciasteczka httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}), RBAC ról \texttt{USER}/\texttt{ORGANIZER}/\texttt{ADMIN}, Spring Security~\cite{spring:security};
   \item remedacje po testach penetracyjnych powierzchni HTTP(S) produkcji~\cite{raceportal:pentest}: m.in.\ limity prób logowania (\texttt{AttemptRateLimiter}), walidacja URL (\texttt{SafeHttpUrls}), spójność HSTS/HTTPS za Cloudflare Tunnel, wyrównanie kosztu odpowiedzi przy logowaniu/resecie hasła, zaostrzenie CSP i~ograniczenie wycieków informacyjnych;
@@ -2115,19 +2128,22 @@ Projekt ma też jasne granice.
 Nie ma płatności online --- rozliczenie wpisowego zostaje po stronie organizatora.
 Aplikacja mobilna pokazuje głównie katalog i~kieruje do zapisu w~wersji webowej;
 nie ma w~niej logowania, garażu ani publikacji w~sklepach.
-Nie wykonano też formalnego testu obciążenia przy ok.\ 10\,000 rekordach w~katalogu
-i~ok.\ 50~RPS, który był zapisany w~wymaganiach jakościowych.
+Formalne kryterium jakościowe z~KP/DZW (ok.\ 10\,000 rekordów w~katalogu przy ok.\ 50~RPS)
+\textbf{nie zostało zrealizowane w~oryginalnej postaci}: baza demonstracyjna nie była
+zapełniona do 10\,000 wydarzeń. Świadomie zastąpiono je pomiarami przepustowości
+Grafana~k6 na Oracle~VM (25.10.2026)~\cite{k6:vm-rps} na istniejącym zbiorze danych,
+przy limicie budżetowym Always Free i~konkurencji o~zasoby VM (k6 działał lokalnie
+ze stackiem). Dla listy wydarzeń komfort to ok.\ 150--200~RPS; przy 50~RPS nie było błędów
+(p95 ok.\ 4{,}5~ms). Health API i~statyczny front trzymają ok.\ 2000~RPS w~strefie komfortu.
+Ograniczenie wydajności wynika głównie z~zapytań do MySQL, a~nie z~nginx.
+Wynik traktujemy jako \textbf{dolną granicę} pojemności originu i~jako alternatywny
+dowód odbiorczy względem pierwotnego kryterium 10k/50~RPS --- nie jako jego pełne spełnienie.
 
-Zamiast tego 25.10.2026 zrobiono pomiary Grafana~k6 na Oracle~VM~\cite{k6:vm-rps}.
-Podczas testów dla listy wydarzeń uzyskano około 150--200 żądań na sekundę;
-przy 50~RPS nie było błędów (p95 ok.\ 4{,}5~ms).
-Dla health API i~statycznego frontu uzyskano ok.\ 2000 żądań na sekundę.
-W~porównaniu pomiarów ograniczenie dotyczy listy wydarzeń
-(API z~MySQL), a~nie nginx ani health API.
-Ponieważ k6 działał na tej samej maszynie co aplikacja, wynik traktujemy
-jako dolną granicę --- to nadal nie jest formalny scenariusz 10k rekordów~/~50~RPS.
+Integrację mapową z~KP/DZW (Google Maps API) zrealizowano w~MVP przez Leaflet + OSRM
+(opcjonalnie Google przy kluczu); nie jest to niedokończony moduł, lecz przyjęty wariant
+kosztowy opisany w~rozdz.~6 i~18.2.
 
-Na potrzeby MVP i~obrony taki obraz wydajności wystarcza.
+Na potrzeby MVP i~obrony taki obraz wydajności i~map wystarcza.
 Na później zostają m.in.\ płatności online, rozszerzenie aplikacji mobilnej,
 formalny test 10k/50~RPS oraz dalsze utwardzenie środowiska produkcyjnego.
 
