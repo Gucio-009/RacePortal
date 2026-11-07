@@ -1526,7 +1526,20 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 \chapter{Podsumowanie}
 \label{ch:podsumowanie}
 \section{Największe wyzwania i sposób ich rozwiązania}
-Spójność domeny zapisów i~garażu, RBAC, mapa/trasa oraz utrzymanie monorepo (web, API, mobile). Po stronie infrastruktury --- uproszczenie hostingu do jednej VM z~tunelowaniem Cloudflare zamiast rozdzielonego stacku Pages/Worker.
+Podczas realizacji i~wdrożenia produkcyjnego systemu RacePortal zespół napotkał szereg istotnych wyzwań inżynierskich, zwłaszcza w~obszarze infrastruktury, konfiguracji bezpiecznego tunelowania oraz zabezpieczeń sieciowych. Do~najważniejszych z~nich należały:
+\begin{itemize}
+  \item \textbf{Wyzwania związane z~wdrożeniem (deployment) i~architekturą chmurową:}
+  Początkowe próby rozproszenia aplikacji (np.\ frontend hostowany na zewnętrznych platformach typu Pages, a~backend na maszynie wirtualnej) generowały problemy z~konfiguracją polityk CORS, routingu oraz spójności środowiskowej. Wyzwaniem było również zapewnienie prostoty uruchomienia produkcyjnego na darmowej maszynie wirtualnej (Oracle Cloud Always Free ARM).
+  \textit{Sposób rozwiązania:} Zdecydowano się na pełną konteneryzację całego ekosystemu za~pomocą narzędzia Docker Compose (\texttt{web}, \texttt{api}, \texttt{mysql}, \texttt{backup}) oraz sprowadzenie infrastruktury produkcyjnej do jednej, spójnej instancji obliczeniowej zarządzanej kodem konfiguracyjnym.
+
+  \item \textbf{Konfiguracja bezpiecznego tunelowania w~Cloudflare:}
+  Wystawienie lokalnie skonteneryzowanej aplikacji na publiczny internet przy jednoczesnym zachowaniu wysokich standardów bezpieczeństwa i~szyfrowania bez konieczności skomplikowanego zarządzania certyfikatami SSL bezpośrednio na serwerze stanowiło duże wyzwanie sieciowe.
+  \textit{Sposób rozwiązania:} Zastosowano technologię \textbf{Cloudflare Tunnel} (\texttt{cloudflared}). Tunel bezpiecznie spina maszynę wirtualną z~brzegiem sieci Cloudflare, przejmując całkowitą obsługę rekordów DNS, terminację protokołu TLS (HTTPS) oraz ochronę przed atakami DDoS (WAF). Dzięki temu ruch do lokalnego serwera Nginx (działającego na porcie \texttt{:8081}) jest w~pełni szyfrowany i~odizolowany od bezpośrednich skanów portów z~zewnątrz.
+
+  \item \textbf{Zabezpieczenia strony pod kątem cybersecurity i~ochrony zasobów:}
+  Projektując platformę obsługującą dane użytkowników, konta ról oraz pojazdy, należało zabezpieczyć system przed typowymi zagrożeniami webowymi (takimi jak próby przejęcia sesji, ataki typu brute-force na panele logowania czy nieuprawniony dostęp do zasobów innych użytkowników --- IDOR).
+  \textit{Sposób rozwiązania:} Wdrożono bezstanowe uwierzytelnianie oparte o~tokeny JSON Web Token (JWT) przesyłane w~bezpiecznych ciasteczkach HTTP-only oraz rygorystyczną kontrolę dostępu opartą o~role (RBAC) na poziomie kontrolerów API. Dodatkowo kluczowe ścieżki uwierzytelniania zabezpieczono mechanizmami limitowania częstotliwości zapytań (Rate Limiting), a~na warstwie serwera proxy (Nginx) skonfigurowano restrykcyjne nagłówki bezpieczeństwa, w~tym politykę ochrony treści (CSP) oraz nagłówki zapobiegające osadzaniu strony w~ramkach (X-Frame-Options).
+\end{itemize}
 
 \section{Zmiany i adaptacje w trakcie realizacji}
 Przejście mobile z~pełnej równoważności funkcji na wizytówkę; doprecyzowanie formularzy; wspólny pakiet typów; migracja z~eksperymentów GCP/Pages na Oracle + Cloudflare Tunnel.
@@ -1555,7 +1568,32 @@ W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \t
 Ograniczenie formalne (brak scenariusza z~10k rekordami) jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
 
 \section{Możliwości dalszego rozwoju}
-Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS (zapełnienie katalogu + obciążenie wg kryterium KP/DZW); dalsza rozbudowa uploadu (m.in.\ mobilka).
+Mimo że wersja MVP systemu RacePortal w~pełni realizuje założone cele funkcjonalne i~procesowe, otwiera ona szerokie perspektywy na dalszą rozbudowę oraz komercjalizację platformy. W~oparciu o~zebrane doświadczenia, opinie użytkowników oraz analizę braków obecnej wersji, zidentyfikowano następujące kierunki rozwoju:
+\begin{itemize}
+  \item \textbf{Integracja z~profesjonalnymi bramkami płatności (PSP):}
+  Wprowadzenie automatycznych płatności online (np.\ przelewy natychmiastowe, BLIK, karty płatnicze) zamiast obecnego mechanizmu weryfikacji na podstawie przesyłanego adresu URL dowodu wpłaty. Umożliwi to pełną automatyzację rozliczeń finansowych między kierowcami a~organizatorami oraz natychmiastowe potwierdzanie opłacenia wpisowego.
+
+  \item \textbf{Autorski pomiar czasowy i~wyniki na żywo:}
+  Wdrożenie dedykowanego modułu pomiaru czasu dla organizatorów z~możliwością synchronizacji urządzeń pomiarowych bezpośrednio z~aplikacją, co umożliwi uczestnikom oraz kibicom podgląd oficjalnych wyników zawodów na żywo.
+
+  \item \textbf{Zaawansowane zarządzanie listami rezerwowymi i~waitlistą:}
+  Rozbudowa logiki biznesowej zgłoszeń o~automatyczne zarządzanie kolejką rezerwową (\emph{waitlist}). W~przypadku rezygnacji jednego z~uczestników system mógłby automatycznie powiadamiać i~przesuwać na listę główną kolejnego kierowcę z~listy rezerwowej według zdefiniowanych kryteriów.
+
+  \item \textbf{Pełnoprawna aplikacja mobilna i~publikacja w~sklepach:}
+  Rozszerzenie obecnej wizytówkowej aplikacji mobilnej (Expo) o~pełną funkcjonalność konta użytkownika, w~tym mobilny wirtualny garaż, składanie zgłoszeń oraz bezpośredni wgląd do statusów, a~także przygotowanie aplikacji do oficjalnej dystrybucji w~sklepach Google Play oraz App Store.
+
+  \item \textbf{Podstrona Auta:}
+  Stworzenie dedykowanej, publicznej strony każdego samochodu w~systemie, prezentującej jego szczegółowe dane techniczne, galerię zdjęć oraz pełną historię startów w~ubiegłych i~nadchodzących wydarzeniach motorsportowych.
+
+  \item \textbf{Podstrona Kierowcy:}
+  Implementacja publicznego profilu zawodnika, który w~jednym miejscu agreguje jego osiągnięcia sportowe, zestawienie posiadanych aut z~wirtualnego garażu oraz odnośniki do mediów społecznościowych.
+
+  \item \textbf{Podstrona Obiektów Motorsportowych:}
+  Rozbudowa systemu o~kompletny katalog wszystkich torów i~obiektów w~Polsce, zawierający ich opisy, parametry techniczne oraz precyzyjną lokalizację na zintegrowanej mapie.
+
+  \item \textbf{Podstrona Organizatora:}
+  Wprowadzenie dedykowanego profilu publicznego dla klubów oraz organizatorów wydarzeń, prezentującego ich historię, opis działalności oraz zestawienie organizowanych przez nich imprez motorsportowych.
+\end{itemize}
 
 \section{Wnioski końcowe}
 \label{sec:wnioski-koncowe}
