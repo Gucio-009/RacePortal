@@ -42,7 +42,7 @@
 \author{Gutowski Michał}{s30572}{Cyberbezpieczeństwo}{Stacjonarny}
 \author{Parkitny Miłosz}{s30287}{Cyberbezpieczeństwo}{Stacjonarny}
 \author{Wronisz Wojciech}{s26999}{Cyberbezpieczeństwo}{Stacjonarny}
-\consultant{--- brak ---}
+\consultant{Paweł Maryszczuk --- Senior SecOps (testy penetracyjne)}
 \projectgoals{Celem projektu jest zaprojektowanie i~zaimplementowanie systemu RacePortal --- centralnego katalogu wydarzeń motorsportowych w~Polsce, umożliwiającego przeglądanie wydarzeń (lista, mapa, kalendarz), zarządzanie garażem pojazdów, zgłoszenia udziału oraz obsługę ról organizatora i~administratora, wraz z~aplikacją mobilną typu wizytówka oraz konteneryzowanym środowiskiem uruchomieniowym.}
 \productsandservices{Aplikacja webowa (React/Vite), API REST (Spring Boot) z~bazą MySQL, aplikacja mobilna Expo (katalog wydarzeń z~CTA do weba), wspólne typy API (\texttt{packages/api-types}), dokumentacja projektowa oraz zestaw testów automatycznych (JUnit, Vitest, Playwright).}
 \mainfunctionalities{Katalog wydarzeń z~filtrami oraz widokami lista/mapa/kalendarz; szczegóły wydarzenia i~wyznaczanie trasy (OSRM); konta użytkowników (JWT, RBAC); garaż pojazdów i~dopasowanie kategorii do wydarzenia (\texttt{carMatch}); system zgłoszeń ze statusami i~powiadomieniami e-mail; panele organizatora i~administratora; archiwum; mobilna wizytówka z~przekierowaniem zapisu na web.}
@@ -118,7 +118,7 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item \textbf{Rozdział 10 (Szczegóły implementacji backendu)} --- szczegółowo opisuje strukturę projektu backendowego, model domenowy, mechanizmy uwierzytelniania i~rejestracji (JWT, rate limiting), obsługę wydarzeń, zgłoszeń, garażu oraz integrację z~bazą danych.
   \item \textbf{Rozdział 11 (Szczegóły implementacji frontendu webowego)} --- omawia strukturę aplikacji webowej, kluczowe widoki (katalog, szczegóły, dashboard użytkownika, garaż, panele administratora i~organizatora) oraz responsywność i~doświadczenie użytkownika.
   \item \textbf{Rozdział 12 (Szczegóły implementacji aplikacji mobilnej)} --- przedstawia założenia, architekturę oraz implementację mobilnej wizytówki systemu opartej na ekosystemie Expo.
-  \item \textbf{Rozdział 13 (Bezpieczeństwo systemu)} --- prezentuje założenia ochrony danych, klasyfikację informacji, uwierzytelnianie, kontrolę dostępu (RBAC), walidację wejścia oraz analizę zagrożeń i~ryzyka.
+  \item \textbf{Rozdział 13 (Bezpieczeństwo systemu)} --- prezentuje założenia ochrony danych, klasyfikację informacji, uwierzytelnianie, kontrolę dostępu (RBAC), walidację wejścia, analizę zagrożeń i~ryzyka oraz wnioski z~testów penetracyjnych z~remedacjami.
   \item \textbf{Rozdział 14 (Testowanie i~weryfikacja systemu)} --- opisuje strategię testowania, środowisko testowe, testy jednostkowe, integracyjne, E2E (Playwright) oraz weryfikację mechanizmów bezpieczeństwa.
   \item \textbf{Rozdział 15 (Prezentacja systemu)} --- ilustruje scenariusze użycia platformy z~perspektywy kierowcy, organizatora oraz administratora.
   \item \textbf{Rozdział 16 (Nakład pracy)} --- podsumowuje liczbę przepracowanych godzin, podział zadań w~zespole oraz narzędzia wspierające zarządzanie pracą.
@@ -145,14 +145,49 @@ Niniejsza praca inżynierska została podzielona na logiczne i~spójne rozdział
   \item[API REST] Interfejs HTTP backendu RacePortal (JSON) współdzielony przez web i~mobile.
   \item[JWT] JSON Web Token --- token dostępu API; w~warstwie webowej w~ciasteczkach httpOnly (\texttt{rp\_at} / \texttt{rp\_rt}), nie w~\texttt{localStorage}.
   \item[RBAC] Role-Based Access Control --- kontrola dostępu oparta o~role (\texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN}).
+  \item[ASVS] Application Security Verification Standard (OWASP) --- poziom wymagań bezpieczeństwa aplikacji; w~pracy przyjęto orientacyjnie poziom L1 adekwatny do MVP.
+  \item[OWASP] Open Worldwide Application Security Project --- zbiór praktyk i~kategorii zagrożeń aplikacji webowych wykorzystywanych przy analizie bezpieczeństwa.
+  \item[IDOR] Insecure Direct Object Reference --- dostęp do cudzego zasobu poprzez manipulację identyfikatorem w~żądaniu API.
+  \item[XSS] Cross-Site Scripting --- wstrzyknięcie złośliwego skryptu do treści wyświetlanej w~przeglądarce użytkownika.
+  \item[Stored XSS] Trwały XSS: szkodliwy skrypt zapisany w~danych (np.\ URL wydarzenia) i~wykonywany u~innych użytkowników przy odczycie.
+  \item[CSRF] Cross-Site Request Forgery --- wymuszenie niechcianego żądania w~sesji zalogowanego użytkownika.
+  \item[SameSite] Atrybut ciasteczka ograniczający wysyłanie go w~żądaniach cross-site (łagodzi CSRF).
+  \item[CSP] Content Security Policy --- nagłówek HTTP ograniczający źródła skryptów i~zasobów ładowanych przez przeglądarkę.
+  \item[CORS] Cross-Origin Resource Sharing --- reguły zezwalające (lub blokujące) żądania API z~innych originów przeglądarki.
+  \item[HSTS] HTTP Strict Transport Security --- polityka wymuszająca połączenia HTTPS po stronie przeglądarki.
+  \item[TLS] Transport Layer Security --- protokół szyfrowania transportu; w~produkcji RacePortal terminowany na Cloudflare.
+  \item[httpOnly] Atrybut ciasteczka uniemożliwiający odczyt wartości przez JavaScript w~przeglądarce (ochrona przed kradzieżą tokenu przez XSS).
+  \item[Access token / refresh token] Krótkotrwały token dostępu JWT oraz dłuższy token odświeżający (w~RacePortal: ciasteczka \texttt{rp\_at} / \texttt{rp\_rt}; refresh w~bazie jako skrót).
+  \item[tokenVersion] Wersja tokenu w~payloadzie JWT; podnoszona przy wylogowaniu lub zmianie hasła, by unieważnić wcześniejsze sesje.
+  \item[BCrypt] Algorytm skrótu haseł używany przy przechowywaniu poświadczeń lokalnych.
+  \item[Brute-force] Automatyczne odgadywanie hasła wieloma próbami; chronione m.in.\ rate limitingiem (HTTP 429).
+  \item[Credential stuffing] Próby logowania listą skradzionych par e-mail/hasło z~innych serwisów.
+  \item[Enumeracja kont] Ustalanie, czy dany e-mail/login istnieje, na podstawie różnic odpowiedzi API (czas, komunikat, kod).
+  \item[HTTP 429] Too Many Requests --- odpowiedź limitująca nadużycia; w~RacePortal z~nagłówkiem \texttt{Retry-After}.
+  \item[Rate limiting] Ograniczanie liczby prób / żądań w~jednostce czasu (m.in.\ ochrona logowania przed brute-force).
+  \item[SafeHttpUrls] Walidator serwerowy akceptujący wyłącznie bezpieczne URL-e (\texttt{http}/\texttt{https} lub ścieżki uploadu), blokujący m.in.\ \texttt{javascript:}.
+  \item[AttemptRateLimiter] Mechanizm limitujący nieudane próby logowania per e-mail i~IP.
+  \item[Seed] Wstępne dane demonstracyjne (konta, wydarzenia) ładowane przy starcie API; na ekspozycji publicznej powinny być wyłączone.
+  \item[Hardening] Wzmocnienie konfiguracji i~kodu pod kątem bezpieczeństwa (nagłówki, sekrety, limity, redukcja powierzchni ataku).
+  \item[Obrona wielowarstwowa] Stosowanie wielu niezależnych zabezpieczeń (tu: Cloudflare $\rightarrow$ nginx $\rightarrow$ Spring $\rightarrow$ MySQL), tak by awaria jednej warstwy nie otwierała całego systemu.
+  \item[Zasada najmniejszych uprawnień] Nadawanie użytkownikowi i~komponentowi tylko tych uprawnień, które są niezbędne do roli.
+  \item[Remedacja] Naprawa lub obejście luki znalezionej w~teście bezpieczeństwa, wraz z~weryfikacją, że problem nie wraca.
+  \item[SecOps] Security Operations --- praktyki utrzymania i~weryfikacji bezpieczeństwa systemów (w~tym testy penetracyjne).
+  \item[SAST] Static Application Security Testing --- automatyczna analiza kodu źródłowego pod kątem luk; poza pełnym zakresem MVP.
+  \item[WAF] Web Application Firewall --- filtr ruchu HTTP chroniący aplikację przed typowymi atakami; poza zakresem MVP.
+  \item[2FA] Two-Factor Authentication --- dwuskładnikowe uwierzytelnianie; świadomie poza zakresem MVP.
+  \item[Testy penetracyjne] Kontrolowane próby znalezienia luk bezpieczeństwa na powierzchni ataku (tu: HTTP(S) produkcji RacePortal) wraz z~rekomendacjami remedacji.
+  \item[MockMvc] Warstwa testów integracyjnych Springa symulująca żądania HTTP do kontrolerów bez pełnego serwera.
   \item[OAuth Google] Opcjonalne logowanie kontem Google (obok logowania hasłem).
   \item[OSRM] Open Source Routing Machine --- publiczny serwis wyznaczania trasy dojazdu (domyślny provider).
   \item[Docker Compose] Narzędzie uruchamiania zestawu kontenerów (web, API, MySQL, backup) jako wspólnego środowiska lokalnego i~produkcyjnego.
   \item[Cloudflare Tunnel] Tunel zapewniający publiczny dostęp HTTPS do usług na maszynie wirtualnej (bez otwierania portów na firewallu VM).
+  \item[nginx] Serwer HTTP / reverse proxy na VM RacePortal (nagłówki bezpieczeństwa, proxy do API i~frontu).
   \item[Mailbux] Zewnętrzny SMTP używany do wysyłki maili transakcyjnych RacePortal.
   \item[PSP] Payment Service Provider --- natywna bramka płatności online; świadomie poza zakresem MVP.
   \item[MVP] Minimum Viable Product --- minimalny zakres funkcji przyjęty do odbioru projektu.
   \item[RPS] Requests Per Second --- metryka obciążenia (liczba żądań na sekundę); w~projekcie mierzona m.in.\ narzędziem k6.
+  \item[k6] Narzędzie Grafana do testów obciążeniowych HTTP (pomiary RPS na VM).
   \item[Expo] Framework do budowy aplikacji React Native; wykorzystany w~kliencie mobilnym RacePortal.
 \end{description}
 
@@ -1490,10 +1525,32 @@ Ograniczeniem wynikającym z~przyjętego modelu CTA jest zależność od dostęp
 
 \chapter{Bezpieczeństwo systemu}
 \label{ch:bezpieczenstwo}
+Rozdział opisuje założenia ochrony RacePortal, klasyfikację przetwarzanych danych oraz wybrane aspekty ochrony zasobów, komunikacji, analizy zagrożeń i~ryzyka. Uwzględniono także wyniki testów penetracyjnych powierzchni HTTP(S) produkcji oraz wdrożone remedacje. Szczegóły mechanizmów uwierzytelniania, RBAC, JWT i~walidacji wejścia opisano w~sąsiednich podrozdziałach.
+
 \section{Założenia bezpieczeństwa}
-Ochrona kont i~danych zgłoszeń na poziomie ASVS L1 adekwatnym do MVP demonstracyjnego.
+Przyjęto poziom ochrony adekwatny do akademickiego MVP demonstracyjnego (orientacyjnie ASVS L1): ochrona kont, egzekwowanie ról oraz ograniczenie dostępu do zasobów prywatnych użytkownika, przy świadomym odłożeniu pełnego hardeningu enterprise (WAF, 2FA, menedżer sekretów).
+
+Założenia projektowe:
+\begin{itemize}
+  \item bezpieczeństwo egzekwowane przede wszystkim po stronie API (Spring Security), a~nie wyłącznie w~UI;
+  \item zasada najmniejszych uprawnień: gość ma odczyt publiczny, kierowca --- własne zasoby, organizator --- własne wydarzenia, administrator --- moderację platformy;
+  \item obrona wielowarstwowa: Cloudflare (HTTPS/HSTS/Tunnel) $\rightarrow$ nginx (nagłówki bezpieczeństwa, proxy) $\rightarrow$ Spring Boot (JWT, rate limit, walidacja) $\rightarrow$ MySQL;
+  \item sekrety i~hasła nie powinny trafiać do repozytorium; w~produkcji TLS kończy się na brzegu sieci (Cloudflare);
+  \item decyzje konfiguracyjne (seed kont demo, domyślne sekrety) są dopuszczalne lokalnie, lecz niedopuszczalne na trwałej ekspozycji publicznej bez dodatkowej kontroli;
+  \item cykl poprawy: odkrycie w~teście penetracyjnym $\rightarrow$ odtworzenie $\rightarrow$ naprawa w~kodzie $\rightarrow$ weryfikacja (testy automatyczne oraz krótka kontrola działania kluczowych funkcji na środowisku produkcyjnym).
+\end{itemize}
+
 \section{Klasyfikacja danych}
-Dane konta i~profilu; dane pojazdów; dane zgłoszeń; treści wydarzeń (częściowo publiczne).
+Dane przetwarzane przez RacePortal podzielono według wrażliwości i~widoczności:
+\begin{itemize}
+  \item \textbf{publiczne} --- zatwierdzone treści wydarzeń (nazwa, opis, termin, lokalizacja, kategoria), publiczna lista startowa / opublikowane wyniki, katalog torów;
+  \item \textbf{konto i~profil} --- e-mail, hasło (skrót BCrypt), rola, dane profilu, preferencje; dostęp tylko dla właściciela konta lub administratora w~zakresie moderacji;
+  \item \textbf{garaż} --- pojazdy użytkownika (w~tym opcjonalne multimedia); dostęp właściciela;
+  \item \textbf{zgłoszenia} --- statusy, notatki, dowody płatności; dostęp właściciela zgłoszenia oraz organizatora / administratora w~ramach obsługi wydarzenia;
+  \item \textbf{operacyjne} --- refresh tokeny (skróty), logi / health, zgłoszenia błędów; ograniczone do mechanizmów systemowych i~ról uprzywilejowanych.
+\end{itemize}
+Klasyfikacja uzasadnia, dlaczego część endpointów jest publiczna (katalog), a~pozostałe wymagają sesji i~kontroli właściciela lub roli.
+
 \section{Uwierzytelnianie użytkowników}
 Uwierzytelnianie RacePortal zrealizowano w~module \texttt{AuthController} / \texttt{AuthService} bez klasycznej sesji serwerowej w~pamięci. Tożsamość użytkownika opiera się na dwóch warstwach poświadczeń: krótkotrwałym tokenie dostępu JWT oraz rotowanym tokenie odświeżającym przechowywanym w~bazie w~postaci skrótu. Po~stronie klienta webowego sesja jest utrzymywana w~ciasteczkach HTTP-only (\texttt{rp\_at}, \texttt{rp\_rt}), ustawianych przez \texttt{AuthCookies} z~parametrami \texttt{Secure} / \texttt{SameSite} zależnymi od środowiska.
 
@@ -1531,15 +1588,71 @@ Wejście API jest walidowane dwustopniowo: deklaratywnie na rekordach DTO (Jakar
 W~module auth wymagane są m.in.\ niepusty, unikalny e-mail (\texttt{@Email}), ograniczenia długości nazwy użytkownika oraz wzorzec silnego hasła. Pola profilu (imię, nazwisko, telefon, Instagram) mają osobne wzorce formatu. Analogiczne adnotacje stosują DTO garażu, wydarzeń, zgłoszeń i~panelu administratora (statusy, role). Poza Bean Validation serwisy egzekwują reguły dziedzinowe --- np.\ dozwolone przejścia statusów zgłoszenia, blokadę edycji pojazdu przy otwartym zgłoszeniu, unikalność telefonu czy bezpieczną normalizację URL mediów (\texttt{SafeHttpUrls} / \texttt{ImageReferences}). Upload plików dodatkowo weryfikuje rozmiar oraz typ po~sygnaturze bajtowej (JPG/PNG/WebP, PDF), a~nie wyłącznie po~nagłówku przeglądarki. Dzięki temu walidacja obejmuje zarówno kontrakt składniowy żądania, jak i~spójność stanu domenowego.
 
 \section{Ochrona zasobów użytkowników}
-Dostęp do garażu i~zgłoszeń wyłącznie właściciela (oraz uprawnionych ról w~panelach).
+Zasoby prywatne są wiązane z~tożsamością użytkownika lub z~własnością wydarzenia. W~szczególności:
+\begin{itemize}
+  \item garaż i~„moje zgłoszenia” są dostępne wyłącznie dla właściciela konta;
+  \item organizator zarządza zgłoszeniami i~ustawieniami tylko swoich wydarzeń (nie cudzych);
+  \item administrator ma uprawnienia moderacyjne na poziomie platformy, ale backoffice wymaga twardej roli \texttt{ADMIN};
+  \item upload plików (obrazy, PDF) wymaga uwierzytelnienia przy zapisie; odczyt ścieżek publicznych uploadów pozostaje kompromisem MVP i~jest wskazywany jako ograniczenie do dalszego domknięcia.
+\end{itemize}
+Celem tej warstwy jest ograniczenie klasycznych błędów IDOR: użytkownik nie powinien odczytać ani zmodyfikować cudzego garażu, zgłoszenia ani panelu organizatora poprzez manipulację identyfikatorami w~API.
+
 \section{Bezpieczeństwo komunikacji}
-W~dev HTTP lokalne; w~prod TLS terminowany na Cloudflare Tunnel przed nginx; CSP / X-Frame-Options na nginx.
+W~środowisku deweloperskim komunikacja lokalna odbywa się zwykle po HTTP wewnątrz Dockera / sieci LAN. W~środowisku produkcyjnym ruch publiczny przechodzi przez Cloudflare Tunnel do nginx, a~TLS (oraz HSTS) jest terminowany po stronie Cloudflare --- przeglądarka łączy się z~apexem i~backoffice po HTTPS. W~wyniku testów penetracyjnych wzmocniono spójność transportu: po stronie Cloudflare włączono Always Use HTTPS oraz HSTS, a~w~nginx wyłączono problematyczne absolutne przekierowania i~ustawiono długi \texttt{max-age} HSTS.
+
+Dodatkowo na brzegu aplikacji stosowane są nagłówki bezpieczeństwa nginx (m.in.\ CSP, \texttt{X-Frame-Options}). Po remedacjach CSP usunięto z~produkcji odwołania do \texttt{localhost}, dodano m.in.\ \texttt{object-src}, \texttt{base-uri} i~\texttt{form-action}, a~inline boot przeniesiono do plików statycznych. CORS jest konfigurowany listą dozwolonych originów (z~credentials dla ciasteczek sesji). Komunikacja SMTP do Mailbux odbywa się poza przeglądarką, po stronie backendu, z~danymi dostępowymi trzymanymi w~zmiennych środowiskowych.
+
 \section{Analiza zagrożeń}
-Uwierzytelnianie, IDOR, XSS, CSRF w~kontekście SPA, brute-force logowania (rate limit).
+Dla RacePortal rozważono typowe zagrożenia aplikacji webowej z~rolami i~publicznym katalogiem, a~następnie zweryfikowano je testami penetracyjnymi powierzchni HTTP(S) produkcji (konsultant: Paweł Maryszczuk, Senior SecOps). Kluczowe obszary zagrożeń:
+\begin{itemize}
+  \item \textbf{uwierzytelnianie} --- stuffing haseł, brute-force logowania, enumeracja kont po czasie odpowiedzi, przejęcie konta przy słabym sekrecie JWT lub aktywnym seedzie demo;
+  \item \textbf{sesje} --- kradzież długotrwałego tokenu z~\texttt{localStorage}/JS, brak unieważnienia po wylogowaniu / zmianie hasła, reuse refresh tokenu;
+  \item \textbf{autoryzacja / IDOR} --- dostęp do cudzego garażu, zgłoszenia lub wydarzenia organizatora; podszywanie się pod zaufaną nazwę wyświetlaną;
+  \item \textbf{XSS} --- m.in.\ schemat \texttt{javascript:} w~polach URL (wydarzenie, garaż, dowód płatności);
+  \item \textbf{CSRF} --- przy sesji cookie nadal temat uwagi przy dalszym hardeningu (\texttt{SameSite}, model API);
+  \item \textbf{nadużycie zasobów} --- automatyczne próby logowania/resetu, spam publicznych endpointów, nadmierne użycie uploadów;
+  \item \textbf{ujawnienie informacji} --- zbyt szczegółowy publiczny health, \texttt{robots.txt} mapujący panele, wersje serwera, tokeny w~logach dostępowych.
+\end{itemize}
+Zagrożenia mapowano orientacyjnie na kategorie OWASP (m.in.\ A01 Broken Access Control, A02 Cryptographic Failures, A03 Injection, A05 Security Misconfiguration, A07 Identification and Authentication Failures).
+
 \section{Analiza ryzyka}
-Ryzyko akceptowalne dla środowiska demo; produkcja wymaga twardego sekretu JWT, HTTPS i~polityki haseł zsynchronizowanej backend$\leftrightarrow$UI.
+Ryzyko oceniono jakościowo (prawdopodobieństwo $\times$ skutek) oraz praktycznie --- przez odtworzenie znalezisk pentestu i~pomiar, czy remedacja je zamyka:
+\begin{itemize}
+  \item \textbf{wysokie skutki} --- fałszowanie sesji administratora, masowy stuffing kont, stored XSS w~treściach z~URL; wymagają twardego sekretu JWT, wyłączenia seeda na ekspozycji publicznej, httpOnly cookies, walidacji URL oraz rate limitu;
+  \item \textbf{średnie skutki} --- enumeracja kont, zmiana e-maila bez re-autentykacji, luźna CSP, wyciek informacji z~health/\texttt{robots.txt}; po remedacjach ryzyko spadło, ale wymaga utrzymania konfiguracji;
+  \item \textbf{niższe / świadomie akceptowane w~MVP} --- brak 2FA i~WAF, zależność od publicznych API map, publiczny odczyt części uploadów, model „zapłać później” bez PSP.
+\end{itemize}
+Dla środowiska prezentacyjnego ryzyko uznano za akceptowalne przy kontrolowanym użyciu kont demo. Dla trwałej ekspozycji publicznej kluczowe pozostaje utrzymanie bezpiecznej konfiguracji operatorskiej (sekret, seed, cookies \texttt{Secure}) --- sam kod z~remedacjami nie wystarczy, jeśli Compose nadpisze ustawienia niebezpiecznymi domyślnymi wartościami.
+
 \section{Ograniczenia przyjętych zabezpieczeń}
-Brak 2FA; Google OAuth opcjonalny; brak WAF; publiczny OSRM bez SLA.
+Mimo przeprowadzonych testów penetracyjnych i~wdrożonych poprawek model nie obejmuje pełnego hardeningu enterprise. Poza zakresem MVP pozostają m.in.:
+\begin{itemize}
+  \item dwuskładnikowe uwierzytelnianie (2FA / WebAuthn) oraz step-up przy wrażliwych operacjach kont tylko-Google;
+  \item dedykowany WAF / CAPTCHA oraz rozproszony rate limit (np.\ Redis / reguły Cloudflare);
+  \item menedżer sekretów i~formalna rotacja kluczy w~stylu produkcyjnym;
+  \item podpisane, czasowo ograniczone URL-e do prywatnych uploadów;
+  \item pełny SAST oraz testy penetracyjne infrastruktury Oracle (poza powierzchnią HTTP aplikacji);
+  \item gwarancje SLA publicznych serwisów map / routingu (OSRM).
+\end{itemize}
+Ograniczenia te nie negują wartości przeprowadzonego pentestu aplikacji: celem było domknięcie krytycznych luk warstwy web/API w~cyklu odkrycie--naprawa--weryfikacja, a~nie zbudowanie kompletnego SOC.
+
+\section{Testy penetracyjne i remedacje}
+\label{sec:pentest}
+Na potrzeby pracy wykonano testy penetracyjne produkcyjnej powierzchni HTTP(S) RacePortal (\url{https://raceportal.pl}). Konsultantem SecOps był Paweł Maryszczuk. Zakres obejmował transport, sesje, uwierzytelnianie, walidację wejścia oraz ograniczenie nadużyć; poza zakresem pozostały m.in.\ pełny SAST, testy infrastruktury VM oraz custom WAF.
+
+Najważniejsze znaleziska wysokiej istotności oraz remedacje (październik 2026):
+\begin{itemize}
+  \item \textbf{Transport / HSTS} --- niespójne HTTPS/HSTS za Tunelem; remedacja: Always Use HTTPS + HSTS w~Cloudflare oraz poprawki nginx (\texttt{absolute\_redirect off}, długi HSTS).
+  \item \textbf{Reset hasła} --- tymczasowe hasło mogło zablokować konto; remedacja: jednorazowy token z~TTL i~zmiana hasła dopiero po linku z~maila.
+  \item \textbf{Sesje JWT} --- ryzyko długotrwałego tokenu w~JS; remedacja: krótki access, refresh w~bazie (hash), cookies httpOnly, rotacja refresh, unieważnianie przy logout/zmianie hasła (\texttt{tokenVersion}).
+  \item \textbf{Stored XSS przez URL} --- akceptacja schematu \texttt{javascript:}; remedacja: serwerowa walidacja \texttt{SafeHttpUrls} (tylko http/https lub ścieżki uploadu).
+  \item \textbf{Brute-force logowania} --- brak limitu prób; remedacja: \texttt{AttemptRateLimiter} (limit per e-mail i~IP, HTTP 429 + \texttt{Retry-After}).
+  \item \textbf{Enumeracja kont po czasie} --- różny czas odpowiedzi dla istniejącego/nieistniejącego e-maila; remedacja: wyrównanie kosztu (m.in.\ zawsze BCrypt, decoy mail przy forgot-password).
+\end{itemize}
+
+Znaleziska średnie i~niższe objęły m.in.\ rezerwację/unikalność nazw użytkowników (ochrona przed podszywaniem), zaostrzenie CSP, wymóg hasła przy zmianie e-maila, ograniczenie publicznego \texttt{/api/health}, odchudzenie \texttt{robots.txt}, poprawę kodów błędów HTTP oraz ograniczenie wycieków informacyjnych (np.\ tokeny poza access logami ścieżek weryfikacji). Świadomie potwierdzono też model biznesowy „zapłać później” bez PSP --- nie jako lukę implementacyjną, lecz decyzję zakresu MVP.
+
+Weryfikacja remedacji łączyła testy automatyczne API (MockMvc) z~krótką kontrolą działania kluczowych funkcji na środowisku produkcyjnym (nagłówki bezpieczeństwa, limity odpowiedzi 429, zachowanie resetu hasła i~sesji). Szczegółowy rejestr znalezisk i~commitów utrzymywany jest w~dokumentacji projektowej (\texttt{docs/cybersecurity-pentest.md}).
 
 \chapter{Testowanie i weryfikacja systemu}
 \label{ch:testy}
