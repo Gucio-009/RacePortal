@@ -7,6 +7,20 @@
 \usepackage{bookmark}
 \graphicspath{{img/}}
 
+% Listings: Java + polskie znaki w fragmentach kodu
+\lstset{
+  language=Java,
+  frame=single,
+  rulecolor=\color{black!30},
+  columns=fullflexible,
+  keepspaces=true,
+  literate=
+    {ą}{{\k{a}}}1 {ć}{{\'c}}1 {ę}{{\k{e}}}1 {ł}{{\l}}1 {ń}{{\'n}}1
+    {ó}{{\'o}}1 {ś}{{\'s}}1 {ź}{{\'z}}1 {ż}{{\.z}}1
+    {Ą}{{\k{A}}}1 {Ć}{{\'C}}1 {Ę}{{\k{E}}}1 {Ł}{{\L}}1 {Ń}{{\'N}}1
+    {Ó}{{\'O}}1 {Ś}{{\'S}}1 {Ź}{{\'Z}}1 {Ż}{{\.Z}}1
+}
+
 % =============================================================================
 % Dane osobowe / formalne
 % =============================================================================
@@ -548,56 +562,306 @@ Kod aplikacji zorganizowano w~pakietach odpowiadających odpowiedzialnościom:
   \item \texttt{web} --- wyjątki domenowe i~globalna obsługa błędów;
   \item \texttt{config}, \texttt{i18n} --- konfiguracja serializacji oraz teksty wiadomości e-mail.
 \end{itemize}
-Klasa startowa \texttt{RacePortalApplication} włącza harmonogram zadań (\texttt{@EnableScheduling}), wykorzystywany m.in.\ do archiwizacji wydarzeń.
+Klasa startowa \texttt{RacePortalApplication} włącza harmonogram zadań (\texttt{@EnableScheduling}), wykorzystywany m.in.\ do archiwizacji wydarzeń. Rodzic Maven oraz punkt wejścia aplikacji ilustrują listingi~\ref{lst:backend-pom} i~\ref{lst:backend-app}.
+
+\begin{lstlisting}[caption={Rodzic Maven i wersja Java backendu (\texttt{pom.xml})},label={lst:backend-pom},language={}]
+<parent>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-starter-parent</artifactId>
+  <version>3.3.5</version>
+</parent>
+<properties>
+  <java.version>21</java.version>
+</properties>
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Klasa startowa Spring Boot z harmonogramem},label={lst:backend-app}]
+@SpringBootApplication
+@EnableScheduling
+public class RacePortalApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(RacePortalApplication.class, args);
+    }
+}
+\end{lstlisting}
 
 \section{Model domenowy i encje}
 Model persystencji odzwierciedla główne pojęcia katalogu i~zapisów. Encja \texttt{User} reprezentuje konto: unikalny e-mail i~nazwę użytkownika, skrót hasła, rolę (\texttt{USER}, \texttt{ORGANIZER}, \texttt{ADMIN}), dane profilu, flagi weryfikacji e-mail oraz pola związane z~opcjonalnym kontem Google. Encja \texttt{Car} opisuje pojazd w~garażu (marka, model, klasa, napęd, parametry techniczne, opony, wymagane dokumenty/wyposażenie). Encja \texttt{Event} przechowuje opis wydarzenia, lokalizację (w~tym współrzędne), kategorię, status publikacji, warunki płatności oraz wymagania wobec uczestnika i~pojazdu; wydarzenie jest powiązane z~organizatorem (\texttt{User}).
 
 Encja \texttt{Registration} modeluje zgłoszenie udziału: powiązanie użytkownika, wydarzenia i~pojazdu, status, komentarze, dowód płatności oraz termin opłaty. Statusy zgłoszenia obejmują m.in.\ \texttt{PENDING}, \texttt{ACCEPTED}, \texttt{CONFIRMED} i~\texttt{CANCELED}. Statusy wydarzenia obejmują m.in.\ \texttt{DRAFT}, \texttt{PENDING}, \texttt{APPROVED}, \texttt{REJECTED}, \texttt{ARCHIVED} i~\texttt{CANCELLED}.
 
-Dodatkowo w~modelu występują: katalog torów (\texttt{Track}), wnioski o~rolę organizatora (\texttt{OrganizerApplication}), odświeżające tokeny sesji (\texttt{RefreshToken}), klasy zawodów powiązane z~wydarzeniem, wyniki, reguły punktacji, powiadomienia in-app oraz zgłoszenia błędów. Katalog torów nie jest kluczem obcym wydarzenia --- lokalizacja wydarzenia jest przechowywana w~polach wydarzenia, a~katalog służy jako słownik wspomagający formularze i~filtry.
+Dodatkowo w~modelu występują: katalog torów (\texttt{Track}), wnioski o~rolę organizatora (\texttt{OrganizerApplication}), odświeżające tokeny sesji (\texttt{RefreshToken}), klasy zawodów powiązane z~wydarzeniem, wyniki, reguły punktacji, powiadomienia in-app oraz zgłoszenia błędów. Katalog torów nie jest kluczem obcym wydarzenia --- lokalizacja wydarzenia jest przechowywana w~polach wydarzenia, a~katalog służy jako słownik wspomagający formularze i~filtry. Enumy ról i~statusów zgłoszeń (listingi~\ref{lst:backend-role}--\ref{lst:backend-reg-status}) oraz fragment encji \texttt{User} (listing~\ref{lst:backend-user}) stanowią rdzeń modelu RBAC i~przepływu zapisów.
+
+\begin{lstlisting}[caption={Role użytkowników (RBAC)},label={lst:backend-role}]
+public enum Role {
+    USER,       // kierowca
+    ORGANIZER,  // tworzy wydarzenia i zarzadza zgloszeniami
+    ADMIN       // moderacja i administracja platformy
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Statusy zgłoszenia na wydarzenie},label={lst:backend-reg-status}]
+public enum RegistrationStatus {
+    PENDING,    // czeka na decyzje organizatora
+    ACCEPTED,   // przyjete (platne - oczekuje na dowod wplaty)
+    CONFIRMED,  // potwierdzone miejsce
+    CANCELED
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Kluczowe pola encji \texttt{User}},label={lst:backend-user}]
+@Entity
+@Table(name = "users")
+public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+
+    @Column(nullable = false, unique = true, length = 190)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false, length = 100)
+    private String passwordHash;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.USER;
+    // ... profil, weryfikacja e-mail, tokenVersion
+}
+\end{lstlisting}
 
 \section{Rejestracja użytkowników i logowanie}
 Uwierzytelnianie zrealizowano w~\texttt{AuthController} (\texttt{/api/auth}) oraz \texttt{AuthService}. Rejestracja kierowcy tworzy konto z~rolą \texttt{USER} w~stanie niezweryfikowanym i~wysyła wiadomość aktywacyjną z~linkiem \texttt{/verify-email/\{token\}} (czas ważności tokenu ograniczony). Do momentu weryfikacji system nie wydaje sesji użytkownika. Dostępna jest także ścieżka rejestracji organizatora, która równolegle zakłada wniosek o~uprawnienia.
 
 Logowanie hasłem weryfikuje poświadczenia i~wystawia sesję: krótkotrwały token dostępu JWT oraz rotowany token odświeżający przechowywany w~bazie w~postaci skrótu. Token dostępu niesie m.in.\ identyfikator, e-mail, nazwę użytkownika, rolę oraz wersję tokenu (\texttt{tokenVersion}), umożliwiając unieważnienie sesji przy wylogowaniu lub zmianie poświadczeń. Odświeżanie sesji odbywa się endpointem \texttt{/refresh}; wylogowanie unieważnia refresh i~podnosi wersję tokenu. Opcjonalnie wspierane jest logowanie Google (weryfikacja \texttt{idToken} przy skonfigurowanym identyfikatorze klienta).
 
-Ochronę przed nadużyciami zapewnia \texttt{AttemptRateLimiter} (m.in.\ limity prób logowania i~weryfikacji). Konfiguracja Spring Security utrzymuje sesję bezstanową po stronie serwera i~udostępnia publicznie m.in.\ endpointy rejestracji, logowania, weryfikacji, odświeżania oraz odczyt katalogu wydarzeń.
+Ochronę przed nadużyciami zapewnia \texttt{AttemptRateLimiter} (m.in.\ limity prób logowania i~weryfikacji). Konfiguracja Spring Security utrzymuje sesję bezstanową po stronie serwera i~udostępnia publicznie m.in.\ endpointy rejestracji, logowania, weryfikacji, odświeżania oraz odczyt katalogu wydarzeń (listing~\ref{lst:backend-security}). Wydanie sesji po~udanym logowaniu lub weryfikacji e-mail realizuje \texttt{issueSession} (listing~\ref{lst:backend-session}).
+
+\begin{lstlisting}[caption={Fragment \texttt{SecurityFilterChain} --- sesja bezstanowa i ścieżki publiczne},label={lst:backend-security}]
+http
+  .csrf(csrf -> csrf.disable())
+  .sessionManagement(sm ->
+      sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+  .authorizeHttpRequests(auth -> auth
+      .requestMatchers(HttpMethod.POST,
+          "/api/auth/login", "/api/auth/register",
+          "/api/auth/verify-email", "/api/auth/refresh").permitAll()
+      .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+      .anyRequest().authenticated())
+  .addFilterBefore(jwtAuthFilter,
+      UsernamePasswordAuthenticationFilter.class);
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Wydanie sesji: JWT access + rotowany refresh},label={lst:backend-session}]
+private AuthResponse issueSession(User user) {
+    String access = jwtService.generateToken(user);
+    String refresh = refreshTokenService.issue(user);
+    return new AuthResponse(access, refresh, toUserDto(user));
+}
+\end{lstlisting}
 
 \section{Zarządzanie profilami użytkowników}
 Profil zalogowanego użytkownika jest obsługiwany w~ramach zasobów \texttt{/api/auth} (brak osobnego kontrolera profilu). Endpoint \texttt{GET /me} zwraca bieżące dane konta, a~\texttt{PATCH /me} umożliwia aktualizację nazwy użytkownika, avatara, imienia i~nazwiska, telefonu, adresu, odnośnika do Instagrama, deklaracji prawa jazdy kategorii~B i~licencji PZM oraz preferencji lokalizacji językowej i~motywu interfejsu.
 
-Zmiana hasła (\texttt{POST /me/password}) jest dostępna dla kont lokalnych i~zablokowana dla kont utworzonych wyłącznie przez Google. Zmiana adresu e-mail przebiega dwuetapowo (żądanie + potwierdzenie), z~powiadomieniem na dotychczasowy adres. Użytkownik może zamknąć własne konto po podaniu wymaganej frazy potwierdzającej. Takie podejście łączy zarządzanie tożsamością z~kontem w~jednym module autentycznym, upraszczając powierzchnię API.
+Zmiana hasła (\texttt{POST /me/password}) jest dostępna dla kont lokalnych i~zablokowana dla kont utworzonych wyłącznie przez Google. Zmiana adresu e-mail przebiega dwuetapowo (żądanie + potwierdzenie), z~powiadomieniem na dotychczasowy adres. Użytkownik może zamknąć własne konto po podaniu wymaganej frazy potwierdzającej. Takie podejście łączy zarządzanie tożsamością z~kontem w~jednym module autentycznym, upraszczając powierzchnię API (listing~\ref{lst:backend-me}).
+
+\begin{lstlisting}[caption={Endpointy profilu w \texttt{AuthController}},label={lst:backend-me}]
+@GetMapping("/me")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity<UserDto> me(
+        @AuthenticationPrincipal UserPrincipal currentUser) {
+    return ResponseEntity.ok(authService.me(currentUser.getId()));
+}
+
+@PatchMapping("/me")
+@PreAuthorize("isAuthenticated()")
+public ResponseEntity<UserDto> updateMe(
+        @AuthenticationPrincipal UserPrincipal currentUser,
+        @Valid @RequestBody UpdateMeRequest request) {
+    return ResponseEntity.ok(
+        authService.updateMe(currentUser.getId(), request));
+}
+\end{lstlisting}
 
 \section{Obsługa wydarzeń}
 Zasób \texttt{/api/events} (\texttt{EventController}, \texttt{EventService}) realizuje publiczny katalog oraz zarządzanie wydarzeniami przez uprawnione role. Lista wydarzeń obsługuje paginację oraz filtry (m.in.\ tekst, kategoria, miasto, województwo, tor, zakres dat, status, płatność, dopasowanie do pojazdu z~garażu). Publicznie domyślnie widoczne są wydarzenia zatwierdzone z~datą bieżącą lub przyszłą. Osobny endpoint markerów dostarcza dane do widoku mapy.
 
-Tworzenie i~edycja wydarzeń wymagają roli organizatora lub administratora. Nowe wydarzenie organizatora trafia do statusu oczekującego na moderację (z~powiadomieniem administratorów); administrator może publikować od razu jako zatwierdzone. Edycja przez organizatora ponownie kieruje treść do moderacji i~może uruchomić powiadomienia do osób już zgłoszonych. Anulowanie wydarzenia ustawia odpowiedni status, anuluje otwarte zgłoszenia i~informuje uczestników. Uzupełnieniem cyklu życia jest \texttt{ArchiveService}, który przy starcie aplikacji oraz codziennie przenosi minione, zatwierdzone wydarzenia do archiwum.
+Tworzenie i~edycja wydarzeń wymagają roli organizatora lub administratora. Nowe wydarzenie organizatora trafia do statusu oczekującego na moderację (z~powiadomieniem administratorów); administrator może publikować od razu jako zatwierdzone (listing~\ref{lst:backend-event-create}). Edycja przez organizatora ponownie kieruje treść do moderacji i~może uruchomić powiadomienia do osób już zgłoszonych. Anulowanie wydarzenia ustawia odpowiedni status, anuluje otwarte zgłoszenia i~informuje uczestników. Uzupełnieniem cyklu życia jest \texttt{ArchiveService}, który przy starcie aplikacji oraz codziennie przenosi minione, zatwierdzone wydarzenia do archiwum.
+
+\begin{lstlisting}[caption={Tworzenie wydarzenia --- status zależny od roli},label={lst:backend-event-create}]
+@Transactional
+@CacheEvict(cacheNames = "events", allEntries = true)
+public EventResponse create(EventCreateRequest request,
+                            UserPrincipal currentUser) {
+    Event event = new Event();
+    // ... mapowanie pol z requestu (nazwa, data, lokalizacja, oplaty)
+    event.setStatus(currentUser.getRole() == Role.ADMIN
+            ? EventStatus.APPROVED
+            : EventStatus.PENDING);
+    event.setOrganizer(organizer);
+    event = eventRepository.save(event);
+    if (event.getStatus() == EventStatus.PENDING) {
+        notificationService.notifyAdminsPendingEvent(event);
+    }
+    return serialize(event);
+}
+\end{lstlisting}
 
 \section{Obsługa zgłoszeń}
 Zgłoszenia obsługuje \texttt{RegistrationController} (\texttt{/api/registrations}) przy wymaganiu uwierzytelnienia. Utworzenie zgłoszenia wiąże kierowcę, zatwierdzone wydarzenie przyjmujące zapisy oraz --- opcjonalnie --- pojazd z~garażu; system może przypisać klasę startową według reguł wydarzenia. Początkowy status to \texttt{PENDING}.
 
-Zmiany statusów podlegają walidacji przejść zależnej od charakteru wydarzenia. Dla imprez płatnych typowy przebieg obejmuje akceptację (\texttt{ACCEPTED}) z~wyznaczeniem terminu opłaty, dołączenie dowodu płatności przez kierowcę oraz potwierdzenie (\texttt{CONFIRMED}). Dla imprez bezpłatnych możliwe jest przejście z~\texttt{PENDING} bezpośrednio do \texttt{CONFIRMED}. Kierowca może anulować własne zgłoszenie w~dopuszczalnych stanach. Operacje listy zgłoszeń wydarzenia oraz zmiany statusów są ograniczone do organizatora-właściciela lub administratora. Kluczowe zmiany generują transakcyjne wiadomości e-mail (utworzenie, status, anulowanie).
+Zmiany statusów podlegają walidacji przejść zależnej od charakteru wydarzenia. Dla imprez płatnych typowy przebieg obejmuje akceptację (\texttt{ACCEPTED}) z~wyznaczeniem terminu opłaty, dołączenie dowodu płatności przez kierowcę oraz potwierdzenie (\texttt{CONFIRMED}). Dla imprez bezpłatnych możliwe jest przejście z~\texttt{PENDING} bezpośrednio do \texttt{CONFIRMED}. Kierowca może anulować własne zgłoszenie w~dopuszczalnych stanach. Operacje listy zgłoszeń wydarzenia oraz zmiany statusów są ograniczone do organizatora-właściciela lub administratora. Kluczowe zmiany generują transakcyjne wiadomości e-mail (utworzenie, status, anulowanie). Maszynę stanów ilustruje listing~\ref{lst:backend-reg-transition}.
+
+\begin{lstlisting}[caption={Walidacja przejść statusu zgłoszenia},label={lst:backend-reg-transition}]
+private void validateTransition(RegistrationStatus from,
+        RegistrationStatus to, Registration registration, Event event) {
+    if (from == RegistrationStatus.CANCELED
+            || from == RegistrationStatus.CONFIRMED) {
+        throw ApiException.badRequest(
+            "Nie mozna zmienic statusu zgloszenia zakonczonego");
+    }
+    boolean valid = switch (from) {
+        case PENDING -> event.isPaid()
+            ? (to == RegistrationStatus.ACCEPTED
+                || to == RegistrationStatus.CANCELED)
+            : (to == RegistrationStatus.CONFIRMED
+                || to == RegistrationStatus.CANCELED);
+        case ACCEPTED -> to == RegistrationStatus.CONFIRMED
+                || to == RegistrationStatus.CANCELED;
+        default -> false;
+    };
+    if (!valid) {
+        throw ApiException.badRequest(
+            "Nieprawidlowe przejscie statusu zgloszenia");
+    }
+    if (to == RegistrationStatus.CONFIRMED
+            && from == RegistrationStatus.ACCEPTED
+            && (registration.getPaymentProofUrl() == null
+                || registration.getPaymentProofUrl().isBlank())) {
+        throw ApiException.badRequest(
+            "Brak potwierdzenia przelewu");
+    }
+}
+\end{lstlisting}
 
 \section{Obsługa garażu}
 Garaż udostępnia \texttt{GarageController} (\texttt{/api/garage}) wyłącznie użytkownikom zalogowanym. Serwis umożliwia listowanie, dodawanie, edycję i~usuwanie pojazdów należących do bieżącego konta. Przy tworzeniu wymagane są co najmniej marka i~model; pozostałe atrybuty techniczne i~deklaracje (np.\ OC, przegląd, klatka) służą późniejszemu dopasowaniu do wymagań wydarzeń.
 
-Ograniczenia spójności chronią otwarte procesy zapisów: przy aktywnym zgłoszeniu zablokowana jest zmiana kluczowych cech pojazdu, a~usunięcie pojazdu nie jest możliwe, gdy bierze on udział w~zgłoszeniach w~stanach uniemożliwiających bezpieczne odpięcie. Dzięki temu garaż pozostaje spójny z~modułem zgłoszeń i~regułami \emph{carMatch}.
+Ograniczenia spójności chronią otwarte procesy zapisów: przy aktywnym zgłoszeniu zablokowana jest zmiana kluczowych cech pojazdu, a~usunięcie pojazdu nie jest możliwe, gdy bierze on udział w~zgłoszeniach w~stanach uniemożliwiających bezpieczne odpięcie (listing~\ref{lst:backend-garage-delete}). Dzięki temu garaż pozostaje spójny z~modułem zgłoszeń i~regułami \emph{carMatch}.
+
+\begin{lstlisting}[caption={Usuwanie pojazdu z blokadą przy otwartym zgłoszeniu},label={lst:backend-garage-delete}]
+@Transactional
+public void delete(String userId, String carId) {
+    Car car = carRepository.findByIdAndUser_Id(carId, userId)
+        .orElseThrow(() -> ApiException.notFound("Nie znaleziono auta"));
+
+    if (registrationRepository.existsByCar_IdAndStatusIn(
+            carId, OPEN_STATUSES)) {
+        throw ApiException.badRequest(
+            "Brak mozliwosci usuniecia auta ze wzgledu na otwarte zgloszenie");
+    }
+    registrationRepository.clearCarId(carId);
+    carRepository.delete(car);
+}
+\end{lstlisting}
 
 \section{Panel administratora i organizatora}
 Panel administracyjny eksponuje \texttt{AdminController} pod prefiksem \texttt{/api/admin} z~wymaganiem roli \texttt{ADMIN}. Udostępnia m.in.\ statystyki platformy, listę użytkowników, zmianę ról (z~zabezpieczeniami przed usunięciem ostatniego administratora), kolejki wydarzeń do moderacji, zmianę statusów wydarzeń oraz rozstrzyganie wniosków o~rolę organizatora (akceptacja skutkuje nadaniem roli i~powiadomieniem e-mail).
 
-Ścieżki organizatora obejmują \texttt{OrganizerController} (\texttt{/api/organizer}): podgląd własnego wniosku, złożenie wniosku o~rolę oraz listę wydarzeń zarządzanych przez organizatora (administrator widzi pełny zbiór). Operacje tworzenia i~edycji wydarzeń oraz zarządzania zgłoszeniami uczestników są realizowane przez zasoby wydarzeń i~zgłoszeń z~kontrolą dostępu opartą o~role i~własność zasobu. Taki podział utrzymuje czytelne granice RBAC bez dublowania całej logiki w~jednym kontrolerze.
+Ścieżki organizatora obejmują \texttt{OrganizerController} (\texttt{/api/organizer}): podgląd własnego wniosku, złożenie wniosku o~rolę oraz listę wydarzeń zarządzanych przez organizatora (administrator widzi pełny zbiór). Operacje tworzenia i~edycji wydarzeń oraz zarządzania zgłoszeniami uczestników są realizowane przez zasoby wydarzeń i~zgłoszeń z~kontrolą dostępu opartą o~role i~własność zasobu. Taki podział utrzymuje czytelne granice RBAC bez dublowania całej logiki w~jednym kontrolerze. Klasę panelu administratora przedstawia listing~\ref{lst:backend-admin}.
+
+\begin{lstlisting}[caption={Panel administratora --- RBAC na poziomie klasy},label={lst:backend-admin}]
+@RestController
+@RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
+public class AdminController {
+
+    @GetMapping("/events/pending")
+    public ResponseEntity<List<EventResponse>> pendingEvents() {
+        return ResponseEntity.ok(adminService.pendingEvents());
+    }
+
+    @PatchMapping("/organizer-applications/{id}")
+    public ResponseEntity<OrganizerApplicationResponse>
+            updateOrganizerApplication(@PathVariable String id,
+                @Valid @RequestBody
+                OrganizerApplicationStatusUpdateRequest request) {
+        return ResponseEntity.ok(
+            adminService.updateOrganizerApplicationStatus(
+                id, request.status()));
+    }
+}
+\end{lstlisting}
 
 \section{Integracja z bazą danych}
 Trwałość danych zapewnia MySQL w~połączeniu ze Spring Data JPA. Konfiguracja połączenia pochodzi ze zmiennych środowiskowych (w~środowisku Compose hostem jest usługa kontenerowa bazy). Aplikacja działa z~\texttt{spring.jpa.open-in-view=false}. Schemat jest utrzymywany trybem \texttt{ddl-auto} (domyślnie \texttt{update}); w~projekcie nie zastosowano Flyway ani Liquibase --- jest to świadome uproszczenie MVP, akceptowalne przy kontrolowanym środowisku demonstracyjnym, lecz wymagające ostrożności przy dalszym rozwoju produkcyjnym.
 
-Dla list wydarzeń zastosowano cache Caffeine (krótki czas życia), invalidowany m.in.\ przy archiwizacji. Seed danych startowych (\texttt{DataInitializer}) zapewnia konta demonstracyjne, katalog torów oraz przykładowe treści ułatwiające prezentację ról.
+Dla list wydarzeń zastosowano cache Caffeine (krótki czas życia), invalidowany m.in.\ przy archiwizacji. Seed danych startowych (\texttt{DataInitializer}) zapewnia konta demonstracyjne, katalog torów oraz przykładowe treści ułatwiające prezentację ról. Kluczowe ustawienia JPA i~cache pokazuje listing~\ref{lst:backend-yml}.
+
+\begin{lstlisting}[caption={Konfiguracja MySQL/JPA i cache Caffeine (\texttt{application.yml})},label={lst:backend-yml},language={}]
+spring:
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/raceportal}
+    username: ${DATABASE_USERNAME:raceportal}
+    password: ${DATABASE_PASSWORD:raceportal}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+  cache:
+    type: caffeine
+    cache-names: events
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=20s
+\end{lstlisting}
 
 \section{Obsługa wyjątków i walidacja}
 Wejście API jest walidowane adnotacjami Bean Validation na rekordach DTO (\texttt{@Valid} w~kontrolerach). Błędy reguł biznesowych i~autoryzacji są reprezentowane przez \texttt{ApiException} z~odpowiednim kodem HTTP (m.in.\ 400, 401, 403, 404, 409, 429).
 
-\texttt{GlobalExceptionHandler} (\texttt{@RestControllerAdvice}) mapuje wyjątki na jednolite odpowiedzi JSON, w~tym błędy walidacji pól, naruszenia integralności danych, odmowy dostępu oraz limity liczby prób (z~nagłówkiem \texttt{Retry-After} przy~429). Dzięki temu klienci webowy i~mobilny otrzymują przewidywalny kontrakt błędów, a~szczegóły techniczne wyjątków nie są niekontrolowanie ujawniane użytkownikowi końcowemu.
+\texttt{GlobalExceptionHandler} (\texttt{@RestControllerAdvice}) mapuje wyjątki na jednolite odpowiedzi JSON, w~tym błędy walidacji pól, naruszenia integralności danych, odmowy dostępu oraz limity liczby prób (z~nagłówkiem \texttt{Retry-After} przy~429). Dzięki temu klienci webowy i~mobilny otrzymują przewidywalny kontrakt błędów, a~szczegóły techniczne wyjątków nie są niekontrolowanie ujawniane użytkownikowi końcowemu. Fabryki \texttt{ApiException} oraz handler walidacji przedstawiają listingi~\ref{lst:backend-apiex} i~\ref{lst:backend-geh}.
+
+\begin{lstlisting}[caption={Fabryki wyjątków biznesowych API},label={lst:backend-apiex}]
+public static ApiException badRequest(String message) {
+    return new ApiException(HttpStatus.BAD_REQUEST, message);
+}
+public static ApiException unauthorized(String message) {
+    return new ApiException(HttpStatus.UNAUTHORIZED, message);
+}
+public static ApiException forbidden(String message) {
+    return new ApiException(HttpStatus.FORBIDDEN, message);
+}
+public static ApiException notFound(String message) {
+    return new ApiException(HttpStatus.NOT_FOUND, message);
+}
+public static ApiException conflict(String message) {
+    return new ApiException(HttpStatus.CONFLICT, message);
+}
+public static ApiException tooManyRequests(String message) {
+    return new ApiException(HttpStatus.TOO_MANY_REQUESTS, message);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Globalna obsługa \texttt{ApiException} i błędów \texttt{@Valid}},label={lst:backend-geh}]
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(ApiException.class)
+    public ResponseEntity<ErrorResponse> handleApiException(ApiException ex) {
+        return ResponseEntity.status(ex.getStatus())
+            .body(new ErrorResponse(ex.getMessage(), ex.getDetails()));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(
+            MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(fe ->
+            fieldErrors.put(fe.getField(), fe.getDefaultMessage()));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ErrorResponse("Nieprawidlowe dane", fieldErrors));
+    }
+}
+\end{lstlisting}
 
 \chapter{Szczegóły implementacji frontendu webowego}
 \label{ch:frontend}
