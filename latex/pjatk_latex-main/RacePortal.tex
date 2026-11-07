@@ -1402,13 +1402,41 @@ Ochrona kont i~danych zgłoszeń na poziomie ASVS L1 adekwatnym do MVP demonstra
 \section{Klasyfikacja danych}
 Dane konta i~profilu; dane pojazdów; dane zgłoszeń; treści wydarzeń (częściowo publiczne).
 \section{Uwierzytelnianie użytkowników}
-Hasło + JWT (access/refresh); opcjonalnie Google; brak klasycznej sesji serwerowej w~pamięci --- stan odświeżany cookie refresh (\texttt{rp\_rt}).
+Uwierzytelnianie RacePortal zrealizowano w~module \texttt{AuthController} / \texttt{AuthService} bez klasycznej sesji serwerowej w~pamięci. Tożsamość użytkownika opiera się na dwóch warstwach poświadczeń: krótkotrwałym tokenie dostępu JWT oraz rotowanym tokenie odświeżającym przechowywanym w~bazie w~postaci skrótu. Po~stronie klienta webowego sesja jest utrzymywana w~ciasteczkach HTTP-only (\texttt{rp\_at}, \texttt{rp\_rt}), ustawianych przez \texttt{AuthCookies} z~parametrami \texttt{Secure} / \texttt{SameSite} zależnymi od środowiska.
+
+Rejestracja lokalna tworzy konto z~rolą \texttt{USER} w~stanie niezweryfikowanym i~wysyła link aktywacyjny e-mail. Do~momentu weryfikacji system nie wydaje sesji --- logowanie hasłem kończy się odmową z~komunikatem o~konieczności aktywacji. Hasła lokalne są hashowane algorytmem BCrypt (\texttt{PasswordEncoder} w~\texttt{SecurityConfig}). Polityka siły hasła wymaga co najmniej 8~znaków, wielkiej litery, cyfry i~znaku specjalnego (wzorzec w~\texttt{AuthDtos}). Ścieżka rejestracji organizatora równolegle zakłada wniosek o~rolę, lecz sama nie nadaje uprawnień \texttt{ORGANIZER} --- awans następuje dopiero po~akceptacji administratora.
+
+Logowanie hasłem stosuje ochronę czasową przed enumeracją kont: zarówno przy braku użytkownika, jak i~przy złym haśle wykonywane jest porównanie BCrypt (w~tym wobec hashu zastępczego), a~komunikat błędu pozostaje jednolity. Dodatkowo \texttt{AttemptRateLimiter} ogranicza liczbę prób w~oknie 15~minut --- osobno per e-mail (5~prób) i~per adres IP (20~prób); przekroczenie limitu zwraca HTTP~429 z~nagłówkiem \texttt{Retry-After}. Opcjonalnie wspierane jest logowanie Google: weryfikacja \texttt{idToken} przy skonfigurowanym identyfikatorze klienta, po~której system wydaje własną sesję RacePortal. Wylogowanie unieważnia refresh tokeny użytkownika, podnosi \texttt{tokenVersion} konta i~czyści ciasteczka, co natychmiast unieważnia wcześniejsze access JWT.
+
 \section{Autoryzacja i kontrola dostępu RBAC}
-Role USER / ORGANIZER / ADMIN egzekwowane w~API i~bramkach UI.
+Kontrola dostępu opiera się o~role domenowe \texttt{USER}, \texttt{ORGANIZER} i~\texttt{ADMIN}, mapowane na authorities Spring Security w~formie \texttt{ROLE\_*} w~\texttt{UserPrincipal}. Konfiguracja \texttt{@EnableMethodSecurity} umożliwia egzekwowanie reguł deklaratywnie przez \texttt{@PreAuthorize} na kontrolerach. Publicznie (bez logowania) dostępne są m.in.\ health-check, odczyt katalogu wydarzeń i~torów, wyznaczanie trasy oraz wybrane endpointy auth (rejestracja, logowanie, weryfikacja, odświeżenie). Pozostałe żądania wymagają uwierzytelnienia.
+
+Podział uprawnień odzwierciedla model biznesowy MVP. Zasób garażu (\texttt{/api/garage}) jest dostępny wyłącznie dla zalogowanego użytkownika i~operuje wyłącznie na pojazdach należących do bieżącego konta. Zgłoszenia (\texttt{/api/registrations}) wymagają uwierzytelnienia; listowanie i~zmiana statusów po~stronie wydarzenia --- roli organizatora lub administratora, z~dodatkową weryfikacją własności wydarzenia w~warstwie serwisów. Tworzenie i~edycja wydarzeń wymaga \texttt{ORGANIZER} lub \texttt{ADMIN}. Panel \texttt{/api/admin} jest chroniony na poziomie całej klasy adnotacją \texttt{hasRole('ADMIN')} i~obejmuje m.in.\ moderację wydarzeń, zarządzanie rolami oraz wnioskami o~organizatora. W~UI webowym bramki routingu i~warunkowe renderowanie paneli stanowią drugą, uzupełniającą warstwę --- ostatecznym źródłem prawdy pozostaje API.
+
 \section{Wykorzystanie tokenów JWT}
-W~warstwie webowej access token jest w~ciasteczku httpOnly \texttt{rp\_at} (JavaScript go nie odczytuje); \texttt{localStorage} nie przechowuje JWT. Filtr API odczytuje cookie albo nagłówek \texttt{Authorization: Bearer} (m.in.\ testy).
+Access token jest wystawiany przez \texttt{JwtService} (biblioteka JJWT) z~podpisem HMAC-SHA opartym o~sekret aplikacji (klucz wyprowadzany przez SHA-256 z~\texttt{app.jwt.secret}). Domyślny czas życia access tokenu wynosi rzędu 15~minut i~jest konfigurowalny. Token niesie m.in.\ identyfikator użytkownika, e-mail, nazwę użytkownika, rolę oraz claim \texttt{tv} (\texttt{tokenVersion}). Filtr \texttt{JwtAuthFilter} odczytuje token z~nagłówka \texttt{Authorization: Bearer} albo z~ciasteczka \texttt{rp\_at}, weryfikuje podpis i~termin ważności, a~następnie ładuje użytkownika z~bazy i~porównuje \texttt{tv} z~bieżącą wersją konta. Niezgodność wersji (np.\ po~wylogowaniu lub zmianie hasła) czyści kontekst bezpieczeństwa --- token staje się bezużyteczny mimo ważnego podpisu.
+
+Refresh token jest osobnym artefaktem: surowa wartość trafia do ciasteczka \texttt{rp\_rt} (ścieżka ograniczona do \texttt{/api/auth}), a~w~bazie przechowywany jest wyłącznie skrót. Przy odświeżeniu sesji następuje rotacja --- stary refresh jest unieważniany, a~wydawany jest nowy access i~nowy refresh. Ponowne użycie już zrotowanego refresh tokenu skutkuje unieważnieniem wszystkich sesji użytkownika (ochrona przed kradzieżą tokenu). W~warstwie webowej access JWT nie jest zapisywany w~\texttt{localStorage}; starsze wartości w~pamięci przeglądarki są usuwane przy starcie aplikacji. Dzięki temu typowy wektor XSS ma istotnie utrudniony dostęp do poświadczeń sesyjnych względem modelu opartego o~\texttt{localStorage}.
+
+\begin{lstlisting}[caption={Claimy access JWT wystawiane przez \texttt{JwtService}},label={lst:jwt-claims}]
+return Jwts.builder()
+    .subject(user.getId())
+    .claim("id", user.getId())
+    .claim("email", user.getEmail())
+    .claim("username", user.getUsername())
+    .claim("role", user.getRole().name())
+    .claim("tv", user.getTokenVersion())
+    .issuedAt(Date.from(now))
+    .expiration(Date.from(now.plus(accessTtl)))
+    .signWith(key)
+    .compact();
+\end{lstlisting}
+
 \section{Walidacja danych wejściowych}
-Walidacja DTO po stronie API; walidacja formularzy UI; komunikaty pól \texttt{details}.
+Wejście API jest walidowane dwustopniowo: deklaratywnie na rekordach DTO (Jakarta Bean Validation) oraz regułami biznesowymi w~serwisach. Kontrolery stosują \texttt{@Valid} na ciele żądania; naruszenia ograniczeń są mapowane przez \texttt{GlobalExceptionHandler} na odpowiedź HTTP~400 z~mapą pole~$\rightarrow$~komunikat w~polu \texttt{details}, co pozwala frontowi wyróżnić konkretne błędy formularza.
+
+W~module auth wymagane są m.in.\ niepusty, unikalny e-mail (\texttt{@Email}), ograniczenia długości nazwy użytkownika oraz wzorzec silnego hasła. Pola profilu (imię, nazwisko, telefon, Instagram) mają osobne wzorce formatu. Analogiczne adnotacje stosują DTO garażu, wydarzeń, zgłoszeń i~panelu administratora (statusy, role). Poza Bean Validation serwisy egzekwują reguły dziedzinowe --- np.\ dozwolone przejścia statusów zgłoszenia, blokadę edycji pojazdu przy otwartym zgłoszeniu, unikalność telefonu czy bezpieczną normalizację URL mediów (\texttt{SafeHttpUrls} / \texttt{ImageReferences}). Upload plików dodatkowo weryfikuje rozmiar oraz typ po~sygnaturze bajtowej (JPG/PNG/WebP, PDF), a~nie wyłącznie po~nagłówku przeglądarki. Dzięki temu walidacja obejmuje zarówno kontrakt składniowy żądania, jak i~spójność stanu domenowego.
+
 \section{Ochrona zasobów użytkowników}
 Dostęp do garażu i~zgłoszeń wyłącznie właściciela (oraz uprawnionych ról w~panelach).
 \section{Bezpieczeństwo komunikacji}
