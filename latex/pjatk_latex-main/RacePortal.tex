@@ -562,52 +562,14 @@ Kod aplikacji zorganizowano w~pakietach odpowiadających odpowiedzialnościom:
   \item \texttt{web} --- wyjątki domenowe i~globalna obsługa błędów;
   \item \texttt{config}, \texttt{i18n} --- konfiguracja serializacji oraz teksty wiadomości e-mail.
 \end{itemize}
-Klasa startowa \texttt{RacePortalApplication} włącza harmonogram zadań (\texttt{@EnableScheduling}), wykorzystywany m.in.\ do archiwizacji wydarzeń. Rodzic Maven oraz punkt wejścia aplikacji ilustrują listingi~\ref{lst:backend-pom} i~\ref{lst:backend-app}.
-
-\begin{lstlisting}[caption={Rodzic Maven i wersja Java backendu (\texttt{pom.xml})},label={lst:backend-pom},language={}]
-<parent>
-  <groupId>org.springframework.boot</groupId>
-  <artifactId>spring-boot-starter-parent</artifactId>
-  <version>3.3.5</version>
-</parent>
-<properties>
-  <java.version>21</java.version>
-</properties>
-\end{lstlisting}
-
-\begin{lstlisting}[caption={Klasa startowa Spring Boot z harmonogramem},label={lst:backend-app}]
-@SpringBootApplication
-@EnableScheduling
-public class RacePortalApplication {
-    public static void main(String[] args) {
-        SpringApplication.run(RacePortalApplication.class, args);
-    }
-}
-\end{lstlisting}
+Klasa startowa \texttt{RacePortalApplication} włącza harmonogram zadań (\texttt{@EnableScheduling}), wykorzystywany m.in.\ do archiwizacji wydarzeń.
 
 \section{Model domenowy i encje}
 Model persystencji odzwierciedla główne pojęcia katalogu i~zapisów. Encja \texttt{User} reprezentuje konto: unikalny e-mail i~nazwę użytkownika, skrót hasła, rolę (\texttt{USER}, \texttt{ORGANIZER}, \texttt{ADMIN}), dane profilu, flagi weryfikacji e-mail oraz pola związane z~opcjonalnym kontem Google. Encja \texttt{Car} opisuje pojazd w~garażu (marka, model, klasa, napęd, parametry techniczne, opony, wymagane dokumenty/wyposażenie). Encja \texttt{Event} przechowuje opis wydarzenia, lokalizację (w~tym współrzędne), kategorię, status publikacji, warunki płatności oraz wymagania wobec uczestnika i~pojazdu; wydarzenie jest powiązane z~organizatorem (\texttt{User}).
 
 Encja \texttt{Registration} modeluje zgłoszenie udziału: powiązanie użytkownika, wydarzenia i~pojazdu, status, komentarze, dowód płatności oraz termin opłaty. Statusy zgłoszenia obejmują m.in.\ \texttt{PENDING}, \texttt{ACCEPTED}, \texttt{CONFIRMED} i~\texttt{CANCELED}. Statusy wydarzenia obejmują m.in.\ \texttt{DRAFT}, \texttt{PENDING}, \texttt{APPROVED}, \texttt{REJECTED}, \texttt{ARCHIVED} i~\texttt{CANCELLED}.
 
-Dodatkowo w~modelu występują: katalog torów (\texttt{Track}), wnioski o~rolę organizatora (\texttt{OrganizerApplication}), odświeżające tokeny sesji (\texttt{RefreshToken}), klasy zawodów powiązane z~wydarzeniem, wyniki, reguły punktacji, powiadomienia in-app oraz zgłoszenia błędów. Katalog torów nie jest kluczem obcym wydarzenia --- lokalizacja wydarzenia jest przechowywana w~polach wydarzenia, a~katalog służy jako słownik wspomagający formularze i~filtry. Enumy ról i~statusów zgłoszeń (listingi~\ref{lst:backend-role}--\ref{lst:backend-reg-status}) oraz fragment encji \texttt{User} (listing~\ref{lst:backend-user}) stanowią rdzeń modelu RBAC i~przepływu zapisów.
-
-\begin{lstlisting}[caption={Role użytkowników (RBAC)},label={lst:backend-role}]
-public enum Role {
-    USER,       // kierowca
-    ORGANIZER,  // tworzy wydarzenia i zarzadza zgloszeniami
-    ADMIN       // moderacja i administracja platformy
-}
-\end{lstlisting}
-
-\begin{lstlisting}[caption={Statusy zgłoszenia na wydarzenie},label={lst:backend-reg-status}]
-public enum RegistrationStatus {
-    PENDING,    // czeka na decyzje organizatora
-    ACCEPTED,   // przyjete (platne - oczekuje na dowod wplaty)
-    CONFIRMED,  // potwierdzone miejsce
-    CANCELED
-}
-\end{lstlisting}
+Dodatkowo w~modelu występują: katalog torów (\texttt{Track}), wnioski o~rolę organizatora (\texttt{OrganizerApplication}), odświeżające tokeny sesji (\texttt{RefreshToken}), klasy zawodów powiązane z~wydarzeniem, wyniki, reguły punktacji, powiadomienia in-app oraz zgłoszenia błędów. Katalog torów nie jest kluczem obcym wydarzenia --- lokalizacja wydarzenia jest przechowywana w~polach wydarzenia, a~katalog służy jako słownik wspomagający formularze i~filtry. Fragment encji \texttt{User} (listing~\ref{lst:backend-user}) ilustruje kluczowy model tożsamości i~ról.
 
 \begin{lstlisting}[caption={Kluczowe pola encji \texttt{User}},label={lst:backend-user}]
 @Entity
