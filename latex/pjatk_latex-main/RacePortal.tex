@@ -52,19 +52,18 @@
 
 \chapter{Informacje wstępne}
 \section{Cel i zakres pracy}
-Celem pracy jest zaprojektowanie oraz implementacja systemu \textbf{RacePortal} --- platformy internetowej (z~uzupełnieniem mobilnym) służącej jako centralny katalog wydarzeń motorsportowych w~Polsce oraz narzędzie do obsługi zapisów kierowców.
+Celem pracy jest zaprojektowanie oraz implementacja systemu \textbf{RacePortal} --- platformy internetowej (z~uzupełnieniem mobilnym) służącej jako centralny katalog wydarzeń motorsportowych w~Polsce oraz narzędzie do obsługi zapisów kierowców. Projekt stanowi odpowiedź na rosnące zapotrzebowanie społeczności motorsportowej na ujednolicone narzędzie eliminujące rozproszenie informacji na grupach społecznościowych i~niespójnych stronach organizatorów.
 
-Zakres obejmuje:
+Zakres projektu obejmuje:
 \begin{itemize}
-  \item aplikację webową (katalog, konta, garaż, zgłoszenia, panele organizatora i~administratora);
-  \item API REST z~trwałą bazą danych wydarzeń, użytkowników i~zgłoszeń;
-  \item powiadomienia e-mail (potwierdzenia, statusy, weryfikacja konta);
-  \item mapę wydarzeń oraz wyznaczanie trasy dojazdu (OSRM; opcjonalnie Google Maps przy kluczu API);
-  \item aplikację mobilną Expo jako \emph{wizytówkę} katalogu z~CTA zapisu na stronie webowej;
-  \item konteneryzację (Docker Compose) oraz podstawowy zestaw testów automatycznych.
+  \item \textbf{Aplikację webową} --- kompleksowy interfejs użytkownika zrealizowany w~architekturze SPA (React/Vite), obsługujący moduły katalogu wydarzeń, kont użytkowników, wirtualnego garażu pojazdów, mechanizmu dopasowania kategorii (\texttt{carMatch}), zgłoszeń na imprezy oraz dedykowane panele zarządzania dla organizatorów i~administratorów.
+  \item \textbf{API REST oraz warstwę danych} --- backend wykonany w~oparciu o~framework Spring Boot oraz relacyjną bazę danych MySQL (z~wydzielonymi strukturami encji i~wspólnymi typami API w~pakiecie \texttt{packages/api-types}), zapewniający bezpieczne uwierzytelnianie (JWT) oraz kontrolę dostępu opartą o~role (RBAC: \texttt{USER}, \texttt{ORGANIZER}, \texttt{ADMIN}).
+  \item \textbf{System powiadomień i~map} --- zautomatyzowane powiadomienia e-mail (realizowane m.in.\ przez serwer SMTP Mailbux) dotyczące potwierdzeń rejestracji, statusów zgłoszeń oraz weryfikacji kont, a~także integrację map wydarzeń z~usługą wyznaczania tras (domyślnie OSRM z~możliwością rozszerzenia o~Google Maps API).
+  \item \textbf{Aplikację mobilną (Expo)} --- lekką, wieloplatformową aplikację mobilną opartą na ekosystemie Expo, pełniącą rolę mobilnej wizytówki katalogu z~czytelnym mechanizmem konwersji (Call to Action --- CTA) przekierowującym użytkownika do pełnego serwisu webowego.
+  \item \textbf{Infrastrukturę i~testowanie} --- pełną konteneryzację całego środowiska uruchomieniowego przy użyciu Docker Compose (web, API, baza danych, backupy) z~zabezpieczeniem produkcyjnego ruchu przez Cloudflare Tunnel oraz przygotowanie podstawowego zestawu testów automatycznych (jednostkowych i~integracyjnych).
 \end{itemize}
 
-Poza zakresem MVP pozostają m.in.\ natywne płatności online, pełny upload plików binarnych, push notifications oraz publikacja aplikacji mobilnej w~sklepach.
+Poza zakresem MVP (\emph{Minimum Viable Product}) pozostają m.in.\ natywne płatności online (PSP), zaawansowany upload plików binarnych (zastąpiony referencjami URL), powiadomienia typu push (\emph{push notifications}), publikacja aplikacji mobilnej w~oficjalnych sklepach (App Store / Google Play), formalne testy obciążeniowe rzędu 10k rekordów przy 50~RPS, a~także konfiguracja produkcyjnego certyfikatu TLS poza lokalnym zakresem testowym.
 
 \section{Wizja rozwiązania}
 \label{sec:wizja}
