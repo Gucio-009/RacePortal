@@ -335,7 +335,7 @@ Realistyczność techniczna wdrożenia została potwierdzona uruchomieniem środ
 
 Kluczowym warunkiem sukcesu nie jest sama dostępność serwisu, lecz pozyskanie organizatorów publikujących aktualne wydarzenia oraz utrzymanie kompletności katalogu. Bez regularnej podaży treści platforma nie różni się istotnie od statycznego kalendarza i~nie motywuje kierowców do rejestracji. Dlatego realistyczny scenariusz rozwoju zakłada: bezpośrednie kontakty z~organizatorami i~obiektami, prosty proces publikacji, moderację zapewniającą wiarygodność oraz mechanizmy powiadomień ograniczające ryzyko dezaktualizacji informacji u~uczestników.
 
-Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążeniowy o~parametrach docelowych nie został domknięty w~MVP i~pozostaje ograniczeniem odbiorczym wskazanym w~karcie projektu.
+Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążenia przy ok.\ 10\,000 rekordach / 50~RPS nie został domknięty jako artefakt odbiorczy KP/DZW; wykonano natomiast krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026), opisane w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps} i~omówione w~rozdziałach testowania oraz podsumowania.
 
 Dalsze perspektywy obejmują m.in.\ integrację płatności online, rozbudowę powiadomień, publikację aplikacji mobilnej w~sklepach, eksport list startowych oraz ewentualną monetyzację oznaczonych treści promocyjnych. Elementy te stanowią roadmapę produktową, a~nie stan bieżącej realizacji.
 
@@ -591,7 +591,7 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami 
     \hline
     Niekompletność bazy wydarzeń na starcie & Słaba wartość katalogu bez społeczności & Dane demo na start, katalog torów PL, podstawowe ścieżki ról; kompletność rynkowa poza czystym zakresem kodu \\
     \hline
-    Brak formalnego artefaktu 10k/50~RPS & Niespełnienie pierwotnego kryterium wydajnościowego jako dowodu odbioru & Paginacja, indeksy, cache; krótkie pomiary k6 na VM (szczegóły --- rozdział testów) \\
+    Brak formalnego artefaktu 10k/50~RPS & Niespełnienie pierwotnego kryterium odbiorczego KP/DZW & Paginacja, indeksy, cache; pomiary k6 na VM (\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}; rozdz.~\ref{ch:testy}) \\
     \hline
     Zależność od dostarczalności poczty & Rejestracja / statusy ,,nie działają'' dla użytkownika & SMTP Mailbux zamiast Mailpita; diagnostyka SMTP w~health (warstwa admin) \\
     \hline
@@ -601,7 +601,7 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami 
   }
 \end{table}
 
-W~zakresie wydajności empiryczne pomiary k6 na Oracle VM (25.10.2026) wskazują m.in.\ komfortowy zakres ok.\ 150--200~RPS dla paginowanej listy wydarzeń --- bez utożsamiania tych pomiarów z~formalnym testem 10\,000 rekordów / 50~RPS; szczegółowa analiza należy do rozdziału testowania.
+W~zakresie wydajności empiryczne pomiary Grafana~k6 na Oracle~VM (25.10.2026; raport \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}) wskazują m.in.\ komfortowy zakres ok.\ 150--200~RPS dla paginowanej listy wydarzeń (\texttt{GET /api/events}) --- wąskim gardłem są endpointy z~MySQL, a~nie nginx ani lekki health API. Pomiar na współdzielonej VM (k6 lokalnie ze stackiem) zaniża wynik względem zewnętrznego generatora i~nie zastępuje formalnego testu 10\,000 rekordów / 50~RPS; szczegółowa analiza należy do rozdziału testowania.
 
 Planowanie RacePortal łączy zatem formalne ramy KP/DZW z~iteracyjnym przebiegiem implementacji. Zakres MVP pozostaje czytelny dzięki porównaniu ,,miało być~/~jest'' w~dokumencie \texttt{MVP.md}, a~infrastruktura produkcyjna --- dzięki rozdzieleniu ról web, API i~bazy oraz świadomym decyzjom o~Oracle i~Cloudflare Tunnel. Ryzyka utrzymuje się w~rejestrze jakościowym (Spec, wydajność, zależności zewnętrzne), ze sposobami ograniczenia ryzyka osadzonymi w~architekturze i~dokumentacji porównawczej.
 
@@ -928,7 +928,23 @@ Bezpieczeństwo dostępu oparto o~Spring Security oraz tokeny JWT: część zaso
 W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu domeny --- klienci webowy i~mobilny nie utrzymują własnej bazy wydarzeń ani zgłoszeń, lecz konsumują wspólny kontrakt JSON. Szczegółowy opis encji, endpointów i~przepływów implementacyjnych przedstawiono w~rozdziale~\ref{ch:backend}.
 
 \subsection{Frontend webowy}
-Vite + React; integracja z~API; stany ról i~formularze dziedzinowe.
+Frontend webowy RacePortal został przygotowany w React z wykorzystaniem
+TypeScript i narzędzia Vite.
+Aplikacja składa się z osobnych stron oraz komponentów, a z backendem
+komunikuje się przez REST API.
+Użytkownik może przeglądać katalog wydarzeń i sprawdzać szczegóły
+wybranej imprezy.
+Po zalogowaniu kierowca ma również dostęp do swojego profilu
+oraz garażu, w którym może dodawać i edytować pojazdy.
+
+Dostęp do poszczególnych funkcji zależy od roli użytkownika.
+Organizator korzysta z osobnego panelu do zarządzania wydarzeniami
+i zgłoszeniami, a administrator posiada panel do moderowania treści
+i zarządzania uprawnieniami.
+Aplikacja sprawdza, czy użytkownik jest zalogowany i czy ma odpowiednie
+uprawnienia do otwarcia danej strony.
+Dzięki temu jedna aplikacja łączy publiczny katalog wydarzeń
+z funkcjami dostępnymi po zalogowaniu.
 \subsection{Aplikacja mobilna}
 Komponent mobilny zrealizowano w~Expo jako publiczną wizytówkę katalogu:
 \begin{itemize}
@@ -1439,9 +1455,11 @@ Scenariusze braku dostępu do paneli obcych ról; walidacja wejścia.
 \section{Automatyzacja uruchamiania testów}
 Skrypty npm / \texttt{scripts/}; raporty w~\texttt{docs/testy/wyniki/}.
 \section{Analiza wyników testów}
-Werdykty przebiegów odnotowywane w~dokumentacji wyników; regresie łapane przed prezentacją.
+Werdykty przebiegów unit/API/E2E odnotowywane są w~dokumentacji wyników (\texttt{docs/\allowbreak testy/\allowbreak wyniki/}); regresie łapane przed prezentacją.
+
+Osobno, 25.10.2026, wykonano pomiary obciążenia Grafana~k6~\cite{k6:docs} na Oracle~VM (ruch na originie \texttt{localhost}, za Cloudflare Tunnel). Scenariusze: ramp/constant arrival-rate na \texttt{GET /api/health}, \texttt{GET /} (nginx) oraz \texttt{GET /api/events?page=0\&size=10}. Skrótowo: health i~front static utrzymują ok.\ 2000~RPS w~strefie komfortu; lista wydarzeń z~MySQL --- ok.\ 150--200~RPS (przy 50~RPS: 0\% błędów, p95 ok.\ 4{,}5~ms). Pełne tabele i~interpretacja: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}.
 \section{Ograniczenia procesu testowania}
-Brak pełnych testów natywnych (Detox/Maestro); \textbf{brak formalnego artefaktu odbioru 10k rekordów / 50~RPS} w~MVP --- przy czym wykonano krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026); szczegóły w~podsumowaniu i~w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}.
+Brak pełnych testów natywnych (Detox/Maestro). Nie wykonano formalnego scenariusza odbiorczego KP/DZW ,,ok.\ 10\,000 rekordów w~katalogu / 50~RPS'' --- w~raporcie k6 nie ma zapełnienia bazy do 10k; są pomiary RPS na istniejących danych. Dodatkowo k6 działał na tej samej VM co stack (konkurencja o~2~OCPU), więc wynik to dolna granica pojemności originu; szczegóły także w~podsumowaniu~\cite{k6:vm-rps}.
 
 \chapter{Prezentacja systemu}
 \section{Prezentacja głównych funkcjonalności}
@@ -1527,19 +1545,43 @@ Zależności zewnętrzne dotyczą przede wszystkim map i~tras. Domyślne wyznacz
 W~warstwie bezpieczeństwa przyjęto standard adekwatny do MVP demonstracyjnego: uwierzytelnianie JWT w~ciasteczkach HTTP-only, kontrola dostępu RBAC, ograniczanie liczby prób, walidacja wejścia oraz terminacja TLS/HSTS na Cloudflare Tunnel przed aplikacją. Poza zakresem pozostają m.in.\ pełny program testów penetracyjnych, zaawansowany WAF, dedykowany menedżer sekretów oraz własny certyfikat TLS utrzymywany bezpośrednio na hoście aplikacji. Są to ograniczenia dojrzałości operacyjnej, a~nie brak podstawowych mechanizmów ochrony kont i~zasobów opisanych w~rozdziale poświęconym bezpieczeństwu.
 
 \subsection{Ograniczenia wydajnościowe (RPS)}
+\label{sec:ograniczenia-rps}
 W~wymaganiach jakościowych MVP zapisano \textbf{formalny} test obciążenia: \textbf{ok.\ 10\,000 rekordów} w~katalogu oraz \textbf{ok.\ 50~RPS} przy akceptowalnym P95 odpowiedzi list/detalu. W~oddawanej wersji należy rozróżnić dwie warstwy:
 \begin{itemize}
   \item zastosowano lokalne ograniczenia skutków (paginacja listy, osobne markery mapy, indeksy / cache tam gdzie uzasadnione);
-  \item \textbf{nie domknięto} formalnego artefaktu odbiorczego 10k rekordów~/~50~RPS (brak raportu spełniającego dokładnie to kryterium KP/DZW);
-  \item wykonano natomiast \textbf{krótkie pomiary Grafana~k6}~\cite{k6:docs} na Oracle~VM (25.10.2026, ruch lokalny na originie): dla paginowanej listy wydarzeń komfortowy zakres ok.\ 150--200~RPS --- bez utożsamiania tego z~formalnym testem 10k/50~RPS (szczegóły: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}).
+  \item \textbf{nie wykonano} dokładnego scenariusza 10k rekordów~/~50~RPS jako formalnego artefaktu odbiorczego KP/DZW --- w~raporcie k6 nie ma zapełnienia katalogu do 10k;
+  \item wykonano natomiast \textbf{pomiary Grafana~k6}~\cite{k6:docs} na Oracle~VM (25.10.2026, ruch lokalny na originie; k6 współdzielił CPU ze stackiem). Dla \texttt{GET /api/events} komfort to ok.\ 150--200~RPS (przy 50~RPS: 0\% błędów, p95 ok.\ 4{,}5~ms); health i~nginx --- rzędu 2k~RPS. Wąskie gardło to endpointy z~bazą. Szczegóły: \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}.
 \end{itemize}
-Ograniczenie formalne jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
+Ograniczenie formalne (brak scenariusza z~10k rekordami) jest świadome: priorytetem było domknięcie podstawowej ścieżki funkcjonalnej, bezpieczeństwa (JWT/RBAC, cookies httpOnly) i~uruchamialności. Uzupełnienie formalnego testu 10k/50~RPS pozostaje w~backlogu jakościowym.
 
 \section{Możliwości dalszego rozwoju}
-Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS; dalsza rozbudowa uploadu (m.in.\ mobilka).
+Płatności (PSP), watchlista, iCal, waitlista, eksport list startowych, publikacja w~sklepach --- por.\ \texttt{docs/pomysly-rozwoju.md}; uzupełnienie formalnego testu 10k/50~RPS (zapełnienie katalogu + obciążenie wg kryterium KP/DZW); dalsza rozbudowa uploadu (m.in.\ mobilka).
 
 \section{Wnioski końcowe}
-RacePortal stanowi kompletne MVP demonstracyjne katalogu i~zapisów motorsportowych z~czytelnością architektury, testami funkcjonalnymi i~ścieżką prezentacji dla odbiorcy akademickiego oraz biznesowego --- przy jasno nazwanych lukach (PSP, formalny test 10k/50~RPS, ograniczona mobilka bez uploadu/konta).
+\label{sec:wnioski-koncowe}
+RacePortal to działające MVP katalogu wydarzeń motorsportowych.
+System pozwala przeglądać imprezy, prowadzić garaż, składać zgłoszenia
+oraz obsługiwać role kierowcy, organizatora i~administratora.
+Całość uruchamia się w~Docker Compose i~nadaje się do prezentacji dyplomowej.
+
+Projekt ma też jasne granice.
+Nie ma płatności online --- rozliczenie wpisowego zostaje po stronie organizatora.
+Aplikacja mobilna pokazuje głównie katalog i~kieruje do zapisu w~wersji webowej;
+nie ma w~niej logowania, garażu ani publikacji w~sklepach.
+Nie wykonano też formalnego testu obciążenia przy ok.\ 10\,000 rekordach w~katalogu
+i~ok.\ 50~RPS, który był zapisany w~wymaganiach jakościowych.
+
+Zamiast tego 25.10.2026 zrobiono pomiary Grafana~k6 na Oracle~VM~\cite{k6:vm-rps}.
+Dla listy wydarzeń komfort to ok.\ 150--200~RPS; przy 50~RPS nie było błędów
+(p95 ok.\ 4{,}5~ms).
+Health API i~statyczny front trzymają ok.\ 2000~RPS w~strefie komfortu.
+Wąskim gardłem jest MySQL, a~nie nginx.
+Ponieważ k6 działał na tej samej maszynie co aplikacja, wynik traktujemy
+jako dolną granicę --- to nadal nie jest formalny scenariusz 10k rekordów~/~50~RPS.
+
+Na potrzeby MVP i~obrony taki obraz wydajności wystarcza.
+Na później zostają m.in.\ płatności online, pełniejsza mobilka,
+formalny test 10k/50~RPS oraz dalsze utwardzenie środowiska produkcyjnego.
 
 
 \printbibliography[title={Bibliografia}, heading=bibintoc]
