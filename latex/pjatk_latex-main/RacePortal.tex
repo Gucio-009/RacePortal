@@ -487,7 +487,16 @@ Rysunek~\ref{fig:diagram-klas} przedstawia wczesny model bazy danych (ERD) stano
 \end{figure}
 
 \section{Projekt interfejsu REST API}
-Zasoby \texttt{/api/auth/*}, \texttt{/api/events}, \texttt{/api/events/markers}, \texttt{/api/registrations}, \texttt{/api/garage}, \texttt{/api/admin/*}, \texttt{/api/organizer/*}, \texttt{/api/maps/route}, \texttt{/api/health}.
+\label{sec:rest-api}
+Interfejs API zaprojektowano w~stylu REST nad protokołem HTTP, z~wymianą danych w~formacie JSON. Prefiks zasobów to \texttt{/api/...}. Kontrakt odpowiedzi jest wspólny dla klienta webowego i~mobilnego; typy współdzielone utrzymywane są w~pakiecie \texttt{packages/api-types}, co ogranicza rozjazd interpretacji pól pomiędzy warstwami.
+
+Zasoby podzielono według odpowiedzialności domenowych. \textbf{Uwierzytelnianie i~profil} (\texttt{/api/auth}) obejmują rejestrację, weryfikację e-mail, logowanie, odświeżanie i~unieważnianie sesji, opcjonalne logowanie Google oraz operacje na profilu (\texttt{/me}). \textbf{Katalog wydarzeń} (\texttt{/api/events}) udostępnia listę z~paginacją i~filtrami, markery mapy, metadane kategorii, szczegóły wydarzenia oraz operacje tworzenia, edycji, anulowania i~usuwania dla uprawnionych ról. Uzupełniają je zasoby klas startowych, listy startowej, wyników oraz komunikacji organizatora do uczestników konkretnego wydarzenia.
+
+\textbf{Zgłoszenia} (\texttt{/api/registrations}) umożliwiają utworzenie zgłoszenia, podgląd własnych zapisów, listę zgłoszeń wydarzenia, zmianę statusu, anulowanie, dołączenie dowodu płatności oraz przypisanie klasy. \textbf{Garaż} (\texttt{/api/garage}) obsługuje CRUD pojazdów użytkownika. \textbf{Organizator} (\texttt{/api/organizer}) obejmuje wniosek o~rolę oraz listę zarządzanych wydarzeń, a~\textbf{administrator} (\texttt{/api/admin}) --- statystyki, użytkowników, moderację wydarzeń i~rozstrzyganie wniosków organizatorskich.
+
+Pozostałe zasoby wspierające to: katalog torów (\texttt{/api/tracks}), wyznaczanie trasy (\texttt{/api/maps/route}), upload plików (\texttt{/api/uploads}), powiadomienia in-app (\texttt{/api/notifications}), publiczne statystyki (\texttt{/api/stats}), zgłoszenia błędów (\texttt{/api/bug-reports}) oraz monitoring (\texttt{/api/health}).
+
+Z~punktu widzenia dostępu projekt rozróżnia zasoby publiczne (m.in.\ odczyt wydarzeń i~torów, health, trasa, rejestracja/logowanie) oraz zasoby wymagające uwierzytelnienia i~odpowiedniej roli. Błędy zwracane są w~ujednoliconym formacie JSON (walidacja pól, kody HTTP 4xx/5xx), co upraszcza obsługę po stronie klientów. Szczegóły implementacji endpointów i~przepływów opisano w~rozdziale~\ref{ch:backend}.
 
 \section{Projekt warstwy webowej}
 \label{sec:figma}
