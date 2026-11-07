@@ -92,7 +92,7 @@ Celem pracy jest zaprojektowanie oraz implementacja systemu \textbf{RacePortal} 
 
 Zakres projektu obejmuje:
 \begin{itemize}
-  \item \textbf{Aplikację webową} --- kompleksowy interfejs użytkownika zrealizowany w~architekturze SPA (React/Vite), obsługujący moduły katalogu wydarzeń, kont użytkowników, wirtualnego garażu pojazdów, mechanizmu dopasowania kategorii (\texttt{carMatch}), zgłoszeń na imprezy oraz dedykowane panele zarządzania dla organizatorów i~administratorów.
+  \item \textbf{Aplikację webową} --- interfejs użytkownika w~architekturze SPA (React/Vite), z~modułami katalogu wydarzeń, kont użytkowników, wirtualnego garażu pojazdów, dopasowania kategorii (\texttt{carMatch}), zgłoszeń na imprezy oraz paneli zarządzania dla organizatorów i~administratorów.
   \item \textbf{API REST oraz warstwę danych} --- backend wykonany w~oparciu o~framework Spring Boot oraz relacyjną bazę danych MySQL (z~wydzielonymi strukturami encji i~wspólnymi typami API w~pakiecie \texttt{packages/api-types}), zapewniający bezpieczne uwierzytelnianie (JWT) oraz kontrolę dostępu opartą o~role (RBAC: \texttt{USER}, \texttt{ORGANIZER}, \texttt{ADMIN}).
   \item \textbf{System powiadomień i~map} --- zautomatyzowane powiadomienia e-mail (realizowane m.in.\ przez serwer SMTP Mailbux) dotyczące potwierdzeń rejestracji, statusów zgłoszeń oraz weryfikacji kont, a~także integrację map wydarzeń z~usługą wyznaczania tras (domyślnie OSRM z~możliwością rozszerzenia o~Google Maps API).
   \item \textbf{Aplikację mobilną (Expo)} --- lekką, wieloplatformową aplikację mobilną opartą na ekosystemie Expo, pełniącą rolę mobilnej wizytówki katalogu z~czytelnym mechanizmem konwersji (Call to Action --- CTA) przekierowującym użytkownika do pełnego serwisu webowego.
@@ -269,7 +269,7 @@ Kluczowe zagadnienia techniczne podjęte w~ramach projektu obejmują:
 
 \chapter{Kontekst biznesowy}
 \label{ch:biznes}
-Niniejszy rozdział sytuuje RacePortal w~kontekście produktowym i~organizacyjnym: identyfikuje segmenty odbiorców, udziałowców oraz propozycję wartości, a~następnie opisuje kanały dystrybucji, zasoby i~działania kluczowe, model funkcjonowania platformy, realność wdrożenia oraz uwarunkowania prawno-etyczne. Punktem wyjścia są założenia Dokumentu Założeń Wstępnych (DZW), karty projektu, Business Model Canvas (BMC / materiały KMR) oraz scenariusze walidacji wywiadami, konfrontowane z~faktycznym zakresem rozwiązania.
+Ten rozdział opisuje RacePortal od strony biznesowej: segmenty odbiorców, udziałowców i~propozycję wartości, a~następnie kanały dystrybucji, zasoby i~działania kluczowe, model działania platformy, realność wdrożenia oraz kwestie prawne i~etyczne. Punktem wyjścia są założenia Dokumentu Założeń Wstępnych (DZW), karty projektu, Business Model Canvas (BMC / materiały KMR) oraz scenariusze walidacji wywiadami, zestawione z~faktycznym zakresem rozwiązania.
 
 Należy zaznaczyć, że segmentacja w~materiałach KMR została sformułowana jako \emph{założenie koncepcyjne}, a~nie jako wynik reprezentatywnych badań rynkowych. Dokument \emph{Interview Validation} definiuje hipotezy, skrypt wywiadu oraz metryki sukcesu; nie zawiera wyników przeprowadzonych wywiadów, dlatego w~dalszej części nie są one przytaczane jako dane empiryczne. Analogicznie, wskazany w~materiałach koncepcyjnych przedział wiekowy 16--40~lat traktuje się wyłącznie jako hipotezę dotyczącą grupy docelowej, a~nie jako potwierdzoną charakterystykę demograficzną rynku.
 
@@ -279,9 +279,9 @@ Z~perspektywy biznesowej wyróżnia się trzy główne segmenty rynku, których 
 
 \textbf{Odbiorcy informacji (kibice i~pasjonaci)} poszukują aktualnych terminów, lokalizacji oraz podstawowych informacji o~wydarzeniach motorsportowych. Dla tej grupy kluczowy jest niski próg wejścia --- możliwość przeglądania katalogu bez rejestracji --- oraz czytelne filtry i~widoki (lista, mapa, kalendarz). Segment ten odpowiada w~dużej mierze użytkownikowi anonimowemu (gościowi) w~warstwie aplikacji.
 
-\textbf{Uczestnicy wydarzeń (kierowcy)} stanowią segment transakcyjny: potrzebują nie tylko znaleźć start, lecz także ocenić zgodność wymagań wydarzenia z~posiadanym pojazdem, złożyć zgłoszenie i~śledzić jego status. W~systemie segment ten jest obsługiwany przez konta użytkowników z~dostępem do garażu i~zgłoszeń. Hipoteza koncepcyjna KMR wiąże ten segment z~rynkiem polskim i~orientacyjnym przedziałem 16--40~lat; brakuje jednak wyników badań potwierdzających ten rozkład, dlatego nie jest on traktowany jako ustalenie empiryczne.
+\textbf{Uczestnicy wydarzeń (kierowcy)} to grupa, która nie tylko szuka startu, lecz także sprawdza zgodność wymagań wydarzenia z~posiadanym pojazdem, składa zgłoszenie i~śledzi jego status. W~systemie obsługują ich konta użytkowników z~dostępem do garażu i~zgłoszeń. Hipoteza z~materiałów KMR wiąże tę grupę z~rynkiem polskim i~orientacyjnym przedziałem 16--40~lat; brakuje jednak wyników badań potwierdzających ten rozkład, dlatego nie traktuje się go jako ustalenia empirycznego.
 
-\textbf{Organizatorzy wydarzeń} dostarczają podaż treści i~procesów zapisów. Ich potrzebą jest skuteczny kanał dotarcia do uczestników oraz narzędzie do publikacji imprezy i~obsługi listy zgłoszeń (w~tym komunikacji statusów). W~praktyce produktowej dostęp organizatora wymaga weryfikacji wniosku przez operatora platformy, co stanowi mechanizm jakościowy, a~nie osobny segment rynku.
+\textbf{Organizatorzy wydarzeń} publikują imprezy i~obsługują zapisy. Potrzebują skutecznego kanału dotarcia do uczestników oraz narzędzia do publikacji wydarzenia i~zarządzania listą zgłoszeń (w~tym komunikacji statusów). W~praktyce dostęp organizatora wymaga weryfikacji wniosku przez operatora platformy --- to mechanizm jakościowy, a~nie osobny segment rynku.
 
 \textbf{Administrator} nie jest segmentem rynkowym, lecz \emph{rolą operacyjną} odpowiedzialną za funkcjonowanie platformy: moderację wydarzeń, rozstrzyganie wniosków o~uprawnienia organizatora oraz nadzór nad jakością katalogu. W~analizie biznesowej administrator należy do strony operatorskiej, a~nie do grup klientów, do których kierowana jest propozycja wartości.
 
@@ -350,7 +350,7 @@ Analiza udziałowców obejmuje zarówno klientów platformy, jak i~otoczenie opi
 \end{stakeholder}
 
 \section{Propozycja wartości systemu}
-Propozycja wartości RacePortal wynika z~diagnozy rozproszenia informacji o~wydarzeniach motorsportowych w~Polsce. Dotychczasowe praktyki --- grupy w~mediach społecznościowych, witryny poszczególnych torów oraz statyczne kalendarze --- nie zapewniają jednolitego procesu wyszukiwania imprez, porównania wymagań ani obsługi statusu zapisu. RacePortal odpowiada na ten deficyt jako \textbf{centralny katalog} oraz \textbf{warstwa operacyjna zapisów}, z~narzędziami dopasowanymi do potrzeb kibiców, kierowców i~organizatorów.
+Propozycja wartości RacePortal wynika z~diagnozy rozproszenia informacji o~wydarzeniach motorsportowych w~Polsce. Dotychczasowe praktyki --- grupy w~mediach społecznościowych, witryny poszczególnych torów oraz statyczne kalendarze --- nie zapewniają jednolitego procesu wyszukiwania imprez, porównania wymagań ani obsługi statusu zapisu. RacePortal odpowiada na ten brak jako \textbf{centralny katalog} oraz \textbf{narzędzie do obsługi zapisów}, z~funkcjami dopasowanymi do potrzeb kibiców, kierowców i~organizatorów.
 
 Dla kierowców wartość koncentruje się na: przejrzystym katalogu z~widokami lista, mapa i~kalendarz oraz wspólnymi filtrami; wirtualnym garażu pojazdów; wsparciu dopasowania pojazdu do wymagań wydarzenia; złożeniu zgłoszenia i~otrzymywaniu informacji o~statusie. Dla organizatorów wartość obejmuje publikację wydarzenia, zarządzanie listą zgłoszeń oraz komunikację statusów bez konieczności prowadzenia całego procesu wyłącznie w~arkuszach i~wiadomościach prywatnych. Dla odbiorców informacji wartość sprowadza się do bezpłatnego dostępu do terminów i~lokalizacji, w~tym do widoku mapy oraz wskazówek dojazdu.
 
@@ -380,7 +380,7 @@ Tabela~\ref{tab:porownanie-modeli} przedstawia porównanie \emph{modeli działan
 \end{table}
 
 \section{Kanały komunikacji i~dystrybucji}
-Głównym kanałem dostępu do produktu jest aplikacja webowa (\url{https://raceportal.pl}), umożliwiająca zarówno przeglądanie katalogu, jak i~obsługę konta, garażu, zgłoszeń oraz paneli organizatora i~administratora. Uzupełnieniem jest mobilna aplikacja-wizytówka, służąca do odkrywania wydarzeń i~przekierowania zapisu do wersji webowej. Takie rozdzielenie obniża koszt wejścia informacyjnego, a~jednocześnie koncentruje procesy wymagające konta w~jednym miejscu.
+Głównym kanałem dostępu do produktu jest aplikacja webowa (\url{https://raceportal.pl}), umożliwiająca zarówno przeglądanie katalogu, jak i~obsługę konta, garażu, zgłoszeń oraz paneli organizatora i~administratora. Uzupełnieniem jest mobilna aplikacja-wizytówka, służąca do odkrywania wydarzeń i~przekierowania zapisu do wersji webowej. Takie rozdzielenie ułatwia pierwsze wejście do katalogu, a~jednocześnie zbiera procesy wymagające konta w~jednym miejscu.
 
 Z~perspektywy pozyskiwania użytkowników kluczowe są kanały organiczne i~partnerskie, przewidziane także w~materiałach BMC: obecność w~mediach społecznościowych społeczności motorsportowej, bezpośrednie kontakty z~klubami i~organizatorami, promocja podczas imprez torowych oraz współpraca z~właścicielami obiektów. W~fazie MVP działania te mają charakter organizacyjny --- ich celem jest zbudowanie podaży aktualnych wydarzeń i~pierwszej grupy aktywnych kierowców, bez których katalog nie generuje efektu sieciowego.
 
@@ -408,7 +408,7 @@ Realistyczność techniczna wdrożenia została potwierdzona uruchomieniem środ
 
 Kluczowym warunkiem sukcesu nie jest sama dostępność serwisu, lecz pozyskanie organizatorów publikujących aktualne wydarzenia oraz utrzymanie kompletności katalogu. Bez regularnej podaży treści platforma nie różni się istotnie od statycznego kalendarza i~nie motywuje kierowców do rejestracji. Dlatego realistyczny scenariusz rozwoju zakłada: bezpośrednie kontakty z~organizatorami i~obiektami, prosty proces publikacji, moderację zapewniającą wiarygodność oraz mechanizmy powiadomień ograniczające ryzyko dezaktualizacji informacji u~uczestników.
 
-Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążenia przy ok.\ 10\,000 rekordach / 50~RPS nie został domknięty jako artefakt odbiorczy KP/DZW; wykonano natomiast krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026), opisane w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps} i~omówione w~rozdziałach testowania oraz podsumowania.
+Założona w~DZW skala pilotażowa (rzędu tysięcy użytkowników miesięcznie przy profilu głównie odczytowym) jest spójna z~niszowym charakterem amatorskiego motorsportu w~Polsce i~z~ograniczonym budżetem operacyjnym projektu. Formalny test obciążenia przy ok.\ 10\,000 rekordach / 50~RPS nie został domknięty jako osobne wymaganie odbiorcze KP/DZW; wykonano natomiast krótkie pomiary Grafana~k6 na Oracle~VM (25.10.2026), opisane w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps} i~omówione w~rozdziałach testowania oraz podsumowania.
 
 Dalsze perspektywy obejmują m.in.\ integrację płatności online, rozbudowę powiadomień, publikację aplikacji mobilnej w~sklepach, eksport list startowych oraz ewentualną monetyzację oznaczonych treści promocyjnych. Elementy te stanowią roadmapę produktową, a~nie stan bieżącej realizacji.
 
@@ -425,7 +425,7 @@ W~warstwie odpowiedzialności za treści: organizator odpowiada za merytoryczną
 Analiza SWOT (ang.\ \emph{Strengths}, \emph{Weaknesses}, \emph{Opportunities}, \emph{Threats}) służy w~tej pracy do uporządkowanej oceny RacePortal jako produktu MVP: co stanowi przewagę rozwiązania względem rozproszonego rynku informacji o~startach, gdzie leżą ograniczenia obecnej wersji, jakie kierunki rozwoju są realne oraz jakie czynniki zewnętrzne mogą utrudnić utrzymanie lub skalowanie systemu. Ocena odnosi się do \textbf{stanu zaimplementowanego} (web, API, mobile, wdrożenie produkcyjne), a~nie wyłącznie do założeń koncepcyjnych.
 
 \section{Mocne strony (Strengths)}
-Mocne strony wynikają przede wszystkim z~domknięcia spójnego happy-path dla wszystkich ról oraz z~uruchamialności środowiska demonstracyjnego i~produkcyjnego.
+Mocne strony wynikają przede wszystkim z~domknięcia spójnej podstawowej ścieżki dla wszystkich ról oraz z~możliwości uruchomienia środowiska demonstracyjnego i~produkcyjnego.
 
 \begin{itemize}
   \item Pełny przepływ ról: gość, kierowca (\texttt{USER}), organizator (\texttt{ORGANIZER}) i~administrator (\texttt{ADMIN}), z~kontrolą dostępu RBAC oraz uwierzytelnianiem JWT (w~tym opcjonalne logowanie Google).
@@ -435,7 +435,7 @@ Mocne strony wynikają przede wszystkim z~domknięcia spójnego happy-path dla w
   \item Dedykowany backoffice administratora (\texttt{bo.raceportal.pl}) z~moderacją i~eksportami, oddzielony od apexu prezentacyjnego.
   \item Konteneryzacja (Docker Compose), seed danych demo, powiadomienia e-mail (Mailbux) oraz wdrożenie produkcyjne (Oracle Always Free + Cloudflare Tunnel, TLS po stronie Cloudflare).
   \item Warstwa web jako PWA; wspólne typy API (\texttt{packages/api-types}) ograniczające dryf web~$\leftrightarrow$~mobile.
-  \item Testy automatyczne (integracyjne API, E2E Playwright, unit mobile / api-types) oraz pomiary obciążenia k6 na VM produkcyjnej (wąskie gardło: endpointy z~bazą danych).
+  \item Testy automatyczne (integracyjne API, E2E Playwright, unit mobile / api-types) oraz pomiary obciążenia k6 na VM produkcyjnej (ograniczenie wydajności wynika głównie z~zapytań do bazy).
 \end{itemize}
 
 \section{Słabe strony (Weaknesses)}
@@ -443,7 +443,7 @@ Słabe strony to świadome lub nierozwiązane ograniczenia MVP, które obniżaj�
 
 \begin{itemize}
   \item Brak natywnej bramki płatności (PSP) --- obowiązuje model „zapłać później” z~dowodem przelewu (upload pliku / URL), a~nie checkout online; upload jest w~webie/API, nie w~mobilce.
-  \item Aplikacja mobilna Expo pozostaje wizytówką katalogu: bez logowania, garażu i~pełnej parity z~webem; brak publikacji w~sklepach App Store / Google Play.
+  \item Aplikacja mobilna Expo pozostaje wizytówką katalogu: bez logowania, garażu i~pełnej równoważności funkcji z~webem; brak publikacji w~sklepach App Store / Google Play.
   \item Zależność od publicznych serwisów mapy i~routingu (CARTO / OSRM; opcjonalnie Google Maps przy kluczu API) --- awaria lub limity zewnętrzne pogarszają UX lokalizacji.
   \item Częściowe rozjazdy względem wewnętrznej Specyfikacji Formularzy
         (udokumentowane w~rejestrze luk).
@@ -664,7 +664,7 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami 
     \hline
     Niekompletność bazy wydarzeń na starcie & Słaba wartość katalogu bez społeczności & Dane demo na start, katalog torów PL, podstawowe ścieżki ról; kompletność rynkowa poza czystym zakresem kodu \\
     \hline
-    Brak formalnego artefaktu 10k/50~RPS & Niespełnienie pierwotnego kryterium odbiorczego KP/DZW & Paginacja, indeksy, cache; pomiary k6 na VM (\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}; rozdz.~\ref{ch:testy}) \\
+    Brak formalnego testu 10k/50~RPS & Niespełnienie pierwotnego kryterium odbiorczego KP/DZW & Paginacja, indeksy, cache; pomiary k6 na VM (\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}; rozdz.~\ref{ch:testy}) \\
     \hline
     Zależność od dostarczalności poczty & Rejestracja / statusy ,,nie działają'' dla użytkownika & SMTP Mailbux zamiast Mailpita; diagnostyka SMTP w~health (warstwa admin) \\
     \hline
@@ -674,9 +674,9 @@ Poniżej zebrano ryzyka istotne dla planowania i~odbioru MVP, wraz ze sposobami 
   }
 \end{table}
 
-W~zakresie wydajności empiryczne pomiary Grafana~k6 na Oracle~VM (25.10.2026; raport \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}) wskazują m.in.\ komfortowy zakres ok.\ 150--200~RPS dla paginowanej listy wydarzeń (\texttt{GET /api/events}) --- wąskim gardłem są endpointy z~MySQL, a~nie nginx ani lekki health API. Pomiar na współdzielonej VM (k6 lokalnie ze stackiem) zaniża wynik względem zewnętrznego generatora i~nie zastępuje formalnego testu 10\,000 rekordów / 50~RPS; szczegółowa analiza należy do rozdziału testowania.
+W~zakresie wydajności empiryczne pomiary Grafana~k6 na Oracle~VM (25.10.2026; raport \texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}~\cite{k6:vm-rps}) wskazują m.in.\ komfortowy zakres ok.\ 150--200~RPS dla paginowanej listy wydarzeń (\texttt{GET /api/events}) --- ograniczenie wydajności wynika głównie z~zapytań do MySQL (czas odpowiedzi listy wydarzeń), a~nie z~nginx ani z~lekkiego health API. Pomiar na współdzielonej VM (k6 lokalnie ze stackiem) zaniża wynik względem zewnętrznego generatora i~nie zastępuje formalnego testu 10\,000 rekordów / 50~RPS; szczegółowa analiza należy do rozdziału testowania.
 
-Planowanie RacePortal łączy zatem formalne ramy KP/DZW z~iteracyjnym przebiegiem implementacji. Zakres MVP pozostaje czytelny dzięki porównaniu ,,miało być~/~jest'' w~dokumencie \texttt{MVP.md}, a~infrastruktura produkcyjna --- dzięki rozdzieleniu ról web, API i~bazy oraz świadomym decyzjom o~Oracle i~Cloudflare Tunnel. Ryzyka utrzymuje się w~rejestrze jakościowym (Spec, wydajność, zależności zewnętrzne), ze sposobami ograniczenia ryzyka osadzonymi w~architekturze i~dokumentacji porównawczej.
+Planowanie RacePortal łączy formalne ramy KP/DZW z~iteracyjnym przebiegiem implementacji. Zakres MVP pozostaje czytelny dzięki porównaniu ,,miało być~/~jest'' w~dokumencie \texttt{MVP.md}, a~infrastruktura produkcyjna --- dzięki rozdzieleniu ról web, API i~bazy oraz świadomym decyzjom o~Oracle i~Cloudflare Tunnel. Ryzyka utrzymuje się w~rejestrze jakościowym (Spec, wydajność, zależności zewnętrzne), ze sposobami ograniczenia ryzyka osadzonymi w~architekturze i~dokumentacji porównawczej.
 
 \chapter{Analiza wymagań}
 \label{ch:wymagania}
@@ -983,7 +983,7 @@ Organizacja pracy zakładała:
 \begin{itemize}
   \item dostarczanie kolejnych ścieżek użytkownika (katalog $\rightarrow$ konto $\rightarrow$ garaż/zapisy $\rightarrow$ panele ról), a~nie budowę wszystkich warstw „na zapas”;
   \item bieżące dokumentowanie decyzji i~luk (m.in.\ rejestr zgodności ze Specyfikacją Formularzy);
-  \item świadome odkładanie elementów poza MVP (m.in.\ natywne PSP, pełna parity mobile, sklepy aplikacji);
+  \item świadome odkładanie elementów poza MVP (m.in.\ natywne PSP, pełna równoważność funkcji w~aplikacji mobilnej, sklepy aplikacji);
   \item utrzymanie seedu danych demo, aby prezentacja i~testy E2E miały powtarzalny punkt startu.
 \end{itemize}
 
@@ -1365,13 +1365,13 @@ Strona główna integruje główny katalog wydarzeń motorsportowych, oferując 
 \section{Widok szczegółów wydarzenia}
 Podstrona szczegółów dostarcza użytkownikowi pełnych informacji o~wybranej imprezie motorsportowej:
 \begin{itemize}
-  \item Wyświetla dokładny opis, dane organizatora oraz rygorystyczne wymagania techniczne stawiane pojazdom i~uczestnikom.
+  \item Wyświetla dokładny opis, dane organizatora oraz wymagania techniczne stawiane pojazdom i~uczestnikom.
   \item Integruje moduł szybkiego zapisu na wydarzenie, który weryfikuje posiadane przez kierowcę auta w~garażu pod kątem reguł dopasowania kategorii (\texttt{carMatch}).
   \item Zawiera mapę z~wyznaczaniem trasy dojazdu do lokalizacji obiektu z~wykorzystaniem routingu OSRM~\cite{osrm:project}.
 \end{itemize}
 
 \section{Logowanie i rejestracja}
-Moduł autoryzacji opiera się na kontrolowanych formularzach frontendowych, wspierających procesy logowania, rejestracji oraz odzyskiwania zapomnianego hasła. Bezpieczeństwo sesji gwarantują ciasteczka typu httpOnly (\texttt{rp\_at}, \texttt{rp\_rt}) przesyłane z~flagą \texttt{credentials: "include"}, co całkowicie eliminuje podatności związane z~przechowywaniem tokenów JWT w~lokalnej pamięci przeglądarki (\texttt{localStorage}).
+Moduł autoryzacji opiera się na formularzach logowania, rejestracji oraz odzyskiwania hasła. Sesję utrzymują ciasteczka httpOnly (\texttt{rp\_at}, \texttt{rp\_rt}) z~flagą \texttt{credentials: "include"}, dzięki czemu tokeny JWT nie są trzymane w~\texttt{localStorage}.
 
 Poniższy kod implementuje asynchroniczne pobieranie danych o~zalogowanym użytkowniku przy użyciu mechanizmu optymalizacyjnego \texttt{deferUntilIdle}, dbając o~to, by zapytanie nie blokowało renderowania głównego wątku aplikacji.
 
@@ -1394,34 +1394,34 @@ useEffect(() => {
 \end{lstlisting}
 
 \section{Dashboard użytkownika}
-Panel użytkownika (Dashboard) stanowi centralne miejsce zarządzania aktywnością zalogowanego kierowcy w~systemie. Prezentuje on przejrzyste podsumowanie aktualnych zgłoszeń użytkownika na nadchodzące wydarzenia motorsportowe, umożliwiając błyskawiczny podgląd ich statusów (oczekujące, zatwierdzone, anulowane) oraz dostęp do szczegółów rezerwacji.
+Panel użytkownika (Dashboard) to miejsce, w~którym zalogowany kierowca zarządza swoją aktywnością w~systemie. Pokazuje podsumowanie aktualnych zgłoszeń na nadchodzące wydarzenia motorsportowe, statusy (oczekujące, zatwierdzone, anulowane) oraz dostęp do szczegółów rezerwacji.
 
 \section{Widok garażu}
-Moduł wirtualnego garażu pozwala kierowcom na pełne zarządzanie flotą własnych pojazdów startowych.
+Moduł wirtualnego garażu pozwala kierowcom zarządzać własnymi pojazdami startowymi.
 \begin{itemize}
-  \item Interfejs dostarcza formularz dodawania nowego pojazdu z~rygorystyczną walidacją pól wymaganych (takich jak marka, model, specyfikacja techniczna, masa czy dopasowanie opon).
-  \item Użytkownik ma możliwość edycji danych oraz usuwania aut ze swojego profilu, przy czym system uwzględnia zabezpieczenia biznesowe (np.\ blokadę usunięcia pojazdu, który został powiązany z~aktywnym, zatwierdzonym zgłoszeniem na zawody).
+  \item Formularz dodawania pojazdu sprawdza pola wymagane (m.in.\ marka, model, specyfikacja techniczna, masa, dopasowanie opon).
+  \item Można edytować dane oraz usuwać auta z~profilu; system blokuje m.in.\ usunięcie pojazdu powiązanego z~aktywnym, zatwierdzonym zgłoszeniem na zawody.
 \end{itemize}
 
 \section{Panel organizatora}
-Panel organizatora udostępnia dedykowane narzędzia dla podmiotów publikujących imprezy motorsportowe. Umożliwia on:
+Panel organizatora służy do publikacji imprez motorsportowych. Umożliwia:
 \begin{itemize}
-  \item Tworzenie oraz edycję wydarzeń w~jednym spójnym formularzu z~wykorzystaniem wbudowanych presetów torów.
-  \item Podgląd napływających zgłoszeń od kierowców oraz zarządzanie ich statusami (np.\ akceptacja uczestnictwa, odrzucenie lub zmiana statusu płatności).
+  \item Tworzenie oraz edycję wydarzeń w~jednym formularzu, z~presetami torów.
+  \item Podgląd zgłoszeń kierowców oraz zarządzanie ich statusami (np.\ akceptacja, odrzucenie lub zmiana statusu płatności).
 \end{itemize}
 
 \section{Panel administratora}
-Panel administratora zapewnia operatorom platformy narzędzia najwyższego poziomu do nadzoru nad treścią oraz strukturą uprawnień w~systemie. Obejmuje on:
+Panel administratora daje operatorom platformy narzędzia do nadzoru nad treścią i~uprawnieniami. Obejmuje:
 \begin{itemize}
-  \item Moderację nadesłanych wydarzeń oraz rozpatrywanie wniosków użytkowników ubiegających się o~uzyskanie uprawnień organizatora (dedykowana ścieżka formularza pod adresem \texttt{/zostan-organizatorem}).
-  \item Zarządzanie globalnymi rolami kont oraz podgląd systemowych zgłoszeń błędów.
+  \item Moderację nadesłanych wydarzeń oraz rozpatrywanie wniosków o~uprawnienia organizatora (formularz pod adresem \texttt{/zostan-organizatorem}).
+  \item Zarządzanie rolami kont oraz podgląd systemowych zgłoszeń błędów.
 \end{itemize}
 
 \section{Mapa i elementy lokalizacyjne}
 Warstwa mapowa opiera się na integracji biblioteki Leaflet~\cite{leaflet:docs} z~kafelkami CARTO~/~OpenStreetMap. Umożliwia ona interaktywną prezentację punktów zainteresowania, selekcję współrzędnych geograficznych w~formularzach wydarzeń oraz płatną lub opartą o~OSRM~\cite{osrm:project} integrację routingu trasy dojazdu dla kierowców (proxy \texttt{/api/maps/route}).
 
 \section{Responsywność i doświadczenie użytkownika}
-Interfejs aplikacji zaprojektowano w~koncepcji \emph{mobile-first}. Układy siatek (grid, flexbox) w~Tailwind CSS dynamicznie dostosowują się do ekranów smartfonów, tabletów oraz monitorów stacjonarnych. Spójność wizualną oparto o~ciemny motyw motorsportowy z~wyrazistym akcentem \texttt{--race-accent}, optymalizując czytelność danych i~zapewniając wysoką użyteczność (UX).
+Interfejs aplikacji zaprojektowano w~koncepcji \emph{mobile-first}. Układy siatek (grid, flexbox) w~Tailwind CSS dostosowują się do ekranów smartfonów, tabletów oraz monitorów stacjonarnych. Spójność wizualną daje ciemny motyw motorsportowy z~akcentem \texttt{--race-accent}, dobrany pod czytelność danych.
 
 \chapter{Szczegóły implementacji aplikacji mobilnej}
 \label{ch:mobile}
@@ -1438,7 +1438,7 @@ Założenia wynikające z~tego podziału:
   \item wspólny kontrakt danych z~API (te same wydarzenia i~filtry co na webie);
   \item brak publikacji w~sklepach App Store / Google Play w~ramach MVP (uruchomienie przez Expo / emulator).
 \end{itemize}
-We wcześniejszej fazie projektu rozważano szerszą parity z~webem; ostatecznie zakres zawężono do wizytówki, aby uniknąć dublowania logiki zapisów i~utrzymać jeden główny kanał transakcyjny.
+We wcześniejszej fazie projektu rozważano szerszą równoważność funkcji z~webem; ostatecznie zakres zawężono do wizytówki, aby uniknąć dublowania logiki zapisów i~utrzymać jeden główny kanał zapisów.
 
 \section{Architektura rozwiązania mobilnego}
 Rozwiązanie oparto o~Expo SDK oraz React Native. Warstwa prezentacji korzysta z~React Navigation (native stack) ograniczonego do przepływu wydarzeń. Motyw wizualny (ciemne tło, akcent marki) oraz lokalizacja interfejsu (PL/EN) są dostarczane przez konteksty aplikacji.
@@ -1797,7 +1797,7 @@ Podczas realizacji i wdrożenia produkcyjnego systemu RacePortal zespół napotk
 
     \item \textbf{Zabezpieczenia strony pod kątem cybersecurity i ochrony zasobów:} 
     Projektując platformę obsługującą dane użytkowników, konta ról oraz pojazdy, należało zabezpieczyć system przed typowymi zagrożeniami webowymi (takimi jak próby przejęcia sesji, ataki typu brute-force na panele logowania czy nieuprawniony dostęp do zasobów innych użytkowników --- IDOR).
-    \textit{Sposób rozwiązania:} Wdrożono bezstanowe uwierzytelnianie oparte o tokeny JSON Web Token (JWT) przesyłane w bezpiecznych nagłówkach oraz rygorystyczną kontrolę dostępu opartą o role (RBAC) na poziomie kontrolerów API. Dodatkowo kluczowe ścieżki uwierzytelniania zabezpieczono mechanizmami limitowania częstotliwości zapytań (Rate Limiting), a na warstwie serwera proxy (Nginx) skonfigurowano restrykcyjne nagłówki bezpieczeństwa, w tym politykę ochrony treści (CSP) oraz nagłówki zapobiegające osadzaniu strony w ramkach (X-Frame-Options).
+    \textit{Sposób rozwiązania:} Wdrożono bezstanowe uwierzytelnianie oparte o tokeny JSON Web Token (JWT) w~bezpiecznych ciasteczkach / nagłówkach oraz kontrolę dostępu opartą o~role (RBAC) na poziomie kontrolerów API. Dodatkowo kluczowe ścieżki uwierzytelniania zabezpieczono limitowaniem częstotliwości zapytań (rate limiting), a~na warstwie serwera proxy (nginx) ustawiono nagłówki bezpieczeństwa, w~tym politykę ochrony treści (CSP) oraz nagłówki zapobiegające osadzaniu strony w~ramkach (X-Frame-Options).
 \end{itemize}
 
 \section{Zmiany i adaptacje w trakcie realizacji}
@@ -1816,16 +1816,16 @@ Zależności zewnętrzne dotyczą przede wszystkim map i~tras. Domyślne wyznacz
 
 W~warstwie bezpieczeństwa przyjęto standard adekwatny do MVP demonstracyjnego: uwierzytelnianie JWT w~ciasteczkach HTTP-only, kontrola dostępu RBAC, ograniczanie liczby prób, walidacja wejścia oraz terminacja TLS/HSTS na Cloudflare Tunnel przed aplikacją. Poza zakresem pozostają m.in.\ pełny program testów penetracyjnych, zaawansowany WAF, dedykowany menedżer sekretów oraz własny certyfikat TLS utrzymywany bezpośrednio na hoście aplikacji. Są to ograniczenia dojrzałości operacyjnej, a~nie brak podstawowych mechanizmów ochrony kont i~zasobów opisanych w~rozdziale poświęconym bezpieczeństwu.
 
-Wydajność stacku produkcyjnego została zweryfikowana pomiarami Grafana~k6~\cite{k6:docs} na Oracle~VM (25.10.2026); raport i~tabele wyników znajdują się w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}. Z~tego względu ograniczeń wydajnościowych (RPS) nie ujmuje się w~niniejszym podrozdziale jako otwartej luki odbiorczej --- należą one do udokumentowanych rezultatów testowania, a~nie do katalogu niedomkniętych ograniczeń MVP.
+Wydajność stacku produkcyjnego została zweryfikowana pomiarami Grafana~k6~\cite{k6:docs} na Oracle~VM (25.10.2026); raport i~tabele wyników znajdują się w~\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md}. Dlatego ograniczeń wydajnościowych (RPS) nie ujmuje się tu jako otwartej luki odbiorczej --- należą one do udokumentowanych wyników testowania, a~nie do listy niedomkniętych ograniczeń MVP.
 
 \subsection{Ograniczenia budżetowe}
-Projekt realizowano w~reżimie budżetu bliskiego zeru, typowym dla akademickiego MVP. Hosting produkcyjny oparto o~Oracle Always Free (maszyna ARM z~limitami OCPU i~pamięci), publiczny dostęp --- o~Cloudflare Tunnel z~terminacją TLS po~stronie Cloudflare, a~pocztę --- o~usługę SMTP Mailbux w~konfiguracji niskokosztowej. Świadomie unikano płatnych bramek PSP, komercyjnego object storage, dedykowanego WAF oraz płatnych planów mapowych jako warunków działania systemu. Konsekwencją budżetową jest m.in.\ lokalny upload na dysk VM zamiast S3/MinIO, zależność od publicznych lub opcjonalnie konfigurowanych usług map oraz brak środków na ciągły monitoring klasy APM. Ograniczenie budżetowe nie unieważnia działania MVP, lecz wyznacza pułap skalowania operacyjnego i~poziom twardnienia infrastruktury możliwy do utrzymania bez stałych kosztów licencyjnych.
+Projekt realizowano przy budżecie bliskim zeru, typowym dla akademickiego MVP. Hosting produkcyjny oparto o~Oracle Always Free (maszyna ARM z~limitami OCPU i~pamięci), publiczny dostęp --- o~Cloudflare Tunnel z~terminacją TLS po~stronie Cloudflare, a~pocztę --- o~SMTP Mailbux w~konfiguracji niskokosztowej. Świadomie unikano płatnych bramek PSP, komercyjnego object storage, osobnego WAF oraz płatnych planów mapowych jako warunków działania systemu. Skutkiem budżetowym jest m.in.\ lokalny upload na dysk VM zamiast S3/MinIO, zależność od publicznych lub opcjonalnie konfigurowanych usług map oraz brak środków na ciągły monitoring klasy APM. Ograniczenie budżetowe nie unieważnia działania MVP, lecz wyznacza pułap skalowania i~poziom utwardzenia infrastruktury możliwy do utrzymania bez stałych kosztów licencyjnych.
 
 \subsection{Ograniczenia czasowe}
-Ramy czasowe projektu wynikały z~kalendarza pracy inżynierskiej i~organizacji zespołu pięcioosobowego: konieczność domknięcia zakresu MVP przed terminem odbiorczym karty projektu, równoległa praca nad dokumentacją, testami i~wdrożeniem oraz historyczne okno przedmiotu PRO (ok.\ 15 tygodni) jako kontekst planistyczny, a~nie formalny Gantt dyplomu. Ograniczenie czasu wymusiło priorytetyzację --- pełna ścieżka zapisu na webie i~PWA kosztem parity aplikacji mobilnej, odłożenie PSP i~sklepów mobilnych, a~także świadome zawężenie hardeningu produkcyjnego. Termin karty projektu (31.01.2026) traktowano jako ograniczenie planistyczne odbioru akademickiego, natomiast faktyczne domknięcie funkcji i~pomiarów dokumentowano w~\texttt{docs/\allowbreak changes.md}. W~efekcie końcowa wersja jest kompletna względem zadeklarowanego MVP, lecz nie obejmuje roadmapy produktowej wykraczającej poza ten horyzont czasowy.
+Ramy czasowe wynikały z~kalendarza pracy inżynierskiej i~organizacji zespołu pięcioosobowego: konieczność domknięcia zakresu MVP przed terminem odbiorczym karty projektu, równoległa praca nad dokumentacją, testami i~wdrożeniem oraz historyczne okno przedmiotu PRO (ok.\ 15 tygodni) jako kontekst planistyczny, a~nie formalny Gantt dyplomu. Ograniczenie czasu wymusiło priorytety --- pełna ścieżka zapisu na webie i~PWA kosztem równoważności funkcji aplikacji mobilnej, odłożenie PSP i~sklepów mobilnych, a~także świadome zawężenie hardeningu produkcyjnego. Termin karty projektu (31.01.2026) traktowano jako ograniczenie planistyczne odbioru akademickiego, natomiast faktyczne domknięcie funkcji i~pomiarów dokumentowano w~\texttt{docs/\allowbreak changes.md}. W~efekcie końcowa wersja jest kompletna względem zadeklarowanego MVP, lecz nie obejmuje roadmapy produktowej wykraczającej poza ten horyzont czasowy.
 
 \section{Możliwości dalszego rozwoju}
-Mimo że wersja MVP systemu RacePortal w pełni realizuje założone cele funkcjonalne i procesowe, otwiera ona szerokie perspektywy na dalszą rozbudowę oraz komercjalizację platformy. W oparciu o zebrane doświadczenia, opinie użytkowników oraz analizę braków obecnej wersji, zidentyfikowano następujące kierunki rozwoju:
+MVP RacePortal realizuje założone cele funkcjonalne i~procesowe, ale zostawia miejsce na dalszą rozbudowę. Na podstawie doświadczeń z~wdrożenia, uwag użytkowników oraz braków obecnej wersji wskazano m.in.\ następujące kierunki:
 
 \begin{itemize}
     \item \textbf{Integracja z profesjonalnymi bramkami płatności (PSP):} 
@@ -1871,7 +1871,8 @@ Zamiast tego 25.10.2026 zrobiono pomiary Grafana~k6 na Oracle~VM~\cite{k6:vm-rps
 Dla listy wydarzeń komfort to ok.\ 150--200~RPS; przy 50~RPS nie było błędów
 (p95 ok.\ 4{,}5~ms).
 Health API i~statyczny front trzymają ok.\ 2000~RPS w~strefie komfortu.
-Wąskim gardłem jest MySQL, a~nie nginx.
+Ograniczenie wydajności wynika głównie z~zapytań do MySQL
+(czas odpowiedzi listy wydarzeń), a~nie z~nginx.
 Ponieważ k6 działał na tej samej maszynie co aplikacja, wynik traktujemy
 jako dolną granicę --- to nadal nie jest formalny scenariusz 10k rekordów~/~50~RPS.
 
