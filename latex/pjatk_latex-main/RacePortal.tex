@@ -863,7 +863,7 @@ Wczesny diagram przypadków użycia (materiały projektowe) przedstawia rys.~\re
 \subsection{Diagram sekwencji: zarządzanie garażem}
 % TODO
 
-\noindent\textit{Uwaga:} diagram klas / model danych przeniesiono do projektu systemu --- podrozdział~\ref{sec:diagram-klas}.
+\noindent\textit{Uwaga:} diagram klas / model danych przeniesiono do projektu systemu --- sekcja~\ref{sec:diagram-klas}.
 
 \chapter{Projekt systemu}
 \label{ch:projekt}
@@ -915,7 +915,8 @@ Aplikacja mobilna Expo działa poza Compose (Expo Go / emulator). Poczta wychodz
 
 Wdrożenie produkcyjne: maszyna Oracle Always Free (ARM) z~tym samym stackiem Compose. Publiczny dostęp zapewnia \textbf{Cloudflare Tunnel}~\cite{cloudflare:tunnel} (\texttt{cloudflared}) do nginx~\cite{nginx:docs} na porcie \texttt{:8081}. Apex \url{https://raceportal.pl} oraz host backoffice są w~koncie Cloudflare --- TLS/HSTS i~DNS po stronie Cloudflare, bez hostowania frontu na Cloudflare Pages. Dzięki temu deploy sprowadza się do aktualizacji kodu na VM i~przebudowy kontenerów, a~klienci wołają API względną ścieżką \texttt{/api}.
 
-\section{Projekt bazy danych}
+\section{Projekt bazy danych --- diagram klas}
+\label{sec:diagram-klas}
 Model danych zaprojektowano wokół wydarzenia motorsportowego i~procesu zapisu. Główne encje implementacyjne obejmują m.in.:
 \begin{itemize}
   \item użytkownika (rola jako enum: \texttt{USER} / \texttt{ORGANIZER} / \texttt{ADMIN});
@@ -932,8 +933,6 @@ Zgłoszenie kierowcy ma osobne stany: najpierw czeka na decyzję organizatora (\
 Przy wydarzeniach płatnych po \texttt{ACCEPTED} kierowca dokłada dowód przelewu (model „zapłać później”), a~organizator dopiero wtedy potwierdza miejsce.
 Listy torów w~formularzach web i~mobile korzystają ze wspólnego zestawu nazw, żeby obie aplikacje pokazywały te same lokalizacje.
 
-\subsection{Diagram klas}
-\label{sec:diagram-klas}
 Rysunek~\ref{fig:diagram-klas} przedstawia \textbf{wczesny, koncepcyjny} model bazy danych (ERD) --- punkt wyjścia dyskusji projektowej, a~\textbf{nie} wierną dokumentację schematu wdrożonego w~MVP. Topologia na rysunku (osobne tabele \texttt{categories}, \texttt{organizers}, \texttt{locations}, asocjacja \texttt{user\_roles}/\texttt{roles}, identyfikatory typu \texttt{bigint}) \textbf{nie pokrywa się} z~faktycznym modelem Spring Data JPA opisanym w~rozdz.~\ref{ch:backend}. W~implementacji przyjęto m.in.:
 \begin{itemize}
   \item identyfikatory użytkowników i~zasobów jako UUID (łańcuch znaków), a~nie \texttt{bigint};
@@ -1945,8 +1944,8 @@ Typowy przebieg pokazów funkcjonalnych (szczegóły ról --- kolejne podrozdzia
   \item \textbf{domknięcie} --- PWA lub skrót mobilny CTA oraz uczciwe wskazanie świadomych ograniczeń MVP (brak PSP, brak sklepów aplikacji, Expo jako wizytówka).
 \end{enumerate}
 
-\subsection*{Kryteria udanej demonstracji}
-Prezentację uznaje się za udaną, gdy widzowie mogą potwierdzić: (1)~publiczny katalog działa bez konta; (2)~kierowca przechodzi spójną ścieżkę garaż~$\rightarrow$~dopasowanie~$\rightarrow$~zapis; (3)~organizator steruje statusami zgłoszeń w~swoim wydarzeniu; (4)~system jest uruchomiony jako złożony stack (Compose / produkcja), a~nie pojedyncza strona statyczna. Plan awaryjny obejmuje krótkie nagranie ścieżki krytycznej oraz pominięcie opcjonalnych scen (admin, rejestracja z~mailem), jeśli infrastruktura lub SMTP są niestabilne~\cite{raceportal:demo}.
+\subsection*{Ocena przeprowadzonej demonstracji}
+Przyjęte wcześniej kryteria odbioru demonstracji zostały zweryfikowane w~praktyce (środowisko produkcyjne lub Compose)~\cite{raceportal:demo}. Potwierdzono, że: (1)~publiczny katalog działał bez konta; (2)~kierowca przechodził spójną ścieżkę garaż~$\rightarrow$~dopasowanie~$\rightarrow$~zapis; (3)~organizator sterował statusami zgłoszeń we własnym wydarzeniu; (4)~system był uruchomiony jako złożony stack (Compose / produkcja), a~nie jako pojedyncza strona statyczna. W~przypadku problemów z~infrastrukturą lub SMTP stosowano plan awaryjny: krótkie nagranie ścieżki krytycznej oraz pominięcie scen opcjonalnych (panel administratora, rejestracja z~mailem).
 
 \section{Scenariusz użycia z perspektywy kierowcy}
 Login seed $\rightarrow$ garaż $\rightarrow$ filtr/katalog $\rightarrow$ zapis $\rightarrow$ dashboard statusów.
@@ -2019,16 +2018,21 @@ Wykonane przeze mnie prace skupiały się przede wszystkim na wyglądzie, użyte
 \end{itemize}
 
 \section{Wojciech Wronisz}
-\begin{itemize}
-  \item pełnienie roli kierownika projektu w~zapisie startowym DZW; w~fazie realizacji (zgodnie z~\texttt{README.md}) --- odpowiedzialność za obszar fullstack, testów automatycznych i~bezpieczeństwa aplikacji (sukcesja ról --- rozdz.~6);
-  \item prace nad warstwą API Spring Boot~\cite{spring:boot}: kontrakt REST współdzielony z~webem i~mobile, integracja z~MySQL, inicjalizacja danych demonstracyjnych (\texttt{DataInitializer} / seed), wysyłka maili transakcyjnych (SMTP Mailbux);
-  \item projekt i~utwardzenie uwierzytelniania oraz autoryzacji: JWT~\cite{jwt:rfc} (access/refresh, \texttt{tokenVersion}), ciasteczka httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}), RBAC ról \texttt{USER}/\texttt{ORGANIZER}/\texttt{ADMIN}, Spring Security~\cite{spring:security};
-  \item remedacje po testach penetracyjnych powierzchni HTTP(S) produkcji~\cite{raceportal:pentest}: m.in.\ limity prób logowania (\texttt{AttemptRateLimiter}), walidacja URL (\texttt{SafeHttpUrls}), spójność HSTS/HTTPS za Cloudflare Tunnel, wyrównanie kosztu odpowiedzi przy logowaniu/resecie hasła, zaostrzenie CSP i~ograniczenie wycieków informacyjnych;
-  \item konteneryzacja i~wdrożenie: Docker Compose~\cite{docker:compose} (web, API, MySQL, backup), produkcja na Oracle Always Free z~Cloudflare Tunnel~\cite{cloudflare:tunnel} i~nginx, konfiguracja domeny \url{https://raceportal.pl} oraz backoffice;
-  \item ścieżka mobilna i~PWA: wizytówka Expo (katalog + CTA do weba), instalowalność weba jako PWA, utrzymanie spójności kontraktu typów (\texttt{packages/api-types});
-  \item weryfikacja jakości: testy integracyjne API (JUnit/MockMvc), E2E Playwright~\cite{playwright:docs}, pomiary obciążenia Grafana~k6~\cite{k6:docs,k6:vm-rps} na VM oraz dokumentacja uruchomienia, wdrożenia i~odbioru w~\texttt{docs/} (m.in.\ scenariusz prezentacji~\cite{raceportal:demo});
-  \item udział w~redakcji pracy dyplomowej (LaTeX~\cite{latex:project}): rozdziały dotyczące SWOT, projektu/realizacji, mobile, bezpieczeństwa (w~tym pentest), prezentacji MVP, a~także uzupełnianie słownika pojęć i~bibliografii.
-\end{itemize}
+W~zapisie startowym DZW pełniłem rolę kierownika projektu; w~fazie realizacji (zgodnie z~\texttt{README.md} repozytorium~\cite{raceportal:repo}) odpowiadałem za obszar fullstack, testów automatycznych oraz bezpieczeństwa aplikacji. Poniżej podzielono wkład według rodzaju prac.
+
+\subsection{Prace programistyczne}
+W~warstwie API Spring Boot~\cite{spring:boot} rozwijałem i~utrzymywałem kontrakt REST współdzielony przez web i~mobile, integrację z~MySQL, inicjalizację danych demonstracyjnych (\texttt{DataInitializer} / seed) oraz wysyłkę maili transakcyjnych przez SMTP Mailbux. Po stronie sesji i~uprawnień wdrożyłem JWT~\cite{jwt:rfc} (access/refresh, \texttt{tokenVersion}), ciasteczka httpOnly (\texttt{rp\_at}/\texttt{rp\_rt}), RBAC ról \texttt{USER}/\texttt{ORGANIZER}/\texttt{ADMIN} oraz konfigurację Spring Security~\cite{spring:security}.
+
+W~zakresie infrastruktury przygotowałem Docker Compose~\cite{docker:compose} (web, API, MySQL, backup) oraz wdrożenie produkcyjne na Oracle Always Free z~Cloudflare Tunnel~\cite{cloudflare:tunnel} i~nginx (domena \url{https://raceportal.pl}, osobny host backoffice). Po stronie klientów utrzymywałem wizytówkę Expo (katalog + CTA do weba), instalowalność weba jako PWA oraz wspólny pakiet typów \texttt{packages/api-types}, ograniczający rozjazd kontraktu JSON.
+
+\subsection{Prace analityczne i~projektowe}
+Uczestniczyłem w~doprecyzowaniu zakresu MVP, decyzji o~świadomych ograniczeniach (wizytówka mobilna zamiast pełnej równoważności funkcji, model ,,zapłać później'' zamiast PSP) oraz w~mapowaniu wymagań bezpieczeństwa na implementację (ASVS L1 jako poziom orientacyjny). Po testach penetracyjnych powierzchni HTTP(S) produkcji~\cite{raceportal:pentest} prowadziłem analizę znalezisk i~priorytetyzację remedacji (m.in.\ limity logowania, walidacja URL, HSTS/CSP, timing-safe login).
+
+\subsection{Testowanie i~weryfikacja}
+Odpowiadałem za automatyzację i~uruchamianie weryfikacji jakości: testy integracyjne API (JUnit / MockMvc), scenariusze E2E Playwright~\cite{playwright:docs} oraz pomiary obciążenia Grafana~k6~\cite{k6:docs,k6:vm-rps} na VM. Po remedacjach bezpieczeństwa weryfikowałem poprawki testami API oraz krótką kontrolą działania kluczowych funkcji na środowisku produkcyjnym. Utrzymywałem też dokumentację uruchomienia, wdrożenia i~odbioru w~\texttt{docs/} (w~tym scenariusz prezentacji~\cite{raceportal:demo}).
+
+\subsection{Pisanie pracy dyplomowej}
+W~redakcji LaTeX~\cite{latex:project} opracowałem lub rozwinąłem m.in.\ analizę SWOT, fragmenty projektu i~realizacji systemu, rozdział aplikacji mobilnej, wybrane podrozdziały bezpieczeństwa (założenia, klasyfikacja danych, zagrożenia, ryzyko, ograniczenia, testy penetracyjne), prezentację głównych funkcjonalności MVP (§15.1) oraz opis własnego wkładu. Na bieżąco uzupełniałem słownik pojęć i~bibliografię o~źródła cytowane w~tych częściach.
 
 \chapter{Podsumowanie}
 \label{ch:podsumowanie}
