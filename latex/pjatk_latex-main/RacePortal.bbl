@@ -80,23 +80,23 @@
       \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
       \field{labeltitlesource}{title}
       \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal}}
-      \field{note}{Branch \texttt{main}; dostęp: 2026-11-07}
+      \field{note}{Branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{RacePortal --- repozytorium projektu}
     \endentry
     \entry{raceportal:mvp}{misc}{}{}
       \field{sortinit}{9}
       \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labeltitlesource}{title}
-      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak MVP.md})}
-      \field{note}{stan 28.10.2026; dostęp: 2026-11-07}
+      \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal/blob/main/docs/MVP.md}}
+      \field{note}{plik \texttt{docs/MVP.md}; stan 28.10.2026; branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{RacePortal --- zakres MVP}
     \endentry
     \entry{k6:vm-rps}{misc}{}{}
       \field{sortinit}{1}
       \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labeltitlesource}{title}
-      \field{howpublished}{dokumentacja projektu RacePortal (\texttt{docs/\allowbreak testy/\allowbreak wyniki/\allowbreak k6-vm-rps.md})}
-      \field{note}{sesja pomiarowa 2026-10-25; dostęp: 2026-11-07}
+      \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal/blob/main/docs/testy/wyniki/k6-vm-rps.md}}
+      \field{note}{plik \texttt{docs/testy/wyniki/k6-vm-rps.md}; sesja 2026-10-25; branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{Wyniki load testu k6 --- Oracle VM (RPS)}
     \endentry
     \entry{cloudflare:tunnel}{misc}{}{}
@@ -212,8 +212,8 @@
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labeltitlesource}{title}
-      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak cybersecurity-pentest.md})}
-      \field{note}{dostęp: 2026-11-07}
+      \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal/blob/main/docs/cybersecurity-pentest.md}}
+      \field{note}{plik \texttt{docs/cybersecurity-pentest.md}; branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{RacePortal --- rejestr testów penetracyjnych i~remedacji}
     \endentry
     \entry{playwright:docs}{misc}{}{}
@@ -236,8 +236,8 @@
       \field{sortinit}{3}
       \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labeltitlesource}{title}
-      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak scenariusz-prezentacji.md})}
-      \field{note}{dostęp: 2026-11-07}
+      \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal/blob/main/docs/scenariusz-prezentacji.md}}
+      \field{note}{plik \texttt{docs/scenariusz-prezentacji.md}; branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{RacePortal --- scenariusz prezentacji obrony}
     \endentry
     \entry{latex:project}{misc}{}{}
@@ -252,8 +252,8 @@
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labeltitlesource}{title}
-      \field{howpublished}{dokumentacja projektu (\texttt{docs/\allowbreak spec-conformity.md})}
-      \field{note}{dostęp: 2026-11-07}
+      \field{howpublished}{\url{https://github.com/Gucio-009/RacePortal/blob/main/docs/spec-conformity.md}}
+      \field{note}{plik \texttt{docs/spec-conformity.md}; branch \texttt{main}; dostęp: 2026-11-12}
       \field{title}{RacePortal --- rejestr zgodności ze Specyfikacją}
     \endentry
   \enddatalist
