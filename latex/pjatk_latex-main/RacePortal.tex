@@ -2002,20 +2002,31 @@ W ramach projektu RacePortal zajmowałem się przede wszystkim projektowaniem i 
 Wykonane przeze mnie prace skupiały się przede wszystkim na wyglądzie, użyteczności oraz jakości interfejsu użytkownika. Pozwoliły one dopracować sposób prezentowania funkcjonalności RacePortal i wychwycić problemy widoczne podczas korzystania z aplikacji w przeglądarce.
 
 \section{Michał Gutowski}
-\begin{itemize}
-  \item odpowiedzialność za projektowanie architektury procesów, tworzenie zaawansowanych materiałów projektowych oraz diagramów modelujących system (m.in.\ rich picture, szczegółowe diagramy przepływów);
-  \item zbieranie i~analiza wymagań funkcjonalnych poprzez bezpośredni kontakt z~docelowymi użytkownikami platformy (kierowcami oraz organizatorami wydarzeń motorsportowych) w~celu pozyskania kluczowej wiedzy dziedzinowej;
-  \item aktywny udział w~pracach programistycznych nad warstwą backendową systemu (implementacja logiki biznesowej API);
-  \item wsparcie w~tworzeniu dokumentacji projektowej oraz opracowywanie i~testowanie scenariuszy demonstracyjnych przed wdrożeniem;
-  \item udział w~integracji komponentów oraz weryfikacji poprawności głównych ścieżek użytkownika.
-\end{itemize}
+W~projekcie RacePortal odpowiadałem za obszar analizy biznesowej, modelowania procesów systemowych oraz wsparcie prac programistycznych w~warstwie backendowej.
+
+\subsection{Prace analityczne i~projektowe}
+Prowadziłem bezpośrednie rozmowy oraz konsultacje z~docelowymi użytkownikami platformy --- zarówno aktywnymi kierowcami, jak i~organizatorami wydarzeń motorsportowych w~Polsce. Pozwoliło to na zidentyfikowanie realnych problemów branży (m.in.\ rozproszenia informacji i~trudności z~weryfikacją regulaminową pojazdów) oraz przełożenie ich na konkretne wymagania funkcjonalne i~niefunkcjonalne systemu. Odpowiadałem za opracowanie i~aktualizację Specyfikacji Wymagań Systemowych (SWS), projektowanie architektury procesów biznesowych oraz stworzenie zaawansowanych diagramów modelujących system oraz szczegółowych diagramów przepływów.
+
+\subsection{Prace programistyczne}
+Brałem aktywny udział w~pracach deweloperskich nad warstwą serwerową (backend) w~technologii Spring Boot. Uczestniczyłem w~implementacji logiki biznesowej API odpowiedzialnej za obsługę procesów dziedzinowych (m.in.\ weryfikacji pojazdów i~obsługi zgłoszeń), a~także w~integracji poszczególnych modułów i~weryfikacji spójności danych przesyłanych pomiędzy aplikacją kliencką a~serwerem.
+
+\subsection{Testowanie i~weryfikacja}
+Wspierałem proces weryfikacji jakości oprogramowania poprzez testowanie głównych ścieżek użytkownika z~perspektywy kierowcy oraz organizatora. Opracowywałem i~przeprowadzałem scenariusze demonstracyjne systemu na potrzeby prezentacji projektowych, weryfikując poprawność działania walidacji formularzy oraz przepływu statusów zgłoszeń.
+
+\subsection{Pisanie pracy dyplomowej}
+W~ramach redakcji dokumentacji inżynierskiej w~systemie \LaTeX{} opracowałem oraz rozwinąłem kluczowe części analityczne i~podsumowujące pracy: opis problemu dziedzinowego, pełną analizę wymagań wraz z~kartami wymagań oraz wybrane sekcje podsumowania dotyczące wyzwań wdrożeniowych i~kierunków dalszego rozwoju platformy.
 
 \section{Miłosz Parkitny}
-\begin{itemize}
-  \item modelowanie i~diagramy (m.in.\ przypadki użycia, podział funkcjonalności, model danych);
-  \item wsparcie analizy interesariuszy i~harmonogramów;
-  \item udział w~pracach implementacyjnych / poprawkach w~repozytorium.
-\end{itemize}
+W~projekcie RacePortal odpowiadałem za warstwę backendową, konfigurację poczty SMTP, uwierzytelnianie oparte na tokenach JWT oraz konfigurację produkcyjnej maszyny wirtualnej Oracle.
+
+\subsection{Prace programistyczne}
+Odpowiadałem za warstwę serwerową w~technologii Spring Boot. Skonfigurowałem wysyłkę wiadomości transakcyjnych przez SMTP (Mailbux) oraz uwierzytelnianie użytkowników oparte na tokenach JWT.
+
+\subsection{Wdrożenie}
+Odpowiadałem za konfigurację wirtualnej maszyny w~Oracle Cloud Always Free, na której działa środowisko produkcyjne systemu.
+
+\subsection{Pisanie pracy dyplomowej}
+W~ramach redakcji dokumentacji inżynierskiej w~systemie \LaTeX{} opracowałem rozdział~\ref{ch:biznes} (kontekst biznesowy), podrozdział~\ref{sec:realizacja-backend} (backend w~rozdziale realizacji), rozdział~\ref{ch:backend} (szczegóły implementacji backendu), rozdział~\ref{ch:bezpieczenstwo} (bezpieczeństwo systemu) oraz podrozdział 18.3 (ograniczenia końcowej wersji systemu).
 
 \section{Wojciech Wronisz}
 W~zapisie startowym DZW pełniłem rolę kierownika projektu; w~fazie realizacji (zgodnie z~\texttt{README.md} repozytorium~\cite{raceportal:repo}) odpowiadałem za obszar fullstack, testów automatycznych oraz bezpieczeństwa aplikacji. Poniżej podzielono wkład według rodzaju prac.
