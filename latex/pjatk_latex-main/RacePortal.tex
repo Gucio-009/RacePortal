@@ -580,6 +580,7 @@ Zagrożenia mają charakter zewnętrzny: konkurencja zachowań użytkowników, z
 RacePortal ma silny rdzeń funkcjonalny i~techniczny jak na MVP akademickie: spójne role, katalog, zapisy, narzędzia organizatora i~administratora, testy oraz działające wdrożenie. Główne słabości dotyczą świadomie odłożonych elementów produktowych (PSP, pełne mobile) oraz domknięcia wybranych kryteriów jakościowych (scenariusz 10k rekordów). Szanse rozwoju są naturalną kontynuacją istniejącego API i~paneli; zagrożenia wymagają przede wszystkim dyscypliny bezpieczeństwa, prywatności i~niezależności od pojedynczych usług zewnętrznych. Wnioski te są spójne z~ograniczeniami i~perspektywami opisanymi w~rozdziale~\ref{ch:podsumowanie}.
 
 \chapter{Planowanie projektu}
+\label{ch:planowanie}
 
 Ten rozdział opisuje planowanie RacePortal: cele, zakres MVP, sposób pracy, zespół, harmonogram, infrastrukturę oraz ryzyka. W~rozdziale oddzielono dokumenty formalne --- Kartę projektu (KP), Dokument Założeń Wstępnych (DZW), Specyfikację Wymagań Systemowych (SWS) oraz historyczny Harmonogram przedmiotu PRO --- od tego, co faktycznie powstało w kodzie, Docker Compose, plikach \texttt{docs/\allowbreak MVP.md}, chronologii \texttt{docs/\allowbreak changes.md}, decyzjach wdrożeniowych i pomiarach k6. Daty publikacji dokumentów i daty wpisów w chronologii to dwie różne warstwy: przebieg prac nie zastępuje oficjalnych kamieni milowych karty projektu, a karty formalne nie zastępują rzeczywistego stanu systemu.
 
@@ -1115,6 +1116,7 @@ Bezpieczeństwo dostępu oparto o~Spring Security~\cite{spring:security} oraz to
 W~podziale odpowiedzialności backend jest jedynym źródłem prawdy dla stanu domeny --- klienci webowy i~mobilny nie utrzymują własnej bazy wydarzeń ani zgłoszeń, lecz konsumują wspólny kontrakt JSON. Szczegółowy opis encji, endpointów i~przepływów implementacyjnych przedstawiono w~rozdziale~\ref{ch:backend}.
 
 \subsection{Frontend webowy}
+\label{sec:realizacja-frontend}
 Frontend webowy RacePortal został przygotowany w React z wykorzystaniem
 TypeScript i narzędzia Vite.
 Aplikacja składa się z osobnych stron oraz komponentów, a z backendem
@@ -1979,27 +1981,19 @@ Rozdział opisuje, kto odpowiadał za które obszary prac projektowych i~impleme
 \end{itemize}
 
 \section{Oliwier Kasprowicz}
+W~projekcie RacePortal zajmowałem się przede wszystkim projektowaniem i~dopracowywaniem interfejsu użytkownika aplikacji webowej. Moje prace obejmowały przygotowanie koncepcji wyglądu strony, rozwijanie warstwy wizualnej, dostosowywanie widoków do~różnych urządzeń oraz sprawdzanie ich poprawnego działania. Zależało mi na~tym, aby interfejs był czytelny, spójny i~wygodny w~codziennym korzystaniu z~platformy.
 
-W ramach projektu RacePortal zajmowałem się przede wszystkim projektowaniem i dopracowywaniem interfejsu użytkownika aplikacji webowej. Moje prace obejmowały przygotowanie koncepcji wyglądu strony, rozwijanie jej warstwy wizualnej, dostosowywanie poszczególnych widoków do różnych urządzeń oraz sprawdzanie ich poprawnego działania. Zależało mi na tym, aby interfejs był czytelny, spójny i wygodny w codziennym korzystaniu z platformy.
+\subsection{Prace analityczne i~projektowe}
+Brałem udział w~przygotowywaniu makiet oraz projektowaniu wyglądu poszczególnych ekranów aplikacji w~Figma Make. Prace obejmowały rozmieszczenie elementów na~stronie, dobór kolorystyki, wygląd przycisków, formularzy i~kart wydarzeń. Dopracowywałem również układ strony głównej, zwracając uwagę na~czytelność prezentowanych wydarzeń i~łatwość poruszania się po~serwisie. Pracowałem nad~koncepcją motywów kolorystycznych (ciemnych i~jasnych), sprawdzając kontrast między tekstem, tłem i~elementami interaktywnymi.
 
-\begin{itemize}
-    \item \textbf{Projektowanie interfejsu w Figma Make} ---
-    brałem udział w przygotowywaniu makiet oraz projektowaniu wyglądu poszczególnych ekranów aplikacji. Prace obejmowały rozmieszczenie elementów na stronie, dobór kolorystyki, wygląd przycisków, formularzy i kart wydarzeń. Dopracowywałem również układ strony głównej, zwracając uwagę na czytelność prezentowanych wydarzeń i łatwość poruszania się po serwisie.
+\subsection{Prace programistyczne}
+Po~stronie aplikacji webowej rozwijałem warstwę wizualną: system motywów kolorystycznych, responsywność widoków na~różnych rozdzielczościach oraz animacje i~ekran ładowania. Szczególną uwagę zwracałem na~rozmieszczenie elementów na~komputerach i~telefonach, czytelność tekstu, działanie nawigacji oraz poprawne wyświetlanie formularzy i~kart wydarzeń. Istotne było zachowanie spójności tych elementów z~pozostałą częścią strony.
 
-    \item \textbf{System motywów kolorystycznych} ---
-    pracowałem nad przygotowaniem różnych wersji kolorystycznych interfejsu, obejmujących zarówno motywy ciemne, jak i jasne. Sprawdzałem, jak poszczególne kolory prezentują się na stronie oraz czy zapewniają odpowiedni kontrast między tekstem, tłem i elementami interaktywnymi. Celem było zachowanie spójnego wyglądu aplikacji niezależnie od wybranego motywu.
+\subsection{Testowanie i~weryfikacja}
+Przeprowadzałem ręczne testy aplikacji webowej, sprawdzając działanie poszczególnych widoków, formularzy i~elementów nawigacyjnych. Korzystałem z~narzędzi deweloperskich przeglądarki Chrome do~analizy komunikatów w~konsoli, błędów podczas wykonywania żądań oraz wyglądu strony na~różnych szerokościach ekranu. Wykryte problemy dokumentowałem i~przekazywałem do~dalszej poprawy.
 
-    \item \textbf{Responsywność interfejsu} ---
-    zajmowałem się sprawdzaniem i dopracowywaniem wyglądu aplikacji na ekranach o różnych rozdzielczościach. Szczególną uwagę zwracałem na rozmieszczenie elementów na komputerach i telefonach, czytelność tekstu, działanie nawigacji oraz poprawne wyświetlanie formularzy i kart wydarzeń.
-
-    \item \textbf{Animacje i ekran ładowania} ---
-    uczestniczyłem w przygotowywaniu i dopracowywaniu animacji wykorzystywanych w interfejsie. Pracowałem również nad wyglądem ekranu ładowania aplikacji, doborem jego kolorystyki oraz sposobem prezentacji elementów wizualnych. Istotne było zachowanie spójności tych elementów z pozostałą częścią strony.
-
-    \item \textbf{Testowanie interfejsu w Chrome DevTools} ---
-    przeprowadzałem ręczne testy aplikacji webowej, sprawdzając działanie poszczególnych widoków, formularzy i elementów nawigacyjnych. Korzystałem z narzędzi deweloperskich przeglądarki Chrome do analizy komunikatów w konsoli, błędów podczas wykonywania żądań oraz wyglądu strony na różnych szerokościach ekranu. Wykryte problemy dokumentowałem i przekazywałem do dalszej poprawy.
-\end{itemize}
-
-Wykonane przeze mnie prace skupiały się przede wszystkim na wyglądzie, użyteczności oraz jakości interfejsu użytkownika. Pozwoliły one dopracować sposób prezentowania funkcjonalności RacePortal i wychwycić problemy widoczne podczas korzystania z aplikacji w przeglądarce.
+\subsection{Pisanie pracy dyplomowej}
+W~ramach redakcji dokumentacji inżynierskiej w~systemie \LaTeX{} opracowałem oraz rozwinąłem rozdział o~planowaniu projektu (\ref{ch:planowanie}), projekt warstwy webowej (\ref{sec:figma}), opis frontendu webowego w~rozdziale realizacji (\ref{sec:realizacja-frontend}) oraz wnioski końcowe (\ref{sec:wnioski-koncowe}). Opisałem też własny wkład w~niniejszym rozdziale.
 
 \section{Michał Gutowski}
 W~projekcie RacePortal odpowiadałem za obszar analizy biznesowej, modelowania procesów systemowych oraz wsparcie prac programistycznych w~warstwie backendowej.
